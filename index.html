@@ -359,35 +359,42 @@
             }
         };
 
-        // --- ZORUNLU UYGULAMA AÇMA (EXPLICIT INTENT & GEO SCHEME) ---
-        function nativeAppAc(targetUrl) {
-            window.location.href = targetUrl;
+        // --- DOĞRUDAN UYGULAMA AÇMA (ANDROID INTENT & NAVIGATE) ---
+        function haritayaSorunsuzGit(hedefMetin) {
+            if (!hedefMetin || hedefMetin.trim() === '') {
+                alert("Herhangi bir adres veya konum bilgisi bulunamadı.");
+                return;
+            }
+
+            let aramaMetni = hedefMetin.trim();
+            if (aramaMetni.includes('q=')) {
+                const match = aramaMetni.match(/q=([^&]+)/);
+                if (match && match[1]) {
+                    aramaMetni = decodeURIComponent(match[1]);
+                }
+            }
+
+            const encodedQuery = encodeURIComponent(aramaMetni);
+            const intentUrl = `intent://maps.google.com/maps?daddr=${encodedQuery}#Intent;scheme=https;package=com.google.android.apps.maps;end;`;
+            
+            window.location.href = intentUrl;
         }
 
         function haritaAcAramasiYap() {
             const adres = document.getElementById('teslimatAdresi').value.trim();
             const mevcutUrl = document.getElementById('haritaUrl').value.trim();
+            const musteri = document.getElementById('musteriAdi').value.trim();
 
-            if (mevcutUrl && (mevcutUrl.startsWith('http://') || mevcutUrl.startsWith('https://'))) {
-                nativeAppAc(mevcutUrl);
-            } else if (adres) {
-                // google.navigation uri yapısı Android'de web'e düşmeden doğrudan Haritalar uygulamasını zorlar
-                const target = `google.navigation:q=${encodeURIComponent(adres)}`;
-                nativeAppAc(target);
-            } else {
-                nativeAppAc(`google.navigation:q=`);
-            }
+            const hedef = mevcutUrl || adres || musteri;
+            haritayaSorunsuzGit(hedef);
         }
 
-        function konumAcroad(mapUrl, adres) {
-            if (mapUrl && (mapUrl.startsWith('http://') || mapUrl.startsWith('https://'))) {
-                nativeAppAc(mapUrl);
-            } else if (adres) {
-                const target = `google.navigation:q=${encodeURIComponent(adres)}`;
-                nativeAppAc(target);
-            } else {
-                alert("Bu kayıt için tanımlanmış bir harita konumu veya adres bulunamadı.");
+        function konumAcroad(mapUrl, adres, musteri) {
+            let hedef = mapUrl || adres;
+            if (!hedef || hedef.trim() === '') {
+                hedef = musteri;
             }
+            haritayaSorunsuzGit(hedef);
         }
 
         // --- CANLI KAMERA FONKSİYONU ---
@@ -709,7 +716,9 @@
                     badgeText = 'SEVK EDİLDİ';
                 }
 
-                const varMiHarita = u.haritaUrl || u.adres;
+                const safeUrl = u.haritaUrl ? u.haritaUrl.replace(/'/g, "\\'") : '';
+                const safeAdres = u.adres ? u.adres.replace(/'/g, "\\'") : '';
+                const safeMusteri = u.musteri ? u.musteri.replace(/'/g, "\\'") : '';
 
                 card.className = `item-card ${borderClass}`;
                 card.innerHTML = `
@@ -746,11 +755,9 @@
 
                     ${u.adres ? `<div class="item-address-box">📍 <b>Teslimat Adresi:</b> ${u.adres}</div>` : ''}
 
-                    ${varMiHarita ? `
-                        <button class="btn btn-map" style="margin-top:6px; padding:10px; font-size:12px; width:100%;" onclick="konumAcroad('${u.haritaUrl || ''}', '${u.adres || ''}')">
-                            🚀 Yol Tarifi Al / Haritada Aç
-                        </button>
-                    ` : ''}
+                    <button class="btn btn-map" style="margin-top:6px; padding:10px; font-size:12px; width:100%;" onclick="konumAcroad('${safeUrl}', '${safeAdres}', '${safeMusteri}')">
+                        🚀 Yol Tarifi Al / Haritada Aç
+                    </button>
 
                     ${u.not ? `<div class="item-note-box">📌 <b>Not:</b> ${u.not}</div>` : ''}
 
