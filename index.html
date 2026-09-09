@@ -69,7 +69,6 @@
         .btn-done { background-color: #3b82f6; color: #ffffff; }
         .btn-danger { background-color: #e71d36; color: #ffffff; }
         .btn-secondary { background-color: #64748b; color: #ffffff; }
-        .btn-map { background-color: #0f766e; color: #ffffff; }
         .btn-sm { padding: 4px 8px; font-size: 10px; width: auto; margin-top: 2px; }
 
         /* Canlı Kamera ve Fotoğraf Alanı */
@@ -170,7 +169,6 @@
         .info-value { font-size: 14px; font-weight: 800; color: #0f172a; }
 
         .item-note-box { background: #fffbe3; border: 1px solid #ffe58f; border-radius: 8px; padding: 8px; margin-top: 6px; font-size: 12px; color: #856404; }
-        .item-address-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px; margin-top: 6px; font-size: 12px; color: #166534; }
         .item-user { font-size: 11px; color: #94a3b8; font-style: italic; margin-top: 4px; }
         .item-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
     </style>
@@ -253,20 +251,10 @@
                 <input type="number" id="paketSayisi" placeholder="Örn: 1" class="fast-input" value="1">
             </div>
 
-            <!-- ADRES VE HARİTA BÖLÜMÜ -->
-            <div class="full-width" style="margin-top:4px;">
-                <label style="color:#0f766e;">📍 TESLİMAT ADRESİ VE HARİTA KONUMU</label>
-                <div style="display:flex; gap:6px; margin-bottom:6px;">
-                    <input type="text" id="haritaUrl" placeholder="Kısa Link (maps.app.goo.gl...) ya da Adres Yapıştırın">
-                    <button type="button" class="btn btn-map" style="margin:0; width:auto; white-space:nowrap; padding:0 12px;" onclick="haritaAcAramasiYap()">🗺️ Haritada Aç</button>
-                </div>
-                <textarea id="teslimatAdresi" rows="2" placeholder="Açık Teslimat Adresi (Mahalle, Cadde, Bina No, İl/İlçe)"></textarea>
-            </div>
-
             <!-- Opsiyonel Arama ve Detay Bilgileri -->
             <div class="full-width" style="margin-top:6px;">
                 <details>
-                    <summary style="font-size:11px; font-weight:bold; color:#64748b; cursor:pointer;">➕ Opsiyonel Metin Girişi (Müşteri/Ürün Adı)</summary>
+                    <summary style="font-size:11px; font-weight:bold; color:#64748b; cursor:pointer;">➕ Opsiyonel Metin Girişi (Arama kolaylığı için)</summary>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px;">
                         <div>
                             <label>Müşteri Adı</label>
@@ -303,7 +291,7 @@
     <!-- Detaylı Arama ve Filtreleme Kartı -->
     <div class="filter-card">
         <label>🔍 Canlı Arama ve Detaylı Filtreleme</label>
-        <input type="text" id="searchInput" placeholder="Müşteri, ürün, adres veya nota göre ara..." oninput="listele()" style="margin-bottom:8px;">
+        <input type="text" id="searchInput" placeholder="Müşteri, ürün veya nota göre ara..." oninput="listele()" style="margin-bottom:8px;">
         <div style="display:flex; gap:6px;">
             <div style="flex:1;">
                 <label style="font-size:9px;">Başlangıç Tarihi</label>
@@ -359,55 +347,12 @@
             }
         };
 
-        // --- TAMAMEN WEB SAYFASINI ENGELLEYEN VE SADECE HARİTALAR UYGULAMASINI ZORLAYAN KOD ---
-        function baglantisizKendiHaritaUygulamasiniAc(hedefMetin) {
-            if (!hedefMetin || hedefMetin.trim() === "") {
-                // Herhangi bir adres yoksa doğrudan Google Haritalar uygulamasını açar
-                window.location.href = "intent:#Intent;package=com.google.android.apps.maps;end;";
-                return;
-            }
-
-            let temizGirdi = hedefMetin.trim();
-            let finalIntentUrl = "";
-
-            // Eğer gönderilen metin (maps.app.goo.gl veya http/https) içeren tam bir web linkiyse:
-            if (temizGirdi.includes("http://") || temizGirdi.includes("https://") || temizGirdi.includes("maps.app.goo.gl") || temizGirdi.includes("goo.gl")) {
-                // Linkteki "https://" veya "http://" protokol takısını temizliyoruz
-                let rawUrl = temizGirdi.replace(/^https?:\/\//i, '');
-                
-                // Android Chrome Intent yapısı üzerinden zorunlu olarak com.google.android.apps.maps Paketine yönlendiriyoruz
-                finalIntentUrl = `intent://${rawUrl}#Intent;scheme=https;package=com.google.android.apps.maps;end;`;
-            } else {
-                // Eğer düz adres metniyse (Örn: "Ortaköy Silivri"):
-                let encodedQuery = encodeURIComponent(temizGirdi);
-                finalIntentUrl = `intent://maps.google.com/maps?daddr=${encodedQuery}#Intent;scheme=google.navigation;package=com.google.android.apps.maps;end;`;
-            }
-
-            // Web tarayıcısını atlayarak doğrudan uygulamayı tetikler
-            window.location.href = finalIntentUrl;
-        }
-
-        // 1. Form Üstündeki "Haritada Aç" Butonu
-        function haritaAcAramasiYap() {
-            const mevcutUrl = document.getElementById('haritaUrl').value.trim();
-            const adres = document.getElementById('teslimatAdresi').value.trim();
-            const musteri = document.getElementById('musteriAdi').value.trim();
-
-            const hedef = mevcutUrl || adres || musteri;
-            baglantisizKendiHaritaUygulamasiniAc(hedef);
-        }
-
-        // 2. Ürün Kartı İçindeki "Yol Tarifi Al / Haritada Aç" Butonu
-        function konumAcroad(mapUrl, adres, musteri) {
-            const hedef = mapUrl || adres || musteri;
-            baglantisizKendiHaritaUygulamasiniAc(hedef);
-        }
-
-        // --- CANLI KAMERA FONKSİYONU ---
+        // --- GÜNCELLENMİŞ CANLI KAMERA FONKSİYONU ---
         async function canliKameraAc() {
             const modal = document.getElementById('cameraStreamModal');
             const video = document.getElementById('webcamVideo');
 
+            // WebView ve Tarayıcı Uyumlu Kamera Ayarları
             const configs = [
                 { video: { facingMode: { ideal: "environment" } } },
                 { video: { facingMode: "environment" } },
@@ -430,7 +375,7 @@
                 video.srcObject = activeStream;
                 modal.style.display = 'flex';
             } else {
-                alert("Kameraya erişim sağlanamadı. Lütfen izinleri kontrol edin.");
+                alert("Kameraya erişim sağlanamadı. Lütfen uygulamanın izin ayarlarını kontrol edin.");
             }
         }
 
@@ -581,8 +526,6 @@
             const tarih = document.getElementById('tarih').value;
             const durum = document.getElementById('durum').value;
             const not = document.getElementById('urunNotu').value.trim();
-            const adres = document.getElementById('teslimatAdresi').value.trim();
-            const haritaUrl = document.getElementById('haritaUrl').value.trim();
 
             if(!editId && !foto) { 
                 alert("Lütfen önce etiketin fotoğrafını çekin!"); 
@@ -598,7 +541,7 @@
 
             if(editId) {
                 db.ref('urunler/' + editId).update({
-                    musteri, urun, kg, paket, tarih, durum, foto, not, adres, haritaUrl,
+                    musteri, urun, kg, paket, tarih, durum, foto, not,
                     ekleyen: yapanKisi + ' (Düzenledi)'
                 });
                 document.getElementById('editId').value = '';
@@ -608,7 +551,7 @@
                 newRef.set({
                     musteri: musteri || 'Etikete Bakınız',
                     urun: urun || 'Etikete Bakınız',
-                    kg, paket, tarih, durum, foto, not, adres, haritaUrl,
+                    kg, paket, tarih, durum, foto, not,
                     ekleyen: yapanKisi,
                     eklenmeTarihi: Date.now()
                 });
@@ -630,8 +573,6 @@
             document.getElementById('durum').value = u.durum;
             document.getElementById('photoBase64').value = u.foto || '';
             document.getElementById('urunNotu').value = u.not || '';
-            document.getElementById('teslimatAdresi').value = u.adres || '';
-            document.getElementById('haritaUrl').value = u.haritaUrl || '';
 
             const preview = document.getElementById('photoPreview');
             if(u.foto) {
@@ -666,8 +607,6 @@
             document.getElementById('urunKg').value = '';
             document.getElementById('paketSayisi').value = '1';
             document.getElementById('urunNotu').value = '';
-            document.getElementById('teslimatAdresi').value = '';
-            document.getElementById('haritaUrl').value = '';
             document.getElementById('photoPreview').style.display = 'none';
         }
 
@@ -691,8 +630,7 @@
                 urunler = urunler.filter(u => 
                     (u.musteri && u.musteri.toLowerCase().includes(searchTxt)) ||
                     (u.urun && u.urun.toLowerCase().includes(searchTxt)) ||
-                    (u.not && u.not.toLowerCase().includes(searchTxt)) ||
-                    (u.adres && u.adres.toLowerCase().includes(searchTxt))
+                    (u.not && u.not.toLowerCase().includes(searchTxt))
                 );
             }
 
@@ -721,10 +659,6 @@
                     badgeClass = 'badge-tamam';
                     badgeText = 'SEVK EDİLDİ';
                 }
-
-                const safeUrl = u.haritaUrl ? u.haritaUrl.replace(/'/g, "\\'") : '';
-                const safeAdres = u.adres ? u.adres.replace(/'/g, "\\'") : '';
-                const safeMusteri = u.musteri ? u.musteri.replace(/'/g, "\\'") : '';
 
                 card.className = `item-card ${borderClass}`;
                 card.innerHTML = `
@@ -758,12 +692,6 @@
                             </div>
                         </div>
                     ` : ''}
-
-                    ${u.adres ? `<div class="item-address-box">📍 <b>Teslimat Adresi:</b> ${u.adres}</div>` : ''}
-
-                    <button class="btn btn-map" style="margin-top:6px; padding:10px; font-size:12px; width:100%;" onclick="konumAcroad('${safeUrl}', '${safeAdres}', '${safeMusteri}')">
-                        🚀 Yol Tarifi Al / Haritada Aç
-                    </button>
 
                     ${u.not ? `<div class="item-note-box">📌 <b>Not:</b> ${u.not}</div>` : ''}
 
