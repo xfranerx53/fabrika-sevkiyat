@@ -359,15 +359,9 @@
             }
         };
 
-        // --- ANDROID INTENT / NATIVE UYGULAMA ZORLAMA YÖNTEMİ ---
+        // --- ZORUNLU UYGULAMA AÇMA (EXPLICIT INTENT & GEO SCHEME) ---
         function nativeAppAc(targetUrl) {
-            const a = document.createElement('a');
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
-            a.href = targetUrl;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            window.location.href = targetUrl;
         }
 
         function haritaAcAramasiYap() {
@@ -377,11 +371,11 @@
             if (mevcutUrl && (mevcutUrl.startsWith('http://') || mevcutUrl.startsWith('https://'))) {
                 nativeAppAc(mevcutUrl);
             } else if (adres) {
-                const intentUrl = `intent://maps.google.com/maps?q=${encodeURIComponent(adres)}#Intent;scheme=https;package=com.google.android.apps.maps;end`;
-                nativeAppAc(intentUrl);
+                // google.navigation uri yapısı Android'de web'e düşmeden doğrudan Haritalar uygulamasını zorlar
+                const target = `google.navigation:q=${encodeURIComponent(adres)}`;
+                nativeAppAc(target);
             } else {
-                const intentUrl = `intent://maps.google.com/#Intent;scheme=https;package=com.google.android.apps.maps;end`;
-                nativeAppAc(intentUrl);
+                nativeAppAc(`google.navigation:q=`);
             }
         }
 
@@ -389,8 +383,8 @@
             if (mapUrl && (mapUrl.startsWith('http://') || mapUrl.startsWith('https://'))) {
                 nativeAppAc(mapUrl);
             } else if (adres) {
-                const intentUrl = `intent://maps.google.com/maps?q=${encodeURIComponent(adres)}#Intent;scheme=https;package=com.google.android.apps.maps;end`;
-                nativeAppAc(intentUrl);
+                const target = `google.navigation:q=${encodeURIComponent(adres)}`;
+                nativeAppAc(target);
             } else {
                 alert("Bu kayıt için tanımlanmış bir harita konumu veya adres bulunamadı.");
             }
@@ -790,4 +784,3 @@
     </script>
 </body>
 </html>
-
