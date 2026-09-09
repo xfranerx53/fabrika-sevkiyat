@@ -70,6 +70,7 @@
         .btn-danger { background-color: #e71d36; color: #ffffff; }
         .btn-secondary { background-color: #64748b; color: #ffffff; }
         .btn-map { background-color: #0f766e; color: #ffffff; }
+        .btn-chrome { background-color: #4285F4; color: #ffffff; }
         .btn-sm { padding: 4px 8px; font-size: 10px; width: auto; margin-top: 2px; }
 
         /* Canlı Kamera ve Fotoğraf Alanı */
@@ -383,6 +384,11 @@
             } else {
                 alert("Bu kayıt için tanımlanmış bir harita konumu veya adres bulunamadı.");
             }
+        }
+
+        // --- CHROME'DA AÇ FONKSİYONU ---
+        function chromedaAc() {
+            window.open("https://xfranerx53.github.io/fabrika-sevkiyat/", "_blank");
         }
 
         // --- CANLI KAMERA FONKSİYONU ---
@@ -742,10 +748,19 @@
                     ${u.adres ? `<div class="item-address-box">📍 <b>Teslimat Adresi:</b> ${u.adres}</div>` : ''}
 
                     ${varMiHarita ? `
-                        <button class="btn btn-map" style="margin-top:6px; padding:10px; font-size:12px; width:100%;" onclick="konumAcroad('${u.haritaUrl || ''}', '${u.adres || ''}')">
-                            🚀 Yol Tarifi Al / Haritada Aç
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-top:6px;">
+                            <button class="btn btn-map" style="margin:0; padding:10px; font-size:12px;" onclick="konumAcroad('${u.haritaUrl || ''}', '${u.adres || ''}')">
+                                🚀 Yol Tarifi Al
+                            </button>
+                            <button class="btn btn-chrome" style="margin:0; padding:10px; font-size:12px;" onclick="chromedaAc()">
+                                🌐 Chrome'da Aç
+                            </button>
+                        </div>
+                    ` : `
+                        <button class="btn btn-chrome" style="margin-top:6px; padding:10px; font-size:12px; width:100%;" onclick="chromedaAc()">
+                            🌐 Chrome'da Aç
                         </button>
-                    ` : ''}
+                    `}
 
                     ${u.not ? `<div class="item-note-box">📌 <b>Not:</b> ${u.not}</div>` : ''}
 
