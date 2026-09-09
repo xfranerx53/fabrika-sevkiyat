@@ -359,42 +359,39 @@
             }
         };
 
-        // --- DOĞRUDAN UYGULAMA AÇMA (ANDROID INTENT & NAVIGATE) ---
-        function haritayaSorunsuzGit(hedefMetin) {
-            if (!hedefMetin || hedefMetin.trim() === '') {
-                alert("Herhangi bir adres veya konum bilgisi bulunamadı.");
-                return;
-            }
-
-            let aramaMetni = hedefMetin.trim();
-            if (aramaMetni.includes('q=')) {
-                const match = aramaMetni.match(/q=([^&]+)/);
-                if (match && match[1]) {
-                    aramaMetni = decodeURIComponent(match[1]);
+        // --- DOĞRUDAN GOOGLE HARİTALAR UYGULAMASINI AÇMA ---
+        function googleHaritalariAc(hedefMetin) {
+            let targetUrl = "https://www.google.com/maps";
+            
+            if (hedefMetin && hedefMetin.trim() !== '') {
+                let aramaMetni = hedefMetin.trim();
+                
+                // Eğer doğrudan bir HTTP linkiyse
+                if (aramaMetni.startsWith('http://') || aramaMetni.startsWith('https://')) {
+                    targetUrl = aramaMetni;
+                } else {
+                    targetUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(aramaMetni)}`;
                 }
             }
 
-            const encodedQuery = encodeURIComponent(aramaMetni);
-            const intentUrl = `intent://maps.google.com/maps?daddr=${encodedQuery}#Intent;scheme=https;package=com.google.android.apps.maps;end;`;
-            
-            window.location.href = intentUrl;
+            // Yeni pencere veya mobil harita uygulaması tetikleme
+            window.open(targetUrl, '_blank');
         }
 
+        // 1. Form Üstündeki "Haritada Seç" Butonu
         function haritaAcAramasiYap() {
-            const adres = document.getElementById('teslimatAdresi').value.trim();
             const mevcutUrl = document.getElementById('haritaUrl').value.trim();
+            const adres = document.getElementById('teslimatAdresi').value.trim();
             const musteri = document.getElementById('musteriAdi').value.trim();
 
             const hedef = mevcutUrl || adres || musteri;
-            haritayaSorunsuzGit(hedef);
+            googleHaritalariAc(hedef);
         }
 
+        // 2. Ürün Kartı İçindeki "Yol Tarifi Al / Haritada Aç" Butonu
         function konumAcroad(mapUrl, adres, musteri) {
-            let hedef = mapUrl || adres;
-            if (!hedef || hedef.trim() === '') {
-                hedef = musteri;
-            }
-            haritayaSorunsuzGit(hedef);
+            const hedef = mapUrl || adres || musteri;
+            googleHaritalariAc(hedef);
         }
 
         // --- CANLI KAMERA FONKSİYONU ---
@@ -424,7 +421,7 @@
                 video.srcObject = activeStream;
                 modal.style.display = 'flex';
             } else {
-                alert("Kameraya erişim sağlanamadı. Lütfen uygulamanın izin ayarlarını kontrol edin.");
+                alert("Kameraya erişim sağlanamadı. Lütfen izinleri kontrol edin.");
             }
         }
 
@@ -791,3 +788,4 @@
     </script>
 </body>
 </html>
+
