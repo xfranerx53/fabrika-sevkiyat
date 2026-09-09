@@ -359,23 +359,26 @@
             }
         };
 
-        // --- DOĞRUDAN GOOGLE HARİTALAR UYGULAMASINI AÇMA ---
-        function googleHaritalariAc(hedefMetin) {
-            let targetUrl = "https://www.google.com/maps";
+        // --- SADECE VE SADECE TELEFONUN GOOGLE HARİTALAR UYGULAMASINI AÇAN KOD ---
+        function baglantisizKendiHaritaUygulamasiniAc(hedefMetin) {
+            let encodedQuery = "";
             
-            if (hedefMetin && hedefMetin.trim() !== '') {
-                let aramaMetni = hedefMetin.trim();
-                
-                // Eğer doğrudan bir HTTP linkiyse
-                if (aramaMetni.startsWith('http://') || aramaMetni.startsWith('https://')) {
-                    targetUrl = aramaMetni;
-                } else {
-                    targetUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(aramaMetni)}`;
-                }
+            if (hedefMetin && hedefMetin.trim() !== "") {
+                encodedQuery = encodeURIComponent(hedefMetin.trim());
             }
 
-            // Yeni pencere veya mobil harita uygulaması tetikleme
-            window.open(targetUrl, '_blank');
+            // Android cihazlarda doğrudan Google Maps Uygulamasını çalıştırma şeması
+            let nativeIntentUrl = "";
+            if (encodedQuery) {
+                // Konum/Arama adresi varsa navi/arama modunda uygulamada açar
+                nativeIntentUrl = `intent://maps.google.com/maps?daddr=${encodedQuery}#Intent;scheme=google.navigation;package=com.google.android.apps.maps;end;`;
+            } else {
+                // Adres boşsa doğrudan Google Haritalar uygulamasını boş olarak açar
+                nativeIntentUrl = `intent:#Intent;package=com.google.android.apps.maps;end;`;
+            }
+
+            // Doğrudan sistem intent'i çalıştırma (Web Tarayıcıları Tarafından Yakalanmaz)
+            window.location.href = nativeIntentUrl;
         }
 
         // 1. Form Üstündeki "Haritada Seç" Butonu
@@ -385,13 +388,13 @@
             const musteri = document.getElementById('musteriAdi').value.trim();
 
             const hedef = mevcutUrl || adres || musteri;
-            googleHaritalariAc(hedef);
+            baglantisizKendiHaritaUygulamasiniAc(hedef);
         }
 
         // 2. Ürün Kartı İçindeki "Yol Tarifi Al / Haritada Aç" Butonu
         function konumAcroad(mapUrl, adres, musteri) {
             const hedef = mapUrl || adres || musteri;
-            googleHaritalariAc(hedef);
+            baglantisizKendiHaritaUygulamasiniAc(hedef);
         }
 
         // --- CANLI KAMERA FONKSİYONU ---
