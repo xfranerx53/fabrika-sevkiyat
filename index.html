@@ -257,8 +257,8 @@
             <div class="full-width" style="margin-top:4px;">
                 <label style="color:#0f766e;">📍 TESLİMAT ADRESİ VE HARİTA KONUMU</label>
                 <div style="display:flex; gap:6px; margin-bottom:6px;">
-                    <input type="text" id="haritaUrl" placeholder="Google Maps Linki veya Adres Yazın...">
-                    <button type="button" class="btn btn-map" style="margin:0; width:auto; white-space:nowrap; padding:0 12px;" onclick="haritaAcAramasiYap()">🗺️ Haritada Seç</button>
+                    <input type="text" id="haritaUrl" placeholder="Kısa Link (maps.app.goo.gl...) ya da Adres Yapıştırın">
+                    <button type="button" class="btn btn-map" style="margin:0; width:auto; white-space:nowrap; padding:0 12px;" onclick="haritaAcAramasiYap()">🗺️ Haritada Aç</button>
                 </div>
                 <textarea id="teslimatAdresi" rows="2" placeholder="Açık Teslimat Adresi (Mahalle, Cadde, Bina No, İl/İlçe)"></textarea>
             </div>
@@ -359,29 +359,35 @@
             }
         };
 
-        // --- SADECE VE SADECE TELEFONUN GOOGLE HARİTALAR UYGULAMASINI AÇAN KOD ---
+        // --- TAMAMEN WEB SAYFASINI ENGELLEYEN VE SADECE HARİTALAR UYGULAMASINI ZORLAYAN KOD ---
         function baglantisizKendiHaritaUygulamasiniAc(hedefMetin) {
-            let encodedQuery = "";
-            
-            if (hedefMetin && hedefMetin.trim() !== "") {
-                encodedQuery = encodeURIComponent(hedefMetin.trim());
+            if (!hedefMetin || hedefMetin.trim() === "") {
+                // Herhangi bir adres yoksa doğrudan Google Haritalar uygulamasını açar
+                window.location.href = "intent:#Intent;package=com.google.android.apps.maps;end;";
+                return;
             }
 
-            // Android cihazlarda doğrudan Google Maps Uygulamasını çalıştırma şeması
-            let nativeIntentUrl = "";
-            if (encodedQuery) {
-                // Konum/Arama adresi varsa navi/arama modunda uygulamada açar
-                nativeIntentUrl = `intent://maps.google.com/maps?daddr=${encodedQuery}#Intent;scheme=google.navigation;package=com.google.android.apps.maps;end;`;
+            let temizGirdi = hedefMetin.trim();
+            let finalIntentUrl = "";
+
+            // Eğer gönderilen metin (maps.app.goo.gl veya http/https) içeren tam bir web linkiyse:
+            if (temizGirdi.includes("http://") || temizGirdi.includes("https://") || temizGirdi.includes("maps.app.goo.gl") || temizGirdi.includes("goo.gl")) {
+                // Linkteki "https://" veya "http://" protokol takısını temizliyoruz
+                let rawUrl = temizGirdi.replace(/^https?:\/\//i, '');
+                
+                // Android Chrome Intent yapısı üzerinden zorunlu olarak com.google.android.apps.maps Paketine yönlendiriyoruz
+                finalIntentUrl = `intent://${rawUrl}#Intent;scheme=https;package=com.google.android.apps.maps;end;`;
             } else {
-                // Adres boşsa doğrudan Google Haritalar uygulamasını boş olarak açar
-                nativeIntentUrl = `intent:#Intent;package=com.google.android.apps.maps;end;`;
+                // Eğer düz adres metniyse (Örn: "Ortaköy Silivri"):
+                let encodedQuery = encodeURIComponent(temizGirdi);
+                finalIntentUrl = `intent://maps.google.com/maps?daddr=${encodedQuery}#Intent;scheme=google.navigation;package=com.google.android.apps.maps;end;`;
             }
 
-            // Doğrudan sistem intent'i çalıştırma (Web Tarayıcıları Tarafından Yakalanmaz)
-            window.location.href = nativeIntentUrl;
+            // Web tarayıcısını atlayarak doğrudan uygulamayı tetikler
+            window.location.href = finalIntentUrl;
         }
 
-        // 1. Form Üstündeki "Haritada Seç" Butonu
+        // 1. Form Üstündeki "Haritada Aç" Butonu
         function haritaAcAramasiYap() {
             const mevcutUrl = document.getElementById('haritaUrl').value.trim();
             const adres = document.getElementById('teslimatAdresi').value.trim();
@@ -791,4 +797,3 @@
     </script>
 </body>
 </html>
-
