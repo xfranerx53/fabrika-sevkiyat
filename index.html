@@ -359,25 +359,38 @@
             }
         };
 
-        // --- DOĞRUDAN UYGULAMA AÇAN HARİTA YÖNLENDİRME FONKSİYONLARI ---
+        // --- ANDROID INTENT / NATIVE UYGULAMA ZORLAMA YÖNTEMİ ---
+        function nativeAppAc(targetUrl) {
+            const a = document.createElement('a');
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.href = targetUrl;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
         function haritaAcAramasiYap() {
             const adres = document.getElementById('teslimatAdresi').value.trim();
             const mevcutUrl = document.getElementById('haritaUrl').value.trim();
 
             if (mevcutUrl && (mevcutUrl.startsWith('http://') || mevcutUrl.startsWith('https://'))) {
-                window.location.href = mevcutUrl;
+                nativeAppAc(mevcutUrl);
             } else if (adres) {
-                window.location.href = `geo:0,0?q=${encodeURIComponent(adres)}`;
+                const intentUrl = `intent://maps.google.com/maps?q=${encodeURIComponent(adres)}#Intent;scheme=https;package=com.google.android.apps.maps;end`;
+                nativeAppAc(intentUrl);
             } else {
-                window.location.href = `geo:0,0?q=`;
+                const intentUrl = `intent://maps.google.com/#Intent;scheme=https;package=com.google.android.apps.maps;end`;
+                nativeAppAc(intentUrl);
             }
         }
 
         function konumAcroad(mapUrl, adres) {
             if (mapUrl && (mapUrl.startsWith('http://') || mapUrl.startsWith('https://'))) {
-                window.location.href = mapUrl;
+                nativeAppAc(mapUrl);
             } else if (adres) {
-                window.location.href = `geo:0,0?q=${encodeURIComponent(adres)}`;
+                const intentUrl = `intent://maps.google.com/maps?q=${encodeURIComponent(adres)}#Intent;scheme=https;package=com.google.android.apps.maps;end`;
+                nativeAppAc(intentUrl);
             } else {
                 alert("Bu kayıt için tanımlanmış bir harita konumu veya adres bulunamadı.");
             }
