@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fabrika Stok & Sevkiyat - MAG AMBALAJ</title>
+    <!-- Firebase SDK (Web) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        body { 
+            background-color: #f4f6f9; 
+            padding: 12px; 
+            color: #212529; 
+            font-size: 14px; 
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Arka Plan Logo (Filigran) */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%;
+            max-width: 500px;
+            height: 85%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 200"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="50" fill="%23c82333" opacity="0.06">MAG AMBALAJ</text></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Giriş / Kayıt Modalı */
+        #loginModal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:9999; }
+        .login-box { background:#fff; padding:20px; border-radius:12px; width:90%; max-width:350px; text-align:center; position: relative; z-index: 10000; }
+
+        .auth-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .auth-tab { flex: 1; padding: 8px; border: none; background: #e2e8f0; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .auth-tab.active { background: #c82333; color: white; }
+
+        .header-bar { position: relative; z-index: 1; display:flex; justify-content:space-between; align-items:center; background:#1e293b; color:#fff; padding:10px 14px; border-radius:8px; margin-bottom:12px; }
+        .user-info { font-size:12px; opacity:0.9; text-align: right; }
+
+        /* Vurgulu Görünür Durum Etiketleri */
+        .status-badge { font-size: 11px; font-weight: 800; padding: 5px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
+        .badge-hazir { background-color: #2ec4b6; color: #ffffff; }
+        .badge-sevk { background-color: #ff9f1c; color: #ffffff; }
+        .badge-tamam { background-color: #3b82f6; color: #ffffff; }
+
+        .card { position: relative; z-index: 1; background: rgba(255, 255, 255, 0.95); padding: 14px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 12px; border: 1px solid #e2e8f0; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .full-width { grid-column: span 2; }
+        
+        label { display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; background: #fff; }
+        input:focus, textarea:focus, select:focus { border-color: #2563eb; }
+
+        .btn { width: 100%; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; border: none; cursor: pointer; text-align: center; margin-top: 6px; }
+        .btn-primary { background-color: #2563eb; color: #ffffff; }
+        .btn-warning { background-color: #ff9f1c; color: #ffffff; }
+        .btn-success { background-color: #2ec4b6; color: #ffffff; }
+        .btn-done { background-color: #3b82f6; color: #ffffff; }
+        .btn-danger { background-color: #e71d36; color: #ffffff; }
+        .btn-secondary { background-color: #64748b; color: #ffffff; }
+        .btn-sm { padding: 4px 8px; font-size: 10px; width: auto; margin-top: 2px; }
+
+        /* Canlı Kamera ve Fotoğraf Alanı */
+        .photo-picker { display: flex; gap: 8px; margin-top: 4px; }
+        .photo-btn { 
+            flex: 1; 
+            background: #2563eb; 
+            color: #fff; 
+            text-align: center; 
+            padding: 14px; 
+            border-radius: 10px; 
+            font-size: 14px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            border: none;
+            box-shadow: 0 2px 5px rgba(37,99,235,0.3);
+        }
+        .gallery-btn {
+            background: #64748b !important;
+            box-shadow: none !important;
+        }
+
+        #cameraStreamModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 10000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #webcamVideo {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 12px;
+            background: #000;
+        }
+
+        #photoPreview { 
+            width: 100%; 
+            max-height: 280px; 
+            object-fit: contain; 
+            background-color: #000;
+            border-radius: 8px; 
+            margin-top: 8px; 
+            display: none; 
+        }
+
+        .fast-input {
+            font-size: 18px !important;
+            font-weight: bold;
+            padding: 12px !important;
+            border: 2px solid #2563eb !important;
+            background: #f0f7ff !important;
+        }
+
+        /* Sekmeler ve Filtreleme */
+        .tabs { position: relative; z-index: 1; display: flex; gap: 4px; margin-bottom: 12px; }
+        .tab-btn { flex: 1; padding: 10px 4px; border: none; border-radius: 8px; background: #e2e8f0; font-size: 11px; font-weight: 800; color: #475569; cursor: pointer; text-align:center; }
+        .tab-btn.active-hazir { background: #2ec4b6; color: #ffffff; }
+        .tab-btn.active-sevk { background: #ff9f1c; color: #ffffff; }
+        .tab-btn.active-tamam { background: #3b82f6; color: #ffffff; }
+
+        .filter-card { position: relative; z-index: 1; background: #ffffff; padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 12px; }
+
+        /* Ürün Kartları */
+        #urunListesi { position: relative; z-index: 1; }
+        .item-card { background: rgba(255, 255, 255, 0.98); border-radius: 12px; padding: 14px; margin-bottom: 12px; border: 2px solid #e2e8f0; position: relative; }
+        .item-card.hazir-border { border-left: 8px solid #2ec4b6; }
+        .item-card.sevk-border { border-left: 8px solid #ff9f1c; }
+        .item-card.tamam-border { border-left: 8px solid #3b82f6; }
+
+        .item-img { 
+            width: 100%; 
+            max-height: 320px; 
+            object-fit: contain; 
+            background-color: #0f172a;
+            border-radius: 8px; 
+            margin: 8px 0; 
+        }
+
+        .highlight-box {
+            background: #e0f2fe;
+            border: 2px solid #0284c7;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+        .highlight-label { font-size: 11px; font-weight: 800; color: #0369a1; text-transform: uppercase; }
+        .highlight-value { font-size: 22px; font-weight: 900; color: #0c4a6e; }
+
+        .item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+        .info-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; }
+        .info-label { font-size: 10px; font-weight: 800; color: #64748b; display: block; text-transform: uppercase; margin-bottom: 2px; }
+        .info-value { font-size: 14px; font-weight: 800; color: #0f172a; }
+
+        .item-note-box { background: #fffbe3; border: 1px solid #ffe58f; border-radius: 8px; padding: 8px; margin-top: 6px; font-size: 12px; color: #856404; }
+        .item-user { font-size: 11px; color: #94a3b8; font-style: italic; margin-top: 4px; }
+        .item-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- Canlı Kamera Modalı -->
+    <div id="cameraStreamModal">
+        <video id="webcamVideo" autoplay playsinline></video>
+        <div style="width:100%; max-width:500px; display:flex; gap:10px; margin-top:15px;">
+            <button class="btn btn-success" style="padding:15px; font-size:16px;" onclick="canliKaredenFotoCek()">📸 FOTOĞRAFI ÇEK</button>
+            <button class="btn btn-danger" style="padding:15px; font-size:16px;" onclick="kamerayiKapat()">❌ İptal</button>
+        </div>
+    </div>
+
+    <!-- Giriş / Kayıt Modalı -->
+    <div id="loginModal">
+        <div class="login-box">
+            <h2 style="color:#c82333; margin-bottom:10px; font-weight:900;">MAG AMBALAJ</h2>
+            <div class="auth-tabs">
+                <button id="tabGiris" class="auth-tab active" onclick="authSekmeDegistir('giris')">Giriş Yap</button>
+                <button id="tabKayit" class="auth-tab" onclick="authSekmeDegistir('kayit')">Kayıt Ol</button>
+            </div>
+
+            <div id="girisForm">
+                <input type="text" id="loginUsername" placeholder="Kullanıcı Adı" style="margin-bottom:10px;">
+                <input type="password" id="loginPassword" placeholder="Şifre" style="margin-bottom:15px;">
+                <button class="btn btn-primary" style="background:#c82333;" onclick="girisYap()">Sisteme Giriş Yap</button>
+            </div>
+
+            <div id="kayitForm" style="display:none;">
+                <input type="text" id="regName" placeholder="Adınız Soyadınız" style="margin-bottom:10px;">
+                <input type="text" id="regUsername" placeholder="Kullanıcı Adı Belirleyin" style="margin-bottom:10px;">
+                <input type="password" id="regPassword" placeholder="Şifre Belirleyin" style="margin-bottom:10px;">
+                <select id="regRole" style="margin-bottom:15px;">
+                    <option value="Depo Görevlisi">Depo Görevlisi</option>
+                    <option value="Sevkiyat Sorumlusu">Sevkiyat Sorumlusu</option>
+                    <option value="Fabrika Yöneticisi">Yönetici</option>
+                </select>
+                <button class="btn btn-success" onclick="kayitOl()">Hesap Oluştur</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Üst Bar -->
+    <div class="header-bar">
+        <div><strong>MAG AMBALAJ - SEVKİYAT</strong></div>
+        <div class="user-info">
+            <div id="currentUser">Giriş Yapılmadı</div>
+            <button class="btn btn-secondary btn-sm" onclick="isimDegistir()">✏️ İsim Değiştir</button>
+            <button class="btn btn-danger btn-sm" onclick="cikisYap()">Çıkış</button>
+        </div>
+    </div>
+
+    <!-- Hızlı Etiket Giriş Formu -->
+    <div class="card">
+        <div class="form-grid">
+            <input type="hidden" id="editId">
+            <input type="hidden" id="photoBase64">
+            
+            <!-- 1. ADIM: CANLI KAMERA BUTONU -->
+            <div class="full-width">
+                <label style="color:#2563eb; font-size:12px;">1. ETİKET FOTOĞRAFINI ÇEK (ZORUNLU)</label>
+                <div class="photo-picker">
+                    <button type="button" class="photo-btn" onclick="canliKameraAc()">📸 CANLI KAMERAYI AÇ</button>
+                    
+                    <label for="galleryInput" class="photo-btn gallery-btn" style="display:inline-block; line-height:20px;">🖼️ Galeri</label>
+                    <input type="file" id="galleryInput" accept="image/*" style="display:none;" onchange="resimYukle(this)">
+                </div>
+                <img id="photoPreview" src="" alt="Etiket Önizleme">
+            </div>
+
+            <!-- 2. ADIM: SADECE KILO VE ADET GİRİŞİ -->
+            <div>
+                <label style="color:#0284c7;">AĞIRLIK (KG)</label>
+                <input type="number" id="urunKg" placeholder="Örn: 20" class="fast-input">
+            </div>
+            <div>
+                <label style="color:#0284c7;">PAKET / ADET</label>
+                <input type="number" id="paketSayisi" placeholder="Örn: 1" class="fast-input" value="1">
+            </div>
+
+            <!-- Opsiyonel Arama ve Detay Bilgileri -->
+            <div class="full-width" style="margin-top:6px;">
+                <details>
+                    <summary style="font-size:11px; font-weight:bold; color:#64748b; cursor:pointer;">➕ Opsiyonel Metin Girişi (Arama kolaylığı için)</summary>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px;">
+                        <div>
+                            <label>Müşteri Adı</label>
+                            <input type="text" id="musteriAdi" placeholder="Örn: Güneli Fırın">
+                        </div>
+                        <div>
+                            <label>Ürün Adı / Ebat</label>
+                            <input type="text" id="urunAdi" placeholder="Örn: Kulplu Poşet 32x40">
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <div>
+                <label>Tarih</label>
+                <input type="date" id="tarih">
+            </div>
+            <div>
+                <label>Durum</label>
+                <select id="durum">
+                    <option value="hazir">SEVKİYATA HAZIR</option>
+                    <option value="sevk_edilecek">SEVK EDİLECEK</option>
+                </select>
+            </div>
+            <div class="full-width">
+                <textarea id="urunNotu" rows="1" placeholder="Ekstra Not (Araç Plakası, Palet No vb.)"></textarea>
+            </div>
+            <div class="full-width">
+                <button class="btn btn-primary" id="btnKaydet" style="padding:15px; font-size:16px;" onclick="urunKaydet()">+ STOĞA EKLENENİ KAYDET</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detaylı Arama ve Filtreleme Kartı -->
+    <div class="filter-card">
+        <label>🔍 Canlı Arama ve Detaylı Filtreleme</label>
+        <input type="text" id="searchInput" placeholder="Müşteri, ürün veya nota göre ara..." oninput="listele()" style="margin-bottom:8px;">
+        <div style="display:flex; gap:6px;">
+            <div style="flex:1;">
+                <label style="font-size:9px;">Başlangıç Tarihi</label>
+                <input type="date" id="filterStartDate" onchange="listele()" style="padding:6px; font-size:11px;">
+            </div>
+            <div style="flex:1;">
+                <label style="font-size:9px;">Bitiş Tarihi</label>
+                <input type="date" id="filterEndDate" onchange="listele()" style="padding:6px; font-size:11px;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Sekmeler -->
+    <div class="tabs">
+        <button class="tab-btn active-hazir" id="tabHazirBtn" onclick="sekmeDegistir('hazir')">HAZIR ÜRÜNLER</button>
+        <button class="tab-btn" id="tabSevkBtn" onclick="sekmeDegistir('sevk_edilecek')">SEVK EDİLECEKLER</button>
+        <button class="tab-btn" id="tabTamamBtn" onclick="sekmeDegistir('sevk_edildi')">SEVK EDİLENLER</button>
+    </div>
+
+    <div id="urunListesi"></div>
+
+    <script>
+        const firebaseConfig = {
+            databaseURL: "https://sevkiyat-fc22b-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let mevcutSekme = 'hazir';
+        let aktifKullaniciKodu = '';
+        let tumUrunler = [];
+        let tumKullanicilar = {};
+        let activeStream = null;
+
+        window.onload = function() {
+            document.getElementById('tarih').valueAsDate = new Date();
+            
+            db.ref('kullanicilar').on('value', snapshot => {
+                tumKullanicilar = snapshot.val() || {};
+                kullaniciArayuzGuncelle();
+            });
+
+            db.ref('urunler').on('value', snapshot => {
+                const val = snapshot.val() || {};
+                tumUrunler = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                listele();
+            });
+
+            const loggedInUser = localStorage.getItem('sevk_logged_user');
+            if(loggedInUser) {
+                aktifKullaniciKodu = loggedInUser;
+                document.getElementById('loginModal').style.display = 'none';
+            }
+        };
+
+        // --- GÜNCELLENMİŞ CANLI KAMERA FONKSİYONU ---
+        async function canliKameraAc() {
+            const modal = document.getElementById('cameraStreamModal');
+            const video = document.getElementById('webcamVideo');
+
+            // WebView ve Tarayıcı Uyumlu Kamera Ayarları
+            const configs = [
+                { video: { facingMode: { ideal: "environment" } } },
+                { video: { facingMode: "environment" } },
+                { video: true }
+            ];
+
+            let stream = null;
+
+            for (let config of configs) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia(config);
+                    if (stream) break;
+                } catch (e) {
+                    console.log("Kamera ayarı deneniyor...", e);
+                }
+            }
+
+            if (stream) {
+                activeStream = stream;
+                video.srcObject = activeStream;
+                modal.style.display = 'flex';
+            } else {
+                alert("Kameraya erişim sağlanamadı. Lütfen uygulamanın izin ayarlarını kontrol edin.");
+            }
+        }
+
+        function canliKaredenFotoCek() {
+            const video = document.getElementById('webcamVideo');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 800;
+            canvas.height = video.videoHeight || 600;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75);
+            document.getElementById('photoBase64').value = compressedBase64;
+            
+            const preview = document.getElementById('photoPreview');
+            preview.src = compressedBase64;
+            preview.style.display = 'block';
+
+            kamerayiKapat();
+        }
+
+        function kamerayiKapat() {
+            if(activeStream) {
+                activeStream.getTracks().forEach(track => track.stop());
+                activeStream = null;
+            }
+            document.getElementById('cameraStreamModal').style.display = 'none';
+        }
+
+        function formatTarihTR(tarihStr) {
+            if (!tarihStr) return '-';
+            const parca = tarihStr.split('-');
+            return parca.length === 3 ? `${parca[2]}.${parca[1]}.${parca[0]}` : tarihStr;
+        }
+
+        // --- AUTH ---
+        function authSekmeDegistir(sekme) {
+            if(sekme === 'giris') {
+                document.getElementById('girisForm').style.display = 'block';
+                document.getElementById('kayitForm').style.display = 'none';
+                document.getElementById('tabGiris').classList.add('active');
+                document.getElementById('tabKayit').classList.remove('active');
+            } else {
+                document.getElementById('girisForm').style.display = 'none';
+                document.getElementById('kayitForm').style.display = 'block';
+                document.getElementById('tabGiris').classList.remove('active');
+                document.getElementById('tabKayit').classList.add('active');
+            }
+        }
+
+        function kayitOl() {
+            const name = document.getElementById('regName').value.trim();
+            const username = document.getElementById('regUsername').value.trim().toLowerCase();
+            const password = document.getElementById('regPassword').value.trim();
+            const role = document.getElementById('regRole').value;
+
+            if(!name || !username || !password) { alert("Lütfen tüm alanları doldurun!"); return; }
+            if(tumKullanicilar[username]) { alert("Bu kullanıcı adı zaten alınmış!"); return; }
+
+            db.ref('kullanicilar/' + username).set({ name, password, role }).then(() => {
+                alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
+                authSekmeDegistir('giris');
+            });
+        }
+
+        function girisYap() {
+            const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if(tumKullanicilar[username] && tumKullanicilar[username].password === password) {
+                aktifKullaniciKodu = username;
+                localStorage.setItem('sevk_logged_user', username);
+                kullaniciArayuzGuncelle();
+                document.getElementById('loginModal').style.display = 'none';
+            } else {
+                alert("Kullanıcı adı veya şifre hatalı!");
+            }
+        }
+
+        function cikisYap() {
+            localStorage.removeItem('sevk_logged_user');
+            aktifKullaniciKodu = '';
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+
+        function kullaniciArayuzGuncelle() {
+            const user = tumKullanicilar[aktifKullaniciKodu];
+            if(user) document.getElementById('currentUser').innerText = `${user.name} (${user.role})`;
+        }
+
+        function isimDegistir() {
+            const user = tumKullanicilar[aktifKullaniciKodu];
+            if(!user) return;
+            const yeniIsim = prompt("Yeni Adınızı ve Soyadınızı Giriniz:", user.name);
+            if(yeniIsim && yeniIsim.trim() !== '') {
+                db.ref(`kullanicilar/${aktifKullaniciKodu}/name`).set(yeniIsim.trim());
+            }
+        }
+
+        function getAktifKullaniciMetin() {
+            const user = tumKullanicilar[aktifKullaniciKodu];
+            return user ? `${user.name} (${user.role})` : 'Bilinmiyor';
+        }
+
+        function resimYukle(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        const maxWidth = 900; 
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75);
+                        document.getElementById('photoBase64').value = compressedBase64;
+                        const preview = document.getElementById('photoPreview');
+                        preview.src = compressedBase64;
+                        preview.style.display = 'block';
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // --- ÜRÜN İŞLEMLERİ ---
+        function urunKaydet() {
+            const editId = document.getElementById('editId').value;
+            const foto = document.getElementById('photoBase64').value;
+            const kg = parseFloat(document.getElementById('urunKg').value) || 0;
+            const paket = parseInt(document.getElementById('paketSayisi').value) || 0;
+            const musteri = document.getElementById('musteriAdi').value.trim();
+            const urun = document.getElementById('urunAdi').value.trim();
+            const tarih = document.getElementById('tarih').value;
+            const durum = document.getElementById('durum').value;
+            const not = document.getElementById('urunNotu').value.trim();
+
+            if(!editId && !foto) { 
+                alert("Lütfen önce etiketin fotoğrafını çekin!"); 
+                return; 
+            }
+
+            if(kg <= 0 && paket <= 0) {
+                alert("Lütfen Kilo veya Paket sayısını girin!");
+                return;
+            }
+
+            const yapanKisi = getAktifKullaniciMetin();
+
+            if(editId) {
+                db.ref('urunler/' + editId).update({
+                    musteri, urun, kg, paket, tarih, durum, foto, not,
+                    ekleyen: yapanKisi + ' (Düzenledi)'
+                });
+                document.getElementById('editId').value = '';
+                document.getElementById('btnKaydet').innerText = '+ STOĞA EKLENENİ KAYDET';
+            } else {
+                const newRef = db.ref('urunler').push();
+                newRef.set({
+                    musteri: musteri || 'Etikete Bakınız',
+                    urun: urun || 'Etikete Bakınız',
+                    kg, paket, tarih, durum, foto, not,
+                    ekleyen: yapanKisi,
+                    eklenmeTarihi: Date.now()
+                });
+            }
+
+            formTemizle();
+        }
+
+        function urunDuzenle(id) {
+            const u = tumUrunler.find(x => x.id === id);
+            if(!u) return;
+
+            document.getElementById('editId').value = u.id;
+            document.getElementById('musteriAdi').value = u.musteri === 'Etikete Bakınız' ? '' : u.musteri;
+            document.getElementById('urunAdi').value = u.urun === 'Etikete Bakınız' ? '' : u.urun;
+            document.getElementById('urunKg').value = u.kg;
+            document.getElementById('paketSayisi').value = u.paket;
+            document.getElementById('tarih').value = u.tarih;
+            document.getElementById('durum').value = u.durum;
+            document.getElementById('photoBase64').value = u.foto || '';
+            document.getElementById('urunNotu').value = u.not || '';
+
+            const preview = document.getElementById('photoPreview');
+            if(u.foto) {
+                preview.src = u.foto;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+
+            document.getElementById('btnKaydet').innerText = '💾 Değişiklikleri Kaydet';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function durumDegistir(id, yeniDurum) {
+            const yapanKisi = getAktifKullaniciMetin();
+            let updates = { durum: yeniDurum };
+            if(yeniDurum === 'sevk_edildi') updates.teslimEden = yapanKisi;
+            db.ref('urunler/' + id).update(updates);
+        }
+
+        function urunSil(id) {
+            if(confirm("Bu kaydı silmek istediğinize emin misiniz?")) {
+                db.ref('urunler/' + id).remove();
+            }
+        }
+
+        function formTemizle() {
+            document.getElementById('editId').value = '';
+            document.getElementById('photoBase64').value = '';
+            document.getElementById('musteriAdi').value = '';
+            document.getElementById('urunAdi').value = '';
+            document.getElementById('urunKg').value = '';
+            document.getElementById('paketSayisi').value = '1';
+            document.getElementById('urunNotu').value = '';
+            document.getElementById('photoPreview').style.display = 'none';
+        }
+
+        function sekmeDegistir(sekme) {
+            mevcutSekme = sekme;
+            document.getElementById('tabHazirBtn').className = `tab-btn ${sekme === 'hazir' ? 'active-hazir' : ''}`;
+            document.getElementById('tabSevkBtn').className = `tab-btn ${sekme === 'sevk_edilecek' ? 'active-sevk' : ''}`;
+            document.getElementById('tabTamamBtn').className = `tab-btn ${sekme === 'sevk_edildi' ? 'active-tamam' : ''}`;
+            listele();
+        }
+
+        function listele() {
+            const container = document.getElementById('urunListesi');
+            const searchTxt = document.getElementById('searchInput').value.toLowerCase().trim();
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+
+            let urunler = tumUrunler.filter(u => u.durum === mevcutSekme);
+
+            if (searchTxt) {
+                urunler = urunler.filter(u => 
+                    (u.musteri && u.musteri.toLowerCase().includes(searchTxt)) ||
+                    (u.urun && u.urun.toLowerCase().includes(searchTxt)) ||
+                    (u.not && u.not.toLowerCase().includes(searchTxt))
+                );
+            }
+
+            if (startDate) urunler = urunler.filter(u => u.tarih >= startDate);
+            if (endDate) urunler = urunler.filter(u => u.tarih <= endDate);
+
+            container.innerHTML = '';
+
+            if(urunler.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding:30px; color:#94a3b8; font-weight:bold;">Kayıt bulunamadı.</p>';
+                return;
+            }
+
+            urunler.forEach(u => {
+                const card = document.createElement('div');
+                let borderClass = 'hazir-border';
+                let badgeClass = 'badge-hazir';
+                let badgeText = 'HAZIR STOK';
+
+                if(u.durum === 'sevk_edilecek') {
+                    borderClass = 'sevk-border';
+                    badgeClass = 'badge-sevk';
+                    badgeText = 'SEVK EDİLECEK';
+                } else if(u.durum === 'sevk_edildi') {
+                    borderClass = 'tamam-border';
+                    badgeClass = 'badge-tamam';
+                    badgeText = 'SEVK EDİLDİ';
+                }
+
+                card.className = `item-card ${borderClass}`;
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:12px; font-weight:bold; color:#64748b;">Tarih: ${formatTarihTR(u.tarih)}</span>
+                        <span class="status-badge ${badgeClass}">${badgeText}</span>
+                    </div>
+
+                    ${u.foto ? `<img src="${u.foto}" class="item-img" alt="Etiket Fotoğrafı">` : ''}
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin: 8px 0;">
+                        <div class="highlight-box">
+                            <div class="highlight-label">AĞIRLIK</div>
+                            <div class="highlight-value">${u.kg} KG</div>
+                        </div>
+                        <div class="highlight-box">
+                            <div class="highlight-label">PAKET / ADET</div>
+                            <div class="highlight-value">${u.paket} Adet</div>
+                        </div>
+                    </div>
+
+                    ${(u.musteri && u.musteri !== 'Etikete Bakınız') || (u.urun && u.urun !== 'Etikete Bakınız') ? `
+                        <div class="item-grid">
+                            <div class="info-box">
+                                <span class="info-label">Müşteri</span>
+                                <span class="info-value">${u.musteri}</span>
+                            </div>
+                            <div class="info-box">
+                                <span class="info-label">Ürün/Ebat</span>
+                                <span class="info-value">${u.urun}</span>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${u.not ? `<div class="item-note-box">📌 <b>Not:</b> ${u.not}</div>` : ''}
+
+                    <div class="item-user">Kaydeden: ${u.ekleyen || 'Bilinmiyor'}</div>
+                    ${u.teslimEden ? `<div class="item-user" style="color:#2563eb; font-weight:bold;">Teslim Eden: ${u.teslimEden}</div>` : ''}
+                    
+                    <div class="item-actions">
+                        <button class="btn btn-secondary" style="margin:0;" onclick="urunDuzenle('${u.id}')">✏️ Düzenle</button>
+                        
+                        ${u.durum === 'hazir' 
+                            ? `<button class="btn btn-warning" style="margin:0;" onclick="durumDegistir('${u.id}', 'sevk_edilecek')">➡️ Sevk Listesine Al</button>`
+                            : ''
+                        }
+                        
+                        ${u.durum === 'sevk_edilecek' 
+                            ? `<button class="btn btn-done" style="margin:0;" onclick="durumDegistir('${u.id}', 'sevk_edildi')">✓ Sevk Edildi</button>`
+                            : ''
+                        }
+
+                        ${u.durum === 'sevk_edildi' 
+                            ? `<button class="btn btn-warning" style="margin:0;" onclick="durumDegistir('${u.id}', 'sevk_edilecek')">↩️ Sevk Liste Geri Al</button>`
+                            : ''
+                        }
+
+                        <button class="btn btn-danger" style="margin:0; grid-column: span 2;" onclick="urunSil('${u.id}')">🗑️ Sil</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
