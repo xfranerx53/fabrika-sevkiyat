@@ -359,27 +359,25 @@
             }
         };
 
-        // --- HARİTA YÖNLENDİRME FONKSİYONLARI ---
+        // --- DOĞRUDAN UYGULAMA AÇAN HARİTA YÖNLENDİRME FONKSİYONLARI ---
         function haritaAcAramasiYap() {
             const adres = document.getElementById('teslimatAdresi').value.trim();
             const mevcutUrl = document.getElementById('haritaUrl').value.trim();
 
             if (mevcutUrl && (mevcutUrl.startsWith('http://') || mevcutUrl.startsWith('https://'))) {
-                window.open(mevcutUrl, '_blank');
+                window.location.href = mevcutUrl;
             } else if (adres) {
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(adres)}`;
-                window.open(mapsUrl, '_blank');
+                window.location.href = `geo:0,0?q=${encodeURIComponent(adres)}`;
             } else {
-                window.open('https://www.google.com/maps', '_blank');
+                window.location.href = `geo:0,0?q=`;
             }
         }
 
         function konumAcroad(mapUrl, adres) {
             if (mapUrl && (mapUrl.startsWith('http://') || mapUrl.startsWith('https://'))) {
-                window.open(mapUrl, '_blank');
+                window.location.href = mapUrl;
             } else if (adres) {
-                const navUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(adres)}`;
-                window.open(navUrl, '_blank');
+                window.location.href = `geo:0,0?q=${encodeURIComponent(adres)}`;
             } else {
                 alert("Bu kayıt için tanımlanmış bir harita konumu veya adres bulunamadı.");
             }
@@ -779,3 +777,4 @@
     </script>
 </body>
 </html>
+
