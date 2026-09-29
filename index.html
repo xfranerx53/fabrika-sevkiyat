@@ -59,7 +59,6 @@ input:focus,textarea:focus,select:focus{border-color:#2563eb}
 dialog{border:0;border-radius:12px;padding:16px;width:min(460px,94vw)}
 dialog::backdrop{background:rgba(0,0,0,.6)}
 .urow{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:13px}
-.mods button{font-size:14px;padding:13px 4px}.mods button.on{background:#1e293b;color:#fff}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99999;max-width:90vw;text-align:center}
 #toast.on{opacity:1}
 </style>
@@ -108,7 +107,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
 <div id="vApp" class="hide">
   <div class="head">
-    <strong>MAG AMBALAJ - <span id="mt">SEVKİYAT</span></strong>
+    <strong>MAG AMBALAJ - SEVKİYAT</strong>
     <div class="u">
       <div id="me"></div>
       <button class="btn b8 sm hide" id="bAdm">Yönetici</button>
@@ -117,7 +116,6 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     </div>
   </div>
 
-  <div class="tabs mods" id="mods"><button data-m="sevk" class="on">🚚 SEVKİYAT</button><button data-m="stok">📦 STOK</button></div>
   <div class="card"><div class="grid">
     <div class="full">
       <label style="color:#2563eb;font-size:12px">1. Etiket fotoğrafını çek (yeni kayıtta zorunlu)</label>
@@ -130,7 +128,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     </div>
     <div><label style="color:#0284c7">Ağırlık (kg)</label><input type="number" id="kg" inputmode="decimal" min="0" step="any" placeholder="Örn: 20" class="fast"></div>
     <div><label style="color:#0284c7">Paket / Adet</label><input type="number" id="pk" inputmode="numeric" min="0" step="1" value="1" class="fast"></div>
-    <div class="full sevkonly">
+    <div class="full">
       <label style="color:#0f766e">📍 Teslimat adresi ve harita</label>
       <div style="display:flex;gap:6px;margin-bottom:6px">
         <input id="hu" placeholder="Google Maps linki veya adres">
@@ -140,7 +138,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     </div>
     <div class="full"><details><summary style="font-size:11px;font-weight:700;color:#64748b;cursor:pointer">➕ Opsiyonel: Müşteri / Ürün adı</summary>
       <div class="grid" style="margin-top:8px">
-        <div><label id="lMu">Müşteri</label><input id="mu" placeholder="Örn: Güneli Fırın"></div>
+        <div><label>Müşteri</label><input id="mu" placeholder="Örn: Güneli Fırın"></div>
         <div><label>Ürün / Ebat</label><input id="ur" placeholder="Örn: Kulplu Poşet 32x40"></div>
       </div></details></div>
     <div><label>Tarih</label><input type="date" id="tr"></div>
@@ -204,11 +202,6 @@ if(CFG.apiKey.startsWith("BURAYA")){
 firebase.initializeApp(CFG);
 const auth=firebase.auth(),db=firebase.database();
 
-const MODS={
- sevk:{yol:"urunler",baslik:"SEVKİYAT",tab:["HAZIR ÜRÜNLER","SEVK EDİLECEKLER","SEVK EDİLENLER"],rozet:["HAZIR STOK","SEVK EDİLECEK","SEVK EDİLDİ"],ileri:[M().ileri[0],M().ileri[1]],geri:[M().geri[0],M().geri[1]],sec:["SEVKİYATA HAZIR","SEVK EDİLECEK"],kayit:"+ STOĞA EKLENENİ KAYDET",teslim:"Teslim eden",mu:"Müşteri"},
- stok:{yol:"stok",baslik:"STOK",tab:["STOKTAKİ ÜRÜNLER","KULLANIMA AYRILANLAR","KULLANILANLAR"],rozet:["STOKTA","KULLANIMA AYRILDI","KULLANILDI"],ileri:["➡️ Kullanıma Ayır","✓ Kullanıldı"],geri:["↩️ Stoka Geri Al","↩️ Kullanıma Ayrılana Geri Al"],sec:["STOKTA","KULLANIMA AYRILDI"],kayit:"+ STOĞA EKLE",teslim:"İşlemi yapan",mu:"Tedarikçi / Firma"}
-};
-let mod="sevk";const M=()=>MODS[mod];
 let user=null,rec=null,recRef=null,uRef=null,started=false;
 let urunler=[],limit=20,tab="hazir",editId="",fotoData="",stream=null;
 const show=v=>{["vLogin","vWait","vApp"].forEach(x=>$(x).classList.toggle("hide",x!==v))};
@@ -257,7 +250,7 @@ $("bAd").onclick=()=>{const n=prompt("Yeni ad soyad:",rec&&rec.ad);if(n&&n.trim(
 /* ---------- Veri ---------- */
 function yukle(){
   if(uRef)uRef.off();
-  uRef=db.ref(M().yol).orderByChild("eklenmeTarihi").limitToLast(limit);
+  uRef=db.ref("urunler").orderByChild("eklenmeTarihi").limitToLast(limit);
   uRef.on("value",s=>{
     const v=s.val()||{};
     urunler=Object.keys(v).map(k=>Object.assign({id:k},v[k])).sort((a,b)=>(b.eklenmeTarihi||0)-(a.eklenmeTarihi||0));
@@ -292,7 +285,7 @@ const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s||"")?s:"";
 function formTemizle(){
   editId="";fotoData="";
   ["kg","mu","ur","no","ad","hu"].forEach(i=>$(i).value="");$("pk").value="1";$("tr").valueAsDate=new Date();$("du").value="hazir";
-  $("prev").style.display="none";$("bSave").textContent=M().kayit;$("bCancel").classList.add("hide");
+  $("prev").style.display="none";$("bSave").textContent="+ STOĞA EKLENENİ KAYDET";$("bCancel").classList.add("hide");
 }
 $("bCancel").onclick=formTemizle;
 $("bSave").onclick=async()=>{
@@ -305,8 +298,8 @@ $("bSave").onclick=async()=>{
   const b=$("bSave");b.disabled=true;
   try{
     if(fotoData)d.foto=fotoData;
-    if(editId){d.duzenleyen=ad();await db.ref(M().yol+"/"+editId).update(d)}
-    else{d.ekleyen=ad();d.ekleyenUid=user.uid;d.eklenmeTarihi=firebase.database.ServerValue.TIMESTAMP;await db.ref(M().yol).push().set(d)}
+    if(editId){d.duzenleyen=ad();await db.ref("urunler/"+editId).update(d)}
+    else{d.ekleyen=ad();d.ekleyenUid=user.uid;d.eklenmeTarihi=firebase.database.ServerValue.TIMESTAMP;await db.ref("urunler").push().set(d)}
     formTemizle();toast("Kaydedildi");
   }catch(e){toast("Kaydedilemedi: "+errText(e))}
   b.disabled=false;
@@ -335,11 +328,11 @@ function filtreli(){
   return urunler.filter(u=>u.durum===tab&&(!q||[u.musteri,u.urun,u.not,u.adres].some(x=>(x||"").toLowerCase().includes(q)))&&(!a||u.tarih>=a)&&(!b||u.tarih<=b));
 }
 function kart(u){
-  const R=M().rozet,c={hazir:["hazir-border","badge-hazir",R[0]],sevk_edilecek:["sevk-border","badge-sevk",R[1]],sevk_edildi:["tamam-border","badge-tamam",R[2]]}[u.durum]||["","",""];
+  const c={hazir:["hazir-border","badge-hazir","HAZIR STOK"],sevk_edilecek:["sevk-border","badge-sevk","SEVK EDİLECEK"],sevk_edildi:["tamam-border","badge-tamam","SEVK EDİLDİ"]}[u.durum]||["","",""];
   const m=u.musteri&&u.musteri!=="Etikete Bakınız",p=u.urun&&u.urun!=="Etikete Bakınız",id=esc(u.id);
   const bt=(to,t,cl,span)=>`<button class="btn ${cl}" ${span?'style="grid-column:span 2" ':''}data-a="durum" data-to="${to}" data-id="${id}">${t}</button>`;
-  const geri=u.durum==="sevk_edilecek"?["hazir",M().geri[0],"b6"]:u.durum==="sevk_edildi"?["sevk_edilecek",M().geri[1],"b2"]:null;
-  const ileri=u.durum==="hazir"?["sevk_edilecek",M().ileri[0],"b2"]:u.durum==="sevk_edilecek"?["sevk_edildi",M().ileri[1],"b4"]:null;
+  const geri=u.durum==="sevk_edilecek"?["hazir","↩️ Hazır Ürünlere Geri Al","b6"]:u.durum==="sevk_edildi"?["sevk_edilecek","↩️ Sevk Edilecek'e Geri Al","b2"]:null;
+  const ileri=u.durum==="hazir"?["sevk_edilecek","➡️ Sevk Listesine Al","b2"]:u.durum==="sevk_edilecek"?["sevk_edildi","✓ Sevk Edildi","b4"]:null;
   const both=geri&&ileri,canDel=isAdmin()||(u.ekleyenUid&&u.ekleyenUid===user.uid);
   const nx=(geri?bt(geri[0],geri[1],geri[2],!both):"")+(ileri?bt(ileri[0],ileri[1],ileri[2],!both):"");
   const eb=`<button class="btn b6" ${canDel?"":'style="grid-column:span 2" '}data-a="edit" data-id="${id}">✏️ Düzenle</button>`;
@@ -353,7 +346,7 @@ function kart(u){
   ${u.haritaUrl||u.adres?`<button class="btn b7" data-a="map" data-id="${id}">🚀 Yol Tarifi Al</button>`:""}
   ${u.not?`<div class="note">📌 <b>Not:</b> ${esc(u.not)}</div>`:""}
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
-  ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">${M().teslim}: ${esc(u.teslimEden)}</div>`:""}
+  ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">Teslim eden: ${esc(u.teslimEden)}</div>`:""}
   <div class="acts">${nx}${eb}${db2}</div></div>`;
 }
 function listele(){
@@ -368,14 +361,14 @@ $("liste").onclick=async e=>{
   try{
     if(b.dataset.a==="edit")duzenle(u);
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
-    else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;await db.ref(M().yol+"/"+u.id).update(up)}
-    else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref(M().yol+"/"+u.id).remove()}
+    else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;await db.ref("urunler/"+u.id).update(up)}
+    else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref("urunler/"+u.id).remove()}
   }catch(err){toast(errText(err))}
 };
 $("bCsv").onclick=()=>{
   const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',n=v=>q(String(+v||0).replace(".",","));
   const r=[["Tarih","Müşteri","Ürün","Kg","Adet","Adres","Not","Kaydeden"].map(q).join(";")].concat(filtreli().map(u=>[q(trDate(u.tarih)),q(u.musteri),q(u.urun),n(u.kg),n(u.paket),q(u.adres),q(u.not),q(u.ekleyen)].join(";")));
-  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download=mod+"-"+tab+".csv";a.click();
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download="sevkiyat-"+tab+".csv";a.click();
 };
 
 /* ---------- Yönetici paneli ---------- */
@@ -394,20 +387,7 @@ $("dClose").onclick=()=>$("dAdm").close();
 $("ulist").onclick=async e=>{const b=e.target.closest("button[data-u]");if(!b)return;
   try{await db.ref("kullanicilar/"+b.dataset.u+"/"+b.dataset.f).set(b.dataset.v==="true");kullanicilar()}catch(err){toast(errText(err))}};
 
-function modUyg(){
-  const m=M();
-  document.querySelectorAll("#tabs button").forEach((b,i)=>b.textContent=m.tab[i]);
-  document.querySelectorAll("#mods button").forEach(b=>b.classList.toggle("on",b.dataset.m===mod));
-  $("mt").textContent=m.baslik;$("lMu").textContent=m.mu;
-  const o=$("du").options;o[0].text=m.sec[0];o[1].text=m.sec[1];
-  document.querySelectorAll(".sevkonly").forEach(e=>e.classList.toggle("hide",mod!=="sevk"));
-  $("bSave").textContent=editId?"💾 Değişiklikleri Kaydet":m.kayit;
-}
-$("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===mod)return;
-  mod=m;limit=20;urunler=[];tab="hazir";
-  document.querySelectorAll("#tabs button").forEach(b=>b.className=b.dataset.t==="hazir"?"a1":"");
-  formTemizle();modUyg();if(started)yukle();listele()};
-formTemizle();modUyg();
+formTemizle();
 </script>
 </body>
 </html>
