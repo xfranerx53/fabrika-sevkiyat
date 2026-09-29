@@ -330,9 +330,13 @@ function filtreli(){
 function kart(u){
   const c={hazir:["hazir-border","badge-hazir","HAZIR STOK"],sevk_edilecek:["sevk-border","badge-sevk","SEVK EDİLECEK"],sevk_edildi:["tamam-border","badge-tamam","SEVK EDİLDİ"]}[u.durum]||["","",""];
   const m=u.musteri&&u.musteri!=="Etikete Bakınız",p=u.urun&&u.urun!=="Etikete Bakınız",id=esc(u.id);
-  const nx=u.durum==="hazir"?`<button class="btn b2" data-a="durum" data-to="sevk_edilecek" data-id="${id}">➡️ Sevk Listesine Al</button>`
-    :u.durum==="sevk_edilecek"?`<button class="btn b4" data-a="durum" data-to="sevk_edildi" data-id="${id}">✓ Sevk Edildi</button>`
-    :`<button class="btn b2" data-a="durum" data-to="sevk_edilecek" data-id="${id}">↩️ Listeye Geri Al</button>`;
+  const bt=(to,t,cl,span)=>`<button class="btn ${cl}" ${span?'style="grid-column:span 2" ':''}data-a="durum" data-to="${to}" data-id="${id}">${t}</button>`;
+  const geri=u.durum==="sevk_edilecek"?["hazir","↩️ Hazır Ürünlere Geri Al","b6"]:u.durum==="sevk_edildi"?["sevk_edilecek","↩️ Sevk Edilecek'e Geri Al","b2"]:null;
+  const ileri=u.durum==="hazir"?["sevk_edilecek","➡️ Sevk Listesine Al","b2"]:u.durum==="sevk_edilecek"?["sevk_edildi","✓ Sevk Edildi","b4"]:null;
+  const both=geri&&ileri,canDel=isAdmin()||(u.ekleyenUid&&u.ekleyenUid===user.uid);
+  const nx=(geri?bt(geri[0],geri[1],geri[2],!both):"")+(ileri?bt(ileri[0],ileri[1],ileri[2],!both):"");
+  const eb=`<button class="btn b6" ${canDel?"":'style="grid-column:span 2" '}data-a="edit" data-id="${id}">✏️ Düzenle</button>`;
+  const db2=canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:"";
   return `<div class="item ${c[0]}">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700;color:#64748b">Tarih: ${esc(trDate(u.tarih))}</span><span class="badge ${c[1]}">${c[2]}</span></div>
   ${safeImg(u.foto)?`<img loading="lazy" src="${safeImg(u.foto)}" alt="Etiket">`:""}
@@ -343,8 +347,7 @@ function kart(u){
   ${u.not?`<div class="note">📌 <b>Not:</b> ${esc(u.not)}</div>`:""}
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
   ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">Teslim eden: ${esc(u.teslimEden)}</div>`:""}
-  <div class="acts"><button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>${nx}
-  ${isAdmin()?`<button class="btn b5" style="grid-column:span 2" data-a="del" data-id="${id}">🗑️ Sil (yönetici)</button>`:""}</div></div>`;
+  <div class="acts">${nx}${eb}${db2}</div></div>`;
 }
 function listele(){
   if(!started)return;
