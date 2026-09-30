@@ -201,7 +201,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <label for="skat" style="margin-top:8px">Kategori</label><input id="skat" list="dl" placeholder="Örn: Bant"><datalist id="dl"></datalist>
   <label style="margin-top:12px">Takip edilecek birimler (birden fazla seçebilirsiniz)</label>
   <div id="ub" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
-  <div id="ur"></div>
+  <div id="kur"></div>
   <p class="mut" style="font-size:11px;margin:0 0 4px">Mevcut miktar ve kritik seviye (altına düşünce uyarır) isteğe bağlıdır.</p>
   <label for="ste" style="margin-top:8px">Tedarikçi (isteğe bağlı)</label><input id="ste">
   <label for="sno" style="margin-top:8px">Not (isteğe bağlı)</label><input id="sno">
@@ -511,11 +511,11 @@ $("sList").onclick=async e=>{
   else if(a==="del"&&confirm(`"${k.ad}" silinsin mi? (Geçmiş hareket kayıtları saklanır)`)){try{await db.ref("stokKalem/"+k.id).remove();toast("Silindi")}catch(err){toast(errText(err))}}
 };
 /* kalem ekle / düzenle */
-function kRead(){document.querySelectorAll("#ur input").forEach(i=>{(kVals[i.dataset.u]=kVals[i.dataset.u]||{})[i.dataset.f]=i.value})}
+function kRead(){document.querySelectorAll("#kur input").forEach(i=>{(kVals[i.dataset.u]=kVals[i.dataset.u]||{})[i.dataset.f]=i.value})}
 function kDraw(){
   const old=kEdit?norm(kEdit):{mik:{},min:{}};
   $("ub").innerHTML=UN.map(([u,l])=>`<label class="chip"><input type="checkbox" data-c="${u}"${kSel.has(u)?" checked":""}>${l}</label>`).join("");
-  $("ur").innerHTML=UN.filter(([u])=>kSel.has(u)).map(([u,l])=>{const v=kVals[u]||{};
+  $("kur").innerHTML=UN.filter(([u])=>kSel.has(u)).map(([u,l])=>{const v=kVals[u]||{};
     const m=(kEdit&&u in old.mik)?`<span class="mut">mevcut: ${esc(fmt(old.mik[u]))}</span>`:`<input data-u="${u}" data-f="mik" type="number" inputmode="decimal" min="0" step="any" placeholder="Mevcut" value="${esc(v.mik??"")}">`;
     return `<div class="urow2"><b>${l}</b>${m}<input data-u="${u}" data-f="min" type="number" inputmode="decimal" min="0" step="any" placeholder="Kritik" value="${esc(v.min??"")}"></div>`}).join("")||'<p class="mut">En az bir birim seçin.</p>';
 }
