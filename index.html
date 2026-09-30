@@ -365,6 +365,9 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 <div id="toast"></div>
 
 <script>
+setTimeout(function(){var b=document.getElementById("boot");if(b&&b.offsetParent!==null){b.innerHTML="Uygulama açılamadı ("+(typeof firebase==="undefined"?"Firebase dosyaları yüklenemedi: internet bağlantısını kontrol edin":"giriş sunucusundan yanıt gelmedi")+").<br><br><button onclick=\"location.reload()\" style=\"padding:10px 18px;font-size:15px;border:0;border-radius:8px;background:#2563eb;color:#fff\">Yenile</button>"}},10000);
+</script>
+<script>
 /* ============ AYAR: Firebase Console > Proje ayarları > Web uygulaması'ndan kopyalayın ============ */
 const CFG={
   apiKey:"AIzaSyA_ZyOtWAvaYQvU8KaJnAJZK1s4Qd80FtU",
@@ -1184,10 +1187,4 @@ function aAc(a,pre){aEdit=a||null;const v=a||pre||{};$("aT").textContent=a?"Sevk
   AF.forEach(([i,f])=>$(i).value=v[f]||"");$("dAdr").showModal()}
 $("aAdd").onclick=()=>aAc(null);
 $("aX").onclick=()=>$("dAdr").close();
-$("aHs").onclick=()=>{const v=$("aHu").value.trim(),a0=$("aAd").value.trim();haritaAc(safeUrl(v),v&&!safeUrl(v)?v:(a0||$("aFi").value.trim()))};
-$("aOk").onclick=async()=>{
-  const err=m=>{$("aE").textContent=m},d={};AF.forEach(([i,f])=>d[f]=$(i).value.trim());
-  if(!d.ad)return err("Firma / müşteri adı gerekli.");
-  if(d.haritaUrl&&!safeUrl(d.haritaUrl))return err("Harita linki geçerli değil. Boş bırakın veya https:// ile başlayan Google Maps bağlantısını yapıştırın.");
-  d.haritaUrl=safeUrl(d.haritaUrl);
-  if(!d.adres&&!d.haritaU
+$("aHs").onclick=()=>{const v=$("aHu").value.trim(),a0=$("aAd").value.trim();harit
