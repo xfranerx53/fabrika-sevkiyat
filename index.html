@@ -47,6 +47,7 @@ input:focus,textarea:focus,select:focus{border-color:#2563eb}
 .badge-hazir{background:#2ec4b6}.badge-sevk{background:#ff9f1c}.badge-tamam{background:#3b82f6}
 .item img{width:100%;max-height:300px;object-fit:contain;background:#0f172a;border-radius:8px;margin:8px 0}
 .hl{background:#e0f2fe;border:2px solid #0284c7;border-radius:8px;padding:10px;text-align:center}
+.hl.fl{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .1s}.hl.fl:active{transform:scale(.96)}.hl.fl.act{box-shadow:0 0 0 3px #0f172a}
 .hl small{display:block;font-size:11px;font-weight:800;color:#0369a1}.hl b{font-size:22px;font-weight:900;color:#0c4a6e}
 .info{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px}
 .info small{display:block;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase}
@@ -181,9 +182,9 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
   <div id="pStok" class="hide">
     <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
-      <div class="hl"><small>KALEM</small><b id="sK">0</b></div>
-      <div class="hl" style="background:#fff7ed;border-color:#ea580c"><small style="color:#c2410c">AZALAN</small><b id="sA" style="color:#9a3412">0</b></div>
-      <div class="hl" style="background:#fef2f2;border-color:#dc2626"><small style="color:#b91c1c">TÜKENEN</small><b id="sT" style="color:#991b1b">0</b></div>
+      <div class="hl fl" data-f="" id="sKb"><small>KALEM</small><b id="sK">0</b></div>
+      <div class="hl fl" data-f="lo" id="sAb" style="background:#fff7ed;border-color:#ea580c"><small style="color:#c2410c">AZALAN</small><b id="sA" style="color:#9a3412">0</b></div>
+      <div class="hl fl" data-f="no" id="sTb" style="background:#fef2f2;border-color:#dc2626"><small style="color:#b91c1c">TÜKENEN</small><b id="sT" style="color:#991b1b">0</b></div>
     </div>
     <div class="hl hide" id="sVal" style="margin-bottom:12px;background:#fefce8;border-color:#ca8a04"><small style="color:#854d0e">TOPLAM STOK DEĞERİ (fiyatı girilen kalemler)</small><b id="sVn" style="color:#713f12">0 ₺</b></div>
     <div class="filter">
@@ -204,6 +205,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <h3 id="kT" style="margin-bottom:6px">Yeni kalem</h3>
   <label for="sad">Kalem adı</label><input id="sad" placeholder="Örn: Koli bandı 45mm şeffaf">
   <label for="skat" style="margin-top:8px">Kategori</label><input id="skat" list="dl" placeholder="Örn: Bant"><datalist id="dl"></datalist>
+  <label for="seb" style="margin-top:8px">Ebat (isteğe bağlı)</label><input id="seb" list="dle" placeholder="Örn: 32x40" autocomplete="off"><datalist id="dle"></datalist>
   <label style="margin-top:12px">Takip edilecek birimler (birden fazla seçebilirsiniz)</label>
   <div id="ub" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
   <div id="kur"></div>
@@ -212,7 +214,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <label class="chip" style="margin-top:8px"><input type="checkbox" id="kkc">KDV ekle</label>
     <div id="kkw" class="hide" style="margin-top:6px"><div style="display:flex;gap:6px"><input id="kkr" type="number" inputmode="decimal" min="0" max="100" step="any" placeholder="KDV %"><select id="kkm"><option value="haric">Fiyat KDV hariç</option><option value="dahil">Fiyat KDV dahil</option></select></div><div id="kkg" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div></div>
   <p class="mut" style="font-size:11px;margin:0 0 4px">Mevcut miktar ve kritik seviye (altına düşünce uyarır) isteğe bağlıdır.</p>
-  <label for="ste" style="margin-top:8px">Tedarikçi (isteğe bağlı)</label><input id="ste">
+  <label for="ste" style="margin-top:8px">Tedarikçi (isteğe bağlı)</label><input id="ste" list="dlt" placeholder="Önceden girdikleriniz burada çıkar" autocomplete="off"><datalist id="dlt"></datalist>
   <label for="sno" style="margin-top:8px">Not (isteğe bağlı)</label><input id="sno">
   <label for="sfoto" style="margin-top:8px">Fotoğraf (isteğe bağlı)</label><input id="sfoto" type="file" accept="image/*">
   <img id="sprev" alt="" style="display:none;width:100%;max-height:160px;object-fit:contain;background:#0f172a;border-radius:8px;margin-top:8px">
@@ -522,15 +524,22 @@ function stokKapat(){if(sRef){sRef.off();sRef=null}}
 function stokYukle(){stokKapat();sRef=db.ref("stokKalem");
   sRef.on("value",x=>{const v=x.val()||{};sKalem=Object.keys(v).map(k=>Object.assign({id:k},v[k]));stokListele()},e=>toast("Stok okunamadı: "+errText(e)))}
 ["sq","sc","sd"].forEach(i=>$(i).addEventListener("input",()=>stokListele()));
+document.querySelectorAll("#pStok .hl.fl").forEach(b=>b.onclick=()=>{
+  const v=b.dataset.f;$("sd").value=($("sd").value===v)?"":v;$("sq").value="";$("sc").value="";stokListele();
+  $("sList").scrollIntoView({behavior:"smooth",block:"start"})});
 function stokListele(){
   if(panel!=="stok")return;
   const cats=[...new Set(sKalem.map(k=>k.kategori).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr")),cur=$("sc").value;
   $("sc").innerHTML='<option value="">Tüm kategoriler</option>'+cats.map(c=>`<option${c===cur?" selected":""}>${esc(c)}</option>`).join("");
   $("dl").innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join("");
+  const uniq=f=>[...new Set(sKalem.map(k=>(k[f]||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
+  $("dlt").innerHTML=uniq("tedarikci").map(c=>`<option value="${esc(c)}">`).join("");
+  $("dle").innerHTML=uniq("ebat").map(c=>`<option value="${esc(c)}">`).join("");
+  {const f=$("sd").value;document.querySelectorAll("#pStok .hl.fl").forEach(b=>b.classList.toggle("act",b.dataset.f===f))}
   {const t=isAdmin()?sumV(sKalem,stokVal):{h:0,k:0,t:0};$("sVal").classList.toggle("hide",!isAdmin());$("sVn").textContent=sumTxt(t)}
   $("sK").textContent=sKalem.length;$("sA").textContent=sKalem.filter(k=>dur(k)==="lo").length;$("sT").textContent=sKalem.filter(k=>dur(k)==="no").length;
   const q=$("sq").value.toLowerCase().trim(),fc=$("sc").value,fd=$("sd").value;
-  const L=sKalem.filter(k=>(!q||[k.ad,k.kategori,k.tedarikci,k.not].some(x=>(x||"").toLowerCase().includes(q)))&&(!fc||k.kategori===fc)&&(!fd||dur(k)===fd)).sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr"));
+  const L=sKalem.filter(k=>(!q||[k.ad,k.kategori,k.ebat,k.tedarikci,k.not].some(x=>(x||"").toLowerCase().includes(q)))&&(!fc||k.kategori===fc)&&(!fd||dur(k)===fd)).sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr"));
   $("sList").innerHTML=L.length?L.map(kkart).join(""):'<div class="empty">Kalem bulunamadı. "Yeni kalem ekle" ile başlayın.</div>';
 }
 function kkart(k){
@@ -540,7 +549,7 @@ function kkart(k){
     return `<div class="hl"><small>${l.toUpperCase()}</small><b style="color:${col}">${esc(fmt(v))}</b>${m>0?`<small style="color:#64748b">kritik: ${esc(fmt(m))}</small>`:""}</div>`}).join("");
   return `<div class="item ${c[0]}">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:16px">${esc(k.ad)}</b><span class="badge ${c[1]}">${c[2]}</span></div>
-  <div class="sub">${esc(k.kategori||"Kategorisiz")}${k.tedarikci?" · "+esc(k.tedarikci):""}</div>
+  <div class="sub">${esc(k.kategori||"Kategorisiz")}${k.ebat?" · 📐 "+esc(k.ebat):""}${k.tedarikci?" · "+esc(k.tedarikci):""}</div>
   ${safeImg(k.foto)?`<img loading="lazy" src="${safeImg(k.foto)}" alt="" style="max-height:140px">`:""}
   <div class="qbox">${boxes}</div>
   ${isAdmin()?kFyHtml(k):""}
@@ -571,7 +580,7 @@ $("sfb").onchange=()=>{kFB=$("sfb").value};
 $("ub").onchange=e=>{const u=e.target.dataset.c;if(!u)return;kRead();if(e.target.checked)kSel.add(u);else kSel.delete(u);kDraw()};
 function kAc(k){
   kEdit=k||null;kFoto="";kVals={};{const f=k?(fyat.stok||{})[k.id]:null;kFB=f?f.birim:"";$("sfy").value=f?f.tutar:"";$("kfi").classList.toggle("hide",!isAdmin());kdvSet("stok",f)}$("kT").textContent=k?"Kalemi düzenle":"Yeni kalem";$("kE").textContent="";
-  $("sad").value=k?k.ad:"";$("skat").value=k?k.kategori||"":"";$("ste").value=k?k.tedarikci||"":"";$("sno").value=k?k.not||"":"";
+  $("sad").value=k?k.ad:"";$("skat").value=k?k.kategori||"":"";$("seb").value=k?k.ebat||"":"";$("ste").value=k?k.tedarikci||"":"";$("sno").value=k?k.not||"":"";
   if(k){const n=norm(k);kSel=new Set(Object.keys(n.mik).filter(u=>UL[u]));kSel.forEach(u=>{if(+n.min[u]>0)kVals[u]={min:n.min[u]}})}else kSel=new Set(["adet"]);
   kDraw();
   const p=$("sprev");if(k&&safeImg(k.foto)){p.src=k.foto;p.style.display="block"}else p.style.display="none";
@@ -591,10 +600,11 @@ $("kOk").onclick=async()=>{
     if(a<0||b<0)return err("Miktarlar 0 veya daha büyük olmalı.");
     if(!(u in old))mik[u]=a>0?a:0;
     if(b>0)min[u]=b}
-  if(!kEdit&&sKalem.some(x=>(x.ad||"").toLowerCase()===nm.toLowerCase())&&!confirm("Bu isimde bir kalem zaten var. Yine de eklensin mi?"))return;
+  const ebN=$("seb").value.trim().toLowerCase();
+  if(!kEdit&&sKalem.some(x=>(x.ad||"").toLowerCase()===nm.toLowerCase()&&(x.ebat||"").trim().toLowerCase()===ebN)&&!confirm("Bu isim ve ebatta bir kalem zaten var. Yine de eklensin mi?"))return;
   const lost=Object.keys(old).filter(u=>!kSel.has(u)&&old[u]>0);
   if(lost.length&&!confirm("Kaldırdığınız birimlerin miktarı silinecek ("+fmtQ(Object.fromEntries(lost.map(u=>[u,old[u]])))+"). Devam edilsin mi?"))return;
-  const TS=firebase.database.ServerValue.TIMESTAMP,extra={kategori:$("skat").value.trim(),tedarikci:$("ste").value.trim(),not:$("sno").value.trim()};
+  const TS=firebase.database.ServerValue.TIMESTAMP,extra={kategori:$("skat").value.trim(),ebat:$("seb").value.trim(),tedarikci:$("ste").value.trim(),not:$("sno").value.trim()};
   $("kOk").disabled=true;let newId="";
   try{
     if(kEdit){
@@ -649,8 +659,8 @@ async function gecAc(k){
 /* Excel */
 $("sCsv").onclick=()=>{
   const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',st={ok:"Yeterli",lo:"Azalıyor",no:"Tükendi"};
-  const r=[["Kalem","Kategori"].concat(UN.map(u=>u[1]),["Durum","Tedarikçi","Not"],isAdmin()?["Fiyat (₺)","Fiyat birimi","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")].concat(sKalem.slice().sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr")).map(k=>{const n=norm(k).mik;
-    return [q(k.ad),q(k.kategori)].concat(UN.map(([u])=>u in n?q(String(+n[u]||0).replace(".",",")):q("")),[q(st[dur(k)]),q(k.tedarikci),q(k.not)],isAdmin()?kFyCsv(k):[]).join(";")}));
+  const r=[["Kalem","Kategori","Ebat"].concat(UN.map(u=>u[1]),["Durum","Tedarikçi","Not"],isAdmin()?["Fiyat (₺)","Fiyat birimi","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")].concat(sKalem.slice().sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr")).map(k=>{const n=norm(k).mik;
+    return [q(k.ad),q(k.kategori),q(k.ebat)].concat(UN.map(([u])=>u in n?q(String(+n[u]||0).replace(".",",")):q("")),[q(st[dur(k)]),q(k.tedarikci),q(k.not)],isAdmin()?kFyCsv(k):[]).join(";")}));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download="stok-listesi.csv";a.click();
 };
 
