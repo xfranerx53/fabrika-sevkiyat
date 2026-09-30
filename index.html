@@ -274,7 +274,7 @@ let user=null,rec=null,recRef=null,uRef=null,started=false;
 let urunler=[],limit=20,tab="hazir",editId="",fotoData="",stream=null;
 const show=v=>{$("boot").classList.add("hide");["vLogin","vWait","vApp"].forEach(x=>$(x).classList.toggle("hide",x!==v))};
 const ad=()=>rec?`${rec.ad} (${rec.rol})`:"Bilinmiyor";
-const isAdmin=()=>!!(rec&&rec.yonetici&&rec.onay);
+const isAdmin=()=>!!(rec&&rec.yonetici===true&&rec.onay===true);
 
 /* ---------- Oturum ---------- */
 auth.onAuthStateChanged(u=>{
@@ -472,7 +472,7 @@ function modUyg(){
 
 
 /* ================= STOK (satın alınan malzemeler) ================= */
-var fRef=null,fyat={sevk:{},stok:{}},kFB="";
+var fRef=null,fyErr=0,fyat={sevk:{},stok:{}},kFB="";
 var panel="sevk",sRef=null,sKalem=[],kEdit=null,kFoto="",hs=null,kSel=new Set(),kVals={};
 const UN=[["adet","Adet"],["koli","Koli"],["paket","Paket"],["rulo","Rulo"],["masura","Masura"],["kg","Kg"],["metre","Metre"]],UL=Object.fromEntries(UN);
 const norm=k=>{
@@ -507,7 +507,7 @@ async function kdvKaydet(v){const old=Array.isArray(kdvAyar.gecmis)?kdvAyar.gecm
 ["sevk","stok"].forEach(m=>{const [c,w,r,mo,g]=KD[m];$(c).onchange=()=>kdvUI(m);$(g).onclick=e=>{const x=e.target.dataset.r;if(x!=null)$(r).value=x}});
 function fiyatBaglan(){
   if(isAdmin()){if(!fRef){fRef=db.ref("fiyatlar");fRef.on("value",x=>{const v=x.val()||{};fyat={sevk:v.sevk||{},stok:v.stok||{}};kdvAyar=(v.ayar&&v.ayar.kdv)||{};
-    if(!$("skc").checked)kdvSet("sevk",null);if(!$("kkc").checked&&!$("dKalem").open)kdvSet("stok",null);else kdvUI("stok");kdvUI("sevk");listele();stokListele()},e=>toast("Fiyatlar okunamadı: "+errText(e)))}}
+    if(!$("skc").checked)kdvSet("sevk",null);if(!$("kkc").checked&&!$("dKalem").open)kdvSet("stok",null);else kdvUI("stok");kdvUI("sevk");listele();stokListele()},e=>{if(fRef){fRef.off();fRef=null}if(isAdmin()&&!fyErr){fyErr=1;toast("Fiyatlar okunamadı. Veritabanı kurallarının son sürümünün yayınlandığını kontrol edin.")}})}}
   else if(fRef){fRef.off();fRef=null;fyat={sevk:{},stok:{}}}
 }
 const ust=(v,m)=>v<=0?"no":(m>0&&v<=m)?"lo":"ok";
