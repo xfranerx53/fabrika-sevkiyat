@@ -11,6 +11,11 @@
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 body{background:#f4f6f9;padding:12px;color:#212529;font-size:14px;min-height:100vh}
 .hide{display:none!important}
+#vMenu{background:#f4f6f9;overflow:auto;flex-direction:column;gap:14px}
+#vMenu .mh{text-align:center;color:#1e293b;margin-bottom:6px}#vMenu .mh b{font-size:20px;display:block}#vMenu .mh span{font-size:14px;color:#475569}
+#vMenu .mb{width:100%;max-width:360px;border:0;border-radius:16px;padding:28px 16px;color:#fff;font-size:22px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.15);display:flex;flex-direction:column;align-items:center;gap:8px}
+#vMenu .mb small{font-size:13px;font-weight:500;opacity:.9}#vMenu .mb i{font-style:normal;font-size:42px}
+#vMenu .m1{background:#2563eb}#vMenu .m2{background:#16a34a}#vMenu .mb:active{transform:scale(.98)}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999;padding:12px}
 .box{background:#fff;padding:20px;border-radius:12px;width:100%;max-width:360px;text-align:center}
 .box input,.box select{margin-bottom:10px}
@@ -118,6 +123,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   </div>
 </div>
 
+<div id="vMenu" class="overlay hide">
+  <div class="mh"><b>MAG AMBALAJ</b><span id="mn"></span></div>
+  <button type="button" class="mb m1" data-go="sevk"><i>🚚</i>SEVKİYAT<small>Hazır ürünler, sevk edilecekler, adresler</small></button>
+  <button type="button" class="mb m2" data-go="stok"><i>📦</i>STOK<small>Malzeme stoğu, siparişler, tedarikçiler</small></button>
+  <button type="button" class="btn b5 sm" data-out>Çıkış</button>
+</div>
+
 <div id="vApp" class="hide">
   <div class="head">
     <strong>MAG AMBALAJ - <span id="mt">SEVKİYAT</span></strong>
@@ -125,6 +137,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
       <div id="me"></div>
       <button class="btn b8 sm hide" id="bAdm">Yönetici</button>
       <button class="btn b6 sm" id="bAd">İsim</button>
+      <button class="btn b6 sm" id="bMenu">🏠 Menü</button>
       <button class="btn b5 sm" data-out>Çıkış</button>
     </div>
   </div>
@@ -367,7 +380,7 @@ const MODS={
 let mod="sevk";const M=()=>MODS[mod];
 let user=null,rec=null,recRef=null,uRef=null,started=false;
 let urunler=[],limit=20,tab="hazir",editId="",fotoData="",stream=null;
-const show=v=>{$("boot").classList.add("hide");["vLogin","vWait","vApp"].forEach(x=>$(x).classList.toggle("hide",x!==v))};
+const show=v=>{$("boot").classList.add("hide");["vLogin","vWait","vMenu","vApp"].forEach(x=>$(x).classList.toggle("hide",x!==v))};
 const ad=()=>rec?`${rec.ad} (${rec.rol})`:"Bilinmiyor";
 const isAdmin=()=>!!(rec&&rec.yonetici===true&&rec.onay===true);
 
@@ -382,13 +395,17 @@ auth.onAuthStateChanged(u=>{
     if(rec&&rec.onay){
       $("me").textContent=ad();
       $("bAdm").classList.toggle("hide",!isAdmin());$("fSevk").classList.toggle("hide",!isAdmin());fiyatBaglan();
-      show("vApp");
+      $("mn").textContent=ad();
+      show($("vApp").classList.contains("hide")?"vMenu":"vApp");
       if(!started){started=true;yukle();adrYukle();if(panel==="stok")stokYukle()}
       listele();
     }else{show("vWait")}
   },e=>{toast("Hesap okunamadı: "+errText(e));show("vWait")});
 });
 document.querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>auth.signOut());
+function openMod(m){show("vApp");if(m!==panel)document.querySelector('#mods button[data-m="'+m+'"]').click();window.scrollTo(0,0)}
+document.querySelectorAll("#vMenu [data-go]").forEach(b=>b.onclick=()=>openMod(b.dataset.go));
+$("bMenu").onclick=()=>{show("vMenu");window.scrollTo(0,0)};
 
 $("tG").onclick=()=>{$("fG").classList.remove("hide");$("fK").classList.add("hide");$("tG").classList.add("on");$("tK").classList.remove("on")};
 $("tK").onclick=()=>{$("fK").classList.remove("hide");$("fG").classList.add("hide");$("tK").classList.add("on");$("tG").classList.remove("on")};
