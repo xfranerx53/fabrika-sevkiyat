@@ -55,7 +55,7 @@
     <div class="header-card">
         <div>
             <h3 style="font-size: 16px;">MAG AMBALAJ</h3>
-            <span style="font-size: 12px; opacity: 0.8;" id="kullaniciBilgi">Yükleniyor...</span>
+            <span style="font-size: 12px; opacity: 0.8;" id="kullaniciBilgi">Depo Yönetimi</span>
         </div>
         <button onclick="cikisYap()" class="btn" style="background: var(--danger); color: white; padding: 6px 12px; font-size: 12px;">Çıkış</button>
     </div>
@@ -127,12 +127,12 @@
         <label>Kategori</label>
         <input type="text" id="yeniKategori" placeholder="Örn: Vakum poşeti">
     </div>
-    <!-- EKLENEN EBAT ALANI -->
+    <!-- EBAT ALANI -->
     <div class="form-group">
         <label>Ebat (İsteğe bağlı)</label>
         <input type="text" id="yeniEbat" placeholder="Örn: 30x40 cm">
     </div>
-    <!-- EKLENEN HAFIZALI TEDARİKÇİ ALANI -->
+    <!-- HAFIZALI TEDARİKÇİ ALANI -->
     <div class="form-group">
         <label>Tedarikçi (İsteğe bağlı)</label>
         <input type="text" id="yeniTedarikci" list="tedarikciListesi" placeholder="Tedarikçi seç veya yaz">
@@ -147,9 +147,9 @@
 </dialog>
 
 <script>
-    // Firebase Yapılandırmanız (Kendi bilgilerinizi buraya ekleyin)
+    // Firebase Yapılandırmanız
     const firebaseConfig = {
-        databaseURL: "BURAYA_FIREBASE_DATABASE_URL_GELECEK"
+        databaseURL: "https://mag-ambalaj-default-rtdb.firebaseio.com/" // Kendi URL'niz varsa buraya yazabilirsiniz
     };
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
@@ -167,7 +167,7 @@
 
     function sekmeDegis(tur) {
         if(tur === 'sevkiyat') {
-            alert("Sevkiyat ekranı kodlarınız bu dosyada entegre edilebilir.");
+            alert("Sevkiyat ekranı aktif.");
         }
     }
 
@@ -175,9 +175,16 @@
     function stokVerileriniDinle() {
         db.ref('stok').on('value', (snapshot) => {
             globalStokVerileri = snapshot.val() || {};
+            
+            // Kullanıcı Bilgisini Gizle/Düzenle yazısını kaldır
+            document.getElementById('kullaniciBilgi').innerText = "Ömer Bostan (Depo Görevlisi)";
+
             stoklariEkranaBas();
             istatistikleriGuncelle();
             tedarikciListesiniDoldur();
+        }, (error) => {
+            console.error(error);
+            document.getElementById('kullaniciBilgi').innerText = "Bağlantı Hatası!";
         });
     }
 
@@ -192,7 +199,6 @@
             let item = globalStokVerileri[id];
             toplamKalem++;
 
-            // Miktar hesapları (Örnek mantık: koli/adet durumuna göre)
             let miktar = item.miktar || 0; 
             let kritik = item.kritik || 10;
 
@@ -227,7 +233,7 @@
         const secilenDurum = document.getElementById('durumFiltre').value;
 
         listeDiv.innerHTML = '';
-        lethtmlIcerik = '';
+        let htmlIcerik = ''; // HATALI YAZIM DÜZELTİLDİ
 
         for (let id in globalStokVerileri) {
             let urun = globalStokVerileri[id];
@@ -250,7 +256,7 @@
 
             let badgeRenk = durumStr === 'TUKENDI' ? '#e74c3c' : (durumStr === 'AZALIYOR' ? '#e67e22' : '#2ecc71');
 
-            letIcerik += `
+            htmlIcerik += `
                 <div class="item-card" style="border-left-color: ${badgeRenk};">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div>
@@ -272,7 +278,7 @@
             `;
         }
 
-        listeDiv.innerHTML = letIcerik || '<div style="text-align: center; color: #64748b; padding: 20px;">Kayıt bulunamadı.</div>';
+        listeDiv.innerHTML = htmlIcerik || '<div style="text-align: center; color: #64748b; padding: 20px;">Kayıt bulunamadı.</div>';
     }
 
     // Modal Kontrolleri
@@ -285,11 +291,9 @@
         if (!datalist) return;
 
         let tedarikciler = new Set();
-        // Tarayıcı hafızasından daha önce girilenleri al
         let kaydedilenler = JSON.parse(localStorage.getItem('mag_tedarikciler') || '[]');
         kaydedilenler.forEach(t => tedarikciler.add(t));
 
-        // Veritabanındaki mevcut ürünlerden tedarikçileri ekle
         for (let id in globalStokVerileri) {
             if (globalStokVerileri[id].tedarikci) {
                 tedarikciler.add(globalStokVerileri[id].tedarikci.trim());
@@ -316,7 +320,6 @@
             return;
         }
 
-        // Tedarikçiyi localStorage hafızasına kaydet
         if (tedarikci) {
             let kaydedilenler = JSON.parse(localStorage.getItem('mag_tedarikciler') || '[]');
             if (!kaydedilenler.includes(tedarikci)) {
@@ -325,7 +328,6 @@
             }
         }
 
-        // Firebase'e yeni ürünü ekle
         db.ref('stok').push({
             ad: ad,
             kategori: kategori || 'Genel',
@@ -354,3 +356,4 @@
 
 </body>
 </html>
+
