@@ -66,9 +66,6 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .menuBtn{display:flex;align-items:center;gap:16px;width:100%;padding:22px 18px;margin-bottom:14px;border:0;border-radius:14px;color:#fff;font-size:20px;font-weight:900;cursor:pointer;text-align:left;box-shadow:0 4px 12px rgba(0,0,0,.12);-webkit-tap-highlight-color:transparent}
 .menuBtn:active{transform:scale(.97)}
 .menuBtn span.ic{font-size:38px}.menuBtn small{display:block;font-size:12px;font-weight:600;opacity:.9;margin-top:2px}
-.head strong{font-size:17px}.head .u{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;font-size:15px}.head .u div{width:100%;font-size:15px;font-weight:700;margin:0}.head .sm{font-size:15px;padding:10px 14px;font-weight:800}
-#selBar{position:fixed;left:8px;right:8px;bottom:8px;z-index:900;background:#1e293b;color:#fff;border-radius:12px;padding:10px;display:flex;gap:6px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.4)}#selBar .btn{margin:0;padding:11px 6px;font-size:13px}#selBar b{font-size:13px;white-space:nowrap}
-.chips2{display:flex;gap:6px;margin-top:8px}.chips2 button{flex:1;padding:7px 4px;border:1.5px solid #cbd5e1;background:#fff;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer}
 .mods button{font-size:14px;padding:13px 4px}.mods button.on{background:#1e293b;color:#fff}
 .chip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #cbd5e1;border-radius:99px;padding:6px 11px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;text-transform:none;margin:0;color:#334155}.chip input{width:auto;margin:0}.urow2{display:grid;grid-template-columns:64px 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}.urow2 b{font-size:13px}.qbox{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.qbox .hl{flex:1;min-width:88px}
 .badge-no{background:#e71d36}.sub{font-size:12px;color:#64748b;margin-top:2px}
@@ -138,7 +135,6 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   </div>
 </div>
 
-<div id="selBar" class="hide"><b id="selN"></b><button class="btn b3" id="selWa">📲 WhatsApp</button><button class="btn b4" id="selPr">🖨️ İrsaliye</button><button class="btn b5" id="selX" style="flex:0 0 44px">✕</button></div>
 <div id="vApp" class="hide">
   <div class="head">
     <strong>MAG AMBALAJ - <span id="mt">SEVKİYAT</span></strong>
@@ -1195,7 +1191,6 @@ $("aCsv").onclick=()=>{
 
 formTemizle();modUyg();
 
-/* ---------- Ek özellikler: seçim, WhatsApp, irsaliye, rapor ---------- */
-const kSec=new Set(),TT=v=>(v||"").toString();
-const _kart=kart;kart=function(u){const on=kSec.has(u.id),id=esc(u.id);
-  return _kart(u).replace('<div class="acts">',`<div class="acts" style="margin-bottom:0"><button class="btn b3" data-a="wa" data-id="${id}">📲 WhatsApp</button><button class="btn ${on?"b4":"b6"}" data-a="sel" data-id="${
+</script>
+</body>
+</html>
