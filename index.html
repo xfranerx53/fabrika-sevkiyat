@@ -150,6 +150,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <div><label>Tarih</label><input type="date" id="tr"></div>
     <div><label>Durum</label><select id="du"><option value="hazir">SEVKİYATA HAZIR</option><option value="sevk_edilecek">SEVK EDİLECEK</option></select></div>
     <div class="full"><textarea id="no" rows="1" placeholder="Ekstra not (araç plakası, palet no vb.)"></textarea></div>
+    <div class="full hide" id="fSevk"><label style="color:#854d0e">💰 Fiyat (sadece yöneticiler görür)</label>
+      <div style="display:flex;gap:6px"><input id="sfi" type="number" inputmode="decimal" min="0" step="any" placeholder="Fiyat ₺"><select id="sfe"><option value="kg">Kg başı</option><option value="adet">Adet başı</option><option value="toplam">Toplam</option></select></div></div>
     <div class="full">
       <button class="btn b1" id="bSave" style="padding:15px;font-size:16px">+ STOĞA EKLENENİ KAYDET</button>
       <button class="btn b6 hide" id="bCancel">Düzenlemeyi iptal et</button>
@@ -181,6 +183,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
       <div class="hl" style="background:#fff7ed;border-color:#ea580c"><small style="color:#c2410c">AZALAN</small><b id="sA" style="color:#9a3412">0</b></div>
       <div class="hl" style="background:#fef2f2;border-color:#dc2626"><small style="color:#b91c1c">TÜKENEN</small><b id="sT" style="color:#991b1b">0</b></div>
     </div>
+    <div class="hl hide" id="sVal" style="margin-bottom:12px;background:#fefce8;border-color:#ca8a04"><small style="color:#854d0e">TOPLAM STOK DEĞERİ (fiyatı girilen kalemler)</small><b id="sVn" style="color:#713f12">0 ₺</b></div>
     <div class="filter">
       <input id="sq" placeholder="🔍 Kalem ara (poşet, bant, koli, masura...)" style="margin-bottom:8px">
       <div style="display:flex;gap:6px"><select id="sc"><option value="">Tüm kategoriler</option></select><select id="sd"><option value="">Tüm durumlar</option><option value="lo">Azalan</option><option value="no">Tükenen</option></select></div>
@@ -202,6 +205,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <label style="margin-top:12px">Takip edilecek birimler (birden fazla seçebilirsiniz)</label>
   <div id="ub" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
   <div id="kur"></div>
+  <div id="kfi" class="hide" style="margin:4px 0 8px"><label style="color:#854d0e">💰 Fiyat (sadece yöneticiler görür)</label>
+    <div style="display:flex;gap:6px"><input id="sfy" type="number" inputmode="decimal" min="0" step="any" placeholder="Fiyat ₺"><select id="sfb"></select></div></div>
   <p class="mut" style="font-size:11px;margin:0 0 4px">Mevcut miktar ve kritik seviye (altına düşünce uyarır) isteğe bağlıdır.</p>
   <label for="ste" style="margin-top:8px">Tedarikçi (isteğe bağlı)</label><input id="ste">
   <label for="sno" style="margin-top:8px">Not (isteğe bağlı)</label><input id="sno">
@@ -269,7 +274,7 @@ const isAdmin=()=>!!(rec&&rec.yonetici&&rec.onay);
 
 /* ---------- Oturum ---------- */
 auth.onAuthStateChanged(u=>{
-  if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null}
+  if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null} if(window.fRef){fRef.off();fRef=null} fyat={sevk:{},stok:{}};
   started=false;urunler=[];rec=null;user=u;
   if(!u){show("vLogin");return}
   recRef=db.ref("kullanicilar/"+u.uid);
@@ -277,7 +282,7 @@ auth.onAuthStateChanged(u=>{
     rec=s.val();
     if(rec&&rec.onay){
       $("me").textContent=ad();
-      $("bAdm").classList.toggle("hide",!isAdmin());
+      $("bAdm").classList.toggle("hide",!isAdmin());$("fSevk").classList.toggle("hide",!isAdmin());fiyatBaglan();
       show("vApp");
       if(!started){started=true;yukle();if(panel==="stok")stokYukle()}
       listele();
@@ -343,7 +348,7 @@ const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s||"")?s:"";
 /* ---------- Kayıt ---------- */
 function formTemizle(){
   editId="";fotoData="";
-  ["kg","mu","ur","no","ad","hu"].forEach(i=>$(i).value="");$("pk").value="1";$("tr").valueAsDate=new Date();$("du").value="hazir";
+  ["kg","mu","ur","no","ad","hu","sfi"].forEach(i=>$(i).value="");$("sfe").value="kg";$("pk").value="1";$("tr").valueAsDate=new Date();$("du").value="hazir";
   $("prev").style.display="none";$("bSave").textContent=M().kayit;$("bCancel").classList.add("hide");
 }
 $("bCancel").onclick=formTemizle;
@@ -357,8 +362,10 @@ $("bSave").onclick=async()=>{
   const b=$("bSave");b.disabled=true;
   try{
     if(fotoData)d.foto=fotoData;
+    let sid=editId;
     if(editId){d.duzenleyen=ad();await db.ref(M().yol+"/"+editId).update(d)}
-    else{d.ekleyen=ad();d.ekleyenUid=user.uid;d.eklenmeTarihi=firebase.database.ServerValue.TIMESTAMP;await db.ref(M().yol).push().set(d)}
+    else{d.ekleyen=ad();d.ekleyenUid=user.uid;d.eklenmeTarihi=firebase.database.ServerValue.TIMESTAMP;const nr=db.ref(M().yol).push();sid=nr.key;await nr.set(d)}
+    if(isAdmin()){const f=parseFloat($("sfi").value);await db.ref("fiyatlar/sevk/"+sid).set(f>=0?{tutar:f,esas:$("sfe").value}:null)}
     formTemizle();toast("Kaydedildi");
   }catch(e){toast("Kaydedilemedi: "+errText(e))}
   b.disabled=false;
@@ -367,7 +374,7 @@ function duzenle(u){
   editId=u.id;fotoData="";
   $("mu").value=u.musteri==="Etikete Bakınız"?"":u.musteri||"";$("ur").value=u.urun==="Etikete Bakınız"?"":u.urun||"";
   $("kg").value=u.kg;$("pk").value=u.paket;$("tr").value=u.tarih;$("du").value=u.durum==="sevk_edildi"?"sevk_edilecek":u.durum;
-  $("no").value=u.not||"";$("ad").value=u.adres||"";$("hu").value=u.haritaUrl||"";
+  $("no").value=u.not||"";$("ad").value=u.adres||"";$("hu").value=u.haritaUrl||"";{const f=(fyat.sevk||{})[u.id];$("sfi").value=f?f.tutar:"";$("sfe").value=f?f.esas:"kg"}
   const p=$("prev");if(safeImg(u.foto)){p.src=u.foto;p.style.display="block"}else p.style.display="none";
   $("bSave").textContent="💾 Değişiklikleri Kaydet";$("bCancel").classList.remove("hide");window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -403,6 +410,7 @@ function kart(u){
   ${m||p?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün/Ebat</small><b>${esc(u.urun)}</b></div></div>`:""}
   ${u.adres?`<div class="addr">📍 <b>Teslimat adresi:</b> ${esc(u.adres)}</div>`:""}
   ${u.haritaUrl||u.adres?`<button class="btn b7" data-a="map" data-id="${id}">🚀 Yol Tarifi Al</button>`:""}
+  ${isAdmin()?sFyHtml(u):""}
   ${u.not?`<div class="note">📌 <b>Not:</b> ${esc(u.not)}</div>`:""}
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
   ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">${M().teslim}: ${esc(u.teslimEden)}</div>`:""}
@@ -412,6 +420,7 @@ function listele(){
   if(!started)return;
   const L=filtreli();
   $("sumT").textContent=`${L.length} kayıt · ${fmt(L.reduce((s,u)=>s+(+u.kg||0),0))} kg · ${fmt(L.reduce((s,u)=>s+(+u.paket||0),0))} adet`;
+  if(isAdmin()){const t=L.reduce((x,u)=>x+(sevkTop(u)||0),0);if(t>0)$("sumT").textContent+=" · "+para(t)}
   $("liste").innerHTML=L.length?L.map(kart).join(""):'<div class="empty">Kayıt bulunamadı.</div>';
 }
 $("liste").onclick=async e=>{
@@ -421,12 +430,12 @@ $("liste").onclick=async e=>{
     if(b.dataset.a==="edit")duzenle(u);
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
     else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;await db.ref(M().yol+"/"+u.id).update(up)}
-    else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref(M().yol+"/"+u.id).remove()}
+    else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref(M().yol+"/"+u.id).remove();if(isAdmin())db.ref("fiyatlar/sevk/"+u.id).remove().catch(()=>{})}
   }catch(err){toast(errText(err))}
 };
 $("bCsv").onclick=()=>{
   const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',n=v=>q(String(+v||0).replace(".",","));
-  const r=[["Tarih","Müşteri","Ürün","Kg","Adet","Adres","Not","Kaydeden"].map(q).join(";")].concat(filtreli().map(u=>[q(trDate(u.tarih)),q(u.musteri),q(u.urun),n(u.kg),n(u.paket),q(u.adres),q(u.not),q(u.ekleyen)].join(";")));
+  const r=[["Tarih","Müşteri","Ürün","Kg","Adet","Adres","Not","Kaydeden"].concat(isAdmin()?["Fiyat (₺)","Esas","Toplam (₺)"]:[]).map(q).join(";")].concat(filtreli().map(u=>[q(trDate(u.tarih)),q(u.musteri),q(u.urun),n(u.kg),n(u.paket),q(u.adres),q(u.not),q(u.ekleyen)].concat(isAdmin()?sFyCsv(u):[]).join(";")));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download=mod+"-"+tab+".csv";a.click();
 };
 
@@ -458,6 +467,7 @@ function modUyg(){
 
 
 /* ================= STOK (satın alınan malzemeler) ================= */
+var fRef=null,fyat={sevk:{},stok:{}},kFB="";
 var panel="sevk",sRef=null,sKalem=[],kEdit=null,kFoto="",hs=null,kSel=new Set(),kVals={};
 const UN=[["adet","Adet"],["koli","Koli"],["paket","Paket"],["rulo","Rulo"],["masura","Masura"],["kg","Kg"],["metre","Metre"]],UL=Object.fromEntries(UN);
 const norm=k=>{
@@ -465,6 +475,20 @@ const norm=k=>{
   const u=(UN.find(x=>x[1]===k.birim)||UN[0])[0];
   return{mik:{[u]:+k.miktar||0},min:{[u]:+k.min||0}};
 };
+const para=n=>fmt(n)+" ₺";
+const stokVal=k=>{const f=(fyat.stok||{})[k.id];if(!f)return null;const q=norm(k).mik[f.birim];return q==null?null:q*f.tutar};
+const sevkTop=u=>{const f=(fyat.sevk||{})[u.id];if(!f)return null;return f.esas==="kg"?f.tutar*(+u.kg||0):f.esas==="adet"?f.tutar*(+u.paket||0):f.tutar};
+const csvN=v=>'"'+String(+v||0).replace(".",",")+'"';
+function sFyHtml(u){const f=(fyat.sevk||{})[u.id];if(!f)return"";
+  return `<div class="addr" style="background:#fefce8;border-color:#fde68a;color:#854d0e">💰 <b>${esc(para(f.tutar))}${({kg:" / kg",adet:" / adet",toplam:" (toplam)"})[f.esas]||""}</b> → Toplam: <b>${esc(para(sevkTop(u)))}</b></div>`}
+function kFyHtml(k){const f=(fyat.stok||{})[k.id];if(!f)return"";const v=stokVal(k);
+  return `<div class="addr" style="background:#fefce8;border-color:#fde68a;color:#854d0e">💰 <b>${esc(para(f.tutar))} / ${esc((UL[f.birim]||f.birim).toLowerCase())}</b>${v!=null?` → Stok değeri: <b>${esc(para(v))}</b>`:""}</div>`}
+const sFyCsv=u=>{const f=(fyat.sevk||{})[u.id];return f?[csvN(f.tutar),'"'+f.esas+'"',csvN(sevkTop(u))]:['""','""','""']};
+const kFyCsv=k=>{const f=(fyat.stok||{})[k.id];return f?[csvN(f.tutar),'"'+(UL[f.birim]||f.birim)+'"',csvN(stokVal(k))]:['""','""','""']};
+function fiyatBaglan(){
+  if(isAdmin()){if(!fRef){fRef=db.ref("fiyatlar");fRef.on("value",x=>{const v=x.val()||{};fyat={sevk:v.sevk||{},stok:v.stok||{}};listele();stokListele()},e=>toast("Fiyatlar okunamadı: "+errText(e)))}}
+  else if(fRef){fRef.off();fRef=null;fyat={sevk:{},stok:{}}}
+}
 const ust=(v,m)=>v<=0?"no":(m>0&&v<=m)?"lo":"ok";
 const dur=k=>{const n=norm(k),ks=Object.keys(n.mik);if(!ks.length||ks.every(u=>!(n.mik[u]>0)))return"no";return ks.some(u=>n.min[u]>0&&n.mik[u]<=n.min[u])?"lo":"ok"};
 const fmtQ=(o,z)=>UN.filter(([u])=>o&&u in o&&(z||+o[u]>0)).map(([u,l])=>fmt(o[u])+" "+l).join(", ")||"-";
@@ -482,6 +506,7 @@ function stokListele(){
   const cats=[...new Set(sKalem.map(k=>k.kategori).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr")),cur=$("sc").value;
   $("sc").innerHTML='<option value="">Tüm kategoriler</option>'+cats.map(c=>`<option${c===cur?" selected":""}>${esc(c)}</option>`).join("");
   $("dl").innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join("");
+  {const vt=isAdmin()?sKalem.reduce((t,k)=>t+(stokVal(k)||0),0):0;$("sVal").classList.toggle("hide",!isAdmin());$("sVn").textContent=para(vt)}
   $("sK").textContent=sKalem.length;$("sA").textContent=sKalem.filter(k=>dur(k)==="lo").length;$("sT").textContent=sKalem.filter(k=>dur(k)==="no").length;
   const q=$("sq").value.toLowerCase().trim(),fc=$("sc").value,fd=$("sd").value;
   const L=sKalem.filter(k=>(!q||[k.ad,k.kategori,k.tedarikci,k.not].some(x=>(x||"").toLowerCase().includes(q)))&&(!fc||k.kategori===fc)&&(!fd||dur(k)===fd)).sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr"));
@@ -497,6 +522,7 @@ function kkart(k){
   <div class="sub">${esc(k.kategori||"Kategorisiz")}${k.tedarikci?" · "+esc(k.tedarikci):""}</div>
   ${safeImg(k.foto)?`<img loading="lazy" src="${safeImg(k.foto)}" alt="" style="max-height:140px">`:""}
   <div class="qbox">${boxes}</div>
+  ${isAdmin()?kFyHtml(k):""}
   ${k.not?`<div class="note">📌 ${esc(k.not)}</div>`:""}
   <div class="acts"><button class="btn b3" data-a="in" data-id="${id}">＋ Giriş</button><button class="btn b2" data-a="out" data-id="${id}">− Çıkış</button>
   <button class="btn b6" data-a="gec" data-id="${id}">📜 Geçmiş</button><button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>
@@ -508,7 +534,7 @@ $("sList").onclick=async e=>{
   if(a==="in"||a==="out")hAc(k,a==="in"?"giris":"cikis");
   else if(a==="gec")gecAc(k);
   else if(a==="edit")kAc(k);
-  else if(a==="del"&&confirm(`"${k.ad}" silinsin mi? (Geçmiş hareket kayıtları saklanır)`)){try{await db.ref("stokKalem/"+k.id).remove();toast("Silindi")}catch(err){toast(errText(err))}}
+  else if(a==="del"&&confirm(`"${k.ad}" silinsin mi? (Geçmiş hareket kayıtları saklanır)`)){try{await db.ref("stokKalem/"+k.id).remove();if(isAdmin())db.ref("fiyatlar/stok/"+k.id).remove().catch(()=>{});toast("Silindi")}catch(err){toast(errText(err))}}
 };
 /* kalem ekle / düzenle */
 function kRead(){document.querySelectorAll("#kur input").forEach(i=>{(kVals[i.dataset.u]=kVals[i.dataset.u]||{})[i.dataset.f]=i.value})}
@@ -518,10 +544,12 @@ function kDraw(){
   $("kur").innerHTML=UN.filter(([u])=>kSel.has(u)).map(([u,l])=>{const v=kVals[u]||{};
     const m=(kEdit&&u in old.mik)?`<span class="mut">mevcut: ${esc(fmt(old.mik[u]))}</span>`:`<input data-u="${u}" data-f="mik" type="number" inputmode="decimal" min="0" step="any" placeholder="Mevcut" value="${esc(v.mik??"")}">`;
     return `<div class="urow2"><b>${l}</b>${m}<input data-u="${u}" data-f="min" type="number" inputmode="decimal" min="0" step="any" placeholder="Kritik" value="${esc(v.min??"")}"></div>`}).join("")||'<p class="mut">En az bir birim seçin.</p>';
+  $("sfb").innerHTML=UN.filter(([u])=>kSel.has(u)).map(([u,l])=>`<option value="${u}">${l} başı</option>`).join("");if(kSel.has(kFB))$("sfb").value=kFB;
 }
+$("sfb").onchange=()=>{kFB=$("sfb").value};
 $("ub").onchange=e=>{const u=e.target.dataset.c;if(!u)return;kRead();if(e.target.checked)kSel.add(u);else kSel.delete(u);kDraw()};
 function kAc(k){
-  kEdit=k||null;kFoto="";kVals={};$("kT").textContent=k?"Kalemi düzenle":"Yeni kalem";$("kE").textContent="";
+  kEdit=k||null;kFoto="";kVals={};{const f=k?(fyat.stok||{})[k.id]:null;kFB=f?f.birim:"";$("sfy").value=f?f.tutar:"";$("kfi").classList.toggle("hide",!isAdmin())}$("kT").textContent=k?"Kalemi düzenle":"Yeni kalem";$("kE").textContent="";
   $("sad").value=k?k.ad:"";$("skat").value=k?k.kategori||"":"";$("ste").value=k?k.tedarikci||"":"";$("sno").value=k?k.not||"":"";
   if(k){const n=norm(k);kSel=new Set(Object.keys(n.mik).filter(u=>UL[u]));kSel.forEach(u=>{if(+n.min[u]>0)kVals[u]={min:n.min[u]}})}else kSel=new Set(["adet"]);
   kDraw();
@@ -545,7 +573,7 @@ $("kOk").onclick=async()=>{
   const lost=Object.keys(old).filter(u=>!kSel.has(u)&&old[u]>0);
   if(lost.length&&!confirm("Kaldırdığınız birimlerin miktarı silinecek ("+fmtQ(Object.fromEntries(lost.map(u=>[u,old[u]])))+"). Devam edilsin mi?"))return;
   const TS=firebase.database.ServerValue.TIMESTAMP,extra={kategori:$("skat").value.trim(),tedarikci:$("ste").value.trim(),not:$("sno").value.trim()};
-  $("kOk").disabled=true;
+  $("kOk").disabled=true;let newId="";
   try{
     if(kEdit){
       const up=Object.assign({ad:nm,duzenleyen:ad(),min:Object.keys(min).length?min:null},extra);
@@ -557,10 +585,11 @@ $("kOk").onclick=async()=>{
     }else{
       const d=Object.assign({ad:nm,mik,ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:TS},extra);
       if(Object.keys(min).length)d.min=min;if(kFoto)d.foto=kFoto;
-      const r=db.ref("stokKalem").push();await r.set(d);
+      const r=db.ref("stokKalem").push();newId=r.key;await r.set(d);
       const pos=Object.fromEntries(Object.entries(mik).filter(([,v])=>v>0));
       if(Object.keys(pos).length)await db.ref("stokHareket").push().set({kalemId:r.key,ad:nm,tip:"giris",mik:pos,kalan:mik,not:"İlk kayıt",kullanici:ad(),uid:user.uid,zaman:TS});
     }
+    if(isAdmin()){const f=parseFloat($("sfy").value),fid=kEdit?kEdit.id:newId;await db.ref("fiyatlar/stok/"+fid).set(f>=0&&$("sfb").value?{tutar:f,birim:$("sfb").value}:null)}
     $("dKalem").close();toast("Kaydedildi");
   }catch(e){err(errText(e))}
   $("kOk").disabled=false;
@@ -598,8 +627,8 @@ async function gecAc(k){
 /* Excel */
 $("sCsv").onclick=()=>{
   const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',st={ok:"Yeterli",lo:"Azalıyor",no:"Tükendi"};
-  const r=[["Kalem","Kategori"].concat(UN.map(u=>u[1]),["Durum","Tedarikçi","Not"]).map(q).join(";")].concat(sKalem.slice().sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr")).map(k=>{const n=norm(k).mik;
-    return [q(k.ad),q(k.kategori)].concat(UN.map(([u])=>u in n?q(String(+n[u]||0).replace(".",",")):q("")),[q(st[dur(k)]),q(k.tedarikci),q(k.not)]).join(";")}));
+  const r=[["Kalem","Kategori"].concat(UN.map(u=>u[1]),["Durum","Tedarikçi","Not"],isAdmin()?["Fiyat (₺)","Fiyat birimi","Stok değeri (₺)"]:[]).map(q).join(";")].concat(sKalem.slice().sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr")).map(k=>{const n=norm(k).mik;
+    return [q(k.ad),q(k.kategori)].concat(UN.map(([u])=>u in n?q(String(+n[u]||0).replace(".",",")):q("")),[q(st[dur(k)]),q(k.tedarikci),q(k.not)],isAdmin()?kFyCsv(k):[]).join(";")}));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download="stok-listesi.csv";a.click();
 };
 
