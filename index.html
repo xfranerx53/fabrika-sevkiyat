@@ -151,7 +151,9 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <div><label>Durum</label><select id="du"><option value="hazir">SEVKİYATA HAZIR</option><option value="sevk_edilecek">SEVK EDİLECEK</option></select></div>
     <div class="full"><textarea id="no" rows="1" placeholder="Ekstra not (araç plakası, palet no vb.)"></textarea></div>
     <div class="full hide" id="fSevk"><label style="color:#854d0e">💰 Fiyat (sadece yöneticiler görür)</label>
-      <div style="display:flex;gap:6px"><input id="sfi" type="number" inputmode="decimal" min="0" step="any" placeholder="Fiyat ₺"><select id="sfe"><option value="kg">Kg başı</option><option value="adet">Adet başı</option><option value="toplam">Toplam</option></select></div></div>
+      <div style="display:flex;gap:6px"><input id="sfi" type="number" inputmode="decimal" min="0" step="any" placeholder="Fiyat ₺"><select id="sfe"><option value="kg">Kg başı</option><option value="adet">Adet başı</option><option value="toplam">Toplam</option></select></div>
+    <label class="chip" style="margin-top:8px"><input type="checkbox" id="skc">KDV ekle</label>
+    <div id="skw" class="hide" style="margin-top:6px"><div style="display:flex;gap:6px"><input id="skr" type="number" inputmode="decimal" min="0" max="100" step="any" placeholder="KDV %"><select id="skm"><option value="haric">Fiyat KDV hariç</option><option value="dahil">Fiyat KDV dahil</option></select></div><div id="skg" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div></div>
     <div class="full">
       <button class="btn b1" id="bSave" style="padding:15px;font-size:16px">+ STOĞA EKLENENİ KAYDET</button>
       <button class="btn b6 hide" id="bCancel">Düzenlemeyi iptal et</button>
@@ -206,7 +208,9 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="ub" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
   <div id="kur"></div>
   <div id="kfi" class="hide" style="margin:4px 0 8px"><label style="color:#854d0e">💰 Fiyat (sadece yöneticiler görür)</label>
-    <div style="display:flex;gap:6px"><input id="sfy" type="number" inputmode="decimal" min="0" step="any" placeholder="Fiyat ₺"><select id="sfb"></select></div></div>
+    <div style="display:flex;gap:6px"><input id="sfy" type="number" inputmode="decimal" min="0" step="any" placeholder="Fiyat ₺"><select id="sfb"></select></div>
+    <label class="chip" style="margin-top:8px"><input type="checkbox" id="kkc">KDV ekle</label>
+    <div id="kkw" class="hide" style="margin-top:6px"><div style="display:flex;gap:6px"><input id="kkr" type="number" inputmode="decimal" min="0" max="100" step="any" placeholder="KDV %"><select id="kkm"><option value="haric">Fiyat KDV hariç</option><option value="dahil">Fiyat KDV dahil</option></select></div><div id="kkg" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div></div>
   <p class="mut" style="font-size:11px;margin:0 0 4px">Mevcut miktar ve kritik seviye (altına düşünce uyarır) isteğe bağlıdır.</p>
   <label for="ste" style="margin-top:8px">Tedarikçi (isteğe bağlı)</label><input id="ste">
   <label for="sno" style="margin-top:8px">Not (isteğe bağlı)</label><input id="sno">
@@ -348,7 +352,7 @@ const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s||"")?s:"";
 /* ---------- Kayıt ---------- */
 function formTemizle(){
   editId="";fotoData="";
-  ["kg","mu","ur","no","ad","hu","sfi"].forEach(i=>$(i).value="");$("sfe").value="kg";$("pk").value="1";$("tr").valueAsDate=new Date();$("du").value="hazir";
+  ["kg","mu","ur","no","ad","hu","sfi"].forEach(i=>$(i).value="");$("sfe").value="kg";kdvSet("sevk",null);$("pk").value="1";$("tr").valueAsDate=new Date();$("du").value="hazir";
   $("prev").style.display="none";$("bSave").textContent=M().kayit;$("bCancel").classList.add("hide");
 }
 $("bCancel").onclick=formTemizle;
@@ -356,6 +360,7 @@ $("bSave").onclick=async()=>{
   const kg=parseFloat($("kg").value)||0,pk=parseInt($("pk").value)||0;
   if(!editId&&!fotoData){toast("Önce etiketin fotoğrafını çekin.");return}
   if(kg<=0&&pk<=0){toast("Kilo veya paket sayısını girin.");return}
+  if(isAdmin()&&kdvGet("sevk")===null){toast("KDV oranı 0 ile 100 arasında olmalı.");return}
   let adres=$("ad").value.trim(),hu=$("hu").value.trim(),url=safeUrl(hu);
   if(hu&&!url&&!adres)adres=hu;
   const d={musteri:$("mu").value.trim()||"Etikete Bakınız",urun:$("ur").value.trim()||"Etikete Bakınız",kg,paket:pk,tarih:$("tr").value,durum:$("du").value,not:$("no").value.trim(),adres,haritaUrl:url};
@@ -365,7 +370,7 @@ $("bSave").onclick=async()=>{
     let sid=editId;
     if(editId){d.duzenleyen=ad();await db.ref(M().yol+"/"+editId).update(d)}
     else{d.ekleyen=ad();d.ekleyenUid=user.uid;d.eklenmeTarihi=firebase.database.ServerValue.TIMESTAMP;const nr=db.ref(M().yol).push();sid=nr.key;await nr.set(d)}
-    if(isAdmin()){const f=parseFloat($("sfi").value);await db.ref("fiyatlar/sevk/"+sid).set(f>=0?{tutar:f,esas:$("sfe").value}:null)}
+    if(isAdmin()){const f=parseFloat($("sfi").value),kd=kdvGet("sevk")||{};await db.ref("fiyatlar/sevk/"+sid).set(f>=0?Object.assign({tutar:f,esas:$("sfe").value},kd):null);if(f>=0&&kd.kdv!=null)await kdvKaydet(kd.kdv)}
     formTemizle();toast("Kaydedildi");
   }catch(e){toast("Kaydedilemedi: "+errText(e))}
   b.disabled=false;
@@ -374,7 +379,7 @@ function duzenle(u){
   editId=u.id;fotoData="";
   $("mu").value=u.musteri==="Etikete Bakınız"?"":u.musteri||"";$("ur").value=u.urun==="Etikete Bakınız"?"":u.urun||"";
   $("kg").value=u.kg;$("pk").value=u.paket;$("tr").value=u.tarih;$("du").value=u.durum==="sevk_edildi"?"sevk_edilecek":u.durum;
-  $("no").value=u.not||"";$("ad").value=u.adres||"";$("hu").value=u.haritaUrl||"";{const f=(fyat.sevk||{})[u.id];$("sfi").value=f?f.tutar:"";$("sfe").value=f?f.esas:"kg"}
+  $("no").value=u.not||"";$("ad").value=u.adres||"";$("hu").value=u.haritaUrl||"";{const f=(fyat.sevk||{})[u.id];$("sfi").value=f?f.tutar:"";$("sfe").value=f?f.esas:"kg";kdvSet("sevk",f)}
   const p=$("prev");if(safeImg(u.foto)){p.src=u.foto;p.style.display="block"}else p.style.display="none";
   $("bSave").textContent="💾 Değişiklikleri Kaydet";$("bCancel").classList.remove("hide");window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -420,7 +425,7 @@ function listele(){
   if(!started)return;
   const L=filtreli();
   $("sumT").textContent=`${L.length} kayıt · ${fmt(L.reduce((s,u)=>s+(+u.kg||0),0))} kg · ${fmt(L.reduce((s,u)=>s+(+u.paket||0),0))} adet`;
-  if(isAdmin()){const t=L.reduce((x,u)=>x+(sevkTop(u)||0),0);if(t>0)$("sumT").textContent+=" · "+para(t)}
+  if(isAdmin()){const t=sumV(L,sevkTop);if(t.t>0)$("sumT").textContent+=" · "+sumTxt(t)}
   $("liste").innerHTML=L.length?L.map(kart).join(""):'<div class="empty">Kayıt bulunamadı.</div>';
 }
 $("liste").onclick=async e=>{
@@ -435,7 +440,7 @@ $("liste").onclick=async e=>{
 };
 $("bCsv").onclick=()=>{
   const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',n=v=>q(String(+v||0).replace(".",","));
-  const r=[["Tarih","Müşteri","Ürün","Kg","Adet","Adres","Not","Kaydeden"].concat(isAdmin()?["Fiyat (₺)","Esas","Toplam (₺)"]:[]).map(q).join(";")].concat(filtreli().map(u=>[q(trDate(u.tarih)),q(u.musteri),q(u.urun),n(u.kg),n(u.paket),q(u.adres),q(u.not),q(u.ekleyen)].concat(isAdmin()?sFyCsv(u):[]).join(";")));
+  const r=[["Tarih","Müşteri","Ürün","Kg","Adet","Adres","Not","Kaydeden"].concat(isAdmin()?["Fiyat (₺)","Esas","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")].concat(filtreli().map(u=>[q(trDate(u.tarih)),q(u.musteri),q(u.urun),n(u.kg),n(u.paket),q(u.adres),q(u.not),q(u.ekleyen)].concat(isAdmin()?sFyCsv(u):[]).join(";")));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download=mod+"-"+tab+".csv";a.click();
 };
 
@@ -476,17 +481,33 @@ const norm=k=>{
   return{mik:{[u]:+k.miktar||0},min:{[u]:+k.min||0}};
 };
 const para=n=>fmt(n)+" ₺";
-const stokVal=k=>{const f=(fyat.stok||{})[k.id];if(!f)return null;const q=norm(k).mik[f.birim];return q==null?null:q*f.tutar};
-const sevkTop=u=>{const f=(fyat.sevk||{})[u.id];if(!f)return null;return f.esas==="kg"?f.tutar*(+u.kg||0):f.esas==="adet"?f.tutar*(+u.paket||0):f.tutar};
+var kdvAyar={};
+const KD={sevk:["skc","skw","skr","skm","skg"],stok:["kkc","kkw","kkr","kkm","kkg"]};
+const kdvHesap=(f,q)=>{const r=+f.kdv||0,h=(f.kdvDahil&&r?f.tutar/(1+r/100):f.tutar)*q,k=h*r/100;return{h,k,t:h+k,r}};
+const stokVal=k=>{const f=(fyat.stok||{})[k.id];if(!f)return null;const q=norm(k).mik[f.birim];return q==null?null:kdvHesap(f,q)};
+const sevkTop=u=>{const f=(fyat.sevk||{})[u.id];if(!f)return null;return kdvHesap(f,f.esas==="kg"?(+u.kg||0):f.esas==="adet"?(+u.paket||0):1)};
+const kdvTxt=f=>f.kdv!=null?" · KDV %"+esc(fmt(f.kdv))+(f.kdvDahil?" dahil":" hariç"):"";
+const topTxt=v=>v.r?`${esc(para(v.h))} + KDV ${esc(para(v.k))} = <b>${esc(para(v.t))}</b>`:`<b>${esc(para(v.t))}</b>`;
 const csvN=v=>'"'+String(+v||0).replace(".",",")+'"';
+function sumV(list,fn){return list.reduce((a,x)=>{const v=fn(x);return v?{h:a.h+v.h,k:a.k+v.k,t:a.t+v.t}:a},{h:0,k:0,t:0})}
+const sumTxt=t=>t.k>0?`${para(t.h)} + KDV ${para(t.k)} = ${para(t.t)}`:para(t.t);
 function sFyHtml(u){const f=(fyat.sevk||{})[u.id];if(!f)return"";
-  return `<div class="addr" style="background:#fefce8;border-color:#fde68a;color:#854d0e">💰 <b>${esc(para(f.tutar))}${({kg:" / kg",adet:" / adet",toplam:" (toplam)"})[f.esas]||""}</b> → Toplam: <b>${esc(para(sevkTop(u)))}</b></div>`}
+  return `<div class="addr" style="background:#fefce8;border-color:#fde68a;color:#854d0e">💰 <b>${esc(para(f.tutar))}${({kg:" / kg",adet:" / adet",toplam:" (toplam)"})[f.esas]||""}</b>${kdvTxt(f)}<br>Toplam: ${topTxt(sevkTop(u))}</div>`}
 function kFyHtml(k){const f=(fyat.stok||{})[k.id];if(!f)return"";const v=stokVal(k);
-  return `<div class="addr" style="background:#fefce8;border-color:#fde68a;color:#854d0e">💰 <b>${esc(para(f.tutar))} / ${esc((UL[f.birim]||f.birim).toLowerCase())}</b>${v!=null?` → Stok değeri: <b>${esc(para(v))}</b>`:""}</div>`}
-const sFyCsv=u=>{const f=(fyat.sevk||{})[u.id];return f?[csvN(f.tutar),'"'+f.esas+'"',csvN(sevkTop(u))]:['""','""','""']};
-const kFyCsv=k=>{const f=(fyat.stok||{})[k.id];return f?[csvN(f.tutar),'"'+(UL[f.birim]||f.birim)+'"',csvN(stokVal(k))]:['""','""','""']};
+  return `<div class="addr" style="background:#fefce8;border-color:#fde68a;color:#854d0e">💰 <b>${esc(para(f.tutar))} / ${esc((UL[f.birim]||f.birim).toLowerCase())}</b>${kdvTxt(f)}${v?`<br>Stok değeri: ${topTxt(v)}`:""}</div>`}
+const sFyCsv=u=>{const f=(fyat.sevk||{})[u.id];if(!f)return Array(6).fill('""');const v=sevkTop(u);return[csvN(f.tutar),'"'+f.esas+'"',csvN(v.r),csvN(v.h),csvN(v.k),csvN(v.t)]};
+const kFyCsv=k=>{const f=(fyat.stok||{})[k.id];if(!f)return Array(6).fill('""');const v=stokVal(k)||{r:0,h:0,k:0,t:0};return[csvN(f.tutar),'"'+(UL[f.birim]||f.birim)+'"',csvN(v.r),csvN(v.h),csvN(v.k),csvN(v.t)]};
+/* KDV formu */
+function kdvUI(m){const [c,w,r,mo,g]=KD[m].map($);w.classList.toggle("hide",!c.checked);
+  g.innerHTML=(Array.isArray(kdvAyar.gecmis)?kdvAyar.gecmis:Object.values(kdvAyar.gecmis||{})).map(x=>`<button type="button" class="btn sm b6" style="margin:0" data-r="${esc(x)}">%${esc(fmt(x))}</button>`).join("")}
+function kdvSet(m,f){const [c,w,r,mo]=KD[m].map($),on=!!(f&&f.kdv!=null);c.checked=on;r.value=on?f.kdv:(kdvAyar.son!=null?kdvAyar.son:"");mo.value=f&&f.kdvDahil?"dahil":"haric";kdvUI(m)}
+function kdvGet(m){const [c,w,r,mo]=KD[m].map($);if(!c.checked)return{};const v=parseFloat(r.value);if(!(v>=0&&v<=100))return null;return{kdv:v,kdvDahil:mo.value==="dahil"}}
+async function kdvKaydet(v){const old=Array.isArray(kdvAyar.gecmis)?kdvAyar.gecmis:Object.values(kdvAyar.gecmis||{});
+  await db.ref("fiyatlar/ayar/kdv").set({son:v,gecmis:[v].concat(old.filter(x=>x!==v)).slice(0,6)})}
+["sevk","stok"].forEach(m=>{const [c,w,r,mo,g]=KD[m];$(c).onchange=()=>kdvUI(m);$(g).onclick=e=>{const x=e.target.dataset.r;if(x!=null)$(r).value=x}});
 function fiyatBaglan(){
-  if(isAdmin()){if(!fRef){fRef=db.ref("fiyatlar");fRef.on("value",x=>{const v=x.val()||{};fyat={sevk:v.sevk||{},stok:v.stok||{}};listele();stokListele()},e=>toast("Fiyatlar okunamadı: "+errText(e)))}}
+  if(isAdmin()){if(!fRef){fRef=db.ref("fiyatlar");fRef.on("value",x=>{const v=x.val()||{};fyat={sevk:v.sevk||{},stok:v.stok||{}};kdvAyar=(v.ayar&&v.ayar.kdv)||{};
+    if(!$("skc").checked)kdvSet("sevk",null);if(!$("kkc").checked&&!$("dKalem").open)kdvSet("stok",null);else kdvUI("stok");kdvUI("sevk");listele();stokListele()},e=>toast("Fiyatlar okunamadı: "+errText(e)))}}
   else if(fRef){fRef.off();fRef=null;fyat={sevk:{},stok:{}}}
 }
 const ust=(v,m)=>v<=0?"no":(m>0&&v<=m)?"lo":"ok";
@@ -506,7 +527,7 @@ function stokListele(){
   const cats=[...new Set(sKalem.map(k=>k.kategori).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr")),cur=$("sc").value;
   $("sc").innerHTML='<option value="">Tüm kategoriler</option>'+cats.map(c=>`<option${c===cur?" selected":""}>${esc(c)}</option>`).join("");
   $("dl").innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join("");
-  {const vt=isAdmin()?sKalem.reduce((t,k)=>t+(stokVal(k)||0),0):0;$("sVal").classList.toggle("hide",!isAdmin());$("sVn").textContent=para(vt)}
+  {const t=isAdmin()?sumV(sKalem,stokVal):{h:0,k:0,t:0};$("sVal").classList.toggle("hide",!isAdmin());$("sVn").textContent=sumTxt(t)}
   $("sK").textContent=sKalem.length;$("sA").textContent=sKalem.filter(k=>dur(k)==="lo").length;$("sT").textContent=sKalem.filter(k=>dur(k)==="no").length;
   const q=$("sq").value.toLowerCase().trim(),fc=$("sc").value,fd=$("sd").value;
   const L=sKalem.filter(k=>(!q||[k.ad,k.kategori,k.tedarikci,k.not].some(x=>(x||"").toLowerCase().includes(q)))&&(!fc||k.kategori===fc)&&(!fd||dur(k)===fd)).sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr"));
@@ -549,7 +570,7 @@ function kDraw(){
 $("sfb").onchange=()=>{kFB=$("sfb").value};
 $("ub").onchange=e=>{const u=e.target.dataset.c;if(!u)return;kRead();if(e.target.checked)kSel.add(u);else kSel.delete(u);kDraw()};
 function kAc(k){
-  kEdit=k||null;kFoto="";kVals={};{const f=k?(fyat.stok||{})[k.id]:null;kFB=f?f.birim:"";$("sfy").value=f?f.tutar:"";$("kfi").classList.toggle("hide",!isAdmin())}$("kT").textContent=k?"Kalemi düzenle":"Yeni kalem";$("kE").textContent="";
+  kEdit=k||null;kFoto="";kVals={};{const f=k?(fyat.stok||{})[k.id]:null;kFB=f?f.birim:"";$("sfy").value=f?f.tutar:"";$("kfi").classList.toggle("hide",!isAdmin());kdvSet("stok",f)}$("kT").textContent=k?"Kalemi düzenle":"Yeni kalem";$("kE").textContent="";
   $("sad").value=k?k.ad:"";$("skat").value=k?k.kategori||"":"";$("ste").value=k?k.tedarikci||"":"";$("sno").value=k?k.not||"":"";
   if(k){const n=norm(k);kSel=new Set(Object.keys(n.mik).filter(u=>UL[u]));kSel.forEach(u=>{if(+n.min[u]>0)kVals[u]={min:n.min[u]}})}else kSel=new Set(["adet"]);
   kDraw();
@@ -563,6 +584,7 @@ $("sfoto").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileR
 $("kOk").onclick=async()=>{
   kRead();const nm=$("sad").value.trim(),err=m=>{$("kE").textContent=m};
   if(!nm)return err("Kalem adı gerekli.");
+  if(isAdmin()&&kdvGet("stok")===null)return err("KDV oranı 0 ile 100 arasında olmalı.");
   if(!kSel.size)return err("En az bir birim seçin.");
   const old=kEdit?norm(kEdit).mik:{},mik={},min={};
   for(const u of kSel){const v=kVals[u]||{},a=parseFloat(v.mik),b=parseFloat(v.min);
@@ -589,7 +611,7 @@ $("kOk").onclick=async()=>{
       const pos=Object.fromEntries(Object.entries(mik).filter(([,v])=>v>0));
       if(Object.keys(pos).length)await db.ref("stokHareket").push().set({kalemId:r.key,ad:nm,tip:"giris",mik:pos,kalan:mik,not:"İlk kayıt",kullanici:ad(),uid:user.uid,zaman:TS});
     }
-    if(isAdmin()){const f=parseFloat($("sfy").value),fid=kEdit?kEdit.id:newId;await db.ref("fiyatlar/stok/"+fid).set(f>=0&&$("sfb").value?{tutar:f,birim:$("sfb").value}:null)}
+    if(isAdmin()){const f=parseFloat($("sfy").value),fid=kEdit?kEdit.id:newId,kd=kdvGet("stok")||{},ok=f>=0&&$("sfb").value;await db.ref("fiyatlar/stok/"+fid).set(ok?Object.assign({tutar:f,birim:$("sfb").value},kd):null);if(ok&&kd.kdv!=null)await kdvKaydet(kd.kdv)}
     $("dKalem").close();toast("Kaydedildi");
   }catch(e){err(errText(e))}
   $("kOk").disabled=false;
@@ -627,7 +649,7 @@ async function gecAc(k){
 /* Excel */
 $("sCsv").onclick=()=>{
   const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',st={ok:"Yeterli",lo:"Azalıyor",no:"Tükendi"};
-  const r=[["Kalem","Kategori"].concat(UN.map(u=>u[1]),["Durum","Tedarikçi","Not"],isAdmin()?["Fiyat (₺)","Fiyat birimi","Stok değeri (₺)"]:[]).map(q).join(";")].concat(sKalem.slice().sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr")).map(k=>{const n=norm(k).mik;
+  const r=[["Kalem","Kategori"].concat(UN.map(u=>u[1]),["Durum","Tedarikçi","Not"],isAdmin()?["Fiyat (₺)","Fiyat birimi","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")].concat(sKalem.slice().sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr")).map(k=>{const n=norm(k).mik;
     return [q(k.ad),q(k.kategori)].concat(UN.map(([u])=>u in n?q(String(+n[u]||0).replace(".",",")):q("")),[q(st[dur(k)]),q(k.tedarikci),q(k.not)],isAdmin()?kFyCsv(k):[]).join(";")}));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download="stok-listesi.csv";a.click();
 };
