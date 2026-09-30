@@ -64,7 +64,6 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .badge-no{background:#e71d36}.sub{font-size:12px;color:#64748b;margin-top:2px}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99999;max-width:90vw;text-align:center}
 #toast.on{opacity:1}
-.quick-stok{border:1px solid #cbd5e1;cursor:pointer;width:100%;transition:.15s}.quick-stok.active{box-shadow:0 0 0 3px rgba(2,132,199,.18);transform:translateY(-1px)}
 </style>
 </head>
 <body>
@@ -182,13 +181,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
   <div id="pStok" class="hide">
     <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
-      <button type="button" class="hl quick-stok" data-quick="all"><small>KALEM</small><b id="sK">0</b></button>
-      <button type="button" class="hl quick-stok" data-quick="lo" style="background:#fff7ed;border-color:#ea580c"><small style="color:#c2410c">AZALAN</small><b id="sA" style="color:#9a3412">0</b></button>
-      <button type="button" class="hl quick-stok" data-quick="no" style="background:#fef2f2;border-color:#dc2626"><small style="color:#b91c1c">TÜKENEN</small><b id="sT" style="color:#991b1b">0</b></button>
+      <div class="hl"><small>KALEM</small><b id="sK">0</b></div>
+      <div class="hl" style="background:#fff7ed;border-color:#ea580c"><small style="color:#c2410c">AZALAN</small><b id="sA" style="color:#9a3412">0</b></div>
+      <div class="hl" style="background:#fef2f2;border-color:#dc2626"><small style="color:#b91c1c">TÜKENEN</small><b id="sT" style="color:#991b1b">0</b></div>
     </div>
     <div class="hl hide" id="sVal" style="margin-bottom:12px;background:#fefce8;border-color:#ca8a04"><small style="color:#854d0e">TOPLAM STOK DEĞERİ (fiyatı girilen kalemler)</small><b id="sVn" style="color:#713f12">0 ₺</b></div>
     <div class="filter">
-      <input id="sq" placeholder="🔍 Kalem ara (poşet, bant, koli, masura...)" style="margin-bottom:8px">
+      <input id="sq" placeholder="🔍 Kalem ara (poşet, bant, koli, masura, ebat...)" style="margin-bottom:8px">
       <div style="display:flex;gap:6px"><select id="sc"><option value="">Tüm kategoriler</option></select><select id="sd"><option value="">Tüm durumlar</option><option value="lo">Azalan</option><option value="no">Tükenen</option></select></div>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn b1" style="margin:0" id="sAdd">＋ Yeni kalem ekle</button><button class="btn b6" style="margin:0;width:auto;padding:0 14px" id="sCsv">Excel</button></div>
@@ -203,9 +202,9 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 </dialog>
 <dialog id="dKalem">
   <h3 id="kT" style="margin-bottom:6px">Yeni kalem</h3>
-  <label for="sad">Kalem adı</label><input id="sad" placeholder="Örn: Koli bandı 45mm şeffaf">
-  <label for="skat" style="margin-top:8px">Kategori</label><input id="skat" list="dl" placeholder="Örn: Bant"><datalist id="dl"></datalist>
-  <label for="sebat" style="margin-top:8px">Ebat</label><input id="sebat" placeholder="Örn: 32 × 40 cm">
+  <label for="sad">Kalem adı</label><input id="sad" placeholder="Örn: Rulo Poşet">
+  <label for="sebat" style="margin-top:8px">Ebat / Ölçü</label><input id="sebat" placeholder="Örn: 25x35 cm veya 45mm">
+  <label for="skat" style="margin-top:8px">Kategori</label><input id="skat" list="dl" placeholder="Örn: Ambalaj"><datalist id="dl"></datalist>
   <label style="margin-top:12px">Takip edilecek birimler (birden fazla seçebilirsiniz)</label>
   <div id="ub" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
   <div id="kur"></div>
@@ -214,7 +213,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <label class="chip" style="margin-top:8px"><input type="checkbox" id="kkc">KDV ekle</label>
     <div id="kkw" class="hide" style="margin-top:6px"><div style="display:flex;gap:6px"><input id="kkr" type="number" inputmode="decimal" min="0" max="100" step="any" placeholder="KDV %"><select id="kkm"><option value="haric">Fiyat KDV hariç</option><option value="dahil">Fiyat KDV dahil</option></select></div><div id="kkg" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div></div>
   <p class="mut" style="font-size:11px;margin:0 0 4px">Mevcut miktar ve kritik seviye (altına düşünce uyarır) isteğe bağlıdır.</p>
-  <label for="ste" style="margin-top:8px">Tedarikçi (isteğe bağlı)</label><input id="ste" list="tdl" autocomplete="off"><datalist id="tdl"></datalist>
+  <label for="ste" style="margin-top:8px">Tedarikçi (isteğe bağlı)</label><input id="ste">
   <label for="sno" style="margin-top:8px">Not (isteğe bağlı)</label><input id="sno">
   <label for="sfoto" style="margin-top:8px">Fotoğraf (isteğe bağlı)</label><input id="sfoto" type="file" accept="image/*">
   <img id="sprev" alt="" style="display:none;width:100%;max-height:160px;object-fit:contain;background:#0f172a;border-radius:8px;margin-top:8px">
@@ -420,7 +419,7 @@ function kart(u){
   ${isAdmin()?sFyHtml(u):""}
   ${u.not?`<div class="note">📌 <b>Not:</b> ${esc(u.not)}</div>`:""}
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
-  ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">${M().teslim}: ${esc(u.teslimEden)}</div>`:""}
+  ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">${M().teslim}:${esc(u.teslimEden)}</div>`:""}
   <div class="acts">${nx}${eb}${db2}</div></div>`;
 }
 function listele(){
@@ -440,7 +439,7 @@ $("liste").onclick=async e=>{
     else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref(M().yol+"/"+u.id).remove();if(isAdmin())db.ref("fiyatlar/sevk/"+u.id).remove().catch(()=>{})}
   }catch(err){toast(errText(err))}
 };
-$("bCsv").onclick=()=>{
+$("bCsv").onclick=WithCSV=>{
   const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',n=v=>q(String(+v||0).replace(".",","));
   const r=[["Tarih","Müşteri","Ürün","Kg","Adet","Adres","Not","Kaydeden"].concat(isAdmin()?["Fiyat (₺)","Esas","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")].concat(filtreli().map(u=>[q(trDate(u.tarih)),q(u.musteri),q(u.urun),n(u.kg),n(u.paket),q(u.adres),q(u.not),q(u.ekleyen)].concat(isAdmin()?sFyCsv(u):[]).join(";")));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download=mod+"-"+tab+".csv";a.click();
@@ -475,7 +474,7 @@ function modUyg(){
 
 /* ================= STOK (satın alınan malzemeler) ================= */
 var fRef=null,fyErr=0,fyat={sevk:{},stok:{}},kFB="";
-var panel="sevk",sRef=null,sKalem=[],kEdit=null,kFoto="",hs=null,kSel=new Set(),kVals={},sQuick="all";
+var panel="sevk",sRef=null,sKalem=[],kEdit=null,kFoto="",hs=null,kSel=new Set(),kVals={};
 const UN=[["adet","Adet"],["koli","Koli"],["paket","Paket"],["rulo","Rulo"],["masura","Masura"],["kg","Kg"],["metre","Metre"]],UL=Object.fromEntries(UN);
 const norm=k=>{
   if(k.mik&&typeof k.mik==="object")return{mik:k.mik,min:(k.min&&typeof k.min==="object")?k.min:{}};
@@ -524,28 +523,16 @@ function stokKapat(){if(sRef){sRef.off();sRef=null}}
 function stokYukle(){stokKapat();sRef=db.ref("stokKalem");
   sRef.on("value",x=>{const v=x.val()||{};sKalem=Object.keys(v).map(k=>Object.assign({id:k},v[k]));stokListele()},e=>toast("Stok okunamadı: "+errText(e)))}
 ["sq","sc","sd"].forEach(i=>$(i).addEventListener("input",()=>stokListele()));
-document.querySelectorAll("[data-quick]").forEach(b=>b.addEventListener("click",()=>{sQuick=b.dataset.quick;$("sd").value="";stokListele()}));
-function tedarikciListele(){
-  const set=new Set();
-  try{JSON.parse(localStorage.getItem("mag_tedarikciler")||"[]").forEach(x=>{if(String(x).trim())set.add(String(x).trim())})}catch(_){ }
-  sKalem.forEach(k=>{if((k.tedarikci||"").trim())set.add(k.tedarikci.trim())});
-  const a=[...set].sort((x,y)=>x.localeCompare(y,"tr"));
-  try{localStorage.setItem("mag_tedarikciler",JSON.stringify(a))}catch(_){ }
-  $("tdl").innerHTML=a.map(x=>`<option value="${esc(x)}">`).join("");
-}
-function tedarikciKaydet(v){v=(v||"").trim();if(!v)return;let a=[];try{a=JSON.parse(localStorage.getItem("mag_tedarikciler")||"[]")}catch(_){ }if(!a.includes(v))a.push(v);a.sort((x,y)=>x.localeCompare(y,"tr"));try{localStorage.setItem("mag_tedarikciler",JSON.stringify(a))}catch(_){ }tedarikciListele()}
 function stokListele(){
   if(panel!=="stok")return;
   const cats=[...new Set(sKalem.map(k=>k.kategori).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr")),cur=$("sc").value;
   $("sc").innerHTML='<option value="">Tüm kategoriler</option>'+cats.map(c=>`<option${c===cur?" selected":""}>${esc(c)}</option>`).join("");
   $("dl").innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join("");
-  tedarikciListele();
   {const t=isAdmin()?sumV(sKalem,stokVal):{h:0,k:0,t:0};$("sVal").classList.toggle("hide",!isAdmin());$("sVn").textContent=sumTxt(t)}
   $("sK").textContent=sKalem.length;$("sA").textContent=sKalem.filter(k=>dur(k)==="lo").length;$("sT").textContent=sKalem.filter(k=>dur(k)==="no").length;
-  document.querySelectorAll("[data-quick]").forEach(b=>b.classList.toggle("active",b.dataset.quick===sQuick));
   const q=$("sq").value.toLowerCase().trim(),fc=$("sc").value,fd=$("sd").value;
-  const L=sKalem.filter(k=>(sQuick==="all"||dur(k)===sQuick)&&(!q||[k.ad,k.ebat,k.kategori,k.tedarikci,k.not].some(x=>(x||"").toLowerCase().includes(q)))&&(!fc||k.kategori===fc)&&(!fd||dur(k)===fd)).sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr"));
-  $("sList").innerHTML=L.length?L.map(kkart).join(""):"<div class="empty">Kalem bulunamadı. \"Yeni kalem ekle\" ile başlayın.</div>";
+  const L=sKalem.filter(k=>(!q||[k.ad,k.kategori,k.ebat,k.tedarikci,k.not].some(x=>(x||"").toLowerCase().includes(q)))&&(!fc||k.kategori===fc)&&(!fd||dur(k)===fd)).sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr"));
+  $("sList").innerHTML=L.length?L.map(kkart).join(""):'<div class="empty">Kalem bulunamadı. "Yeni kalem ekle" ile başlayın.</div>';
 }
 function kkart(k){
   const d=dur(k),id=esc(k.id),n=norm(k),c={ok:["hazir-border","badge-hazir","YETERLİ"],lo:["sevk-border","badge-sevk","AZALIYOR"],no:["tamam-border","badge-no","TÜKENDİ"]}[d];
@@ -585,7 +572,7 @@ $("sfb").onchange=()=>{kFB=$("sfb").value};
 $("ub").onchange=e=>{const u=e.target.dataset.c;if(!u)return;kRead();if(e.target.checked)kSel.add(u);else kSel.delete(u);kDraw()};
 function kAc(k){
   kEdit=k||null;kFoto="";kVals={};{const f=k?(fyat.stok||{})[k.id]:null;kFB=f?f.birim:"";$("sfy").value=f?f.tutar:"";$("kfi").classList.toggle("hide",!isAdmin());kdvSet("stok",f)}$("kT").textContent=k?"Kalemi düzenle":"Yeni kalem";$("kE").textContent="";
-  $("sad").value=k?k.ad:"";$("skat").value=k?k.kategori||"":"";$("sebat").value=k?k.ebat||"":"";$("ste").value=k?k.tedarikci||"":"";$("sno").value=k?k.not||"":"";
+  $("sad").value=k?k.ad:"";$("sebat").value=k?k.ebat\vert{}\vert{}"":"";$("skat").value=k?k.kategori||"":"";$("ste").value=k?k.tedarikci\vert{}\vert{}"":"";$("sno").value=k?k.not||"":"";
   if(k){const n=norm(k);kSel=new Set(Object.keys(n.mik).filter(u=>UL[u]));kSel.forEach(u=>{if(+n.min[u]>0)kVals[u]={min:n.min[u]}})}else kSel=new Set(["adet"]);
   kDraw();
   const p=$("sprev");if(k&&safeImg(k.foto)){p.src=k.foto;p.style.display="block"}else p.style.display="none";
@@ -608,8 +595,7 @@ $("kOk").onclick=async()=>{
   if(!kEdit&&sKalem.some(x=>(x.ad||"").toLowerCase()===nm.toLowerCase())&&!confirm("Bu isimde bir kalem zaten var. Yine de eklensin mi?"))return;
   const lost=Object.keys(old).filter(u=>!kSel.has(u)&&old[u]>0);
   if(lost.length&&!confirm("Kaldırdığınız birimlerin miktarı silinecek ("+fmtQ(Object.fromEntries(lost.map(u=>[u,old[u]])))+"). Devam edilsin mi?"))return;
-  const TS=firebase.database.ServerValue.TIMESTAMP,ted=$("ste").value.trim(),extra={kategori:$("skat").value.trim(),ebat:$("sebat").value.trim(),tedarikci:ted,not:$("sno").value.trim()};
-  tedarikciKaydet(ted);
+  const TS=firebase.database.ServerValue.TIMESTAMP,extra={kategori:$("skat").value.trim(),ebat:$("sebat").value.trim(),tedarikci:$("ste").value.trim(),not:$("sno").value.trim()};
   $("kOk").disabled=true;let newId="";
   try{
     if(kEdit){
@@ -626,7 +612,7 @@ $("kOk").onclick=async()=>{
       const pos=Object.fromEntries(Object.entries(mik).filter(([,v])=>v>0));
       if(Object.keys(pos).length)await db.ref("stokHareket").push().set({kalemId:r.key,ad:nm,tip:"giris",mik:pos,kalan:mik,not:"İlk kayıt",kullanici:ad(),uid:user.uid,zaman:TS});
     }
-    if(isAdmin()){const f=parseFloat($("sfy").value),fid=kEdit?kEdit.id:newId,kd=kdvGet("stok")||{},ok=f>=0&&$("sfb").value;await db.ref("fiyatlar/stok/"+fid).set(ok?Object.assign({tutar:f,birim:$("sfb").value},kd):null);if(ok&&kd.kdv!=null)await kdvKaydet(kd.kdv)}
+    if(isAdmin()){const f=parseFloat($("sfy").value),fid=kEdit?kEdit.id:newId,kd=kdvGet("stok")\vert{}\vert{}{},ok=f>=0&&$("sfb").value;await db.ref("fiyatlar/stok/"+fid).set(ok?Object.assign({tutar:f,birim:$("sfb").value},kd):null);if(ok&&kd.kdv!=null)await kdvKaydet(kd.kdv)}
     $("dKalem").close();toast("Kaydedildi");
   }catch(e){err(errText(e))}
   $("kOk").disabled=false;
@@ -664,8 +650,8 @@ async function gecAc(k){
 /* Excel */
 $("sCsv").onclick=()=>{
   const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',st={ok:"Yeterli",lo:"Azalıyor",no:"Tükendi"};
-  const r=[["Kalem","Kategori","Ebat"].concat(UN.map(u=>u[1]),["Durum","Tedarikçi","Not"],isAdmin()?["Fiyat (₺)","Fiyat birimi","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")].concat(sKalem.slice().sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr")).map(k=>{const n=norm(k).mik;
-    return [q(k.ad),q(k.kategori),q(k.ebat)].concat(UN.map(([u])=>u in n?q(String(+n[u]||0).replace(".",",")):q("")),[q(st[dur(k)]),q(k.tedarikci),q(k.not)],isAdmin()?kFyCsv(k):[]).join(";")}));
+  const r=[["Kalem","Ebat","Kategori"].concat(UN.map(u=>u[1]),["Durum","Tedarikçi","Not"],isAdmin()?["Fiyat (₺)","Fiyat birimi","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")].concat(sKalem.slice().sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr")).map(k=>{const n=norm(k).mik;
+    return [q(k.ad),q(k.ebat),q(k.kategori)].concat(UN.map(([u])=>u in n?q(String(+n[u]||0).replace(".",",")):q("")),[q(st[dur(k)]),q(k.tedarikci),q(k.not)],isAdmin()?kFyCsv(k):[]).join(";")}));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download="stok-listesi.csv";a.click();
 };
 
