@@ -93,7 +93,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <form id="fG" autocomplete="on">
       <input id="lk" name="username" placeholder="Kullanıcı Adı" autocomplete="username" autocapitalize="none" autocorrect="off">
       <input id="lp" name="password" type="password" placeholder="Şifre" autocomplete="current-password">
-      <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#334155;margin:0 0 10px;text-align:left;cursor:pointer"><input id="lb" type="checkbox" style="width:auto;margin:0" checked> Beni hatırla</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#334155;margin:0 0 10px;text-align:left;cursor:pointer"><input id="lb" type="checkbox" style="width:auto;margin:0" checked> Kullanıcı adı ve şifreyi hatırla</label>
       <div class="err" id="eG"></div>
       <button type="button" class="btn b8" id="bG">Sisteme Giriş Yap</button>
     </form>
@@ -400,8 +400,8 @@ $("bG").onclick=async()=>{
   try{
     await auth.setPersistence(rem?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION);
     await auth.signInWithEmailAndPassword(mail(k),p);
-    try{if(rem){localStorage.setItem("hatirla_k",k);localStorage.setItem("hatirla_on","1")}else{localStorage.removeItem("hatirla_k");localStorage.setItem("hatirla_on","0")}}catch(_){}
-    $("lp").value=""
+    try{if(rem){localStorage.setItem("hatirla_k",k);localStorage.setItem("hatirla_p",btoa(unescape(encodeURIComponent(p))));localStorage.setItem("hatirla_on","1")}else{localStorage.removeItem("hatirla_k");localStorage.removeItem("hatirla_p");localStorage.setItem("hatirla_on","0")}}catch(_){}
+    if(!rem)$("lp").value=""
   }catch(e){$("eG").textContent=errText(e)}
 };
 $("fG").addEventListener("submit",e=>{e.preventDefault();$("bG").click()});
@@ -409,6 +409,8 @@ try{
   const on=localStorage.getItem("hatirla_on"),k0=localStorage.getItem("hatirla_k");
   if(on==="0")$("lb").checked=false;
   if(k0)$("lk").value=k0;
+  const p0=localStorage.getItem("hatirla_p");
+  if(p0&&on!=="0")$("lp").value=decodeURIComponent(escape(atob(p0)));
 }catch(_){}
 $("bK").onclick=async()=>{
   const n=$("rn").value.trim(),k=$("rk").value.trim().toLowerCase(),p=$("rp").value,r=$("rr").value;$("eK").textContent="";
