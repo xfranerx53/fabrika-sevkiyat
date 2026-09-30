@@ -64,6 +64,12 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .chip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #cbd5e1;border-radius:99px;padding:6px 11px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;text-transform:none;margin:0;color:#334155}.chip input{width:auto;margin:0}.urow2{display:grid;grid-template-columns:64px 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}.urow2 b{font-size:13px}.qbox{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.qbox .hl{flex:1;min-width:88px}
 .badge-no{background:#e71d36}.sub{font-size:12px;color:#64748b;margin-top:2px}
 .stabs button{font-size:12px;padding:11px 2px}.stabs button.on{background:#2563eb;color:#fff}.mut{color:#64748b}.item a{color:#2563eb;font-weight:700;text-decoration:none}.shd{font-size:12px;font-weight:800;color:#475569;margin:6px 2px 8px}
+.item.c{padding:8px 10px;margin-bottom:6px;border-radius:10px;border-width:1px;border-left-width:5px}
+.item img.th{width:44px;height:44px;max-height:44px;margin:0;border-radius:6px;object-fit:cover;flex:none}
+.item.c .sub{margin-top:1px}.item.c .badge{font-size:9px;padding:3px 6px;flex:none}.item.c .nm{font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acts.s{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.acts.s .btn{flex:1;min-width:62px;padding:8px 4px;font-size:12px}.acts.s .btn.i{flex:0 0 42px;min-width:0}
+.chev{font-size:10px;color:#94a3b8;flex:none}.dt{margin-top:6px;border-top:1px solid #f1f5f9;padding-top:4px}
+#pStok .grid .hl{padding:5px}#pStok .grid .hl b{font-size:18px}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99999;max-width:90vw;text-align:center}
 #toast.on{opacity:1}
 </style>
@@ -584,23 +590,36 @@ function stokListele(){
 }
 function kkart(k){
   const d=dur(k),id=esc(k.id),n=norm(k),c={ok:["hazir-border","badge-hazir","YETERLİ"],lo:["sevk-border","badge-sevk","AZALIYOR"],no:["tamam-border","badge-no","TÜKENDİ"]}[d];
-  const canDel=isAdmin()||(k.ekleyenUid&&k.ekleyenUid===user.uid);
+  const canDel=isAdmin()||(k.ekleyenUid&&k.ekleyenUid===user.uid),open=kAcik.has(k.id),ph=safeImg(k.foto);
   const bek=sSip.filter(o=>o.durum==="bekliyor").flatMap(o=>satirlar(o).filter(x=>x.kalemId===k.id).map(x=>fmt(x.miktar)+" "+(UL[x.birim]||x.birim)+" ("+(o.firma||"")+")"));
-  const boxes=UN.filter(([u])=>u in n.mik).map(([u,l])=>{const v=+n.mik[u]||0,m=+n.min[u]||0,col={ok:"#0c4a6e",lo:"#b45309",no:"#b91c1c"}[ust(v,m)];
-    return `<div class="hl"><small>${l.toUpperCase()}</small><b style="color:${col}">${esc(fmt(v))}</b>${m>0?`<small style="color:#64748b">kritik: ${esc(fmt(m))}</small>`:""}</div>`}).join("");
-  return `<div class="item ${c[0]}">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:16px">${esc(k.ad)}</b><span class="badge ${c[1]}">${c[2]}</span></div>
-  <div class="sub">${esc(k.kategori||"Kategorisiz")}${k.ebat?" · 📐 "+esc(k.ebat):""}${k.tedarikci?" · "+esc(k.tedarikci):""}</div>
-  ${safeImg(k.foto)?`<img loading="lazy" src="${safeImg(k.foto)}" alt="" style="max-height:140px">`:""}
-  <div class="qbox">${boxes}</div>
-  ${bek.length?`<div class="addr" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">🧾 Siparişte: ${esc(bek.join(" · "))}</div>`:""}
-  ${isAdmin()?kFyHtml(k):""}
-  ${k.not?`<div class="note">📌 ${esc(k.not)}</div>`:""}
-  <div class="acts"><button class="btn b3" data-a="in" data-id="${id}">＋ Giriş</button><button class="btn b2" data-a="out" data-id="${id}">− Çıkış</button>
-  <button class="btn b6" data-a="gec" data-id="${id}">📜 Geçmiş</button><button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>
-  ${canDel?`<button class="btn b5" style="grid-column:span 2" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div></div>`;
+  const chips=UN.filter(([u])=>u in n.mik).map(([u,l])=>{const v=+n.mik[u]||0,m=+n.min[u]||0,col={ok:"#0c4a6e",lo:"#b45309",no:"#b91c1c"}[ust(v,m)];return `<span style="color:${col};font-weight:800">${esc(fmt(v))} ${l}</span>`}).join(" · ");
+  const kr=UN.filter(([u])=>u in n.mik&&+n.min[u]>0).map(([u,l])=>fmt(n.min[u])+" "+l).join(", ");
+  const meta=[k.kategori,k.ebat?"📐 "+k.ebat:"",k.tedarikci].filter(Boolean).map(esc).join(" · ");
+  return `<div class="item c ${c[0]}">
+  <div class="kh" data-id="${id}" style="display:flex;gap:8px;align-items:center;cursor:pointer">
+    ${ph?`<img class="th" loading="lazy" src="${ph}" alt="">`:""}
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(k.ad)}</b><span class="badge ${c[1]}">${c[2]}</span></div>
+      <div class="sub" style="font-size:13px">${chips||"-"}${bek.length?' <span title="Siparişte">🧾</span>':""}</div>
+      ${meta?`<div class="sub" style="font-size:11px">${meta}</div>`:""}
+    </div><span class="chev">${open?"▲":"▼"}</span>
+  </div>
+  <div class="dt${open?"":" hide"}">
+    ${ph?`<img loading="lazy" src="${ph}" alt="" style="max-height:140px">`:""}
+    ${kr?`<div class="sub">Kritik seviye: ${esc(kr)}</div>`:""}
+    ${bek.length?`<div class="addr" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">🧾 Siparişte: ${esc(bek.join(" · "))}</div>`:""}
+    ${isAdmin()?kFyHtml(k):""}
+    ${k.not?`<div class="note">📌 ${esc(k.not)}</div>`:""}
+    <div class="acts s"><button class="btn b3" data-a="in" data-id="${id}">＋ Giriş</button><button class="btn b2" data-a="out" data-id="${id}">− Çıkış</button>
+    <button class="btn b6" data-a="gec" data-id="${id}">📜 Geçmiş</button><button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>
+    ${canDel?`<button class="btn b5 i" data-a="del" data-id="${id}">🗑️</button>`:""}</div>
+  </div></div>`;
 }
 $("sList").onclick=async e=>{
+  const h=e.target.closest(".kh");
+  if(h&&!e.target.closest("button")){const id=h.dataset.id,dt=h.parentElement.querySelector(".dt");
+    if(kAcik.has(id))kAcik.delete(id);else kAcik.add(id);
+    dt.classList.toggle("hide",!kAcik.has(id));h.querySelector(".chev").textContent=kAcik.has(id)?"▲":"▼";return}
   const b=e.target.closest("button[data-a]");if(!b)return;const k=sKalem.find(x=>x.id===b.dataset.id);if(!k)return;
   const a=b.dataset.a;
   if(a==="in"||a==="out")hAc(k,a==="in"?"giris":"cikis");
@@ -707,7 +726,7 @@ $("sCsv").onclick=()=>{
 };
 
 /* ================= TEDARİKÇİLER & SİPARİŞLER ================= */
-var tRef=null,oRef=null,sTed=[],sSip=[],sTab="kal",tEdit=null,oEdit=null;
+var kAcik=new Set(),tRef=null,oRef=null,sTed=[],sSip=[],sTab="kal",tEdit=null,oEdit=null;
 const byTr=f=>(a,b)=>(a[f]||"").localeCompare(b[f]||"","tr");
 const tarih=ts=>ts?new Date(ts).toLocaleDateString("tr-TR"):"";
 function satirlar(o){return Array.isArray(o.satirlar)?o.satirlar.filter(Boolean):Object.values(o.satirlar||{})}
@@ -725,15 +744,15 @@ function tedListele(){
 }
 function tkart(t){
   const id=esc(t.id),acik=sSip.filter(o=>o.durum==="bekliyor"&&o.tedId===t.id).length,canDel=isAdmin()||(t.ekleyenUid&&t.ekleyenUid===user.uid);
-  return `<div class="item hazir-border">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:16px">${esc(t.firma)}</b>${acik?`<span class="badge badge-sevk">${acik} SİPARİŞTE</span>`:""}</div>
-  ${t.yetkili?`<div class="sub">👤 ${esc(t.yetkili)}</div>`:""}
-  ${[t.tel,t.tel2].filter(Boolean).map(x=>`<div class="sub">📞 <a href="tel:${esc(String(x).replace(/[^\d+]/g,""))}">${esc(x)}</a></div>`).join("")}
-  ${t.mail?`<div class="sub">✉️ <a href="mailto:${esc(t.mail)}">${esc(t.mail)}</a></div>`:""}
+  const tels=[t.tel,t.tel2].filter(Boolean).map(x=>`<a href="tel:${esc(String(x).replace(/[^\d+]/g,""))}">📞 ${esc(x)}</a>`).join(" · ");
+  return `<div class="item c hazir-border">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(t.firma)}</b>${acik?`<span class="badge badge-sevk">${acik} SİPARİŞTE</span>`:""}</div>
+  ${t.yetkili||tels?`<div class="sub" style="font-size:13px">${t.yetkili?"👤 "+esc(t.yetkili)+" ":""}${tels}</div>`:""}
+  ${t.mail?`<div class="sub"><a href="mailto:${esc(t.mail)}">✉️ ${esc(t.mail)}</a></div>`:""}
   ${t.adres?`<div class="sub">📍 ${esc(t.adres)}</div>`:""}
-  ${t.not?`<div class="note">📌 ${esc(t.not)}</div>`:""}
-  <div class="acts"><button class="btn b1" style="grid-column:span 2" data-a="ord" data-id="${id}">🧾 Bu firmaya sipariş ver</button>
-  <button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div></div>`;
+  ${t.not?`<div class="sub">📌 ${esc(t.not)}</div>`:""}
+  <div class="acts s"><button class="btn b1" data-a="ord" data-id="${id}">🧾 Sipariş ver</button>
+  <button class="btn b6 i" data-a="edit" data-id="${id}">✏️</button>${canDel?`<button class="btn b5 i" data-a="del" data-id="${id}">🗑️</button>`:""}</div></div>`;
 }
 $("tList").onclick=async e=>{
   const b=e.target.closest("button[data-a]");if(!b)return;const t=sTed.find(x=>x.id===b.dataset.id);if(!t)return;const a=b.dataset.a;
@@ -770,16 +789,15 @@ function sipListele(){
 }
 function okart(o){
   const id=esc(o.id),ok=o.durum==="geldi",canDel=isAdmin()||(o.ekleyenUid&&o.ekleyenUid===user.uid),t=sTed.find(x=>x.id===o.tedId);
-  return `<div class="item ${ok?"hazir-border":"sevk-border"}">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:16px">${esc(o.firma||"-")}</b><span class="badge ${ok?"badge-hazir":"badge-sevk"}">${ok?"STOKTA":"SİPARİŞTE"}</span></div>
-  <div class="sub">${esc(tarih(o.eklenmeTarihi))} · ${esc(o.ekleyen||"")}</div>
-  ${!ok&&t&&(t.yetkili||t.tel)?`<div class="sub">${t.yetkili?"👤 "+esc(t.yetkili)+" ":""}${t.tel?`📞 <a href="tel:${esc(String(t.tel).replace(/[^\d+]/g,""))}">${esc(t.tel)}</a>`:""}</div>`:""}
-  <div class="addr" style="background:#f8fafc;border-color:#e2e8f0;color:#0f172a">${satirlar(o).map(x=>"• "+esc(satirTxt(x))).join("<br>")}</div>
-  ${o.not?`<div class="note">📌 ${esc(o.not)}</div>`:""}
-  ${ok?`<div class="who">Stoğa eklendi: ${esc(tarih(o.teslimTarihi))} · ${esc(o.teslimAlan||"")}</div>`:""}
-  <div class="acts">
-  ${ok?"":`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:15px" data-a="in" data-id="${id}">✅ Ürün geldi — Stokta</button><button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>`}
-  ${canDel?`<button class="btn b5" data-a="del" data-id="${id}"${ok?' style="grid-column:span 2"':""}>🗑️ ${ok?"Kaydı sil":"İptal et"}</button>`:""}</div></div>`;
+  return `<div class="item c ${ok?"hazir-border":"sevk-border"}">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(o.firma||"-")}</b><span class="sub" style="margin:0;font-size:11px;flex:none">${esc(tarih(o.eklenmeTarihi))}</span><span class="badge ${ok?"badge-hazir":"badge-sevk"}">${ok?"STOKTA":"SİPARİŞTE"}</span></div>
+  <div style="font-size:12.5px;color:#0f172a;margin-top:3px;line-height:1.45">${satirlar(o).map(x=>"• "+esc(satirTxt(x))).join("<br>")}</div>
+  ${o.not?`<div class="sub">📌 ${esc(o.not)}</div>`:""}
+  ${!ok&&t&&t.tel?`<div class="sub">${t.yetkili?"👤 "+esc(t.yetkili)+" ":""}<a href="tel:${esc(String(t.tel).replace(/[^\d+]/g,""))}">📞 ${esc(t.tel)}</a></div>`:""}
+  ${ok?`<div class="who" style="margin-top:2px">Stoğa eklendi: ${esc(tarih(o.teslimTarihi))} · ${esc(o.teslimAlan||"")}</div>`:""}
+  <div class="acts s">
+  ${ok?"":`<button class="btn b3" style="flex:3" data-a="in" data-id="${id}">✅ Geldi — Stokta</button><button class="btn b6 i" data-a="edit" data-id="${id}">✏️</button>`}
+  ${canDel?`<button class="btn b5 i" data-a="del" data-id="${id}">🗑️</button>`:""}</div></div>`;
 }
 $("oList").onclick=async e=>{
   const b=e.target.closest("button[data-a]");if(!b)return;const o=sSip.find(x=>x.id===b.dataset.id);if(!o)return;const a=b.dataset.a;
