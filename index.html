@@ -60,6 +60,7 @@ dialog{border:0;border-radius:12px;padding:16px;width:min(460px,94vw)}
 dialog::backdrop{background:rgba(0,0,0,.6)}
 .urow{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:13px}
 .mods button{font-size:14px;padding:13px 4px}.mods button.on{background:#1e293b;color:#fff}
+.badge-no{background:#e71d36}.sub{font-size:12px;color:#64748b;margin-top:2px}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99999;max-width:90vw;text-align:center}
 #toast.on{opacity:1}
 </style>
@@ -119,6 +120,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   </div>
 
   <div class="tabs mods" id="mods"><button data-m="sevk" class="on">🚚 SEVKİYAT</button><button data-m="stok">📦 STOK</button></div>
+  <div id="pSevk">
   <div class="card"><div class="grid">
     <div class="full">
       <label style="color:#2563eb;font-size:12px">1. Etiket fotoğrafını çek (yeni kayıtta zorunlu)</label>
@@ -170,12 +172,55 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="sum"><span id="sumT"></span><button class="btn b6 sm" id="bCsv">Excel'e aktar</button></div>
   <div id="liste"></div>
   <button class="btn b6 hide" id="bMore">Daha eski kayıtları yükle</button>
+  </div>
+
+  <div id="pStok" class="hide">
+    <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
+      <div class="hl"><small>KALEM</small><b id="sK">0</b></div>
+      <div class="hl" style="background:#fff7ed;border-color:#ea580c"><small style="color:#c2410c">AZALAN</small><b id="sA" style="color:#9a3412">0</b></div>
+      <div class="hl" style="background:#fef2f2;border-color:#dc2626"><small style="color:#b91c1c">TÜKENEN</small><b id="sT" style="color:#991b1b">0</b></div>
+    </div>
+    <div class="filter">
+      <input id="sq" placeholder="🔍 Kalem ara (poşet, bant, koli, masura...)" style="margin-bottom:8px">
+      <div style="display:flex;gap:6px"><select id="sc"><option value="">Tüm kategoriler</option></select><select id="sd"><option value="">Tüm durumlar</option><option value="lo">Azalan</option><option value="no">Tükenen</option></select></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn b1" style="margin:0" id="sAdd">＋ Yeni kalem ekle</button><button class="btn b6" style="margin:0;width:auto;padding:0 14px" id="sCsv">Excel</button></div>
+    <div id="sList"></div>
+  </div>
 </div>
 
 <dialog id="dAdm">
   <h3 style="margin-bottom:8px">Kullanıcılar</h3>
   <div id="ulist"></div>
   <button class="btn b6" id="dClose">Kapat</button>
+</dialog>
+<dialog id="dKalem">
+  <h3 id="kT" style="margin-bottom:6px">Yeni kalem</h3>
+  <label for="sad">Kalem adı</label><input id="sad" placeholder="Örn: Koli bandı 45mm şeffaf">
+  <div class="grid" style="margin-top:2px">
+    <div><label for="skat">Kategori</label><input id="skat" list="dl" placeholder="Örn: Bant"><datalist id="dl"></datalist></div>
+    <div><label for="sbirim">Birim</label><select id="sbirim"><option>Adet</option><option>Rulo</option><option>Koli</option><option>Paket</option><option>Masura</option><option>Kg</option><option>Metre</option></select></div>
+    <div id="smikW"><label for="smik">Mevcut miktar</label><input id="smik" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>
+    <div><label for="smin">Kritik seviye</label><input id="smin" type="number" inputmode="decimal" min="0" step="any" value="5"></div>
+  </div>
+  <label for="ste">Tedarikçi (isteğe bağlı)</label><input id="ste">
+  <label for="sno">Not (isteğe bağlı)</label><input id="sno">
+  <label for="sfoto">Fotoğraf (isteğe bağlı)</label><input id="sfoto" type="file" accept="image/*">
+  <img id="sprev" alt="" style="display:none;width:100%;max-height:160px;object-fit:contain;background:#0f172a;border-radius:8px;margin-top:8px">
+  <div class="err" id="kE" style="margin-top:8px"></div>
+  <div style="display:flex;gap:8px"><button class="btn b6" id="kNo">Vazgeç</button><button class="btn b1" id="kOk">Kaydet</button></div>
+</dialog>
+<dialog id="dHar">
+  <h3 id="hT" style="margin-bottom:6px"></h3>
+  <label for="hm">Miktar</label><input id="hm" type="number" inputmode="decimal" min="0" step="any" class="fast">
+  <label for="hn">Not (isteğe bağlı)</label><input id="hn" placeholder="Örn: fatura no, hangi hat için">
+  <div class="err" id="hE" style="margin-top:8px"></div>
+  <div style="display:flex;gap:8px"><button class="btn b6" id="hNo">Vazgeç</button><button class="btn b3" id="hOk">Kaydet</button></div>
+</dialog>
+<dialog id="dGec">
+  <h3 id="gT" style="margin-bottom:8px"></h3>
+  <div id="gL" style="max-height:60vh;overflow:auto"></div>
+  <button class="btn b6" id="gNo">Kapat</button>
 </dialog>
 <div id="toast"></div>
 
@@ -223,7 +268,7 @@ const isAdmin=()=>!!(rec&&rec.yonetici&&rec.onay);
 
 /* ---------- Oturum ---------- */
 auth.onAuthStateChanged(u=>{
-  if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null}
+  if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null}
   started=false;urunler=[];rec=null;user=u;
   if(!u){show("vLogin");return}
   recRef=db.ref("kullanicilar/"+u.uid);
@@ -233,7 +278,7 @@ auth.onAuthStateChanged(u=>{
       $("me").textContent=ad();
       $("bAdm").classList.toggle("hide",!isAdmin());
       show("vApp");
-      if(!started){started=true;yukle()}
+      if(!started){started=true;yukle();if(panel==="stok")stokYukle()}
       listele();
     }else{show("vWait")}
   },e=>{toast("Hesap okunamadı: "+errText(e));show("vWait")});
@@ -274,9 +319,9 @@ function yukle(){
 $("bMore").onclick=()=>{limit+=20;yukle()};
 
 /* ---------- Fotoğraf ---------- */
-function sikistir(src,cb){
+function sikistir(src,cb,mx){
   const im=new Image();
-  im.onload=()=>{const c=document.createElement("canvas"),M=800;let w=im.width,h=im.height;
+  im.onload=()=>{const c=document.createElement("canvas"),M=mx||800;let w=im.width,h=im.height;
     if(w>M){h=Math.round(h*M/w);w=M}c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);cb(c.toDataURL("image/jpeg",.6))};
   im.src=src;
 }
@@ -409,10 +454,114 @@ function modUyg(){
   document.querySelectorAll(".sevkonly").forEach(e=>e.classList.toggle("hide",mod!=="sevk"));
   $("bSave").textContent=editId?"💾 Değişiklikleri Kaydet":m.kayit;
 }
-$("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===mod)return;
-  mod=m;limit=20;urunler=[];tab="hazir";
-  document.querySelectorAll("#tabs button").forEach(b=>b.className=b.dataset.t==="hazir"?"a1":"");
-  formTemizle();modUyg();if(started)yukle();listele()};
+
+
+/* ================= STOK (satın alınan malzemeler) ================= */
+var panel="sevk",sRef=null,sKalem=[],kEdit="",kFoto="",hs=null;
+const dur=k=>k.miktar<=0?"no":k.miktar<=(k.min||0)?"lo":"ok";
+$("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===panel)return;panel=m;
+  document.querySelectorAll("#mods button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+  $("pSevk").classList.toggle("hide",m!=="sevk");$("pStok").classList.toggle("hide",m!=="stok");
+  $("mt").textContent=m==="sevk"?"SEVKİYAT":"STOK";
+  if(m==="stok")stokYukle();else stokKapat()};
+function stokKapat(){if(sRef){sRef.off();sRef=null}}
+function stokYukle(){stokKapat();sRef=db.ref("stokKalem");
+  sRef.on("value",x=>{const v=x.val()||{};sKalem=Object.keys(v).map(k=>Object.assign({id:k},v[k]));stokListele()},e=>toast("Stok okunamadı: "+errText(e)))}
+["sq","sc","sd"].forEach(i=>$(i).addEventListener("input",()=>stokListele()));
+function stokListele(){
+  if(panel!=="stok")return;
+  const cats=[...new Set(sKalem.map(k=>k.kategori).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr")),cur=$("sc").value;
+  $("sc").innerHTML='<option value="">Tüm kategoriler</option>'+cats.map(c=>`<option${c===cur?" selected":""}>${esc(c)}</option>`).join("");
+  $("dl").innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join("");
+  $("sK").textContent=sKalem.length;$("sA").textContent=sKalem.filter(k=>dur(k)==="lo").length;$("sT").textContent=sKalem.filter(k=>dur(k)==="no").length;
+  const q=$("sq").value.toLowerCase().trim(),fc=$("sc").value,fd=$("sd").value;
+  const L=sKalem.filter(k=>(!q||[k.ad,k.kategori,k.tedarikci,k.not].some(x=>(x||"").toLowerCase().includes(q)))&&(!fc||k.kategori===fc)&&(!fd||dur(k)===fd)).sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr"));
+  $("sList").innerHTML=L.length?L.map(kkart).join(""):'<div class="empty">Kalem bulunamadı. "Yeni kalem ekle" ile başlayın.</div>';
+}
+function kkart(k){
+  const d=dur(k),id=esc(k.id),c={ok:["hazir-border","badge-hazir","YETERLİ"],lo:["sevk-border","badge-sevk","AZALIYOR"],no:["tamam-border","badge-no","TÜKENDİ"]}[d];
+  const canDel=isAdmin()||(k.ekleyenUid&&k.ekleyenUid===user.uid),col={ok:"#0c4a6e",lo:"#b45309",no:"#b91c1c"}[d];
+  return `<div class="item ${c[0]}">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:16px">${esc(k.ad)}</b><span class="badge ${c[1]}">${c[2]}</span></div>
+  <div class="sub">${esc(k.kategori||"Kategorisiz")}${k.tedarikci?" · "+esc(k.tedarikci):""}</div>
+  ${safeImg(k.foto)?`<img loading="lazy" src="${safeImg(k.foto)}" alt="" style="max-height:140px">`:""}
+  <div class="hl" style="margin-top:8px"><small>MEVCUT STOK</small><b style="color:${col}">${esc(fmt(k.miktar))} ${esc(k.birim||"")}</b><small style="margin-top:2px;color:#64748b">Kritik seviye: ${esc(fmt(k.min))}</small></div>
+  ${k.not?`<div class="note">📌 ${esc(k.not)}</div>`:""}
+  <div class="acts"><button class="btn b3" data-a="in" data-id="${id}">＋ Giriş</button><button class="btn b2" data-a="out" data-id="${id}">− Çıkış</button>
+  <button class="btn b6" data-a="gec" data-id="${id}">📜 Geçmiş</button><button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>
+  ${canDel?`<button class="btn b5" style="grid-column:span 2" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div></div>`;
+}
+$("sList").onclick=async e=>{
+  const b=e.target.closest("button[data-a]");if(!b)return;const k=sKalem.find(x=>x.id===b.dataset.id);if(!k)return;
+  const a=b.dataset.a;
+  if(a==="in"||a==="out")hAc(k,a==="in"?"giris":"cikis");
+  else if(a==="gec")gecAc(k);
+  else if(a==="edit")kAc(k);
+  else if(a==="del"&&confirm(`"${k.ad}" silinsin mi? (Geçmiş hareket kayıtları saklanır)`)){try{await db.ref("stokKalem/"+k.id).remove();toast("Silindi")}catch(err){toast(errText(err))}}
+};
+/* kalem ekle / düzenle */
+function kAc(k){
+  kEdit=k?k.id:"";kFoto="";$("kT").textContent=k?"Kalemi düzenle":"Yeni kalem";$("kE").textContent="";
+  $("sad").value=k?k.ad:"";$("skat").value=k?k.kategori||"":"";$("sbirim").value=k?k.birim||"Adet":"Adet";
+  $("smin").value=k?k.min:5;$("ste").value=k?k.tedarikci||"":"";$("sno").value=k?k.not||"":"";$("smik").value="";
+  $("smikW").classList.toggle("hide",!!k);
+  const p=$("sprev");if(k&&safeImg(k.foto)){p.src=k.foto;p.style.display="block"}else p.style.display="none";
+  $("dKalem").showModal();
+}
+$("sAdd").onclick=()=>kAc(null);
+$("kNo").onclick=()=>$("dKalem").close();
+$("sfoto").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>sikistir(r.result,d=>{kFoto=d;$("sprev").src=d;$("sprev").style.display="block"},500);r.readAsDataURL(f);e.target.value=""};
+$("kOk").onclick=async()=>{
+  const nm=$("sad").value.trim(),mik=parseFloat($("smik").value)||0,mn=parseFloat($("smin").value)||0;
+  if(!nm){$("kE").textContent="Kalem adı gerekli.";return}
+  if(mik<0||mn<0){$("kE").textContent="Miktarlar 0 veya daha büyük olmalı.";return}
+  if(!kEdit&&sKalem.some(x=>(x.ad||"").toLowerCase()===nm.toLowerCase())&&!confirm("Bu isimde bir kalem zaten var. Yine de eklensin mi?"))return;
+  const d={ad:nm,kategori:$("skat").value.trim(),birim:$("sbirim").value,min:mn,tedarikci:$("ste").value.trim(),not:$("sno").value.trim()};
+  if(kFoto)d.foto=kFoto;
+  const TS=firebase.database.ServerValue.TIMESTAMP;$("kOk").disabled=true;
+  try{
+    if(kEdit){d.duzenleyen=ad();await db.ref("stokKalem/"+kEdit).update(d)}
+    else{d.miktar=mik;d.ekleyen=ad();d.ekleyenUid=user.uid;d.eklenmeTarihi=TS;
+      const r=db.ref("stokKalem").push();await r.set(d);
+      if(mik>0)await db.ref("stokHareket").push().set({kalemId:r.key,ad:nm,tip:"giris",miktar:mik,kalan:mik,not:"İlk kayıt",kullanici:ad(),uid:user.uid,zaman:TS})}
+    $("dKalem").close();toast("Kaydedildi");
+  }catch(e){$("kE").textContent=errText(e)}
+  $("kOk").disabled=false;
+};
+/* giriş / çıkış */
+function hAc(k,tip){hs={id:k.id,tip};$("hT").textContent=`${k.ad}: stok ${tip==="giris"?"girişi":"çıkışı"} (mevcut ${fmt(k.miktar)} ${k.birim||""})`;
+  $("hm").value="";$("hn").value="";$("hE").textContent="";$("dHar").showModal();$("hm").focus()}
+$("hNo").onclick=()=>$("dHar").close();
+$("hOk").onclick=async()=>{
+  const n=parseFloat($("hm").value);if(!(n>0)){$("hE").textContent="Geçerli bir miktar girin.";return}
+  const id=hs.id,tip=hs.tip;$("hOk").disabled=true;
+  try{
+    const r=await db.ref("stokKalem/"+id+"/miktar").transaction(c=>{c=+c||0;const y=tip==="giris"?c+n:c-n;return y<0?undefined:Math.round(y*1000)/1000});
+    if(!r.committed)$("hE").textContent="Stokta bu kadar yok.";
+    else{await db.ref("stokHareket").push().set({kalemId:id,ad:(sKalem.find(x=>x.id===id)||{}).ad||"",tip,miktar:n,kalan:r.snapshot.val(),not:$("hn").value.trim(),kullanici:ad(),uid:user.uid,zaman:firebase.database.ServerValue.TIMESTAMP});
+      $("dHar").close();toast("Stok güncellendi")}
+  }catch(e){$("hE").textContent=errText(e)}
+  $("hOk").disabled=false;
+};
+/* geçmiş */
+$("gNo").onclick=()=>$("dGec").close();
+async function gecAc(k){
+  $("gT").textContent=k.ad+" — hareketler";$("gL").textContent="Yükleniyor...";$("dGec").showModal();
+  try{
+    const x=await db.ref("stokHareket").orderByChild("kalemId").equalTo(k.id).limitToLast(40).once("value"),v=x.val()||{};
+    const L=Object.values(v).sort((a,b)=>b.zaman-a.zaman);
+    $("gL").innerHTML=L.length?L.map(h=>`<div class="urow"><div><b style="color:${h.tip==="giris"?"#0f766e":"#c2410c"}">${h.tip==="giris"?"+":"−"}${esc(fmt(h.miktar))} ${esc(k.birim||"")}</b> <small>(kalan ${esc(fmt(h.kalan))})</small><br><small>${esc(new Date(h.zaman).toLocaleString("tr-TR"))} · ${esc(h.kullanici)}${h.not?" · "+esc(h.not):""}</small></div></div>`).join(""):"<p>Henüz hareket yok.</p>";
+  }catch(e){$("gL").textContent=errText(e)}
+}
+/* Excel */
+$("sCsv").onclick=()=>{
+  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',n=v=>q(String(+v||0).replace(".",","));
+  const st={ok:"Yeterli",lo:"Azalıyor",no:"Tükendi"};
+  const r=[["Kalem","Kategori","Birim","Miktar","Kritik seviye","Durum","Tedarikçi","Not"].map(q).join(";")].concat(sKalem.slice().sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr")).map(k=>[q(k.ad),q(k.kategori),q(k.birim),n(k.miktar),n(k.min),q(st[dur(k)]),q(k.tedarikci),q(k.not)].join(";")));
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download="stok-listesi.csv";a.click();
+};
+
 formTemizle();modUyg();
 </script>
 </body>
