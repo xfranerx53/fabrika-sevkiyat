@@ -206,7 +206,7 @@ function bootMsg(m){const b=$("boot");b.classList.remove("hide");b.innerHTML="<b
 window.addEventListener("error",e=>{if(["vLogin","vWait","vApp"].every(x=>$(x).classList.contains("hide")))bootMsg(e.message||"Bilinmeyen hata")});
 if(typeof firebase==="undefined"){bootMsg("Firebase yüklenemedi. İnternet bağlantısını kontrol edin.");throw new Error("firebase yok")}
 if(!/^https?:$/.test(location.protocol))bootMsg("Uygulama dosyadan açılmış ("+location.protocol+"). Giriş sistemi sadece internet adresi (https) üzerinden çalışır.");
-setTimeout(()=>{if($("boot").textContent==="Yükleniyor...")bootMsg("Sunucuya bağlanılamadı. İnternet bağlantısını ve Firebase ayarlarını kontrol edin.")},8000);
+setTimeout(()=>{if(!$("boot").classList.contains("hide")&&$("boot").textContent==="Yükleniyor...")bootMsg("Sunucuya bağlanılamadı. İnternet bağlantısını ve Firebase ayarlarını kontrol edin.")},8000);
 firebase.initializeApp(CFG);
 const auth=firebase.auth(),db=firebase.database();
 
