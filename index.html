@@ -201,6 +201,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
       <div style="display:flex;gap:6px"><select id="sc"><option value="">Tüm kategoriler</option></select><select id="sd"><option value="">Tüm durumlar</option><option value="lo">Azalan</option><option value="no">Tükenen</option></select></div>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn b1" style="margin:0" id="sAdd">＋ Yeni kalem ekle</button><button class="btn b6" style="margin:0;width:auto;padding:0 14px" id="sCsv">Excel</button></div>
+    <button class="btn b2 hide" style="margin:0 0 10px" id="sTas"></button>
     <div id="sList"></div>
     </div>
     <div id="sSip" class="hide">
@@ -258,9 +259,29 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="oRows"></div>
   <button type="button" class="btn b6" style="margin:0 0 6px" id="oRowAdd">＋ Kalem ekle</button>
   <p class="mut" style="font-size:11px;margin:0 0 4px">Kalem listede yoksa önce Kalemler sekmesinden ekleyin (mevcut miktarı 0 bırakabilirsiniz).</p>
+  <div id="ofi" class="hide" style="margin:4px 0 8px"><label style="color:#854d0e">💰 Fiyat ve KDV (sadece yöneticiler görür)</label>
+    <label class="chip"><input type="checkbox" id="okc">KDV ekle</label>
+    <div id="okw" class="hide" style="margin-top:6px"><div style="display:flex;gap:6px"><input id="okr" type="number" inputmode="decimal" min="0" max="100" step="any" placeholder="KDV %"><select id="okm"><option value="haric">Fiyat KDV hariç</option><option value="dahil">Fiyat KDV dahil</option></select></div><div id="okg" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div>
+    <div id="otop" class="addr hide" style="background:#fefce8;border-color:#fde68a;color:#854d0e"></div></div>
   <label for="ono" style="margin-top:8px">Not (isteğe bağlı)</label><input id="ono" placeholder="Örn: teslim tarihi, fiyat teklifi">
   <div class="err" id="oE" style="margin-top:8px"></div>
   <div style="display:flex;gap:8px"><button class="btn b6" id="oNo">Vazgeç</button><button class="btn b1" id="oOk">Kaydet</button></div>
+</dialog>
+<dialog id="dTas">
+  <h3 style="margin-bottom:4px">Azalanlardan sipariş</h3>
+  <p class="mut" style="font-size:11px;margin-bottom:8px">Kritik seviyenin altındaki kalemler. Miktarlar kritik seviyenin 2 katına tamamlayacak şekilde önerildi, değiştirebilirsiniz. Zaten siparişte olanlar işaretsiz gelir.</p>
+  <label for="tsf">Tedarikçiye göre</label><select id="tsf"></select>
+  <div id="tRows" style="margin-top:8px"></div>
+  <div class="err" id="tsE" style="margin-top:8px"></div>
+  <div style="display:flex;gap:8px"><button class="btn b6" id="tsNo">Vazgeç</button><button class="btn b1" id="tsOk">Siparişe geç</button></div>
+</dialog>
+<dialog id="dTes">
+  <h3 id="teT" style="margin-bottom:4px">Teslim al</h3>
+  <p class="mut" style="font-size:11px;margin-bottom:8px">Gelen miktarı kontrol edin. Eksik veya fazla geldiyse değiştirin; 0 yazılan kalem stoğa eklenmez.</p>
+  <div id="teRows"></div>
+  <label class="chip" style="margin-top:4px"><input type="checkbox" id="teKapat">Eksik kalanı bekleme, siparişi kapat</label>
+  <div class="err" id="teE" style="margin-top:8px"></div>
+  <div style="display:flex;gap:8px"><button class="btn b6" id="teNo">Vazgeç</button><button class="btn b3" id="teOk">✅ Stoğa ekle</button></div>
 </dialog>
 <dialog id="dHar">
   <h3 id="hT" style="margin-bottom:4px"></h3>
@@ -321,7 +342,7 @@ const isAdmin=()=>!!(rec&&rec.yonetici===true&&rec.onay===true);
 
 /* ---------- Oturum ---------- */
 auth.onAuthStateChanged(u=>{
-  if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null} if(window.tRef){tRef.off();tRef=null} if(window.oRef){oRef.off();oRef=null} if(window.fRef){fRef.off();fRef=null} fyat={sevk:{},stok:{}};
+  if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null} if(window.tRef){tRef.off();tRef=null} if(window.oRef){oRef.off();oRef=null} if(window.fRef){fRef.off();fRef=null} fyat={sevk:{},stok:{},siparis:{}};
   started=false;urunler=[];rec=null;user=u;
   if(!u){show("vLogin");return}
   recRef=db.ref("kullanicilar/"+u.uid);
@@ -515,7 +536,7 @@ function modUyg(){
 
 
 /* ================= STOK (satın alınan malzemeler) ================= */
-var fRef=null,fyErr=0,fyat={sevk:{},stok:{}},kFB="";
+var fRef=null,fyErr=0,fyat={sevk:{},stok:{},siparis:{}},kFB="";
 var panel="sevk",sRef=null,sKalem=[],kEdit=null,kFoto="",hs=null,kSel=new Set(),kVals={};
 const UN=[["adet","Adet"],["koli","Koli"],["paket","Paket"],["rulo","Rulo"],["masura","Masura"],["kg","Kg"],["metre","Metre"]],UL=Object.fromEntries(UN);
 const norm=k=>{
@@ -525,7 +546,7 @@ const norm=k=>{
 };
 const para=n=>fmt(n)+" ₺";
 var kdvAyar={};
-const KD={sevk:["skc","skw","skr","skm","skg"],stok:["kkc","kkw","kkr","kkm","kkg"]};
+const KD={sevk:["skc","skw","skr","skm","skg"],stok:["kkc","kkw","kkr","kkm","kkg"],sip:["okc","okw","okr","okm","okg"]};
 const kdvHesap=(f,q)=>{const r=+f.kdv||0,h=(f.kdvDahil&&r?f.tutar/(1+r/100):f.tutar)*q,k=h*r/100;return{h,k,t:h+k,r}};
 const stokVal=k=>{const f=(fyat.stok||{})[k.id];if(!f)return null;const q=norm(k).mik[f.birim];return q==null?null:kdvHesap(f,q)};
 const sevkTop=u=>{const f=(fyat.sevk||{})[u.id];if(!f)return null;return kdvHesap(f,f.esas==="kg"?(+u.kg||0):f.esas==="adet"?(+u.paket||0):1)};
@@ -547,11 +568,11 @@ function kdvSet(m,f){const [c,w,r,mo]=KD[m].map($),on=!!(f&&f.kdv!=null);c.check
 function kdvGet(m){const [c,w,r,mo]=KD[m].map($);if(!c.checked)return{};const v=parseFloat(r.value);if(!(v>=0&&v<=100))return null;return{kdv:v,kdvDahil:mo.value==="dahil"}}
 async function kdvKaydet(v){const old=Array.isArray(kdvAyar.gecmis)?kdvAyar.gecmis:Object.values(kdvAyar.gecmis||{});
   await db.ref("fiyatlar/ayar/kdv").set({son:v,gecmis:[v].concat(old.filter(x=>x!==v)).slice(0,6)})}
-["sevk","stok"].forEach(m=>{const [c,w,r,mo,g]=KD[m];$(c).onchange=()=>kdvUI(m);$(g).onclick=e=>{const x=e.target.dataset.r;if(x!=null)$(r).value=x}});
+["sevk","stok","sip"].forEach(m=>{const [c,w,r,mo,g]=KD[m];$(c).onchange=()=>kdvUI(m);$(g).onclick=e=>{const x=e.target.dataset.r;if(x!=null)$(r).value=x}});
 function fiyatBaglan(){
-  if(isAdmin()){if(!fRef){fRef=db.ref("fiyatlar");fRef.on("value",x=>{const v=x.val()||{};fyat={sevk:v.sevk||{},stok:v.stok||{}};kdvAyar=(v.ayar&&v.ayar.kdv)||{};
-    if(!$("skc").checked)kdvSet("sevk",null);if(!$("kkc").checked&&!$("dKalem").open)kdvSet("stok",null);else kdvUI("stok");kdvUI("sevk");listele();stokListele()},e=>{if(fRef){fRef.off();fRef=null}if(isAdmin()&&!fyErr){fyErr=1;toast("Fiyatlar okunamadı. Veritabanı kurallarının son sürümünün yayınlandığını kontrol edin.")}})}}
-  else if(fRef){fRef.off();fRef=null;fyat={sevk:{},stok:{}}}
+  if(isAdmin()){if(!fRef){fRef=db.ref("fiyatlar");fRef.on("value",x=>{const v=x.val()||{};fyat={sevk:v.sevk||{},stok:v.stok||{},siparis:v.siparis||{}};kdvAyar=(v.ayar&&v.ayar.kdv)||{};
+    if(!$("skc").checked)kdvSet("sevk",null);if(!$("kkc").checked&&!$("dKalem").open)kdvSet("stok",null);else kdvUI("stok");if(!$("okc").checked&&!$("dSip").open)kdvSet("sip",null);else kdvUI("sip");kdvUI("sevk");listele();stokListele()},e=>{if(fRef){fRef.off();fRef=null}if(isAdmin()&&!fyErr){fyErr=1;toast("Fiyatlar okunamadı. Veritabanı kurallarının son sürümünün yayınlandığını kontrol edin.")}})}}
+  else if(fRef){fRef.off();fRef=null;fyat={sevk:{},stok:{},siparis:{}}}
 }
 const ust=(v,m)=>v<=0?"no":(m>0&&v<=m)?"lo":"ok";
 const dur=k=>{const n=norm(k),ks=Object.keys(n.mik);if(!ks.length||ks.every(u=>!(n.mik[u]>0)))return"no";return ks.some(u=>n.min[u]>0&&n.mik[u]<=n.min[u])?"lo":"ok"};
@@ -583,6 +604,7 @@ function stokListele(){
   {const f=$("sd").value;document.querySelectorAll("#pStok .hl.fl").forEach(b=>b.classList.toggle("act",b.dataset.f===f))}
   {const t=isAdmin()?sumV(sKalem,stokVal):{h:0,k:0,t:0};$("sVal").classList.toggle("hide",!isAdmin());$("sVn").textContent=sumTxt(t)}
   $("sK").textContent=sKalem.length;$("sA").textContent=sKalem.filter(k=>dur(k)==="lo").length;$("sT").textContent=sKalem.filter(k=>dur(k)==="no").length;
+  {const nl=sKalem.filter(k=>dur(k)!=="ok").length;$("sTas").classList.toggle("hide",!nl);$("sTas").textContent=`🧾 Azalanlardan sipariş oluştur (${nl})`}
   const q=$("sq").value.toLowerCase().trim(),fc=$("sc").value,fd=$("sd").value;
   const L=sKalem.filter(k=>(!q||[k.ad,k.kategori,k.ebat,k.tedarikci,k.not].some(x=>(x||"").toLowerCase().includes(q)))&&(!fc||k.kategori===fc)&&(!fd||dur(k)===fd)).sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr"));
   $("sList").innerHTML=L.length?L.map(kkart).join(""):'<div class="empty">Kalem bulunamadı. "Yeni kalem ekle" ile başlayın.</div>';
@@ -591,7 +613,7 @@ function stokListele(){
 function kkart(k){
   const d=dur(k),id=esc(k.id),n=norm(k),c={ok:["hazir-border","badge-hazir","YETERLİ"],lo:["sevk-border","badge-sevk","AZALIYOR"],no:["tamam-border","badge-no","TÜKENDİ"]}[d];
   const canDel=isAdmin()||(k.ekleyenUid&&k.ekleyenUid===user.uid),open=kAcik.has(k.id),ph=safeImg(k.foto);
-  const bek=sSip.filter(o=>o.durum==="bekliyor").flatMap(o=>satirlar(o).filter(x=>x.kalemId===k.id).map(x=>fmt(x.miktar)+" "+(UL[x.birim]||x.birim)+" ("+(o.firma||"")+")"));
+  const bek=sSip.filter(o=>o.durum==="bekliyor").flatMap(o=>satirlar(o).filter(x=>x.kalemId===k.id&&kalanQ(x)>0).map(x=>fmt(kalanQ(x))+" "+(UL[x.birim]||x.birim)+" ("+(o.firma||"")+")"));
   const chips=UN.filter(([u])=>u in n.mik).map(([u,l])=>{const v=+n.mik[u]||0,m=+n.min[u]||0,col={ok:"#0c4a6e",lo:"#b45309",no:"#b91c1c"}[ust(v,m)];return `<span style="color:${col};font-weight:800">${esc(fmt(v))} ${l}</span>`}).join(" · ");
   const kr=UN.filter(([u])=>u in n.mik&&+n.min[u]>0).map(([u,l])=>fmt(n.min[u])+" "+l).join(", ");
   const meta=[k.kategori,k.ebat?"📐 "+k.ebat:"",k.tedarikci].filter(Boolean).map(esc).join(" · ");
@@ -730,7 +752,10 @@ var kAcik=new Set(),tRef=null,oRef=null,sTed=[],sSip=[],sTab="kal",tEdit=null,oE
 const byTr=f=>(a,b)=>(a[f]||"").localeCompare(b[f]||"","tr");
 const tarih=ts=>ts?new Date(ts).toLocaleDateString("tr-TR"):"";
 function satirlar(o){return Array.isArray(o.satirlar)?o.satirlar.filter(Boolean):Object.values(o.satirlar||{})}
-const satirTxt=x=>`${x.ad||""}${x.ebat?" · "+x.ebat:""}: ${fmt(x.miktar)} ${UL[x.birim]||x.birim}`;
+const kalanQ=x=>Math.max(0,(+x.miktar||0)-(+x.gelen||0));
+const satirTxt=(x,kapali)=>{const g=+x.gelen||0,m=+x.miktar||0;return `${x.ad||""}${x.ebat?" · "+x.ebat:""}: ${fmt(m)} ${UL[x.birim]||x.birim}`+(g>0?` (gelen ${fmt(g)}${g<m?(kapali?" · eksik ":" · kalan ")+fmt(m-g):g>m?" · fazla "+fmt(g-m):""})`:"")};
+function sipTop(o){const f=(fyat.siparis||{})[o.id];if(!f||!f.f)return null;const kapali=o.durum==="geldi";let a={h:0,k:0,t:0,r:+f.kdv||0},n=0;
+  satirlar(o).forEach((x,i)=>{const p=f.f[i];if(p==null)return;const q=kapali&&x.gelen!=null?+x.gelen:(+x.miktar||0),v=kdvHesap({tutar:+p,kdv:f.kdv,kdvDahil:f.kdvDahil},q);a.h+=v.h;a.k+=v.k;a.t+=v.t;n++});return n?a:null}
 function sTabSet(t){sTab=t;document.querySelectorAll("#stabs button").forEach(b=>b.classList.toggle("on",b.dataset.s===t));
   $("sKal").classList.toggle("hide",t!=="kal");$("sSip").classList.toggle("hide",t!=="sip");$("sTed").classList.toggle("hide",t!=="ted")}
 $("stabs").onclick=e=>{const b=e.target.closest("button");if(b&&b.dataset.s)sTabSet(b.dataset.s)};
@@ -788,10 +813,12 @@ function sipListele(){
     +(G.length?`<div class="shd" style="margin-top:14px">TESLİM ALINANLAR (son ${G.length})</div>`+G.map(okart).join(""):"");
 }
 function okart(o){
-  const id=esc(o.id),ok=o.durum==="geldi",canDel=isAdmin()||(o.ekleyenUid&&o.ekleyenUid===user.uid),t=sTed.find(x=>x.id===o.tedId);
+  const id=esc(o.id),ok=o.durum==="geldi",canDel=isAdmin()||(o.ekleyenUid&&o.ekleyenUid===user.uid),t=sTed.find(x=>x.id===o.tedId),L=satirlar(o),
+        kismi=!ok&&L.some(x=>+x.gelen>0),pf=isAdmin()?(fyat.siparis||{})[o.id]:null,top=isAdmin()?sipTop(o):null;
   return `<div class="item c ${ok?"hazir-border":"sevk-border"}">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(o.firma||"-")}</b><span class="sub" style="margin:0;font-size:11px;flex:none">${esc(tarih(o.eklenmeTarihi))}</span><span class="badge ${ok?"badge-hazir":"badge-sevk"}">${ok?"STOKTA":"SİPARİŞTE"}</span></div>
-  <div style="font-size:12.5px;color:#0f172a;margin-top:3px;line-height:1.45">${satirlar(o).map(x=>"• "+esc(satirTxt(x))).join("<br>")}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(o.firma||"-")}</b><span class="sub" style="margin:0;font-size:11px;flex:none">${esc(tarih(o.eklenmeTarihi))}</span><span class="badge ${ok?"badge-hazir":"badge-sevk"}">${ok?"STOKTA":kismi?"KISMİ GELDİ":"SİPARİŞTE"}</span></div>
+  <div style="font-size:12.5px;color:#0f172a;margin-top:3px;line-height:1.45">${L.map((x,i)=>"• "+esc(satirTxt(x,ok))+(pf&&pf.f&&pf.f[i]!=null?" × "+esc(para(pf.f[i])):"")).join("<br>")}</div>
+  ${top?`<div class="addr" style="background:#fefce8;border-color:#fde68a;color:#854d0e">💰 ${topTxt(top)}</div>`:""}
   ${o.not?`<div class="sub">📌 ${esc(o.not)}</div>`:""}
   ${!ok&&t&&t.tel?`<div class="sub">${t.yetkili?"👤 "+esc(t.yetkili)+" ":""}<a href="tel:${esc(String(t.tel).replace(/[^\d+]/g,""))}">📞 ${esc(t.tel)}</a></div>`:""}
   ${ok?`<div class="who" style="margin-top:2px">Stoğa eklendi: ${esc(tarih(o.teslimTarihi))} · ${esc(o.teslimAlan||"")}</div>`:""}
@@ -803,74 +830,152 @@ $("oList").onclick=async e=>{
   const b=e.target.closest("button[data-a]");if(!b)return;const o=sSip.find(x=>x.id===b.dataset.id);if(!o)return;const a=b.dataset.a;
   if(a==="in")teslimAl(o);
   else if(a==="edit")oAc(o);
-  else if(a==="del"&&confirm(o.durum==="geldi"?"Bu teslim kaydı silinsin mi? (Stoktan düşmez)":"Sipariş iptal edilsin mi?")){try{await db.ref("siparisler/"+o.id).remove();toast("Silindi")}catch(err){toast(errText(err))}}
+  else if(a==="del"&&confirm(o.durum==="geldi"?"Bu teslim kaydı silinsin mi? (Stoktan düşmez)":"Sipariş iptal edilsin mi?")){try{await db.ref("siparisler/"+o.id).remove();if(isAdmin())db.ref("fiyatlar/siparis/"+o.id).remove().catch(()=>{});toast("Silindi")}catch(err){toast(errText(err))}}
 };
-async function teslimAl(o){
-  const L=satirlar(o);
-  if(!confirm(`${o.firma||"Sipariş"} geldi mi?\n\n`+L.map(x=>"• "+satirTxt(x)).join("\n")+"\n\nBu miktarlar stoğa eklenecek."))return;
-  const TS=firebase.database.ServerValue.TIMESTAMP;let r;
-  try{r=await db.ref("siparisler/"+o.id+"/durum").transaction(c=>c==="bekliyor"?"geldi":(c===null?null:undefined))}catch(e){return toast(errText(e))}
-  if(!r.committed||r.snapshot.val()!=="geldi")return toast("Bu sipariş zaten teslim alınmış veya silinmiş.");
-  const hata=[];let ok=0;
-  for(const x of L){
-    const k=sKalem.find(z=>z.id===x.kalemId);
-    if(!k){hata.push(x.ad+" (kalem silinmiş)");continue}
-    try{
-      const base=norm(k).mik,q=+x.miktar||0;
-      const res=await db.ref("stokKalem/"+k.id+"/mik").transaction(cur=>{const y=Object.assign({},cur||base);y[x.birim]=Math.round(((+y[x.birim]||0)+q)*1000)/1000;return y});
-      if(!res.committed){hata.push(x.ad);continue}
-      await db.ref("stokHareket").push().set({kalemId:k.id,ad:k.ad||"",tip:"giris",mik:{[x.birim]:q},kalan:res.snapshot.val(),not:"Sipariş teslim: "+(o.firma||""),kullanici:ad(),uid:user.uid,zaman:TS});
-      ok++;
-    }catch(e){hata.push(x.ad+" ("+errText(e)+")")}
-  }
-  if(!ok&&hata.length){await db.ref("siparisler/"+o.id+"/durum").set("bekliyor").catch(()=>{});alert("Stoğa eklenemedi: "+hata.join(", "));return}
-  await db.ref("siparisler/"+o.id).update({teslimTarihi:TS,teslimAlan:ad()}).catch(()=>{});
-  if(hata.length)alert("Kısmen stoğa eklendi. Eklenemeyenler: "+hata.join(", ")+"\nBunları Giriş butonuyla elle ekleyin.");else toast("Stoğa eklendi ✓");
-}
+var tesO=null,tesKilit=false;
+function teslimAl(o){
+  tesO=o;const L=satirlar(o);
+  $("teT").textContent=(o.firma||"Sipariş")+" — teslim al";$("teE").textContent="";$("teKapat").checked=false;
+  $("teRows").innerHTML=L.map((x,i)=>{const u=esc(UL[x.birim]||x.birim);
+    return `<div class="urow2" style="grid-template-columns:1fr 92px;margin-bottom:8px"><div><b style="font-size:13px">${esc(x.ad||"")}${x.ebat?" · "+esc(x.ebat):""}</b><div class="sub" style="font-size:11px">Sipariş ${esc(fmt(x.miktar))} ${u}${+x.gelen>0?" · daha önce gelen "+esc(fmt(x.gelen)):""}</div></div><div><input type="number" data-i="${i}" inputmode="decimal" min="0" step="any" value="${esc(kalanQ(x))}" style="padding:8px"><div class="sub" style="text-align:center;font-size:10px">${u} gelen</div></div></div>`}).join("");
+  $("dTes").showModal()}
+$("teNo").onclick=()=>$("dTes").close();
+$("teOk").onclick=async()=>{
+  if(tesKilit||!tesO)return;const o=tesO,err=m=>{$("teE").textContent=m},L=satirlar(o);
+  const recv=L.map((x,i)=>{const v=parseFloat(document.querySelector(`#teRows input[data-i="${i}"]`).value);return isNaN(v)?0:v});
+  if(recv.some(v=>v<0))return err("Miktarlar 0 veya daha büyük olmalı.");
+  if(!recv.some(v=>v>0))return err("En az bir kalemde gelen miktar yazın.");
+  const kapat=$("teKapat").checked,seen=L.map(x=>+x.gelen||0),TS=firebase.database.ServerValue.TIMESTAMP;
+  tesKilit=true;$("teOk").disabled=true;
+  try{
+    let r;
+    try{r=await db.ref("siparisler/"+o.id).transaction(cur=>{
+      if(cur===null)return null;
+      if(cur.durum!=="bekliyor")return;
+      const Lc=satirlar(cur);
+      if(Lc.length!==seen.length||Lc.some((x,i)=>(+x.gelen||0)!==seen[i]))return;
+      Lc.forEach((x,i)=>{x.gelen=Math.round(((+x.gelen||0)+recv[i])*1000)/1000});
+      cur.satirlar=Lc;
+      cur.durum=(kapat||Lc.every(x=>(+x.gelen||0)>=(+x.miktar||0)))?"geldi":"bekliyor";
+      return cur})}catch(e){return err(errText(e))}
+    if(!r.committed)return err("Bu sipariş başka biri tarafından değiştirilmiş veya kapatılmış. Pencereyi kapatıp tekrar deneyin.");
+    if(!r.snapshot.exists()){$("dTes").close();return toast("Sipariş bulunamadı.")}
+    const hata=[];let ok=0;
+    for(let i=0;i<L.length;i++){
+      if(!(recv[i]>0))continue;const x=L[i],k=sKalem.find(z=>z.id===x.kalemId);
+      if(!k){hata.push(x.ad+" (kalem silinmiş)");continue}
+      try{
+        const base=norm(k).mik,q=recv[i];
+        const res=await db.ref("stokKalem/"+k.id+"/mik").transaction(cur=>{const y=Object.assign({},cur||base);y[x.birim]=Math.round(((+y[x.birim]||0)+q)*1000)/1000;return y});
+        if(!res.committed){hata.push(x.ad);continue}
+        await db.ref("stokHareket").push().set({kalemId:k.id,ad:k.ad||"",tip:"giris",mik:{[x.birim]:q},kalan:res.snapshot.val(),not:"Sipariş teslim: "+(o.firma||""),kullanici:ad(),uid:user.uid,zaman:TS});
+        ok++;
+      }catch(e){hata.push(x.ad+" ("+errText(e)+")")}
+    }
+    if(!ok){
+      await db.ref("siparisler/"+o.id).transaction(cur=>{if(!cur)return cur;const Lc=satirlar(cur);Lc.forEach((x,i)=>{x.gelen=seen[i]||0});cur.satirlar=Lc;cur.durum="bekliyor";return cur}).catch(()=>{});
+      $("dTes").close();alert("Stoğa eklenemedi: "+hata.join(", "));return}
+    await db.ref("siparisler/"+o.id).update({teslimTarihi:TS,teslimAlan:ad()}).catch(()=>{});
+    $("dTes").close();
+    if(hata.length)alert("Kısmen stoğa eklendi. Eklenemeyenler: "+hata.join(", ")+"\nBunları Giriş butonuyla elle ekleyin.");
+    else toast(r.snapshot.val().durum==="geldi"?"Stoğa eklendi ✓":"Stoğa eklendi ✓ — kalan için sipariş açık");
+  }finally{tesKilit=false;$("teOk").disabled=false}
+};
 function oOpts(sel){return '<option value="">Kalem seç...</option>'+sKalem.slice().sort(byTr("ad")).map(k=>`<option value="${esc(k.id)}"${k.id===sel?" selected":""}>${esc(k.ad+(k.ebat?" · "+k.ebat:""))}</option>`).join("")}
 function uOpts(kid,sel){const k=sKalem.find(x=>x.id===kid),us=k?UN.filter(([u])=>u in norm(k).mik):[];
   return us.length?us.map(([u,l])=>`<option value="${u}"${u===sel?" selected":""}>${l}</option>`).join(""):'<option value="">Birim</option>'}
-function oRowAdd(s){s=s||{};const d=document.createElement("div");d.className="orow";d.style.cssText="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px";
-  d.innerHTML=`<select data-f="k">${oOpts(s.kalemId)}</select><div style="display:grid;grid-template-columns:1fr 1fr 42px;gap:6px;margin-top:6px"><select data-f="u">${uOpts(s.kalemId,s.birim)}</select><input data-f="q" type="number" inputmode="decimal" min="0" step="any" placeholder="Miktar" value="${esc(s.miktar??"")}"><button type="button" class="btn b5" style="margin:0;padding:0" data-x="1">✕</button></div>`;
+function oRowAdd(s){s=s||{};const d=document.createElement("div");d.className="orow";d.dataset.g=+s.gelen||0;d.style.cssText="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px";
+  d.innerHTML=`<select data-f="k">${oOpts(s.kalemId)}</select><div style="display:grid;grid-template-columns:1fr 1fr 42px;gap:6px;margin-top:6px"><select data-f="u">${uOpts(s.kalemId,s.birim)}</select><input data-f="q" type="number" inputmode="decimal" min="0" step="any" placeholder="Miktar" value="${esc(s.miktar??"")}"><button type="button" class="btn b5" style="margin:0;padding:0" data-x="1">✕</button></div>${isAdmin()?`<input data-f="p" type="number" inputmode="decimal" min="0" step="any" placeholder="Birim fiyat ₺ (isteğe bağlı)" value="${esc(s.fiyat??"")}" style="margin-top:6px">`:""}`;
   $("oRows").appendChild(d)}
 $("oRows").onchange=e=>{const t=e.target;if(t.dataset.f==="k")t.closest(".orow").querySelector('[data-f="u"]').innerHTML=uOpts(t.value)};
 $("oRows").onclick=e=>{if(!e.target.dataset.x)return;const r=e.target.closest(".orow");if($("oRows").children.length>1)r.remove();else{r.querySelector('[data-f="k"]').value="";r.querySelector('[data-f="u"]').innerHTML=uOpts("");r.querySelector('[data-f="q"]').value=""}};
 $("oRowAdd").onclick=()=>oRowAdd();
-function oAc(o,tid){
+function oAc(o,tid,pre){
   oEdit=o||null;$("oT").textContent=o?"Siparişi düzenle":"Yeni sipariş";$("oE").textContent="";
   let ops='<option value="">Tedarikçi seç...</option>'+sTed.slice().sort(byTr("firma")).map(t=>`<option value="${esc(t.id)}">${esc(t.firma)}</option>`).join("");
   if(o&&o.tedId&&!sTed.some(t=>t.id===o.tedId))ops+=`<option value="${esc(o.tedId)}">${esc(o.firma||"-")}</option>`;
   $("otd").innerHTML=ops;$("otd").value=o?o.tedId||"":(tid||"");
-  $("oRows").innerHTML="";const L=o?satirlar(o):[];(L.length?L:[{}]).forEach(oRowAdd);
-  $("ono").value=o?o.not||"":"";$("dSip").showModal();
+  const pf=o?(fyat.siparis||{})[o.id]:null;
+  $("ofi").classList.toggle("hide",!isAdmin());kdvSet("sip",pf||null);
+  $("oRows").innerHTML="";const L=o?satirlar(o).map((x,i)=>Object.assign({},x,{fiyat:pf&&pf.f?pf.f[i]:undefined})):(pre||[]);(L.length?L:[{}]).forEach(oRowAdd);
+  $("ono").value=o?o.not||"":"";$("dSip").showModal();oTopla();
 }
+function oTopla(){
+  if(!isAdmin())return;const kd=kdvGet("sip"),el=$("otop");
+  if(kd===null){el.classList.remove("hide");el.textContent="KDV oranı 0 ile 100 arasında olmalı.";return}
+  const a={h:0,k:0,t:0};let n=0;
+  document.querySelectorAll("#oRows .orow").forEach(r=>{const pe=r.querySelector('[data-f="p"]'),p=pe?parseFloat(pe.value):NaN,q=parseFloat(r.querySelector('[data-f="q"]').value);
+    if(p>=0&&q>0){const v=kdvHesap(Object.assign({tutar:p},kd),q);a.h+=v.h;a.k+=v.k;a.t+=v.t;n++}});
+  el.classList.toggle("hide",!n);el.textContent=n?"💰 Toplam: "+sumTxt(a):"";
+}
+["input","change"].forEach(t=>$("dSip").addEventListener(t,oTopla));
+$("dSip").addEventListener("click",()=>setTimeout(oTopla,0));
 $("oAdd").onclick=()=>{if(!sTed.length){toast("Önce bir tedarikçi ekleyin.");sTabSet("ted");return}oAc(null)};
 $("oNo").onclick=()=>$("dSip").close();
 $("oOk").onclick=async()=>{
-  const err=m=>{$("oE").textContent=m},tid=$("otd").value;
+  const err=m=>{$("oE").textContent=m},tid=$("otd").value,adm=isAdmin();
   if(!tid)return err("Tedarikçi seçin.");
-  const S=[];
+  const kd=adm?kdvGet("sip"):{};
+  if(kd===null)return err("KDV oranı 0 ile 100 arasında olmalı.");
+  const S=[],P={};
   for(const r of document.querySelectorAll("#oRows .orow")){
-    const kid=r.querySelector('[data-f="k"]').value,u=r.querySelector('[data-f="u"]').value,q=parseFloat(r.querySelector('[data-f="q"]').value);
+    const kid=r.querySelector('[data-f="k"]').value,u=r.querySelector('[data-f="u"]').value,q=parseFloat(r.querySelector('[data-f="q"]').value),
+          pe=r.querySelector('[data-f="p"]'),pv=pe&&pe.value!==""?parseFloat(pe.value):NaN;
     if(!kid&&!(q>0))continue;
     if(!kid)return err("Her satırda kalem seçin.");
     if(!(q>0))return err("Miktar 0'dan büyük olmalı.");
     if(!u)return err("Birim seçin.");
+    if(pv<0)return err("Fiyat 0 veya daha büyük olmalı.");
     const k=sKalem.find(x=>x.id===kid);if(!k)return err("Kalem bulunamadı.");
-    S.push({kalemId:kid,ad:k.ad||"",ebat:k.ebat||"",birim:u,miktar:q});
+    const line={kalemId:kid,ad:k.ad||"",ebat:k.ebat||"",birim:u,miktar:q},g=parseFloat(r.dataset.g)||0;if(g>0)line.gelen=g;
+    if(pv>=0)P[S.length]=pv;
+    S.push(line);
   }
   if(!S.length)return err("En az bir kalem ekleyin.");
   if(oEdit){const cur=sSip.find(x=>x.id===oEdit.id);if(!cur||cur.durum!=="bekliyor")return err("Bu sipariş artık düzenlenemez (teslim alınmış veya silinmiş).")}
-  const base={tedId:tid,firma:$("otd").selectedOptions[0].textContent,satirlar:S,not:$("ono").value.trim()};
+  const base={tedId:tid,firma:$("otd").selectedOptions[0].textContent,satirlar:S,not:$("ono").value.trim()};let id;
   $("oOk").disabled=true;
   try{
-    if(oEdit)await db.ref("siparisler/"+oEdit.id).update(Object.assign(base,{duzenleyen:ad()}));
-    else await db.ref("siparisler").push().set(Object.assign(base,{durum:"bekliyor",ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP}));
-    $("dSip").close();toast("Sipariş kaydedildi");sTabSet("sip");
-  }catch(e){err(errText(e))}
-  $("oOk").disabled=false;
+    if(oEdit){id=oEdit.id;await db.ref("siparisler/"+id).update(Object.assign(base,{duzenleyen:ad()}))}
+    else{const rf=db.ref("siparisler").push();id=rf.key;await rf.set(Object.assign(base,{durum:"bekliyor",ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP}))}
+  }catch(e){err(errText(e));$("oOk").disabled=false;return}
+  $("oOk").disabled=false;$("dSip").close();sTabSet("sip");
+  if(adm){try{const has=Object.keys(P).length;await db.ref("fiyatlar/siparis/"+id).set(has?Object.assign({f:P},kd):null);if(has&&kd.kdv!=null)await kdvKaydet(kd.kdv);toast("Sipariş kaydedildi")}catch(e){toast("Sipariş kaydedildi ama fiyat yazılamadı: "+errText(e))}}
+  else toast("Sipariş kaydedildi");
 };
 
+/* --- Azalanlardan sipariş taslağı --- */
+function lowUnits(k){const n=norm(k),ks=UN.filter(([u])=>u in n.mik).map(x=>x[0]);let L=ks.filter(u=>n.min[u]>0&&n.mik[u]<=n.min[u]);if(!L.length&&dur(k)==="no")L=ks.slice(0,1);return L.map(u=>({u,mik:+n.mik[u]||0,min:+n.min[u]||0}))}
+const gv=g=>g||"__yok";
+function tasAday(){
+  const bekK=new Set();sSip.filter(o=>o.durum==="bekliyor").forEach(o=>satirlar(o).forEach(x=>{if(kalanQ(x)>0)bekK.add(x.kalemId)}));
+  return sKalem.filter(k=>dur(k)!=="ok").sort(byTr("ad")).flatMap(k=>lowUnits(k).map(l=>({k,u:l.u,mik:l.mik,min:l.min,sug:l.min>0?Math.max(1,Math.ceil(l.min*2-l.mik)):"",bek:bekK.has(k.id)})));
+}
+function tasDraw(){
+  const A=tasAday(),gs=[...new Set(A.map(a=>(a.k.tedarikci||"").trim()))].sort((a,b)=>a.localeCompare(b,"tr")),cur=$("tsf").value;
+  $("tsf").innerHTML='<option value="*">Tümü</option>'+gs.map(g=>`<option value="${esc(gv(g))}"${gv(g)===cur?" selected":""}>${esc(g||"(Tedarikçi belirtilmemiş)")}</option>`).join("");
+  const f=$("tsf").value,R=A.filter(a=>f==="*"||gv((a.k.tedarikci||"").trim())===f);
+  $("tRows").innerHTML=R.length?R.map(a=>`<div class="tas-r" data-k="${esc(a.k.id)}" data-u="${a.u}" style="display:grid;grid-template-columns:26px 1fr 84px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #e2e8f0">
+    <input type="checkbox" data-c${a.bek?"":" checked"} style="width:20px;height:20px;padding:0">
+    <div><b style="font-size:13px">${esc(a.k.ad)}${a.k.ebat?" · "+esc(a.k.ebat):""}</b><div class="sub" style="font-size:11px">Mevcut ${esc(fmt(a.mik))} ${esc(UL[a.u])}${a.min>0?" · kritik "+esc(fmt(a.min)):""}${a.bek?" · 🧾 siparişte":""}</div></div>
+    <div><input type="number" data-q inputmode="decimal" min="0" step="any" value="${esc(a.sug)}" placeholder="Miktar" style="padding:8px"><div class="sub" style="text-align:center;font-size:10px">${esc(UL[a.u])}</div></div></div>`).join(""):'<div class="empty">Azalan veya biten kalem yok.</div>';
+}
+function tasAc(){$("tsE").textContent="";$("tsf").innerHTML="";tasDraw();$("dTas").showModal()}
+$("tsf").onchange=()=>tasDraw();
+$("sTas").onclick=()=>{if(!sTed.length){toast("Önce bir tedarikçi ekleyin.");sTabSet("ted");return}tasAc()};
+$("tsNo").onclick=()=>$("dTas").close();
+$("tsOk").onclick=()=>{
+  const pre=[];let bad=false;
+  document.querySelectorAll("#tRows .tas-r").forEach(r=>{
+    if(!r.querySelector("[data-c]").checked)return;
+    const q=parseFloat(r.querySelector("[data-q]").value),k=sKalem.find(x=>x.id===r.dataset.k);if(!k)return;
+    if(!(q>0)){bad=true;return}
+    pre.push({kalemId:k.id,ad:k.ad||"",ebat:k.ebat||"",birim:r.dataset.u,miktar:q})});
+  if(bad)return void($("tsE").textContent="Seçili kalemlerde miktar yazın.");
+  if(!pre.length)return void($("tsE").textContent="En az bir kalem seçin.");
+  const f=$("tsf").value,t=sTed.find(x=>(x.firma||"").trim().toLowerCase()===f.trim().toLowerCase());
+  $("dTas").close();oAc(null,t?t.id:"",pre);
+};
 formTemizle();modUyg();
 </script>
 </body>
