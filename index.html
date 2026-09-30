@@ -11,22 +11,6 @@
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 body{background:#f4f6f9;padding:12px;color:#212529;font-size:14px;min-height:100vh}
 .hide{display:none!important}
-#vMenu{background:linear-gradient(180deg,#0f172a 0,#1e293b 250px,#eef2f7 250px);align-items:flex-start;justify-content:center;overflow-y:auto;padding:0}
-#vMenu .mw{width:100%;max-width:440px;padding:26px 18px 30px;display:flex;flex-direction:column;gap:14px}
-#vMenu .brand{display:flex;align-items:center;gap:12px;color:#fff}
-#vMenu .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#ef4444,#b91c1c);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;box-shadow:0 4px 12px rgba(0,0,0,.35)}
-#vMenu .brand b{display:block;font-size:17px;letter-spacing:.6px}#vMenu .brand small{font-size:12px;color:#94a3b8}
-#vMenu .hello{color:#fff;margin:18px 0 22px}#vMenu .hello small{display:block;font-size:13px;color:#94a3b8;margin-bottom:2px}#vMenu .hello b{font-size:26px;font-weight:700;line-height:1.2}
-#vMenu .mc{display:flex;align-items:center;gap:16px;width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:18px;text-align:left;cursor:pointer;box-shadow:0 6px 20px rgba(15,23,42,.10);transition:transform .15s,box-shadow .15s}
-#vMenu .mc:active{transform:scale(.985);box-shadow:0 2px 8px rgba(15,23,42,.12)}
-#vMenu .ic{flex:none;width:58px;height:58px;border-radius:16px;display:flex;align-items:center;justify-content:center}
-#vMenu .ic svg{width:30px;height:30px}
-#vMenu .c1 .ic{background:#dbeafe;color:#1d4ed8}#vMenu .c2 .ic{background:#dcfce7;color:#15803d}
-#vMenu .tx{flex:1;min-width:0}#vMenu .tx b{display:block;font-size:18px;color:#0f172a;letter-spacing:.3px}#vMenu .tx small{display:block;font-size:12.5px;color:#64748b;margin-top:3px;line-height:1.35}
-#vMenu .ch{flex:none;width:22px;height:22px;color:#94a3b8}#vMenu .ch svg{width:22px;height:22px}
-#vMenu .mout{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;background:transparent;border:1.5px solid #cbd5e1;color:#475569;border-radius:12px;padding:12px;font-size:14px;font-weight:600;cursor:pointer}
-#vMenu .mout svg{width:18px;height:18px}
-
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999;padding:12px}
 .box{background:#fff;padding:20px;border-radius:12px;width:100%;max-width:360px;text-align:center}
 .box input,.box select{margin-bottom:10px}
@@ -76,6 +60,12 @@ input:focus,textarea:focus,select:focus{border-color:#2563eb}
 dialog{max-height:92vh;overflow:auto;border:0;border-radius:12px;padding:16px;width:min(460px,94vw)}
 dialog::backdrop{background:rgba(0,0,0,.6)}
 .urow{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:13px}
+.menuWrap{max-width:420px;margin:0 auto;padding-top:8vh}
+.menuWrap h2{text-align:center;color:#c82333;font-weight:900;margin-bottom:4px}
+.menuWrap p{text-align:center;color:#64748b;margin-bottom:22px;font-size:13px}
+.menuBtn{display:flex;align-items:center;gap:16px;width:100%;padding:22px 18px;margin-bottom:14px;border:0;border-radius:14px;color:#fff;font-size:20px;font-weight:900;cursor:pointer;text-align:left;box-shadow:0 4px 12px rgba(0,0,0,.12);-webkit-tap-highlight-color:transparent}
+.menuBtn:active{transform:scale(.97)}
+.menuBtn span.ic{font-size:38px}.menuBtn small{display:block;font-size:12px;font-weight:600;opacity:.9;margin-top:2px}
 .mods button{font-size:14px;padding:13px 4px}.mods button.on{background:#1e293b;color:#fff}
 .chip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #cbd5e1;border-radius:99px;padding:6px 11px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;text-transform:none;margin:0;color:#334155}.chip input{width:auto;margin:0}.urow2{display:grid;grid-template-columns:64px 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}.urow2 b{font-size:13px}.qbox{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.qbox .hl{flex:1;min-width:88px}
 .badge-no{background:#e71d36}.sub{font-size:12px;color:#64748b;margin-top:2px}
@@ -134,21 +124,14 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   </div>
 </div>
 
-<div id="vMenu" class="overlay hide">
-  <div class="mw">
-    <div class="brand"><div class="logo">M</div><div><b>MAG AMBALAJ</b><small>Fabrika Yönetim Sistemi</small></div></div>
-    <div class="hello"><small>Hoş geldiniz</small><b id="mn"></b></div>
-    <button type="button" class="mc c1" data-go="sevk">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6h13v10H1z"/><path d="M14 9h4l3 3v4h-7z"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span>
-      <span class="tx"><b>Sevkiyat</b><small>Hazır ürünler, sevk edilecekler ve sevk adresleri</small></span>
-      <span class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
-    </button>
-    <button type="button" class="mc c2" data-go="stok">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>
-      <span class="tx"><b>Stok</b><small>Malzeme stoğu, siparişler ve tedarikçiler</small></span>
-      <span class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
-    </button>
-    <button type="button" class="mout" data-out><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Çıkış Yap</button>
+<!-- Ana menü -->
+<div id="vMenu" class="hide">
+  <div class="menuWrap">
+    <h2>MAG AMBALAJ</h2>
+    <p>Hoş geldiniz, <b id="menuAd"></b><br>Girmek istediğiniz bölümü seçin</p>
+    <button class="menuBtn" style="background:#ff9f1c" data-go="sevk"><span class="ic">🚚</span><div>SEVKİYAT<small>Hazır ürünler, sevk listesi, adresler</small></div></button>
+    <button class="menuBtn" style="background:#2563eb" data-go="stok"><span class="ic">📦</span><div>STOK<small>Stok, sipariş, tedarikçi, hareketler</small></div></button>
+    <button class="btn b6" data-out>Çıkış</button>
   </div>
 </div>
 
@@ -158,8 +141,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <div class="u">
       <div id="me"></div>
       <button class="btn b8 sm hide" id="bAdm">Yönetici</button>
+      <button class="btn b7 sm" id="bMenu">🏠 Menü</button>
       <button class="btn b6 sm" id="bAd">İsim</button>
-      <button class="btn b6 sm" id="bMenu">🏠 Menü</button>
       <button class="btn b5 sm" data-out>Çıkış</button>
     </div>
   </div>
@@ -365,9 +348,6 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 <div id="toast"></div>
 
 <script>
-setTimeout(function(){var b=document.getElementById("boot");if(b&&b.offsetParent!==null){b.innerHTML="Uygulama açılamadı ("+(typeof firebase==="undefined"?"Firebase dosyaları yüklenemedi: internet bağlantısını kontrol edin":"giriş sunucusundan yanıt gelmedi")+").<br><br><button onclick=\"location.reload()\" style=\"padding:10px 18px;font-size:15px;border:0;border-radius:8px;background:#2563eb;color:#fff\">Yenile</button>"}},10000);
-</script>
-<script>
 /* ============ AYAR: Firebase Console > Proje ayarları > Web uygulaması'ndan kopyalayın ============ */
 const CFG={
   apiKey:"AIzaSyA_ZyOtWAvaYQvU8KaJnAJZK1s4Qd80FtU",
@@ -391,7 +371,7 @@ if(CFG.apiKey.startsWith("BURAYA")){
   throw new Error("Firebase ayarı eksik");
 }
 function bootMsg(m){const b=$("boot");b.classList.remove("hide");b.innerHTML="<b>Uygulama açılamadı</b><br><br>"+esc(m)}
-window.addEventListener("error",e=>{if(["vLogin","vWait","vApp"].every(x=>$(x).classList.contains("hide")))bootMsg(e.message||"Bilinmeyen hata")});
+window.addEventListener("error",e=>{if(["vLogin","vWait","vMenu","vApp"].every(x=>$(x).classList.contains("hide")))bootMsg(e.message||"Bilinmeyen hata")});
 if(typeof firebase==="undefined"){bootMsg("Firebase yüklenemedi. İnternet bağlantısını kontrol edin.");throw new Error("firebase yok")}
 if(!/^https?:$/.test(location.protocol))bootMsg("Uygulama dosyadan açılmış ("+location.protocol+"). Giriş sistemi sadece internet adresi (https) üzerinden çalışır.");
 setTimeout(()=>{if(!$("boot").classList.contains("hide")&&$("boot").textContent==="Yükleniyor...")bootMsg("Sunucuya bağlanılamadı. İnternet bağlantısını ve Firebase ayarlarını kontrol edin.")},8000);
@@ -403,7 +383,7 @@ const MODS={
  stok:{yol:"stok",baslik:"STOK",tab:["STOKTAKİ ÜRÜNLER","KULLANIMA AYRILANLAR","KULLANILANLAR"],rozet:["STOKTA","KULLANIMA AYRILDI","KULLANILDI"],ileri:["➡️ Kullanıma Ayır","✓ Kullanıldı"],geri:["↩️ Stoka Geri Al","↩️ Kullanıma Ayrılana Geri Al"],sec:["STOKTA","KULLANIMA AYRILDI"],kayit:"+ STOĞA EKLE",teslim:"İşlemi yapan",mu:"Tedarikçi / Firma"}
 };
 let mod="sevk";const M=()=>MODS[mod];
-let user=null,rec=null,recRef=null,uRef=null,started=false;
+let user=null,rec=null,recRef=null,uRef=null,started=false,menuOk=false;
 let urunler=[],limit=20,tab="hazir",editId="",fotoData="",stream=null;
 const show=v=>{$("boot").classList.add("hide");["vLogin","vWait","vMenu","vApp"].forEach(x=>$(x).classList.toggle("hide",x!==v))};
 const ad=()=>rec?`${rec.ad} (${rec.rol})`:"Bilinmiyor";
@@ -412,7 +392,7 @@ const isAdmin=()=>!!(rec&&rec.yonetici===true&&rec.onay===true);
 /* ---------- Oturum ---------- */
 auth.onAuthStateChanged(u=>{
   if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null} if(window.tRef){tRef.off();tRef=null} if(window.oRef){oRef.off();oRef=null} if(window.aRef){aRef.off();aRef=null} if(window.fRef){fRef.off();fRef=null} fyat={sevk:{},stok:{},siparis:{}};
-  started=false;urunler=[];rec=null;user=u;
+  started=false;menuOk=false;urunler=[];rec=null;user=u;
   if(!u){show("vLogin");return}
   recRef=db.ref("kullanicilar/"+u.uid);
   recRef.on("value",s=>{
@@ -420,17 +400,14 @@ auth.onAuthStateChanged(u=>{
     if(rec&&rec.onay){
       $("me").textContent=ad();
       $("bAdm").classList.toggle("hide",!isAdmin());$("fSevk").classList.toggle("hide",!isAdmin());fiyatBaglan();
-      $("mn").textContent=ad();
-      show($("vApp").classList.contains("hide")?"vMenu":"vApp");
+      $("menuAd").textContent=rec.ad||"";
+      show(menuOk?"vApp":"vMenu");
       if(!started){started=true;yukle();adrYukle();if(panel==="stok")stokYukle()}
       listele();
     }else{show("vWait")}
   },e=>{toast("Hesap okunamadı: "+errText(e));show("vWait")});
 });
 document.querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>auth.signOut());
-function openMod(m){show("vApp");if(m!==panel)document.querySelector('#mods button[data-m="'+m+'"]').click();window.scrollTo(0,0)}
-document.querySelectorAll("#vMenu [data-go]").forEach(b=>b.onclick=()=>openMod(b.dataset.go));
-$("bMenu").onclick=()=>{show("vMenu");window.scrollTo(0,0)};
 
 $("tG").onclick=()=>{$("fG").classList.remove("hide");$("fK").classList.add("hide");$("tG").classList.add("on");$("tK").classList.remove("on")};
 $("tK").onclick=()=>{$("fK").classList.remove("hide");$("fG").classList.add("hide");$("tK").classList.add("on");$("tG").classList.remove("on")};
@@ -678,11 +655,14 @@ function fiyatBaglan(){
 const ust=(v,m)=>v<=0?"no":(m>0&&v<=m)?"lo":"ok";
 const dur=k=>{const n=norm(k),ks=Object.keys(n.mik);if(!ks.length||ks.every(u=>!(n.mik[u]>0)))return"no";return ks.some(u=>n.min[u]>0&&n.mik[u]<=n.min[u])?"lo":"ok"};
 const fmtQ=(o,z)=>UN.filter(([u])=>o&&u in o&&(z||+o[u]>0)).map(([u,l])=>fmt(o[u])+" "+l).join(", ")||"-";
-$("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===panel)return;panel=m;
+function modSec(m){panel=m;
   document.querySelectorAll("#mods button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
   $("pSevk").classList.toggle("hide",m!=="sevk");$("pStok").classList.toggle("hide",m!=="stok");
   $("mt").textContent=m==="sevk"?"SEVKİYAT":"STOK";
-  if(m==="stok")stokYukle();else stokKapat()};
+  if(m==="stok")stokYukle();else stokKapat()}
+$("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===panel)return;modSec(m)};
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{menuOk=true;modSec(b.dataset.go);show("vApp");window.scrollTo(0,0)});
+$("bMenu").onclick=()=>{menuOk=false;show("vMenu");window.scrollTo(0,0)};
 function stokKapat(){if(sRef){sRef.off();sRef=null}if(tRef){tRef.off();tRef=null}if(oRef){oRef.off();oRef=null}}
 function stokYukle(){stokKapat();sRef=db.ref("stokKalem");
   sRef.on("value",x=>{const v=x.val()||{};sKalem=Object.keys(v).map(k=>Object.assign({id:k},v[k]));stokListele()},e=>toast("Stok okunamadı: "+errText(e)));
@@ -1187,4 +1167,29 @@ function aAc(a,pre){aEdit=a||null;const v=a||pre||{};$("aT").textContent=a?"Sevk
   AF.forEach(([i,f])=>$(i).value=v[f]||"");$("dAdr").showModal()}
 $("aAdd").onclick=()=>aAc(null);
 $("aX").onclick=()=>$("dAdr").close();
-$("aHs").onclick=()=>{const v=$("aHu").value.trim(),a0=$("aAd").value.trim();harit
+$("aHs").onclick=()=>{const v=$("aHu").value.trim(),a0=$("aAd").value.trim();haritaAc(safeUrl(v),v&&!safeUrl(v)?v:(a0||$("aFi").value.trim()))};
+$("aOk").onclick=async()=>{
+  const err=m=>{$("aE").textContent=m},d={};AF.forEach(([i,f])=>d[f]=$(i).value.trim());
+  if(!d.ad)return err("Firma / müşteri adı gerekli.");
+  if(d.haritaUrl&&!safeUrl(d.haritaUrl))return err("Harita linki geçerli değil. Boş bırakın veya https:// ile başlayan Google Maps bağlantısını yapıştırın.");
+  d.haritaUrl=safeUrl(d.haritaUrl);
+  if(!d.adres&&!d.haritaUrl)return err("Açık adres veya harita linki girin.");
+  if((!aEdit||(aEdit.ad||"").toLowerCase()!==d.ad.toLowerCase())&&sAdr.some(x=>(x.ad||"").toLowerCase()===d.ad.toLowerCase())&&!confirm("Bu isimde bir adres zaten kayıtlı. Yine de eklensin mi?"))return;
+  $("aOk").disabled=true;
+  try{
+    if(aEdit)await db.ref("sevkAdresleri/"+aEdit.id).update(Object.assign(d,{duzenleyen:ad()}));
+    else await db.ref("sevkAdresleri").push().set(Object.assign(d,{ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP}));
+    $("dAdr").close();toast("Adres kaydedildi");
+  }catch(e){err(errText(e))}
+  $("aOk").disabled=false;
+};
+$("aCsv").onclick=()=>{
+  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+  const r=[["Firma / Müşteri","Yetkili","Telefon","2. Telefon","İl / İlçe","Adres","Harita linki","Not"].map(q).join(";")].concat(sAdr.slice().sort(byTr("ad")).map(a=>[a.ad,a.yetkili,a.tel,a.tel2,a.sehir,a.adres,a.haritaUrl,a.not].map(q).join(";")));
+  const el=document.createElement("a");el.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));el.download="sevk-adresleri.csv";el.click();
+};
+
+formTemizle();modUyg();
+</script>
+</body>
+</html>
