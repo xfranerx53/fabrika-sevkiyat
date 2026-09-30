@@ -146,7 +146,10 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <div><label style="color:#0284c7">Paket / Adet</label><input type="number" id="pk" inputmode="numeric" min="0" step="1" value="1" class="fast"></div>
     <div class="full sevkonly">
       <label style="color:#0f766e">📍 Teslimat adresi ve harita</label>
-      <select id="adrSec" style="margin-bottom:6px"><option value="">📒 Kayıtlı sevk adresinden seç...</option></select>
+      <div style="position:relative;margin-bottom:6px">
+        <input id="adrQ" placeholder="📒 Kayıtlı sevk adresinde ara (firma, il, telefon...)" autocomplete="off">
+        <div id="adrRes" class="hide" style="position:absolute;left:0;right:0;top:100%;margin-top:2px;max-height:250px;overflow:auto;background:#fff;border:1.5px solid #2563eb;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.18);z-index:50"></div>
+      </div>
       <div style="display:flex;gap:6px;margin-bottom:6px">
         <input id="hu" placeholder="Google Maps linki veya adres">
         <button type="button" class="btn b7" style="margin:0;width:auto;white-space:nowrap" id="hSec">🗺️ Haritada Seç</button>
@@ -210,7 +213,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
       <div class="hl fl" data-f="lo" id="sAb" style="background:#fff7ed;border-color:#ea580c"><small style="color:#c2410c">AZALAN</small><b id="sA" style="color:#9a3412">0</b></div>
       <div class="hl fl" data-f="no" id="sTb" style="background:#fef2f2;border-color:#dc2626"><small style="color:#b91c1c">TÜKENEN</small><b id="sT" style="color:#991b1b">0</b></div>
     </div>
-    <div class="hl hide" id="sVal" style="margin-bottom:12px;background:#fefce8;border-color:#ca8a04"><small style="color:#854d0e">TOPLAM STOK DEĞERİ (fiyatı girilen kalemler)</small><b id="sVn" style="color:#713f12">0 ₺</b></div>
+    <div class="hl hide" id="sVal" style="margin-bottom:12px;background:#fefce8;border-color:#ca8a04"><small style="color:#854d0e">TOPLAM STOK DEĞERİ (siparişlerdeki son alış fiyatına göre)</small><b id="sVn" style="color:#713f12">0 ₺</b></div>
     <div class="filter">
       <input id="sq" placeholder="🔍 Kalem ara (poşet, bant, koli, masura...)" style="margin-bottom:8px">
       <div style="display:flex;gap:6px"><select id="sc"><option value="">Tüm kategoriler</option></select><select id="sd"><option value="">Tüm durumlar</option><option value="lo">Azalan</option><option value="no">Tükenen</option></select></div>
@@ -220,7 +223,9 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <div id="sList"></div>
     </div>
     <div id="sSip" class="hide">
-      <button class="btn b1" style="margin:0 0 12px" id="oAdd">＋ Yeni sipariş oluştur</button>
+      <button class="btn b1" style="margin:0 0 10px" id="oAdd">＋ Yeni sipariş oluştur</button>
+      <input id="oq" placeholder="🔍 Sipariş ara (kalem, kategori, tedarikçi, tarih, not...)" style="margin-bottom:8px">
+      <div class="tabs stabs" id="oVt"><button data-o="kat" class="on">📁 KATEGORİYE GÖRE</button><button data-o="lis">🧾 SİPARİŞ LİSTESİ</button></div>
       <div id="oList"></div>
     </div>
     <div id="sTed" class="hide">
@@ -244,10 +249,6 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <label style="margin-top:12px">Takip edilecek birimler (birden fazla seçebilirsiniz)</label>
   <div id="ub" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
   <div id="kur"></div>
-  <div id="kfi" class="hide" style="margin:4px 0 8px"><label style="color:#854d0e">💰 Fiyat (sadece yöneticiler görür)</label>
-    <div style="display:flex;gap:6px"><input id="sfy" type="number" inputmode="decimal" min="0" step="any" placeholder="Fiyat ₺"><select id="sfb"></select></div>
-    <label class="chip" style="margin-top:8px"><input type="checkbox" id="kkc">KDV ekle</label>
-    <div id="kkw" class="hide" style="margin-top:6px"><div style="display:flex;gap:6px"><input id="kkr" type="number" inputmode="decimal" min="0" max="100" step="any" placeholder="KDV %"><select id="kkm"><option value="haric">Fiyat KDV hariç</option><option value="dahil">Fiyat KDV dahil</option></select></div><div id="kkg" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div></div>
   <p class="mut" style="font-size:11px;margin:0 0 4px">Mevcut miktar ve kritik seviye (altına düşünce uyarır) isteğe bağlıdır.</p>
   <label for="ste" style="margin-top:8px">Tedarikçi (isteğe bağlı)</label><input id="ste" list="dlt" placeholder="Önceden girdikleriniz burada çıkar" autocomplete="off"><datalist id="dlt"></datalist>
   <label for="sno" style="margin-top:8px">Not (isteğe bağlı)</label><input id="sno">
@@ -575,9 +576,19 @@ const norm=k=>{
 };
 const para=n=>fmt(n)+" ₺";
 var kdvAyar={};
-const KD={sevk:["skc","skw","skr","skm","skg"],stok:["kkc","kkw","kkr","kkm","kkg"],sip:["okc","okw","okr","okm","okg"]};
+const KD={sevk:["skc","skw","skr","skm","skg"],sip:["okc","okw","okr","okm","okg"]};
 const kdvHesap=(f,q)=>{const r=+f.kdv||0,h=(f.kdvDahil&&r?f.tutar/(1+r/100):f.tutar)*q,k=h*r/100;return{h,k,t:h+k,r}};
-const stokVal=k=>{const f=(fyat.stok||{})[k.id];if(!f)return null;const q=norm(k).mik[f.birim];return q==null?null:kdvHesap(f,q)};
+/* Fiyat geçmişi: artık sadece siparişlerdeki birim fiyatlardan gelir */
+function fyGecmis(kid,birim,haric){const R=[];
+  sSip.forEach(o=>{if(haric&&o.id===haric)return;const pf=(fyat.siparis||{})[o.id];if(!pf||!pf.f)return;
+    satirlar(o).forEach((x,i)=>{if(x.kalemId!==kid||x.birim!==birim)return;const p=pf.f[i];if(p==null)return;
+      R.push({t:o.eklenmeTarihi||0,q:+x.miktar||0,p:+p,kdv:pf.kdv,dahil:!!pf.kdvDahil,firma:o.firma||"",oid:o.id})})});
+  return R.sort((a,b)=>b.t-a.t)}
+const sonFy=(kid,u)=>fyGecmis(kid,u)[0]||null;
+const stokVal=k=>{const n=norm(k).mik;let a={h:0,k:0,t:0},c=0;
+  for(const u in n){const q=+n[u]||0;if(!(q>0))continue;const g=sonFy(k.id,u);if(!g)continue;
+    const v=kdvHesap({tutar:g.p,kdv:g.kdv,kdvDahil:g.dahil},q);a.h+=v.h;a.k+=v.k;a.t+=v.t;c++}
+  return c?Object.assign(a,{r:a.k>0?1:0}):null};
 const sevkTop=u=>{const f=(fyat.sevk||{})[u.id];if(!f)return null;return kdvHesap(f,f.esas==="kg"?(+u.kg||0):f.esas==="adet"?(+u.paket||0):1)};
 const kdvTxt=f=>f.kdv!=null?" · KDV %"+esc(fmt(f.kdv))+(f.kdvDahil?" dahil":" hariç"):"";
 const topTxt=v=>v.r?`${esc(para(v.h))} + KDV ${esc(para(v.k))} = <b>${esc(para(v.t))}</b>`:`<b>${esc(para(v.t))}</b>`;
@@ -586,10 +597,14 @@ function sumV(list,fn){return list.reduce((a,x)=>{const v=fn(x);return v?{h:a.h+
 const sumTxt=t=>t.k>0?`${para(t.h)} + KDV ${para(t.k)} = ${para(t.t)}`:para(t.t);
 function sFyHtml(u){const f=(fyat.sevk||{})[u.id];if(!f)return"";
   return `<div class="addr" style="background:#fefce8;border-color:#fde68a;color:#854d0e">💰 <b>${esc(para(f.tutar))}${({kg:" / kg",adet:" / adet",toplam:" (toplam)"})[f.esas]||""}</b>${kdvTxt(f)}<br>Toplam: ${topTxt(sevkTop(u))}</div>`}
-function kFyHtml(k){const f=(fyat.stok||{})[k.id];if(!f)return"";const v=stokVal(k);
-  return `<div class="addr" style="background:#fefce8;border-color:#fde68a;color:#854d0e">💰 <b>${esc(para(f.tutar))} / ${esc((UL[f.birim]||f.birim).toLowerCase())}</b>${kdvTxt(f)}${v?`<br>Stok değeri: ${topTxt(v)}`:""}</div>`}
+function kFyHtml(k){const n=norm(k).mik,R=UN.filter(([u])=>u in n).map(([u,l])=>{const g=sonFy(k.id,u);
+    return g?`${esc(para(g.p))} / ${esc(l.toLowerCase())} <span class="mut">(${esc(tarih(g.t))}${g.firma?" · "+esc(g.firma):""})</span>${g.kdv!=null?" · KDV %"+esc(fmt(g.kdv))+(g.dahil?" dahil":" hariç"):""}`:""}).filter(Boolean);
+  if(!R.length)return"";const v=stokVal(k);
+  return `<div class="addr" style="background:#fefce8;border-color:#fde68a;color:#854d0e">💰 Son alış fiyatı:<br>${R.join("<br>")}${v?`<br>Stok değeri: ${topTxt(v)}`:""}</div>`}
 const sFyCsv=u=>{const f=(fyat.sevk||{})[u.id];if(!f)return Array(6).fill('""');const v=sevkTop(u);return[csvN(f.tutar),'"'+f.esas+'"',csvN(v.r),csvN(v.h),csvN(v.k),csvN(v.t)]};
-const kFyCsv=k=>{const f=(fyat.stok||{})[k.id];if(!f)return Array(6).fill('""');const v=stokVal(k)||{r:0,h:0,k:0,t:0};return[csvN(f.tutar),'"'+(UL[f.birim]||f.birim)+'"',csvN(v.r),csvN(v.h),csvN(v.k),csvN(v.t)]};
+const kFyCsv=k=>{const n=norm(k).mik,P=UN.filter(([u])=>u in n).map(([u,l])=>[l,sonFy(k.id,u)]).filter(x=>x[1]);if(!P.length)return Array(6).fill('""');
+  const v=stokVal(k)||{h:0,k:0,t:0},q=x=>'"'+x+'"';
+  return[q(P.map(x=>String(x[1].p).replace(".",",")).join(" | ")),q(P.map(x=>x[0]).join(" | ")),csvN(P[0][1].kdv||0),csvN(v.h),csvN(v.k),csvN(v.t)]};
 /* KDV formu */
 function kdvUI(m){const [c,w,r,mo,g]=KD[m].map($);w.classList.toggle("hide",!c.checked);
   g.innerHTML=(Array.isArray(kdvAyar.gecmis)?kdvAyar.gecmis:Object.values(kdvAyar.gecmis||{})).map(x=>`<button type="button" class="btn sm b6" style="margin:0" data-r="${esc(x)}">%${esc(fmt(x))}</button>`).join("")}
@@ -597,10 +612,10 @@ function kdvSet(m,f){const [c,w,r,mo]=KD[m].map($),on=!!(f&&f.kdv!=null);c.check
 function kdvGet(m){const [c,w,r,mo]=KD[m].map($);if(!c.checked)return{};const v=parseFloat(r.value);if(!(v>=0&&v<=100))return null;return{kdv:v,kdvDahil:mo.value==="dahil"}}
 async function kdvKaydet(v){const old=Array.isArray(kdvAyar.gecmis)?kdvAyar.gecmis:Object.values(kdvAyar.gecmis||{});
   await db.ref("fiyatlar/ayar/kdv").set({son:v,gecmis:[v].concat(old.filter(x=>x!==v)).slice(0,6)})}
-["sevk","stok","sip"].forEach(m=>{const [c,w,r,mo,g]=KD[m];$(c).onchange=()=>kdvUI(m);$(g).onclick=e=>{const x=e.target.dataset.r;if(x!=null)$(r).value=x}});
+["sevk","sip"].forEach(m=>{const [c,w,r,mo,g]=KD[m];$(c).onchange=()=>kdvUI(m);$(g).onclick=e=>{const x=e.target.dataset.r;if(x!=null)$(r).value=x}});
 function fiyatBaglan(){
   if(isAdmin()){if(!fRef){fRef=db.ref("fiyatlar");fRef.on("value",x=>{const v=x.val()||{};fyat={sevk:v.sevk||{},stok:v.stok||{},siparis:v.siparis||{}};kdvAyar=(v.ayar&&v.ayar.kdv)||{};
-    if(!$("skc").checked)kdvSet("sevk",null);if(!$("kkc").checked&&!$("dKalem").open)kdvSet("stok",null);else kdvUI("stok");if(!$("okc").checked&&!$("dSip").open)kdvSet("sip",null);else kdvUI("sip");kdvUI("sevk");listele();stokListele()},e=>{if(fRef){fRef.off();fRef=null}if(isAdmin()&&!fyErr){fyErr=1;toast("Fiyatlar okunamadı. Veritabanı kurallarının son sürümünün yayınlandığını kontrol edin.")}})}}
+    if(!$("skc").checked)kdvSet("sevk",null);if(!$("okc").checked&&!$("dSip").open)kdvSet("sip",null);else kdvUI("sip");kdvUI("sevk");listele();stokListele()},e=>{if(fRef){fRef.off();fRef=null}if(isAdmin()&&!fyErr){fyErr=1;toast("Fiyatlar okunamadı. Veritabanı kurallarının son sürümünün yayınlandığını kontrol edin.")}})}}
   else if(fRef){fRef.off();fRef=null;fyat={sevk:{},stok:{},siparis:{}}}
 }
 const ust=(v,m)=>v<=0?"no":(m>0&&v<=m)?"lo":"ok";
@@ -686,12 +701,10 @@ function kDraw(){
   $("kur").innerHTML=UN.filter(([u])=>kSel.has(u)).map(([u,l])=>{const v=kVals[u]||{};
     const m=(kEdit&&u in old.mik)?`<span class="mut">mevcut: ${esc(fmt(old.mik[u]))}</span>`:`<input data-u="${u}" data-f="mik" type="number" inputmode="decimal" min="0" step="any" placeholder="Mevcut" value="${esc(v.mik??"")}">`;
     return `<div class="urow2"><b>${l}</b>${m}<input data-u="${u}" data-f="min" type="number" inputmode="decimal" min="0" step="any" placeholder="Kritik" value="${esc(v.min??"")}"></div>`}).join("")||'<p class="mut">En az bir birim seçin.</p>';
-  $("sfb").innerHTML=UN.filter(([u])=>kSel.has(u)).map(([u,l])=>`<option value="${u}">${l} başı</option>`).join("");if(kSel.has(kFB))$("sfb").value=kFB;
 }
-$("sfb").onchange=()=>{kFB=$("sfb").value};
 $("ub").onchange=e=>{const u=e.target.dataset.c;if(!u)return;kRead();if(e.target.checked)kSel.add(u);else kSel.delete(u);kDraw()};
 function kAc(k){
-  kEdit=k||null;kFoto="";kVals={};{const f=k?(fyat.stok||{})[k.id]:null;kFB=f?f.birim:"";$("sfy").value=f?f.tutar:"";$("kfi").classList.toggle("hide",!isAdmin());kdvSet("stok",f)}$("kT").textContent=k?"Kalemi düzenle":"Yeni kalem";$("kE").textContent="";
+  kEdit=k||null;kFoto="";kVals={};$("kT").textContent=k?"Kalemi düzenle":"Yeni kalem";$("kE").textContent="";
   $("sad").value=k?k.ad:"";$("skat").value=k?k.kategori||"":"";$("seb").value=k?k.ebat||"":"";$("ste").value=k?k.tedarikci||"":"";$("sno").value=k?k.not||"":"";
   if(k){const n=norm(k);kSel=new Set(Object.keys(n.mik).filter(u=>UL[u]));kSel.forEach(u=>{if(+n.min[u]>0)kVals[u]={min:n.min[u]}})}else kSel=new Set(["adet"]);
   kDraw();
@@ -705,7 +718,6 @@ $("sfoto").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileR
 $("kOk").onclick=async()=>{
   kRead();const nm=$("sad").value.trim(),err=m=>{$("kE").textContent=m};
   if(!nm)return err("Kalem adı gerekli.");
-  if(isAdmin()&&kdvGet("stok")===null)return err("KDV oranı 0 ile 100 arasında olmalı.");
   if(!kSel.size)return err("En az bir birim seçin.");
   const old=kEdit?norm(kEdit).mik:{},mik={},min={};
   for(const u of kSel){const v=kVals[u]||{},a=parseFloat(v.mik),b=parseFloat(v.min);
@@ -733,7 +745,6 @@ $("kOk").onclick=async()=>{
       const pos=Object.fromEntries(Object.entries(mik).filter(([,v])=>v>0));
       if(Object.keys(pos).length)await db.ref("stokHareket").push().set({kalemId:r.key,ad:nm,tip:"giris",mik:pos,kalan:mik,not:"İlk kayıt",kullanici:ad(),uid:user.uid,zaman:TS});
     }
-    if(isAdmin()){const f=parseFloat($("sfy").value),fid=kEdit?kEdit.id:newId,kd=kdvGet("stok")||{},ok=f>=0&&$("sfb").value;await db.ref("fiyatlar/stok/"+fid).set(ok?Object.assign({tutar:f,birim:$("sfb").value},kd):null);if(ok&&kd.kdv!=null)await kdvKaydet(kd.kdv)}
     $("dKalem").close();toast("Kaydedildi");
   }catch(e){err(errText(e))}
   $("kOk").disabled=false;
@@ -771,7 +782,7 @@ async function gecAc(k){
 /* Excel */
 $("sCsv").onclick=()=>{
   const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',st={ok:"Yeterli",lo:"Azalıyor",no:"Tükendi"};
-  const r=[["Kalem","Kategori","Ebat"].concat(UN.map(u=>u[1]),["Durum","Tedarikçi","Not"],isAdmin()?["Fiyat (₺)","Fiyat birimi","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")].concat(sKalem.slice().sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr")).map(k=>{const n=norm(k).mik;
+  const r=[["Kalem","Kategori","Ebat"].concat(UN.map(u=>u[1]),["Durum","Tedarikçi","Not"],isAdmin()?["Son alış fiyatı (₺)","Fiyat birimi","KDV %","Stok tutarı (₺)","KDV (₺)","Stok toplamı (₺)"]:[]).map(q).join(";")].concat(sKalem.slice().sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr")).map(k=>{const n=norm(k).mik;
     return [q(k.ad),q(k.kategori),q(k.ebat)].concat(UN.map(([u])=>u in n?q(String(+n[u]||0).replace(".",",")):q("")),[q(st[dur(k)]),q(k.tedarikci),q(k.not)],isAdmin()?kFyCsv(k):[]).join(";")}));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download="stok-listesi.csv";a.click();
 };
@@ -834,13 +845,52 @@ $("tOk").onclick=async()=>{
 };
 
 /* --- Siparişler --- */
+var oView="kat";
+const oWords=()=>$("oq").value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+function oHay(o,x){const k=sKalem.find(z=>z.id===x.kalemId);
+  return [x.ad,x.ebat,(k&&k.kategori)||x.kategori,UL[x.birim],o.firma,o.not,tarih(o.eklenmeTarihi),tarih(o.teslimTarihi)].join(" ").toLowerCase()}
+const oEsles=(o,x,w)=>{const h=oHay(o,x);return w.every(t=>h.includes(t))};
+$("oq").addEventListener("input",()=>sipListele());
+$("oVt").onclick=e=>{const b=e.target.closest("button");if(b&&b.dataset.o){oView=b.dataset.o;sipListele()}};
 function sipListele(){
-  const B=sSip.filter(o=>o.durum==="bekliyor").sort((a,b)=>(b.eklenmeTarihi||0)-(a.eklenmeTarihi||0)),
-        G=sSip.filter(o=>o.durum==="geldi").sort((a,b)=>(b.teslimTarihi||b.eklenmeTarihi||0)-(a.teslimTarihi||a.eklenmeTarihi||0)).slice(0,20);
-  $("stO").textContent="🧾 SİPARİŞLER"+(B.length?" ("+B.length+")":"");
-  $("oList").innerHTML=`<div class="shd">SİPARİŞTE BEKLEYENLER (${B.length})</div>`+(B.length?B.map(okart).join(""):'<div class="empty">Bekleyen sipariş yok.</div>')
-    +(G.length?`<div class="shd" style="margin-top:14px">TESLİM ALINANLAR (son ${G.length})</div>`+G.map(okart).join(""):"");
+  const w=oWords(),all=sSip.filter(o=>!w.length||satirlar(o).some(x=>oEsles(o,x,w))),
+        bekN=sSip.filter(o=>o.durum==="bekliyor").length;
+  $("stO").textContent="🧾 SİPARİŞLER"+(bekN?" ("+bekN+")":"");
+  document.querySelectorAll("#oVt button").forEach(b=>b.classList.toggle("on",b.dataset.o===oView));
+  if(oView==="kat"){$("oList").innerHTML=oKatHtml(all,w);return}
+  const B=all.filter(o=>o.durum==="bekliyor").sort((a,b)=>(b.eklenmeTarihi||0)-(a.eklenmeTarihi||0)),
+        G0=all.filter(o=>o.durum==="geldi").sort((a,b)=>(b.teslimTarihi||b.eklenmeTarihi||0)-(a.teslimTarihi||a.eklenmeTarihi||0)),G=w.length?G0:G0.slice(0,20);
+  $("oList").innerHTML=`<div class="shd">SİPARİŞTE BEKLEYENLER (${B.length})</div>`+(B.length?B.map(okart).join(""):`<div class="empty">${w.length?"Aramaya uygun bekleyen sipariş yok.":"Bekleyen sipariş yok."}</div>`)
+    +(G.length?`<div class="shd" style="margin-top:14px">TESLİM ALINANLAR (${w.length?G.length:"son "+G.length})</div>`+G.map(okart).join(""):"");
 }
+/* Kategori > kalem > alış satırları (tarih, miktar, fiyat) */
+function oKatHtml(all,w){
+  const adm=isAdmin(),K=new Map();let n=0;
+  all.forEach(o=>{const pf=adm?(fyat.siparis||{})[o.id]:null;
+    satirlar(o).forEach((x,i)=>{if(w.length&&!oEsles(o,x,w))return;
+      const k=sKalem.find(z=>z.id===x.kalemId),kat=((k&&k.kategori)||x.kategori||"").trim()||"Kategorisiz",ad=(k?k.ad:x.ad)||"-",eb=(k?k.ebat:x.ebat)||"",key=x.kalemId||(ad+"|"+eb);
+      if(!K.has(kat))K.set(kat,new Map());const M=K.get(kat);if(!M.has(key))M.set(key,{ad,eb,R:[]});
+      M.get(key).R.push({o,x,p:pf&&pf.f?pf.f[i]:null,pf});n++})});
+  if(!n)return `<div class="empty">${w.length?"Aramaya uygun sipariş bulunamadı.":'Henüz sipariş yok. "Yeni sipariş oluştur" ile başlayın.'}</div>`;
+  const cats=[...K.keys()].sort((a,b)=>a==="Kategorisiz"?1:b==="Kategorisiz"?-1:a.localeCompare(b,"tr"));
+  return cats.map(kat=>{const items=[...K.get(kat).values()].sort((a,b)=>a.ad.localeCompare(b.ad,"tr")||a.eb.localeCompare(b.eb,"tr")),cnt=items.reduce((s,it)=>s+it.R.length,0);
+    return `<div class="shd" style="margin-top:12px">📁 ${esc(kat.toLocaleUpperCase("tr"))} · ${cnt} alış</div>`+items.map(it=>{
+      it.R.sort((a,b)=>(b.o.eklenmeTarihi||0)-(a.o.eklenmeTarihi||0));
+      const son=it.R.find(r=>r.p!=null);
+      return `<div class="item c hazir-border" style="padding:8px 10px">
+        <div style="display:flex;justify-content:space-between;gap:6px;align-items:center"><b class="nm">${esc(it.ad)}${it.eb?" · "+esc(it.eb):""}</b>${adm&&son?`<span class="sub" style="margin:0;font-size:11px;flex:none">Son: <b>${esc(para(son.p))}</b> / ${esc((UL[son.x.birim]||son.x.birim).toLowerCase())}</span>`:""}</div>
+        ${it.R.map(oSatirHtml).join("")}</div>`}).join("")}).join("")
+}
+function oSatirHtml(r){
+  const {o,x,p,pf}=r,ok=o.durum==="geldi",g=+x.gelen||0,m=+x.miktar||0,u=UL[x.birim]||x.birim,q=ok&&x.gelen!=null?g:m,
+    qt=`${fmt(q)} ${u}`+(ok&&g!==m?` <span class="mut">(sipariş ${fmt(m)})</span>`:"")+(!ok&&g>0?` <span class="mut">(gelen ${fmt(g)})</span>`:""),
+    id=esc(o.id);let fy="";
+  if(p!=null){const v=kdvHesap({tutar:+p,kdv:pf.kdv,kdvDahil:pf.kdvDahil},q);
+    fy=`<div class="sub" style="color:#854d0e">💰 <b>${esc(para(p))}</b> / ${esc(u.toLowerCase())}${pf.kdv!=null?" · KDV %"+esc(fmt(pf.kdv))+(pf.kdvDahil?" dahil":" hariç"):""} → ${topTxt(v)}</div>`}
+  return `<div style="padding:6px 0;border-top:1px solid #f1f5f9;font-size:12.5px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span><b>${esc(tarih(o.eklenmeTarihi))}</b> · ${qt}</span><span class="badge ${ok?"badge-hazir":"badge-sevk"}" style="font-size:9px;padding:3px 6px">${ok?"STOKTA":"SİPARİŞTE"}</span></div>
+    <div class="sub">🏢 ${esc(o.firma||"-")}${ok&&o.teslimTarihi?" · teslim "+esc(tarih(o.teslimTarihi)):""}${o.not?" · 📌 "+esc(o.not):""}</div>${fy}
+    ${ok?"":`<div class="acts s" style="margin-top:5px"><button class="btn b3 sm" style="flex:3" data-a="in" data-id="${id}">✅ Geldi — Stokta</button><button class="btn b6 sm i" data-a="edit" data-id="${id}">✏️</button></div>`}</div>`}
 function okart(o){
   const id=esc(o.id),ok=o.durum==="geldi",canDel=isAdmin()||(o.ekleyenUid&&o.ekleyenUid===user.uid),t=sTed.find(x=>x.id===o.tedId),L=satirlar(o),
         kismi=!ok&&L.some(x=>+x.gelen>0),pf=isAdmin()?(fyat.siparis||{})[o.id]:null,top=isAdmin()?sipTop(o):null;
@@ -914,10 +964,17 @@ function oOpts(sel){return '<option value="">Kalem seç...</option>'+sKalem.slic
 function uOpts(kid,sel){const k=sKalem.find(x=>x.id===kid),us=k?UN.filter(([u])=>u in norm(k).mik):[];
   return us.length?us.map(([u,l])=>`<option value="${u}"${u===sel?" selected":""}>${l}</option>`).join(""):'<option value="">Birim</option>'}
 function oRowAdd(s){s=s||{};const d=document.createElement("div");d.className="orow";d.dataset.g=+s.gelen||0;d.style.cssText="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px";
-  d.innerHTML=`<select data-f="k">${oOpts(s.kalemId)}</select><div style="display:grid;grid-template-columns:1fr 1fr 42px;gap:6px;margin-top:6px"><select data-f="u">${uOpts(s.kalemId,s.birim)}</select><input data-f="q" type="number" inputmode="decimal" min="0" step="any" placeholder="Miktar" value="${esc(s.miktar??"")}"><button type="button" class="btn b5" style="margin:0;padding:0" data-x="1">✕</button></div>${isAdmin()?`<input data-f="p" type="number" inputmode="decimal" min="0" step="any" placeholder="Birim fiyat ₺ (isteğe bağlı)" value="${esc(s.fiyat??"")}" style="margin-top:6px">`:""}`;
-  $("oRows").appendChild(d)}
-$("oRows").onchange=e=>{const t=e.target;if(t.dataset.f==="k")t.closest(".orow").querySelector('[data-f="u"]').innerHTML=uOpts(t.value)};
-$("oRows").onclick=e=>{if(!e.target.dataset.x)return;const r=e.target.closest(".orow");if($("oRows").children.length>1)r.remove();else{r.querySelector('[data-f="k"]').value="";r.querySelector('[data-f="u"]').innerHTML=uOpts("");r.querySelector('[data-f="q"]').value=""}};
+  d.innerHTML=`<select data-f="k">${oOpts(s.kalemId)}</select><div style="display:grid;grid-template-columns:1fr 1fr 42px;gap:6px;margin-top:6px"><select data-f="u">${uOpts(s.kalemId,s.birim)}</select><input data-f="q" type="number" inputmode="decimal" min="0" step="any" placeholder="Miktar" value="${esc(s.miktar??"")}"><button type="button" class="btn b5" style="margin:0;padding:0" data-x="1">✕</button></div>${isAdmin()?`<input data-f="p" type="number" inputmode="decimal" min="0" step="any" placeholder="Birim fiyat ₺ (isteğe bağlı)" value="${esc(s.fiyat??"")}" style="margin-top:6px">`:""}${isAdmin()?'<div class="ph"></div>':""}`;
+  $("oRows").appendChild(d);oFyGec(d)}
+/* önceki alışlar: aynı kalem + birim için tarih / miktar / fiyat */
+function oFyGec(r){const box=r.querySelector(".ph");if(!box)return;
+  const kid=r.querySelector('[data-f="k"]').value,u=r.querySelector('[data-f="u"]').value;
+  if(!kid||!u){box.innerHTML="";return}
+  const H=fyGecmis(kid,u,oEdit?oEdit.id:"").slice(0,4),ul=(UL[u]||u).toLowerCase();
+  box.innerHTML=H.length?`<div class="mut" style="font-size:10px;font-weight:800;margin:6px 0 3px">GEÇMİŞ ALIŞLAR (dokun: fiyatı kullan)</div>`+H.map(h=>`<div data-p="${esc(h.p)}" style="display:flex;justify-content:space-between;gap:6px;background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:5px 8px;margin-bottom:3px;font-size:12px;color:#854d0e;cursor:pointer"><span>${esc(tarih(h.t))} · ${esc(fmt(h.q))} ${esc(ul)}${h.firma?" · "+esc(h.firma):""}</span><b>${esc(para(h.p))}${h.kdv!=null?'<small style="font-weight:600"> +KDV %'+esc(fmt(h.kdv))+"</small>":""}</b></div>`).join(""):`<div class="mut" style="font-size:11px;margin-top:6px">Bu kalemi daha önce fiyatlı sipariş etmediniz.</div>`}
+$("oRows").onchange=e=>{const t=e.target,r=t.closest(".orow");if(!r)return;if(t.dataset.f==="k")r.querySelector('[data-f="u"]').innerHTML=uOpts(t.value);if(t.dataset.f==="k"||t.dataset.f==="u")oFyGec(r)};
+$("oRows").onclick=e=>{const ph=e.target.closest("[data-p]");if(ph){const r=ph.closest(".orow");r.querySelector('[data-f="p"]').value=ph.dataset.p;oTopla();return}
+  if(!e.target.dataset.x)return;const r=e.target.closest(".orow");if($("oRows").children.length>1)r.remove();else{r.querySelector('[data-f="k"]').value="";r.querySelector('[data-f="u"]').innerHTML=uOpts("");r.querySelector('[data-f="q"]').value="";oFyGec(r)}};
 $("oRowAdd").onclick=()=>oRowAdd();
 function oAc(o,tid,pre){
   oEdit=o||null;$("oT").textContent=o?"Siparişi düzenle":"Yeni sipariş";$("oE").textContent="";
@@ -956,7 +1013,7 @@ $("oOk").onclick=async()=>{
     if(!u)return err("Birim seçin.");
     if(pv<0)return err("Fiyat 0 veya daha büyük olmalı.");
     const k=sKalem.find(x=>x.id===kid);if(!k)return err("Kalem bulunamadı.");
-    const line={kalemId:kid,ad:k.ad||"",ebat:k.ebat||"",birim:u,miktar:q},g=parseFloat(r.dataset.g)||0;if(g>0)line.gelen=g;
+    const line={kalemId:kid,ad:k.ad||"",ebat:k.ebat||"",kategori:k.kategori||"",birim:u,miktar:q},g=parseFloat(r.dataset.g)||0;if(g>0)line.gelen=g;
     if(pv>=0)P[S.length]=pv;
     S.push(line);
   }
@@ -1027,7 +1084,7 @@ function adrListele(){
   $("aSay").textContent=L.length+" adres"+(L.length!==sAdr.length?" (toplam "+sAdr.length+")":"");
   $("aList").innerHTML=L.length?L.map(akart).join(""):'<div class="empty">'+(sAdr.length?"Aramaya uygun adres bulunamadı.":'Kayıtlı sevk adresi yok. "Yeni adres ekle" ile başlayın.')+'</div>';
   $("vtA").textContent="📍 SEVK ADRESLERİ"+(sAdr.length?" ("+sAdr.length+")":"");
-  $("adrSec").innerHTML='<option value="">📒 Kayıtlı sevk adresinden seç'+(sAdr.length?" ("+sAdr.length+")":"")+'...</option>'+sAdr.slice().sort(byTr("ad")).map(a=>`<option value="${esc(a.id)}">${esc(a.ad+(a.sehir?" · "+a.sehir:""))}</option>`).join("");
+  adrAra();
 }
 function akart(a){
   const id=esc(a.id),canDel=isAdmin()||(a.ekleyenUid&&a.ekleyenUid===user.uid),
@@ -1050,7 +1107,18 @@ $("aList").onclick=async e=>{
 /* adresi sevkiyat formuna aktar */
 function adrDoldur(a){$("mu").value=a.ad||"";$("ad").value=a.adres||"";$("hu").value=a.haritaUrl||"";$("mu").closest("details").open=true}
 function adrSevk(a){if(editId)formTemizle();adrDoldur(a);vTabSet("sev");window.scrollTo({top:0,behavior:"smooth"});toast("Adres forma aktarıldı. Etiket fotoğrafını çekin.")}
-$("adrSec").onchange=()=>{const a=sAdr.find(x=>x.id===$("adrSec").value);if(!a)return;adrDoldur(a);$("adrSec").value="";toast("Adres dolduruldu: "+a.ad)};
+/* kayıtlı adreste arayarak seç */
+function adrAra(){
+  const box=$("adrRes");if(box.classList.contains("hide"))return;
+  const w=$("adrQ").value.toLowerCase().trim().split(/\s+/).filter(Boolean),
+    R=sAdr.filter(a=>{const h=[a.ad,a.yetkili,a.tel,a.tel2,a.sehir,a.adres,a.not].join(" ").toLowerCase();return w.every(t=>h.includes(t))}).sort(byTr("ad"));
+  box.innerHTML=R.length?R.map(a=>`<div data-id="${esc(a.id)}" style="padding:9px 11px;border-bottom:1px solid #e2e8f0;cursor:pointer"><b style="font-size:13px">${esc(a.ad)}</b>${a.sehir?` <span class="mut" style="font-size:11px">· ${esc(a.sehir)}</span>`:""}${a.adres?`<div class="sub" style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.adres)}</div>`:""}</div>`).join(""):`<div style="padding:12px;text-align:center;color:#94a3b8;font-weight:700">${sAdr.length?"Aramaya uygun adres yok":"Kayıtlı adres yok"}</div>`}
+function adrAc(){$("adrRes").classList.remove("hide");adrAra()}
+$("adrQ").addEventListener("focus",adrAc);$("adrQ").addEventListener("input",adrAc);
+$("adrRes").addEventListener("mousedown",e=>e.preventDefault());
+$("adrRes").onclick=e=>{const d=e.target.closest("[data-id]");if(!d)return;const a=sAdr.find(x=>x.id===d.dataset.id);if(!a)return;
+  adrDoldur(a);$("adrQ").value="";$("adrRes").classList.add("hide");$("adrQ").blur();toast("Adres dolduruldu: "+a.ad)};
+document.addEventListener("click",e=>{if(!e.target.closest("#adrQ")&&!e.target.closest("#adrRes"))$("adrRes").classList.add("hide")});
 $("adrSave").onclick=()=>{
   let ad0=$("ad").value.trim();const hu=$("hu").value.trim();if(hu&&!safeUrl(hu)&&!ad0)ad0=hu;
   const mu=$("mu").value.trim();
