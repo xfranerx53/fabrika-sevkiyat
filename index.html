@@ -11,11 +11,22 @@
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 body{background:#f4f6f9;padding:12px;color:#212529;font-size:14px;min-height:100vh}
 .hide{display:none!important}
-#vMenu{background:#f4f6f9;overflow:auto;flex-direction:column;gap:14px}
-#vMenu .mh{text-align:center;color:#1e293b;margin-bottom:6px}#vMenu .mh b{font-size:20px;display:block}#vMenu .mh span{font-size:14px;color:#475569}
-#vMenu .mb{width:100%;max-width:360px;border:0;border-radius:16px;padding:28px 16px;color:#fff;font-size:22px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.15);display:flex;flex-direction:column;align-items:center;gap:8px}
-#vMenu .mb small{font-size:13px;font-weight:500;opacity:.9}#vMenu .mb i{font-style:normal;font-size:42px}
-#vMenu .m1{background:#2563eb}#vMenu .m2{background:#16a34a}#vMenu .mb:active{transform:scale(.98)}
+#vMenu{background:linear-gradient(180deg,#0f172a 0,#1e293b 250px,#eef2f7 250px);align-items:flex-start;justify-content:center;overflow-y:auto;padding:0}
+#vMenu .mw{width:100%;max-width:440px;padding:26px 18px 30px;display:flex;flex-direction:column;gap:14px}
+#vMenu .brand{display:flex;align-items:center;gap:12px;color:#fff}
+#vMenu .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#ef4444,#b91c1c);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+#vMenu .brand b{display:block;font-size:17px;letter-spacing:.6px}#vMenu .brand small{font-size:12px;color:#94a3b8}
+#vMenu .hello{color:#fff;margin:18px 0 22px}#vMenu .hello small{display:block;font-size:13px;color:#94a3b8;margin-bottom:2px}#vMenu .hello b{font-size:26px;font-weight:700;line-height:1.2}
+#vMenu .mc{display:flex;align-items:center;gap:16px;width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:18px;text-align:left;cursor:pointer;box-shadow:0 6px 20px rgba(15,23,42,.10);transition:transform .15s,box-shadow .15s}
+#vMenu .mc:active{transform:scale(.985);box-shadow:0 2px 8px rgba(15,23,42,.12)}
+#vMenu .ic{flex:none;width:58px;height:58px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+#vMenu .ic svg{width:30px;height:30px}
+#vMenu .c1 .ic{background:#dbeafe;color:#1d4ed8}#vMenu .c2 .ic{background:#dcfce7;color:#15803d}
+#vMenu .tx{flex:1;min-width:0}#vMenu .tx b{display:block;font-size:18px;color:#0f172a;letter-spacing:.3px}#vMenu .tx small{display:block;font-size:12.5px;color:#64748b;margin-top:3px;line-height:1.35}
+#vMenu .ch{flex:none;width:22px;height:22px;color:#94a3b8}#vMenu .ch svg{width:22px;height:22px}
+#vMenu .mout{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;background:transparent;border:1.5px solid #cbd5e1;color:#475569;border-radius:12px;padding:12px;font-size:14px;font-weight:600;cursor:pointer}
+#vMenu .mout svg{width:18px;height:18px}
+
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999;padding:12px}
 .box{background:#fff;padding:20px;border-radius:12px;width:100%;max-width:360px;text-align:center}
 .box input,.box select{margin-bottom:10px}
@@ -124,10 +135,21 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 </div>
 
 <div id="vMenu" class="overlay hide">
-  <div class="mh"><b>MAG AMBALAJ</b><span id="mn"></span></div>
-  <button type="button" class="mb m1" data-go="sevk"><i>🚚</i>SEVKİYAT<small>Hazır ürünler, sevk edilecekler, adresler</small></button>
-  <button type="button" class="mb m2" data-go="stok"><i>📦</i>STOK<small>Malzeme stoğu, siparişler, tedarikçiler</small></button>
-  <button type="button" class="btn b5 sm" data-out>Çıkış</button>
+  <div class="mw">
+    <div class="brand"><div class="logo">M</div><div><b>MAG AMBALAJ</b><small>Fabrika Yönetim Sistemi</small></div></div>
+    <div class="hello"><small>Hoş geldiniz</small><b id="mn"></b></div>
+    <button type="button" class="mc c1" data-go="sevk">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6h13v10H1z"/><path d="M14 9h4l3 3v4h-7z"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span>
+      <span class="tx"><b>Sevkiyat</b><small>Hazır ürünler, sevk edilecekler ve sevk adresleri</small></span>
+      <span class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+    </button>
+    <button type="button" class="mc c2" data-go="stok">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>
+      <span class="tx"><b>Stok</b><small>Malzeme stoğu, siparişler ve tedarikçiler</small></span>
+      <span class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+    </button>
+    <button type="button" class="mout" data-out><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Çıkış Yap</button>
+  </div>
 </div>
 
 <div id="vApp" class="hide">
@@ -1168,23 +1190,4 @@ $("aOk").onclick=async()=>{
   if(!d.ad)return err("Firma / müşteri adı gerekli.");
   if(d.haritaUrl&&!safeUrl(d.haritaUrl))return err("Harita linki geçerli değil. Boş bırakın veya https:// ile başlayan Google Maps bağlantısını yapıştırın.");
   d.haritaUrl=safeUrl(d.haritaUrl);
-  if(!d.adres&&!d.haritaUrl)return err("Açık adres veya harita linki girin.");
-  if((!aEdit||(aEdit.ad||"").toLowerCase()!==d.ad.toLowerCase())&&sAdr.some(x=>(x.ad||"").toLowerCase()===d.ad.toLowerCase())&&!confirm("Bu isimde bir adres zaten kayıtlı. Yine de eklensin mi?"))return;
-  $("aOk").disabled=true;
-  try{
-    if(aEdit)await db.ref("sevkAdresleri/"+aEdit.id).update(Object.assign(d,{duzenleyen:ad()}));
-    else await db.ref("sevkAdresleri").push().set(Object.assign(d,{ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP}));
-    $("dAdr").close();toast("Adres kaydedildi");
-  }catch(e){err(errText(e))}
-  $("aOk").disabled=false;
-};
-$("aCsv").onclick=()=>{
-  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
-  const r=[["Firma / Müşteri","Yetkili","Telefon","2. Telefon","İl / İlçe","Adres","Harita linki","Not"].map(q).join(";")].concat(sAdr.slice().sort(byTr("ad")).map(a=>[a.ad,a.yetkili,a.tel,a.tel2,a.sehir,a.adres,a.haritaUrl,a.not].map(q).join(";")));
-  const el=document.createElement("a");el.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));el.download="sevk-adresleri.csv";el.click();
-};
-
-formTemizle();modUyg();
-</script>
-</body>
-</html>
+  if(!d.adres&&!d.haritaU
