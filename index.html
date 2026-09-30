@@ -13,15 +13,11 @@
         body { background: var(--bg); color: var(--primary); padding: 15px; }
         .container { max-width: 600px; margin: 0 auto; }
         
-        /* Üst Bilgi Kartı */
         .header-card { background: #1a252f; color: white; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        
-        /* Sekmeler */
         .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
         .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; background: #cbd5e1; color: #475569; transition: 0.2s; }
         .tab-btn.active { background: var(--primary); color: white; }
 
-        /* Özet Kutuları (Tıklanabilir) */
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
         .stat-box { background: #fff; padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s; }
         .stat-box:active { transform: scale(0.97); }
@@ -29,15 +25,12 @@
         .stat-box.azalan { border: 2px solid #e67e22; }
         .stat-box.tukenen { border: 2px solid #e74c3c; }
 
-        /* Arama ve Filtreler */
         .filter-section { background: white; padding: 12px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 10px; }
         .search-input, .filter-select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
         
-        /* Kart Listesi */
         .card-list { display: flex; flex-direction: column; gap: 12px; }
         .item-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid var(--accent); }
         
-        /* Butonlar ve Modaller */
         .btn { padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .btn-primary { background: var(--accent); color: white; width: 100%; }
         
@@ -51,24 +44,20 @@
 <body>
 
 <div class="container">
-    <!-- Üst Bilgi -->
     <div class="header-card">
         <div>
             <h3 style="font-size: 16px;">MAG AMBALAJ</h3>
-            <span style="font-size: 12px; opacity: 0.8;" id="kullaniciBilgi">Depo Yönetimi</span>
+            <span style="font-size: 12px; opacity: 0.8;" id="kullaniciBilgi">Yükleniyor...</span>
         </div>
         <button onclick="cikisYap()" class="btn" style="background: var(--danger); color: white; padding: 6px 12px; font-size: 12px;">Çıkış</button>
     </div>
 
-    <!-- Sekmeler -->
     <div class="tabs">
         <button class="tab-btn" id="btnSevkiyat" onclick="sekmeDegis('sevkiyat')">SEVKİYAT</button>
         <button class="tab-btn active" id="btnStok" onclick="sekmeDegis('stok')">STOK</button>
     </div>
 
-    <!-- STOK EKRANI -->
     <div id="stokBolumu">
-        <!-- Üst Özet Kutuları (Tıklanabilir Filtreler) -->
         <div class="stats-grid">
             <div class="stat-box kalem" onclick="stokFiltrele('hepsi')">
                 <div style="font-size: 11px; font-weight: bold; color: #2980b9;">KALEM</div>
@@ -84,13 +73,11 @@
             </div>
         </div>
 
-        <!-- Toplam Değer -->
         <div style="background: #fff; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 15px; border: 1px solid #e2e8f0;">
             <div style="font-size: 11px; font-weight: bold; color: #64748b;">TOPLAM STOK DEĞERİ (fiyatı girilen kalemler)</div>
             <div id="toplamStokDegeri" style="font-size: 22px; font-weight: bold; color: #27ae60;">0 ₺</div>
         </div>
 
-        <!-- Arama ve Filtreleme Araçları -->
         <div class="filter-section">
             <input type="text" id="aramaInput" class="search-input" placeholder="Kalem ara (poşet, bant, koli, masura...)" oninput="stoklariEkranaBas()">
             <div style="display: flex; gap: 10px;">
@@ -106,17 +93,12 @@
             </div>
         </div>
 
-        <!-- Yeni Kalem Ekle Butonu -->
         <button class="btn btn-primary" style="margin-bottom: 15px;" onclick="modalAc()">+ Yeni kalem ekle</button>
 
-        <!-- Stok Kartları Listesi -->
-        <div id="stokListesi" class="card-list">
-            <!-- Dinamik dolacak -->
-        </div>
+        <div id="stokListesi" class="card-list"></div>
     </div>
 </div>
 
-<!-- YENİ KALEM EKLEME MODALI -->
 <dialog id="kalemModal">
     <h3 style="margin-bottom: 15px; color: var(--primary);">Yeni Stok Kalemi Ekle</h3>
     <div class="form-group">
@@ -127,18 +109,14 @@
         <label>Kategori</label>
         <input type="text" id="yeniKategori" placeholder="Örn: Vakum poşeti">
     </div>
-    <!-- EBAT ALANI -->
     <div class="form-group">
         <label>Ebat (İsteğe bağlı)</label>
         <input type="text" id="yeniEbat" placeholder="Örn: 30x40 cm">
     </div>
-    <!-- HAFIZALI TEDARİKÇİ ALANI -->
     <div class="form-group">
         <label>Tedarikçi (İsteğe bağlı)</label>
         <input type="text" id="yeniTedarikci" list="tedarikciListesi" placeholder="Tedarikçi seç veya yaz">
-        <datalist id="tedarikciListesi">
-            <!-- Hafızadaki tedarikçiler buraya dolacak -->
-        </datalist>
+        <datalist id="tedarikciListesi"></datalist>
     </div>
     <div style="display: flex; gap: 10px; margin-top: 20px;">
         <button class="btn" style="background: #cbd5e1; flex: 1;" onclick="modalKapat()">İptal</button>
@@ -147,19 +125,19 @@
 </dialog>
 
 <script>
-    // Firebase Yapılandırmanız
+    // 👇 KENDİ ÇALIŞAN ORİJİNAL FİREBASE BİLGİLERİNİ BURAYA YAPIŞTIR 👇
     const firebaseConfig = {
-        databaseURL: "https://mag-ambalaj-default-rtdb.firebaseio.com/" // Kendi URL'niz varsa buraya yazabilirsiniz
+        databaseURL: "BURAYA_KENDI_FIREBASE_URL_ADRESINI_YAZ"
     };
+    
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
     const db = firebase.database();
 
     let globalStokVerileri = {};
-    let aktifFiltreModu = 'hepsi'; // 'hepsi', 'azalan', 'tukenen'
+    let aktifFiltreModu = 'hepsi';
 
-    // Sayfa Yüklenme İşlemleri
     window.onload = function() {
         stokVerileriniDinle();
         tedarikciListesiniDoldur();
@@ -171,16 +149,13 @@
         }
     }
 
-    // Firebase'den Stok Verilerini Çekme
     function stokVerileriniDinle() {
         db.ref('stok').on('value', (snapshot) => {
             globalStokVerileri = snapshot.val() || {};
-            
-            // Kullanıcı Bilgisini Gizle/Düzenle yazısını kaldır
-            document.getElementById('kullaniciBilgi').innerText = "Ömer Bostan (Depo Görevlisi)";
-
+            document.getElementById('kullaniciBilgi').innerText = "Depo Yönetimi";
             stoklariEkranaBas();
             istatistikleriGuncelle();
+            kategoriListesiniGuncelle();
             tedarikciListesiniDoldur();
         }, (error) => {
             console.error(error);
@@ -188,7 +163,27 @@
         });
     }
 
-    // Üst Özet ve İstatistikleri Hesaplama
+    function kategoriListesiniGuncelle() {
+        const select = document.getElementById('kategoriFiltre');
+        let seciliOlan = select.value;
+        let kategoriler = new Set();
+        
+        for (let id in globalStokVerileri) {
+            if (globalStokVerileri[id].kategori) {
+                kategoriler.add(globalStokVerileri[id].kategori);
+            }
+        }
+        
+        select.innerHTML = '<option value="">Tüm Kategoriler</option>';
+        kategoriler.forEach(kat => {
+            let opt = document.createElement('option');
+            opt.value = kat;
+            opt.innerText = kat;
+            if(kat === seciliOlan) opt.selected = true;
+            select.appendChild(opt);
+        });
+    }
+
     function istatistikleriGuncelle() {
         let toplamKalem = 0;
         let azalanKalem = 0;
@@ -219,13 +214,11 @@
         document.getElementById('toplamStokDegeri').innerText = toplamDeger.toLocaleString('tr-TR') + ' ₺';
     }
 
-    // Üst Kutulara Tıklandığında Filtreleme Değiştirme
     function stokFiltrele(mod) {
         aktifFiltreModu = mod;
         stoklariEkranaBas();
     }
 
-    // Listeyi Ekrana Basma ve Filtreleri Uygulama
     function stoklariEkranaBas() {
         const listeDiv = document.getElementById('stokListesi');
         const aramaMetni = document.getElementById('aramaInput').value.toLowerCase();
@@ -233,25 +226,20 @@
         const secilenDurum = document.getElementById('durumFiltre').value;
 
         listeDiv.innerHTML = '';
-        let htmlIcerik = ''; // HATALI YAZIM DÜZELTİLDİ
+        let htmlIcerik = '';
 
         for (let id in globalStokVerileri) {
             let urun = globalStokVerileri[id];
 
-            // Arama filtresi
             if (aramaMetni && !urun.ad.toLowerCase().includes(aramaMetni)) continue;
-            // Kategori filtresi
             if (secilenKategori && urun.kategori !== secilenKategori) continue;
 
             let miktar = urun.miktar || 0;
             let kritik = urun.kritik || 10;
             let durumStr = miktar === 0 ? 'TUKENDI' : (miktar <= kritik ? 'AZALIYOR' : 'NORMAL');
 
-            // Üst kutu tık filtreleri (KALEM, AZALAN, TÜKENEN)
             if (aktifFiltreModu === 'azalan' && durumStr !== 'AZALIYOR') continue;
             if (aktifFiltreModu === 'tukenen' && durumStr !== 'TUKENDI') continue;
-
-            // Manuel durum filtresi seçilmişse
             if (secilenDurum && durumStr !== secilenDurum) continue;
 
             let badgeRenk = durumStr === 'TUKENDI' ? '#e74c3c' : (durumStr === 'AZALIYOR' ? '#e67e22' : '#2ecc71');
@@ -281,11 +269,9 @@
         listeDiv.innerHTML = htmlIcerik || '<div style="text-align: center; color: #64748b; padding: 20px;">Kayıt bulunamadı.</div>';
     }
 
-    // Modal Kontrolleri
     function modalAc() { document.getElementById('kalemModal').showModal(); }
     function modalKapat() { document.getElementById('kalemModal').close(); }
 
-    // Tedarikçi Hafızası (LocalStorage + Mevcut Veriler)
     function tedarikciListesiniDoldur() {
         const datalist = document.getElementById('tedarikciListesi');
         if (!datalist) return;
@@ -308,7 +294,6 @@
         });
     }
 
-    // Yeni Kalem Kaydetme Fonksiyonu
     function kalemKaydet() {
         let ad = document.getElementById('yeniAd').value.trim();
         let kategori = document.getElementById('yeniKategori').value.trim();
@@ -356,4 +341,3 @@
 
 </body>
 </html>
-
