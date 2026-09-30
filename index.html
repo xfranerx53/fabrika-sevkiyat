@@ -130,6 +130,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
   <div class="tabs mods" id="mods"><button data-m="sevk" class="on">🚚 SEVKİYAT</button><button data-m="stok">📦 STOK</button></div>
   <div id="pSevk">
+  <div class="tabs stabs" id="vtabs"><button data-v="sev" class="on">🚚 SEVKİYATLAR</button><button data-v="adr" id="vtA">📍 SEVK ADRESLERİ</button></div>
+  <div id="vSev">
   <div class="card"><div class="grid">
     <div class="full">
       <label style="color:#2563eb;font-size:12px">1. Etiket fotoğrafını çek (yeni kayıtta zorunlu)</label>
@@ -144,11 +146,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <div><label style="color:#0284c7">Paket / Adet</label><input type="number" id="pk" inputmode="numeric" min="0" step="1" value="1" class="fast"></div>
     <div class="full sevkonly">
       <label style="color:#0f766e">📍 Teslimat adresi ve harita</label>
+      <select id="adrSec" style="margin-bottom:6px"><option value="">📒 Kayıtlı sevk adresinden seç...</option></select>
       <div style="display:flex;gap:6px;margin-bottom:6px">
         <input id="hu" placeholder="Google Maps linki veya adres">
         <button type="button" class="btn b7" style="margin:0;width:auto;white-space:nowrap" id="hSec">🗺️ Haritada Seç</button>
       </div>
       <textarea id="ad" rows="2" placeholder="Açık teslimat adresi"></textarea>
+      <button type="button" class="btn b6 sm" style="margin-top:6px" id="adrSave">💾 Bu adresi adres defterine kaydet</button>
     </div>
     <div class="full"><details><summary style="font-size:11px;font-weight:700;color:#64748b;cursor:pointer">➕ Opsiyonel: Müşteri / Ürün adı</summary>
       <div class="grid" style="margin-top:8px">
@@ -185,6 +189,17 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="sum"><span id="sumT"></span><button class="btn b6 sm" id="bCsv">Excel'e aktar</button></div>
   <div id="liste"></div>
   <button class="btn b6 hide" id="bMore">Daha eski kayıtları yükle</button>
+  </div>
+  <div id="vAdr" class="hide">
+    <div class="grid" style="grid-template-columns:1fr;margin-bottom:10px"><div class="hl" style="padding:6px"><small>KAYITLI SEVK ADRESİ</small><b id="aSay2" style="font-size:18px">0</b></div></div>
+    <div class="filter">
+      <input id="aq" placeholder="🔍 Adres ara (firma, kişi, telefon, adres...)" style="margin-bottom:8px">
+      <select id="asf"><option value="">Tüm iller / ilçeler</option></select>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn b1" style="margin:0" id="aAdd">＋ Yeni adres ekle</button><button class="btn b6" style="margin:0;width:auto;padding:0 14px" id="aCsv">Excel</button></div>
+    <div id="aSay" class="shd"></div>
+    <div id="aList"></div>
+  </div>
   </div>
 
   <div id="pStok" class="hide">
@@ -240,6 +255,20 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <img id="sprev" alt="" style="display:none;width:100%;max-height:160px;object-fit:contain;background:#0f172a;border-radius:8px;margin-top:8px">
   <div class="err" id="kE" style="margin-top:8px"></div>
   <div style="display:flex;gap:8px"><button class="btn b6" id="kNo">Vazgeç</button><button class="btn b1" id="kOk">Kaydet</button></div>
+</dialog>
+<dialog id="dAdr">
+  <h3 id="aT" style="margin-bottom:6px">Yeni sevk adresi</h3>
+  <label for="aFi">Firma / müşteri adı</label><input id="aFi" placeholder="Örn: Güneli Fırın">
+  <label for="aYt" style="margin-top:8px">Yetkili kişi (isteğe bağlı)</label><input id="aYt">
+  <div class="grid" style="margin-top:8px"><div><label for="aTl">Telefon</label><input id="aTl" type="tel" inputmode="tel"></div><div><label for="aTl2">2. telefon</label><input id="aTl2" type="tel" inputmode="tel"></div></div>
+  <label for="aSh" style="margin-top:8px">İl / ilçe (isteğe bağlı)</label><input id="aSh" list="dls" placeholder="Örn: Konya / Selçuklu" autocomplete="off"><datalist id="dls"></datalist>
+  <label for="aAd" style="margin-top:8px">Açık adres</label><textarea id="aAd" rows="3" placeholder="Mahalle, cadde, no, kat..."></textarea>
+  <label for="aHu" style="margin-top:8px">Harita linki (isteğe bağlı)</label>
+  <div style="display:flex;gap:6px"><input id="aHu" placeholder="Google Maps bağlantısı (https://...)"><button type="button" class="btn b7" style="margin:0;width:auto;white-space:nowrap" id="aHs">🗺️ Haritada Seç</button></div>
+  <p class="mut" style="font-size:11px;margin:4px 0 0">Haritada yeri açıp Paylaş › Bağlantıyı kopyala ile linki buraya yapıştırın.</p>
+  <label for="aNt" style="margin-top:8px">Not (isteğe bağlı)</label><input id="aNt" placeholder="Örn: teslimat 08:00-17:00, arka kapı">
+  <div class="err" id="aE" style="margin-top:8px"></div>
+  <div style="display:flex;gap:8px"><button class="btn b6" id="aX">Vazgeç</button><button class="btn b1" id="aOk">Kaydet</button></div>
 </dialog>
 <dialog id="dTed">
   <h3 id="tT" style="margin-bottom:6px">Yeni tedarikçi</h3>
@@ -342,7 +371,7 @@ const isAdmin=()=>!!(rec&&rec.yonetici===true&&rec.onay===true);
 
 /* ---------- Oturum ---------- */
 auth.onAuthStateChanged(u=>{
-  if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null} if(window.tRef){tRef.off();tRef=null} if(window.oRef){oRef.off();oRef=null} if(window.fRef){fRef.off();fRef=null} fyat={sevk:{},stok:{},siparis:{}};
+  if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null} if(window.tRef){tRef.off();tRef=null} if(window.oRef){oRef.off();oRef=null} if(window.aRef){aRef.off();aRef=null} if(window.fRef){fRef.off();fRef=null} fyat={sevk:{},stok:{},siparis:{}};
   started=false;urunler=[];rec=null;user=u;
   if(!u){show("vLogin");return}
   recRef=db.ref("kullanicilar/"+u.uid);
@@ -352,7 +381,7 @@ auth.onAuthStateChanged(u=>{
       $("me").textContent=ad();
       $("bAdm").classList.toggle("hide",!isAdmin());$("fSevk").classList.toggle("hide",!isAdmin());fiyatBaglan();
       show("vApp");
-      if(!started){started=true;yukle();if(panel==="stok")stokYukle()}
+      if(!started){started=true;yukle();adrYukle();if(panel==="stok")stokYukle()}
       listele();
     }else{show("vWait")}
   },e=>{toast("Hesap okunamadı: "+errText(e));show("vWait")});
@@ -976,6 +1005,85 @@ $("tsOk").onclick=()=>{
   const f=$("tsf").value,t=sTed.find(x=>(x.firma||"").trim().toLowerCase()===f.trim().toLowerCase());
   $("dTas").close();oAc(null,t?t.id:"",pre);
 };
+/* ================= SEVK ADRESLERİ ================= */
+var aRef=null,sAdr=[],aEdit=null;
+function vTabSet(t){document.querySelectorAll("#vtabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===t));
+  $("vSev").classList.toggle("hide",t!=="sev");$("vAdr").classList.toggle("hide",t!=="adr")}
+$("vtabs").onclick=e=>{const b=e.target.closest("button");if(b&&b.dataset.v)vTabSet(b.dataset.v)};
+function adrYukle(){
+  if(aRef){aRef.off();aRef=null}
+  aRef=db.ref("sevkAdresleri");
+  aRef.on("value",x=>{const v=x.val()||{};sAdr=Object.keys(v).map(k=>Object.assign({id:k},v[k]));adrListele()},e=>toast("Sevk adresleri okunamadı: "+errText(e)+" (Firebase kurallarını güncellediniz mi?)"));
+}
+["aq"].forEach(i=>$(i).addEventListener("input",()=>adrListele()));
+$("asf").onchange=()=>adrListele();
+function adrListele(){
+  const trS=(a,b)=>a.localeCompare(b,"tr"),iller=[...new Set(sAdr.map(a=>(a.sehir||"").trim()).filter(Boolean))].sort(trS),cur=$("asf").value;
+  $("asf").innerHTML='<option value="">Tüm iller / ilçeler</option>'+iller.map(c=>`<option${c===cur?" selected":""}>${esc(c)}</option>`).join("");
+  $("dls").innerHTML=iller.map(c=>`<option value="${esc(c)}">`).join("");
+  const q=$("aq").value.toLowerCase().trim(),f=$("asf").value,
+        L=sAdr.filter(a=>(!q||[a.ad,a.yetkili,a.tel,a.tel2,a.sehir,a.adres,a.not].some(x=>(x||"").toLowerCase().includes(q)))&&(!f||(a.sehir||"").trim()===f)).sort(byTr("ad"));
+  $("aSay2").textContent=sAdr.length;
+  $("aSay").textContent=L.length+" adres"+(L.length!==sAdr.length?" (toplam "+sAdr.length+")":"");
+  $("aList").innerHTML=L.length?L.map(akart).join(""):'<div class="empty">'+(sAdr.length?"Aramaya uygun adres bulunamadı.":'Kayıtlı sevk adresi yok. "Yeni adres ekle" ile başlayın.')+'</div>';
+  $("vtA").textContent="📍 SEVK ADRESLERİ"+(sAdr.length?" ("+sAdr.length+")":"");
+  $("adrSec").innerHTML='<option value="">📒 Kayıtlı sevk adresinden seç'+(sAdr.length?" ("+sAdr.length+")":"")+'...</option>'+sAdr.slice().sort(byTr("ad")).map(a=>`<option value="${esc(a.id)}">${esc(a.ad+(a.sehir?" · "+a.sehir:""))}</option>`).join("");
+}
+function akart(a){
+  const id=esc(a.id),canDel=isAdmin()||(a.ekleyenUid&&a.ekleyenUid===user.uid),
+        tels=[a.tel,a.tel2].filter(Boolean).map(x=>`<a href="tel:${esc(String(x).replace(/[^\d+]/g,""))}">📞 ${esc(x)}</a>`).join(" · ");
+  return `<div class="item c tamam-border">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(a.ad)}</b>${a.sehir?`<span class="badge" style="background:#64748b">${esc(a.sehir)}</span>`:""}</div>
+  ${a.yetkili||tels?`<div class="sub" style="font-size:13px">${a.yetkili?"👤 "+esc(a.yetkili)+" ":""}${tels}</div>`:""}
+  ${a.adres?`<div class="sub" style="font-size:12.5px;color:#334155">📍 ${esc(a.adres)}</div>`:""}
+  ${a.not?`<div class="sub">📌 ${esc(a.not)}</div>`:""}
+  <div class="acts s"><button class="btn b1" data-a="sevk" data-id="${id}">🚚 Sevkiyat oluştur</button><button class="btn b7" data-a="map" data-id="${id}">🗺️ Harita</button>
+  <button class="btn b6 i" data-a="edit" data-id="${id}">✏️</button>${canDel?`<button class="btn b5 i" data-a="del" data-id="${id}">🗑️</button>`:""}</div></div>`;
+}
+$("aList").onclick=async e=>{
+  const b=e.target.closest("button[data-a]");if(!b)return;const a=sAdr.find(x=>x.id===b.dataset.id);if(!a)return;const k=b.dataset.a;
+  if(k==="map")haritaAc(safeUrl(a.haritaUrl),a.adres||a.ad);
+  else if(k==="edit")aAc(a);
+  else if(k==="sevk")adrSevk(a);
+  else if(k==="del"&&confirm(`"${a.ad}" adresi silinsin mi? (Mevcut sevkiyat kayıtları etkilenmez)`)){try{await db.ref("sevkAdresleri/"+a.id).remove();toast("Silindi")}catch(err){toast(errText(err))}}
+};
+/* adresi sevkiyat formuna aktar */
+function adrDoldur(a){$("mu").value=a.ad||"";$("ad").value=a.adres||"";$("hu").value=a.haritaUrl||"";$("mu").closest("details").open=true}
+function adrSevk(a){if(editId)formTemizle();adrDoldur(a);vTabSet("sev");window.scrollTo({top:0,behavior:"smooth"});toast("Adres forma aktarıldı. Etiket fotoğrafını çekin.")}
+$("adrSec").onchange=()=>{const a=sAdr.find(x=>x.id===$("adrSec").value);if(!a)return;adrDoldur(a);$("adrSec").value="";toast("Adres dolduruldu: "+a.ad)};
+$("adrSave").onclick=()=>{
+  let ad0=$("ad").value.trim();const hu=$("hu").value.trim();if(hu&&!safeUrl(hu)&&!ad0)ad0=hu;
+  const mu=$("mu").value.trim();
+  aAc(null,{ad:mu==="Etikete Bakınız"?"":mu,adres:ad0,haritaUrl:safeUrl(hu)});
+};
+/* ekle / düzenle */
+const AF=[["aFi","ad"],["aYt","yetkili"],["aTl","tel"],["aTl2","tel2"],["aSh","sehir"],["aAd","adres"],["aHu","haritaUrl"],["aNt","not"]];
+function aAc(a,pre){aEdit=a||null;const v=a||pre||{};$("aT").textContent=a?"Sevk adresini düzenle":"Yeni sevk adresi";$("aE").textContent="";
+  AF.forEach(([i,f])=>$(i).value=v[f]||"");$("dAdr").showModal()}
+$("aAdd").onclick=()=>aAc(null);
+$("aX").onclick=()=>$("dAdr").close();
+$("aHs").onclick=()=>{const v=$("aHu").value.trim(),a0=$("aAd").value.trim();haritaAc(safeUrl(v),v&&!safeUrl(v)?v:(a0||$("aFi").value.trim()))};
+$("aOk").onclick=async()=>{
+  const err=m=>{$("aE").textContent=m},d={};AF.forEach(([i,f])=>d[f]=$(i).value.trim());
+  if(!d.ad)return err("Firma / müşteri adı gerekli.");
+  if(d.haritaUrl&&!safeUrl(d.haritaUrl))return err("Harita linki geçerli değil. Boş bırakın veya https:// ile başlayan Google Maps bağlantısını yapıştırın.");
+  d.haritaUrl=safeUrl(d.haritaUrl);
+  if(!d.adres&&!d.haritaUrl)return err("Açık adres veya harita linki girin.");
+  if((!aEdit||(aEdit.ad||"").toLowerCase()!==d.ad.toLowerCase())&&sAdr.some(x=>(x.ad||"").toLowerCase()===d.ad.toLowerCase())&&!confirm("Bu isimde bir adres zaten kayıtlı. Yine de eklensin mi?"))return;
+  $("aOk").disabled=true;
+  try{
+    if(aEdit)await db.ref("sevkAdresleri/"+aEdit.id).update(Object.assign(d,{duzenleyen:ad()}));
+    else await db.ref("sevkAdresleri").push().set(Object.assign(d,{ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP}));
+    $("dAdr").close();toast("Adres kaydedildi");
+  }catch(e){err(errText(e))}
+  $("aOk").disabled=false;
+};
+$("aCsv").onclick=()=>{
+  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+  const r=[["Firma / Müşteri","Yetkili","Telefon","2. Telefon","İl / İlçe","Adres","Harita linki","Not"].map(q).join(";")].concat(sAdr.slice().sort(byTr("ad")).map(a=>[a.ad,a.yetkili,a.tel,a.tel2,a.sehir,a.adres,a.haritaUrl,a.not].map(q).join(";")));
+  const el=document.createElement("a");el.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));el.download="sevk-adresleri.csv";el.click();
+};
+
 formTemizle();modUyg();
 </script>
 </body>
