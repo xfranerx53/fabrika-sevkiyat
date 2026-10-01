@@ -67,8 +67,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .menuBtn:active{transform:scale(.97)}
 .menuBtn span.ic{font-size:38px}.menuBtn small{display:block;font-size:12px;font-weight:600;opacity:.9;margin-top:2px}
 .head strong{font-size:17px}.head .u{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;font-size:15px}.head .u div{width:100%;font-size:15px;font-weight:700;margin:0}.head .sm{font-size:15px;padding:10px 14px;font-weight:800}
-#selBar{position:fixed;left:8px;right:8px;bottom:8px;z-index:900;background:#1e293b;color:#fff;border-radius:12px;padding:10px;display:flex;gap:8px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.4)}#selBar .btn{margin:0;padding:12px 8px;font-size:14px}#selBar b{font-size:14px;white-space:nowrap}
-#irsOv{display:none;position:fixed;inset:0;z-index:2000;background:#fff;color:#111;overflow:auto;padding:16px;font-size:13px}#irsOv h1{margin:0;color:#c82333;font-size:22px}#irsOv h2{margin:2px 0 8px;font-size:15px}#irsOv table{width:100%;border-collapse:collapse;margin-top:10px}#irsOv th,#irsOv td{border:1px solid #888;padding:6px;text-align:left;vertical-align:top}#irsOv th{background:#eee}#irsOv .r{text-align:right}#irsOv .sg{display:flex;justify-content:space-around;margin-top:50px}#irsOv .sg div{border-top:1px solid #000;width:40%;text-align:center;padding-top:4px}.irsBtn{display:flex;gap:8px;margin-bottom:10px}.irsBtn .btn{margin:0}
+#selBar{position:fixed;left:8px;right:8px;bottom:8px;z-index:900;background:#1e293b;color:#fff;border-radius:12px;padding:10px;display:none;gap:8px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.4)}#selBar .btn{margin:0;padding:12px 8px;font-size:14px}#selBar b{font-size:14px;white-space:nowrap}
+#irsOv{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:2000;background:#fff;color:#111;overflow:auto;padding:16px;font-size:13px}#irsOv h1{margin:0;color:#c82333;font-size:22px}#irsOv h2{margin:2px 0 8px;font-size:15px}#irsOv table{width:100%;border-collapse:collapse;margin-top:10px}#irsOv th,#irsOv td{border:1px solid #888;padding:6px;text-align:left;vertical-align:top}#irsOv th{background:#eee}#irsOv .r{text-align:right}#irsOv .sg{display:flex;justify-content:space-around;margin-top:50px}#irsOv .sg div{border-top:1px solid #000;width:40%;text-align:center;padding-top:4px}.irsBtn{display:flex;gap:8px;margin-bottom:10px}.irsBtn .btn{margin:0}
 @media print{body>*:not(#irsOv){display:none!important}#irsOv{position:static;display:block!important;overflow:visible;padding:0}.irsBtn{display:none}}
 .mods button{font-size:14px;padding:13px 4px}.mods button.on{background:#1e293b;color:#fff}
 .chip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #cbd5e1;border-radius:99px;padding:6px 11px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;text-transform:none;margin:0;color:#334155}.chip input{width:auto;margin:0}.urow2{display:grid;grid-template-columns:64px 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}.urow2 b{font-size:13px}.qbox{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.qbox .hl{flex:1;min-width:88px}
@@ -139,7 +139,6 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   </div>
 </div>
 
-<div id="selBar" class="hide"><b id="selN"></b><button class="btn b4" id="selPr">🖨️ İrsaliye Yazdır</button><button class="btn b5" id="selX" style="flex:0 0 48px">✕</button></div>
 <div id="vApp" class="hide">
   <div class="head">
     <strong>MAG AMBALAJ - <span id="mt">SEVKİYAT</span></strong>
@@ -154,6 +153,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
   <div class="tabs mods hide" id="mods"><button data-m="sevk" class="on">🚚 SEVKİYAT</button><button data-m="stok">📦 STOK</button></div>
   <div id="pSevk">
+<div id="selBar"><b id="selN"></b><button class="btn b4" id="selPr">🖨️ İrsaliye Yazdır</button><button class="btn b5" id="selX" style="flex:0 0 48px">✕</button></div>
   <div class="tabs stabs" id="vtabs"><button data-v="sev" class="on">🚚 SEVKİYATLAR</button><button data-v="adr" id="vtA">📍 SEVK ADRESLERİ</button></div>
   <div id="vSev">
   <div class="card"><div class="grid">
@@ -353,6 +353,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 <div id="toast"></div>
 
 <script>
+window.addEventListener("error",function(e){var b=document.getElementById("boot");if(b&&!b.classList.contains("hide"))b.textContent="Hata: "+e.message+" (satır "+e.lineno+")"});
 /* ============ AYAR: Firebase Console > Proje ayarları > Web uygulaması'ndan kopyalayın ============ */
 const CFG={
   apiKey:"AIzaSyA_ZyOtWAvaYQvU8KaJnAJZK1s4Qd80FtU",
@@ -531,18 +532,27 @@ function filtreli(){
   const q=$("q").value.toLowerCase().trim(),a=$("d1").value,b=$("d2").value;
   return urunler.filter(u=>u.durum===tab&&(!q||[u.musteri,u.urun,u.not,u.adres].some(x=>(x||"").toLowerCase().includes(q)))&&(!a||u.tarih>=a)&&(!b||u.tarih<=b));
 }
-const kSec=new Set();
-const secList=()=>urunler.filter(u=>kSec.has(u.id));
-function selBar(){const n=secList().length;$("selBar").classList.toggle("hide",!n||panel!=="sevk");$("selN").textContent=n+" seçili"}
-function irsaliye(L){
-  const top=f=>fmt(L.reduce((s,u)=>s+(+u[f]||0),0));
-  const satir=L.map((u,i)=>`<tr><td>${i+1}</td><td>${esc(u.musteri||"")}</td><td>${esc(u.urun||"")}</td><td class="r">${esc(fmt(u.kg))}</td><td class="r">${esc(fmt(u.paket))}</td><td>${esc(u.adres||"")}${u.not?"<br><i>"+esc(u.not)+"</i>":""}</td></tr>`).join("");
-  let o=$("irsOv");if(!o){o=document.createElement("div");o.id="irsOv";document.body.appendChild(o)}
-  o.innerHTML=`<div class="irsBtn"><button class="btn b4" onclick="window.print()">🖨️ Yazdır / PDF kaydet</button><button class="btn b6" onclick="document.getElementById('irsOv').style.display='none'">Kapat</button></div><h1>MAG AMBALAJ</h1><h2>SEVK İRSALİYESİ – ${new Date().toLocaleDateString("tr-TR")}</h2><table><tr><th>#</th><th>Müşteri</th><th>Ürün/Ebat</th><th class="r">Kg</th><th class="r">Adet</th><th>Adres / Not</th></tr>${satir}<tr><th colspan="3" class="r">TOPLAM</th><th class="r">${top("kg")}</th><th class="r">${top("paket")}</th><th></th></tr></table><div class="sg"><div>Teslim Eden</div><div>Teslim Alan</div></div>`;
+window.kSec={};
+function irsSec(id,b){
+  if(kSec[id])delete kSec[id];else kSec[id]=1;
+  var on=!!kSec[id];b.className="btn "+(on?"b4":"b6");b.textContent=on?"☑ İrsaliye için seçildi":"☐ İrsaliye için seç";
+  var n=Object.keys(kSec).length;$("selN").textContent=n+" seçili";$("selBar").style.display=n?"flex":"none";
+}
+function irsaliye(){
+  var L=urunler.filter(function(u){return kSec[u.id]});if(!L.length)return;
+  var top=function(f){return fmt(L.reduce(function(s,u){return s+(+u[f]||0)},0))};
+  var satir=L.map(function(u,i){return "<tr><td>"+(i+1)+"</td><td>"+esc(u.musteri||"")+"</td><td>"+esc(u.urun||"")+"</td><td class=\"r\">"+esc(fmt(u.kg))+"</td><td class=\"r\">"+esc(fmt(u.paket))+"</td><td>"+esc(u.adres||"")+(u.not?"<br><i>"+esc(u.not)+"</i>":"")+"</td></tr>"}).join("");
+  var o=document.getElementById("irsOv");if(!o){o=document.createElement("div");o.id="irsOv";document.body.appendChild(o)}
+  o.innerHTML='<div class="irsBtn"><button class="btn b4" id="irsP">🖨️ Yazdır / PDF kaydet</button><button class="btn b6" id="irsK">Kapat</button></div><h1>MAG AMBALAJ</h1><h2>SEVK İRSALİYESİ – '+new Date().toLocaleDateString("tr-TR")+'</h2><table><tr><th>#</th><th>Müşteri</th><th>Ürün/Ebat</th><th class="r">Kg</th><th class="r">Adet</th><th>Adres / Not</th></tr>'+satir+'<tr><th colspan="3" class="r">TOPLAM</th><th class="r">'+top("kg")+'</th><th class="r">'+top("paket")+'</th><th></th></tr></table><div class="sg"><div>Teslim Eden</div><div>Teslim Alan</div></div>';
   o.style.display="block";o.scrollTop=0;
 }
-$("selPr").onclick=()=>{const L=secList();if(L.length)irsaliye(L)};
-$("selX").onclick=()=>{kSec.clear();listele();selBar()};
+document.addEventListener("click",function(e){
+  var id=e.target&&e.target.id;
+  if(id==="selPr")irsaliye();
+  else if(id==="selX"){kSec={};window.kSec=kSec;$("selBar").style.display="none";listele()}
+  else if(id==="irsP")window.print();
+  else if(id==="irsK")document.getElementById("irsOv").style.display="none";
+});
 function waGonder(u){
   const t=["🚚 *MAG AMBALAJ - "+(M().baslik||"Sevkiyat")+"*","Tarih: "+trDate(u.tarih),
     u.musteri?"Müşteri: "+u.musteri:"",u.urun?"Ürün/Ebat: "+u.urun:"",
@@ -568,7 +578,7 @@ function kart(u){
   ${u.adres?`<div class="addr">📍 <b>Teslimat adresi:</b> ${esc(u.adres)}</div>`:""}
   ${u.haritaUrl||u.adres?`<button class="btn b7" data-a="map" data-id="${id}">🚀 Yol Tarifi Al</button>`:""}
   <button class="btn b3" data-a="wa" data-id="${id}">📲 WhatsApp ile paylaş</button>
-  <button class="btn ${kSec.has(u.id)?"b4":"b6"}" data-a="sel" data-id="${id}">${kSec.has(u.id)?"☑ İrsaliye için seçildi":"☐ İrsaliye için seç"}</button>
+  <button class="btn ${window.kSec&&kSec[u.id]?"b4":"b6"}" data-a="sel" data-id="${id}">${window.kSec&&kSec[u.id]?"☑ İrsaliye için seçildi":"☐ İrsaliye için seç"}</button>
   ${isAdmin()?sFyHtml(u):""}
   ${u.not?`<div class="note">📌 <b>Not:</b> ${esc(u.not)}</div>`:""}
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
@@ -588,7 +598,7 @@ $("liste").onclick=async e=>{
   try{
     if(b.dataset.a==="edit")duzenle(u);
     else if(b.dataset.a==="wa")waGonder(u);
-    else if(b.dataset.a==="sel"){kSec.has(u.id)?kSec.delete(u.id):kSec.add(u.id);const on=kSec.has(u.id);b.className="btn "+(on?"b4":"b6");b.textContent=on?"☑ İrsaliye için seçildi":"☐ İrsaliye için seç";selBar()}
+    else if(b.dataset.a==="sel")irsSec(u.id,b);
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
     else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;await db.ref(M().yol+"/"+u.id).update(up)}
     else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref(M().yol+"/"+u.id).remove();if(isAdmin())db.ref("fiyatlar/sevk/"+u.id).remove().catch(()=>{})}
@@ -683,14 +693,14 @@ function fiyatBaglan(){
 const ust=(v,m)=>v<=0?"no":(m>0&&v<=m)?"lo":"ok";
 const dur=k=>{const n=norm(k),ks=Object.keys(n.mik);if(!ks.length||ks.every(u=>!(n.mik[u]>0)))return"no";return ks.some(u=>n.min[u]>0&&n.mik[u]<=n.min[u])?"lo":"ok"};
 const fmtQ=(o,z)=>UN.filter(([u])=>o&&u in o&&(z||+o[u]>0)).map(([u,l])=>fmt(o[u])+" "+l).join(", ")||"-";
-function modSec(m){panel=m;setTimeout(()=>{if(typeof selBar==="function")selBar()},0);
+function modSec(m){panel=m;
   document.querySelectorAll("#mods button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
   $("pSevk").classList.toggle("hide",m!=="sevk");$("pStok").classList.toggle("hide",m!=="stok");
   $("mt").textContent=m==="sevk"?"SEVKİYAT":"STOK";
   if(m==="stok")stokYukle();else stokKapat()}
 $("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===panel)return;modSec(m)};
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{menuOk=true;modSec(b.dataset.go);show("vApp");window.scrollTo(0,0)});
-$("bMenu").onclick=()=>{menuOk=false;$("selBar").classList.add("hide");show("vMenu");window.scrollTo(0,0)};
+$("bMenu").onclick=()=>{menuOk=false;show("vMenu");window.scrollTo(0,0)};
 function stokKapat(){if(sRef){sRef.off();sRef=null}if(tRef){tRef.off();tRef=null}if(oRef){oRef.off();oRef=null}}
 function stokYukle(){stokKapat();sRef=db.ref("stokKalem");
   sRef.on("value",x=>{const v=x.val()||{};sKalem=Object.keys(v).map(k=>Object.assign({id:k},v[k]));stokListele()},e=>toast("Stok okunamadı: "+errText(e)));
@@ -1179,7 +1189,4 @@ function adrAra(){
     R=sAdr.filter(a=>{const h=[a.ad,a.yetkili,a.tel,a.tel2,a.sehir,a.adres,a.not].join(" ").toLowerCase();return w.every(t=>h.includes(t))}).sort(byTr("ad"));
   box.innerHTML=R.length?R.map(a=>`<div data-id="${esc(a.id)}" style="padding:9px 11px;border-bottom:1px solid #e2e8f0;cursor:pointer"><b style="font-size:13px">${esc(a.ad)}</b>${a.sehir?` <span class="mut" style="font-size:11px">· ${esc(a.sehir)}</span>`:""}${a.adres?`<div class="sub" style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.adres)}</div>`:""}</div>`).join(""):`<div style="padding:12px;text-align:center;color:#94a3b8;font-weight:700">${sAdr.length?"Aramaya uygun adres yok":"Kayıtlı adres yok"}</div>`}
 function adrAc(){$("adrRes").classList.remove("hide");adrAra()}
-$("adrQ").addEventListener("focus",adrAc);$("adrQ").addEventListener("input",adrAc);
-$("adrRes").addEventListener("mousedown",e=>e.preventDefault());
-$("adrRes").onclick=e=>{const d=e.target.closest("[data-id]");if(!d)return;const a=sAdr.find(x=>x.id===d.dataset.id);if(!a)return;
-  adrDoldur(a);$("adrQ").value="";$("adrRes").classList.add("h
+$("adr
