@@ -67,6 +67,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .menuBtn:active{transform:scale(.97)}
 .menuBtn span.ic{font-size:38px}.menuBtn small{display:block;font-size:12px;font-weight:600;opacity:.9;margin-top:2px}
 .head strong{font-size:17px}.head .u{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;font-size:15px}.head .u div{width:100%;font-size:15px;font-weight:700;margin:0}.head .sm{font-size:15px;padding:10px 14px;font-weight:800}
+#selBar{position:fixed;left:8px;right:8px;bottom:8px;z-index:900;background:#1e293b;color:#fff;border-radius:12px;padding:10px;display:flex;gap:8px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.4)}#selBar .btn{margin:0;padding:12px 8px;font-size:14px}#selBar b{font-size:14px;white-space:nowrap}
 .mods button{font-size:14px;padding:13px 4px}.mods button.on{background:#1e293b;color:#fff}
 .chip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #cbd5e1;border-radius:99px;padding:6px 11px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;text-transform:none;margin:0;color:#334155}.chip input{width:auto;margin:0}.urow2{display:grid;grid-template-columns:64px 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}.urow2 b{font-size:13px}.qbox{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.qbox .hl{flex:1;min-width:88px}
 .badge-no{background:#e71d36}.sub{font-size:12px;color:#64748b;margin-top:2px}
@@ -136,6 +137,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   </div>
 </div>
 
+<div id="selBar" class="hide"><b id="selN"></b><button class="btn b4" id="selPr">🖨️ İrsaliye Yazdır</button><button class="btn b5" id="selX" style="flex:0 0 48px">✕</button></div>
 <div id="vApp" class="hide">
   <div class="head">
     <strong>MAG AMBALAJ - <span id="mt">SEVKİYAT</span></strong>
@@ -527,6 +529,18 @@ function filtreli(){
   const q=$("q").value.toLowerCase().trim(),a=$("d1").value,b=$("d2").value;
   return urunler.filter(u=>u.durum===tab&&(!q||[u.musteri,u.urun,u.not,u.adres].some(x=>(x||"").toLowerCase().includes(q)))&&(!a||u.tarih>=a)&&(!b||u.tarih<=b));
 }
+const kSec=new Set();
+const secList=()=>urunler.filter(u=>kSec.has(u.id));
+function selBar(){const n=secList().length;$("selBar").classList.toggle("hide",!n||panel!=="sevk");$("selN").textContent=n+" seçili"}
+function irsaliye(L){
+  const top=f=>fmt(L.reduce((s,u)=>s+(+u[f]||0),0));
+  const w=window.open("","_blank");if(!w){alert("Açılır pencere engellendi. Tarayıcıdan bu site için izin verin.");return}
+  const satir=L.map((u,i)=>`<tr><td>${i+1}</td><td>${esc(u.musteri||"")}</td><td>${esc(u.urun||"")}</td><td class="r">${esc(fmt(u.kg))}</td><td class="r">${esc(fmt(u.paket))}</td><td>${esc(u.adres||"")}${u.not?"<br><i>"+esc(u.not)+"</i>":""}</td></tr>`).join("");
+  w.document.write(`<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sevk İrsaliyesi</title><style>body{font-family:Arial,sans-serif;padding:16px;font-size:13px;color:#111}h1{margin:0;color:#c82333;font-size:22px}h2{margin:2px 0 8px;font-size:15px}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #888;padding:6px;text-align:left;vertical-align:top}th{background:#eee}.r{text-align:right}.sg{display:flex;justify-content:space-around;margin-top:50px}.sg div{border-top:1px solid #000;width:40%;text-align:center;padding-top:4px}button{padding:12px 18px;font-size:15px;margin-bottom:10px}@media print{button{display:none}}</style></head><body><button onclick="print()">🖨️ Yazdır / PDF kaydet</button><h1>MAG AMBALAJ</h1><h2>SEVK İRSALİYESİ – ${new Date().toLocaleDateString("tr-TR")}</h2><table><tr><th>#</th><th>Müşteri</th><th>Ürün/Ebat</th><th class="r">Kg</th><th class="r">Adet</th><th>Adres / Not</th></tr>${satir}<tr><th colspan="3" class="r">TOPLAM</th><th class="r">${top("kg")}</th><th class="r">${top("paket")}</th><th></th></tr></table><div class="sg"><div>Teslim Eden</div><div>Teslim Alan</div></div></body></html>`);
+  w.document.close();
+}
+$("selPr").onclick=()=>{const L=secList();if(L.length)irsaliye(L)};
+$("selX").onclick=()=>{kSec.clear();listele();selBar()};
 function waGonder(u){
   const t=["🚚 *MAG AMBALAJ - "+(M().baslik||"Sevkiyat")+"*","Tarih: "+trDate(u.tarih),
     u.musteri?"Müşteri: "+u.musteri:"",u.urun?"Ürün/Ebat: "+u.urun:"",
@@ -552,6 +566,7 @@ function kart(u){
   ${u.adres?`<div class="addr">📍 <b>Teslimat adresi:</b> ${esc(u.adres)}</div>`:""}
   ${u.haritaUrl||u.adres?`<button class="btn b7" data-a="map" data-id="${id}">🚀 Yol Tarifi Al</button>`:""}
   <button class="btn b3" data-a="wa" data-id="${id}">📲 WhatsApp ile paylaş</button>
+  <button class="btn ${kSec.has(u.id)?"b4":"b6"}" data-a="sel" data-id="${id}">${kSec.has(u.id)?"☑ İrsaliye için seçildi":"☐ İrsaliye için seç"}</button>
   ${isAdmin()?sFyHtml(u):""}
   ${u.not?`<div class="note">📌 <b>Not:</b> ${esc(u.not)}</div>`:""}
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
@@ -571,6 +586,7 @@ $("liste").onclick=async e=>{
   try{
     if(b.dataset.a==="edit")duzenle(u);
     else if(b.dataset.a==="wa")waGonder(u);
+    else if(b.dataset.a==="sel"){kSec.has(u.id)?kSec.delete(u.id):kSec.add(u.id);const on=kSec.has(u.id);b.className="btn "+(on?"b4":"b6");b.textContent=on?"☑ İrsaliye için seçildi":"☐ İrsaliye için seç";selBar()}
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
     else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;await db.ref(M().yol+"/"+u.id).update(up)}
     else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref(M().yol+"/"+u.id).remove();if(isAdmin())db.ref("fiyatlar/sevk/"+u.id).remove().catch(()=>{})}
@@ -665,14 +681,14 @@ function fiyatBaglan(){
 const ust=(v,m)=>v<=0?"no":(m>0&&v<=m)?"lo":"ok";
 const dur=k=>{const n=norm(k),ks=Object.keys(n.mik);if(!ks.length||ks.every(u=>!(n.mik[u]>0)))return"no";return ks.some(u=>n.min[u]>0&&n.mik[u]<=n.min[u])?"lo":"ok"};
 const fmtQ=(o,z)=>UN.filter(([u])=>o&&u in o&&(z||+o[u]>0)).map(([u,l])=>fmt(o[u])+" "+l).join(", ")||"-";
-function modSec(m){panel=m;
+function modSec(m){panel=m;setTimeout(()=>{if(typeof selBar==="function")selBar()},0);
   document.querySelectorAll("#mods button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
   $("pSevk").classList.toggle("hide",m!=="sevk");$("pStok").classList.toggle("hide",m!=="stok");
   $("mt").textContent=m==="sevk"?"SEVKİYAT":"STOK";
   if(m==="stok")stokYukle();else stokKapat()}
 $("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===panel)return;modSec(m)};
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{menuOk=true;modSec(b.dataset.go);show("vApp");window.scrollTo(0,0)});
-$("bMenu").onclick=()=>{menuOk=false;show("vMenu");window.scrollTo(0,0)};
+$("bMenu").onclick=()=>{menuOk=false;$("selBar").classList.add("hide");show("vMenu");window.scrollTo(0,0)};
 function stokKapat(){if(sRef){sRef.off();sRef=null}if(tRef){tRef.off();tRef=null}if(oRef){oRef.off();oRef=null}}
 function stokYukle(){stokKapat();sRef=db.ref("stokKalem");
   sRef.on("value",x=>{const v=x.val()||{};sKalem=Object.keys(v).map(k=>Object.assign({id:k},v[k]));stokListele()},e=>toast("Stok okunamadı: "+errText(e)));
@@ -1165,42 +1181,4 @@ $("adrQ").addEventListener("focus",adrAc);$("adrQ").addEventListener("input",adr
 $("adrRes").addEventListener("mousedown",e=>e.preventDefault());
 $("adrRes").onclick=e=>{const d=e.target.closest("[data-id]");if(!d)return;const a=sAdr.find(x=>x.id===d.dataset.id);if(!a)return;
   adrDoldur(a);$("adrQ").value="";$("adrRes").classList.add("hide");$("adrQ").blur();toast("Adres dolduruldu: "+a.ad)};
-document.addEventListener("click",e=>{if(!e.target.closest("#adrQ")&&!e.target.closest("#adrRes"))$("adrRes").classList.add("hide")});
-$("adrSave").onclick=()=>{
-  let ad0=$("ad").value.trim();const hu=$("hu").value.trim();if(hu&&!safeUrl(hu)&&!ad0)ad0=hu;
-  const mu=$("mu").value.trim();
-  aAc(null,{ad:mu==="Etikete Bakınız"?"":mu,adres:ad0,haritaUrl:safeUrl(hu)});
-};
-/* ekle / düzenle */
-const AF=[["aFi","ad"],["aYt","yetkili"],["aTl","tel"],["aTl2","tel2"],["aSh","sehir"],["aAd","adres"],["aHu","haritaUrl"],["aNt","not"]];
-function aAc(a,pre){aEdit=a||null;const v=a||pre||{};$("aT").textContent=a?"Sevk adresini düzenle":"Yeni sevk adresi";$("aE").textContent="";
-  AF.forEach(([i,f])=>$(i).value=v[f]||"");$("dAdr").showModal()}
-$("aAdd").onclick=()=>aAc(null);
-$("aX").onclick=()=>$("dAdr").close();
-$("aHs").onclick=()=>{const v=$("aHu").value.trim(),a0=$("aAd").value.trim();haritaAc(safeUrl(v),v&&!safeUrl(v)?v:(a0||$("aFi").value.trim()))};
-$("aOk").onclick=async()=>{
-  const err=m=>{$("aE").textContent=m},d={};AF.forEach(([i,f])=>d[f]=$(i).value.trim());
-  if(!d.ad)return err("Firma / müşteri adı gerekli.");
-  if(d.haritaUrl&&!safeUrl(d.haritaUrl))return err("Harita linki geçerli değil. Boş bırakın veya https:// ile başlayan Google Maps bağlantısını yapıştırın.");
-  d.haritaUrl=safeUrl(d.haritaUrl);
-  if(!d.adres&&!d.haritaUrl)return err("Açık adres veya harita linki girin.");
-  if((!aEdit||(aEdit.ad||"").toLowerCase()!==d.ad.toLowerCase())&&sAdr.some(x=>(x.ad||"").toLowerCase()===d.ad.toLowerCase())&&!confirm("Bu isimde bir adres zaten kayıtlı. Yine de eklensin mi?"))return;
-  $("aOk").disabled=true;
-  try{
-    if(aEdit)await db.ref("sevkAdresleri/"+aEdit.id).update(Object.assign(d,{duzenleyen:ad()}));
-    else await db.ref("sevkAdresleri").push().set(Object.assign(d,{ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP}));
-    $("dAdr").close();toast("Adres kaydedildi");
-  }catch(e){err(errText(e))}
-  $("aOk").disabled=false;
-};
-$("aCsv").onclick=()=>{
-  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
-  const r=[["Firma / Müşteri","Yetkili","Telefon","2. Telefon","İl / İlçe","Adres","Harita linki","Not"].map(q).join(";")].concat(sAdr.slice().sort(byTr("ad")).map(a=>[a.ad,a.yetkili,a.tel,a.tel2,a.sehir,a.adres,a.haritaUrl,a.not].map(q).join(";")));
-  const el=document.createElement("a");el.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));el.download="sevk-adresleri.csv";el.click();
-};
-
-formTemizle();modUyg();
-
-</script>
-</body>
-</html>
+document.addEventListener("click",e=>{if(!e.target.closest("#adrQ")&&!e.target.closest("#adrRes"))$("adrRes").classList.add("hide
