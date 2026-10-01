@@ -527,6 +527,13 @@ function filtreli(){
   const q=$("q").value.toLowerCase().trim(),a=$("d1").value,b=$("d2").value;
   return urunler.filter(u=>u.durum===tab&&(!q||[u.musteri,u.urun,u.not,u.adres].some(x=>(x||"").toLowerCase().includes(q)))&&(!a||u.tarih>=a)&&(!b||u.tarih<=b));
 }
+function waGonder(u){
+  const t=["🚚 *MAG AMBALAJ - "+(M().baslik||"Sevkiyat")+"*","Tarih: "+trDate(u.tarih),
+    u.musteri?"Müşteri: "+u.musteri:"",u.urun?"Ürün/Ebat: "+u.urun:"",
+    "Ağırlık: "+fmt(u.kg)+" kg","Adet: "+fmt(u.paket),
+    u.adres?"📍 "+u.adres:"",u.haritaUrl||"",u.not?"📌 Not: "+u.not:""].filter(Boolean).join("\n");
+  window.open("https://wa.me/?text="+encodeURIComponent(t),"_blank");
+}
 function kart(u){
   const R=M().rozet,c={hazir:["hazir-border","badge-hazir",R[0]],sevk_edilecek:["sevk-border","badge-sevk",R[1]],sevk_edildi:["tamam-border","badge-tamam",R[2]]}[u.durum]||["","",""];
   const m=u.musteri&&u.musteri!=="Etikete Bakınız",p=u.urun&&u.urun!=="Etikete Bakınız",id=esc(u.id);
@@ -544,6 +551,7 @@ function kart(u){
   ${m||p?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün/Ebat</small><b>${esc(u.urun)}</b></div></div>`:""}
   ${u.adres?`<div class="addr">📍 <b>Teslimat adresi:</b> ${esc(u.adres)}</div>`:""}
   ${u.haritaUrl||u.adres?`<button class="btn b7" data-a="map" data-id="${id}">🚀 Yol Tarifi Al</button>`:""}
+  <button class="btn b3" data-a="wa" data-id="${id}">📲 WhatsApp ile paylaş</button>
   ${isAdmin()?sFyHtml(u):""}
   ${u.not?`<div class="note">📌 <b>Not:</b> ${esc(u.not)}</div>`:""}
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
@@ -562,6 +570,7 @@ $("liste").onclick=async e=>{
   const u=urunler.find(x=>x.id===b.dataset.id);if(!u)return;
   try{
     if(b.dataset.a==="edit")duzenle(u);
+    else if(b.dataset.a==="wa")waGonder(u);
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
     else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;await db.ref(M().yol+"/"+u.id).update(up)}
     else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref(M().yol+"/"+u.id).remove();if(isAdmin())db.ref("fiyatlar/sevk/"+u.id).remove().catch(()=>{})}
