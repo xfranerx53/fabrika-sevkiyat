@@ -68,6 +68,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .menuBtn span.ic{font-size:38px}.menuBtn small{display:block;font-size:12px;font-weight:600;opacity:.9;margin-top:2px}
 .head strong{font-size:17px}.head .u{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;font-size:15px}.head .u div{width:100%;font-size:15px;font-weight:700;margin:0}.head .sm{font-size:15px;padding:10px 14px;font-weight:800}
 #selBar{position:fixed;left:8px;right:8px;bottom:8px;z-index:900;background:#1e293b;color:#fff;border-radius:12px;padding:10px;display:flex;gap:8px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.4)}#selBar .btn{margin:0;padding:12px 8px;font-size:14px}#selBar b{font-size:14px;white-space:nowrap}
+#irsOv{display:none;position:fixed;inset:0;z-index:2000;background:#fff;color:#111;overflow:auto;padding:16px;font-size:13px}#irsOv h1{margin:0;color:#c82333;font-size:22px}#irsOv h2{margin:2px 0 8px;font-size:15px}#irsOv table{width:100%;border-collapse:collapse;margin-top:10px}#irsOv th,#irsOv td{border:1px solid #888;padding:6px;text-align:left;vertical-align:top}#irsOv th{background:#eee}#irsOv .r{text-align:right}#irsOv .sg{display:flex;justify-content:space-around;margin-top:50px}#irsOv .sg div{border-top:1px solid #000;width:40%;text-align:center;padding-top:4px}.irsBtn{display:flex;gap:8px;margin-bottom:10px}.irsBtn .btn{margin:0}
+@media print{body>*:not(#irsOv){display:none!important}#irsOv{position:static;display:block!important;overflow:visible;padding:0}.irsBtn{display:none}}
 .mods button{font-size:14px;padding:13px 4px}.mods button.on{background:#1e293b;color:#fff}
 .chip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #cbd5e1;border-radius:99px;padding:6px 11px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;text-transform:none;margin:0;color:#334155}.chip input{width:auto;margin:0}.urow2{display:grid;grid-template-columns:64px 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}.urow2 b{font-size:13px}.qbox{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.qbox .hl{flex:1;min-width:88px}
 .badge-no{background:#e71d36}.sub{font-size:12px;color:#64748b;margin-top:2px}
@@ -534,10 +536,10 @@ const secList=()=>urunler.filter(u=>kSec.has(u.id));
 function selBar(){const n=secList().length;$("selBar").classList.toggle("hide",!n||panel!=="sevk");$("selN").textContent=n+" seçili"}
 function irsaliye(L){
   const top=f=>fmt(L.reduce((s,u)=>s+(+u[f]||0),0));
-  const w=window.open("","_blank");if(!w){alert("Açılır pencere engellendi. Tarayıcıdan bu site için izin verin.");return}
   const satir=L.map((u,i)=>`<tr><td>${i+1}</td><td>${esc(u.musteri||"")}</td><td>${esc(u.urun||"")}</td><td class="r">${esc(fmt(u.kg))}</td><td class="r">${esc(fmt(u.paket))}</td><td>${esc(u.adres||"")}${u.not?"<br><i>"+esc(u.not)+"</i>":""}</td></tr>`).join("");
-  w.document.write(`<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sevk İrsaliyesi</title><style>body{font-family:Arial,sans-serif;padding:16px;font-size:13px;color:#111}h1{margin:0;color:#c82333;font-size:22px}h2{margin:2px 0 8px;font-size:15px}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #888;padding:6px;text-align:left;vertical-align:top}th{background:#eee}.r{text-align:right}.sg{display:flex;justify-content:space-around;margin-top:50px}.sg div{border-top:1px solid #000;width:40%;text-align:center;padding-top:4px}button{padding:12px 18px;font-size:15px;margin-bottom:10px}@media print{button{display:none}}</style></head><body><button onclick="print()">🖨️ Yazdır / PDF kaydet</button><h1>MAG AMBALAJ</h1><h2>SEVK İRSALİYESİ – ${new Date().toLocaleDateString("tr-TR")}</h2><table><tr><th>#</th><th>Müşteri</th><th>Ürün/Ebat</th><th class="r">Kg</th><th class="r">Adet</th><th>Adres / Not</th></tr>${satir}<tr><th colspan="3" class="r">TOPLAM</th><th class="r">${top("kg")}</th><th class="r">${top("paket")}</th><th></th></tr></table><div class="sg"><div>Teslim Eden</div><div>Teslim Alan</div></div></body></html>`);
-  w.document.close();
+  let o=$("irsOv");if(!o){o=document.createElement("div");o.id="irsOv";document.body.appendChild(o)}
+  o.innerHTML=`<div class="irsBtn"><button class="btn b4" onclick="window.print()">🖨️ Yazdır / PDF kaydet</button><button class="btn b6" onclick="document.getElementById('irsOv').style.display='none'">Kapat</button></div><h1>MAG AMBALAJ</h1><h2>SEVK İRSALİYESİ – ${new Date().toLocaleDateString("tr-TR")}</h2><table><tr><th>#</th><th>Müşteri</th><th>Ürün/Ebat</th><th class="r">Kg</th><th class="r">Adet</th><th>Adres / Not</th></tr>${satir}<tr><th colspan="3" class="r">TOPLAM</th><th class="r">${top("kg")}</th><th class="r">${top("paket")}</th><th></th></tr></table><div class="sg"><div>Teslim Eden</div><div>Teslim Alan</div></div>`;
+  o.style.display="block";o.scrollTop=0;
 }
 $("selPr").onclick=()=>{const L=secList();if(L.length)irsaliye(L)};
 $("selX").onclick=()=>{kSec.clear();listele();selBar()};
@@ -1180,5 +1182,4 @@ function adrAc(){$("adrRes").classList.remove("hide");adrAra()}
 $("adrQ").addEventListener("focus",adrAc);$("adrQ").addEventListener("input",adrAc);
 $("adrRes").addEventListener("mousedown",e=>e.preventDefault());
 $("adrRes").onclick=e=>{const d=e.target.closest("[data-id]");if(!d)return;const a=sAdr.find(x=>x.id===d.dataset.id);if(!a)return;
-  adrDoldur(a);$("adrQ").value="";$("adrRes").classList.add("hide");$("adrQ").blur();toast("Adres dolduruldu: "+a.ad)};
-document.addEventListener("click",e=>{if(!e.target.closest("#adrQ")&&!e.target.closest("#adrRes"))$("adrRes").classList.add("hide
+  adrDoldur(a);$("adrQ").value="";$("adrRes").classList.add("h
