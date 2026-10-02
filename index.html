@@ -100,7 +100,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <form id="fG" autocomplete="on">
       <input id="lk" name="username" placeholder="Kullanıcı Adı" autocomplete="username" autocapitalize="none" autocorrect="off">
       <input id="lp" name="password" type="password" placeholder="Şifre" autocomplete="current-password">
-      <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#334155;margin:0 0 10px;text-align:left;cursor:pointer"><input id="lb" type="checkbox" style="width:auto;margin:0" checked> Kullanıcı adı ve şifreyi hatırla</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#334155;margin:0 0 10px;text-align:left;cursor:pointer"><input id="lb" type="checkbox" style="width:auto;margin:0" checked> Beni hatırla (oturum açık kalsın)</label>
       <div class="err" id="eG"></div>
       <button type="button" class="btn b8" id="bG">Sisteme Giriş Yap</button>
     </form>
@@ -364,6 +364,8 @@ const CFG={
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=n=>Number(n||0).toLocaleString("tr-TR",{maximumFractionDigits:2});
+const bugun=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const csvS=v=>{v=String(v??"");return /^[=@\t\r]|^[+\-]\D/.test(v)?"'"+v:v};
 const trDate=s=>{const p=(s||"").split("-");return p.length===3?`${p[2]}.${p[1]}.${p[0]}`:"-"};
 function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),2800)}
 function safeUrl(s){try{const u=new URL(s);return(u.protocol==="http:"||u.protocol==="https:")?u.href:""}catch(e){return""}}
@@ -422,7 +424,7 @@ $("bG").onclick=async()=>{
   try{
     await auth.setPersistence(rem?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION);
     await auth.signInWithEmailAndPassword(mail(k),p);
-    try{if(rem){localStorage.setItem("hatirla_k",k);localStorage.setItem("hatirla_p",btoa(unescape(encodeURIComponent(p))));localStorage.setItem("hatirla_on","1")}else{localStorage.removeItem("hatirla_k");localStorage.removeItem("hatirla_p");localStorage.setItem("hatirla_on","0")}}catch(_){}
+    try{localStorage.removeItem("hatirla_p");if(rem){localStorage.setItem("hatirla_k",k);localStorage.setItem("hatirla_on","1")}else{localStorage.removeItem("hatirla_k");localStorage.setItem("hatirla_on","0")}}catch(_){}
     if(!rem)$("lp").value=""
   }catch(e){$("eG").textContent=errText(e)}
 };
@@ -432,7 +434,7 @@ try{
   if(on==="0")$("lb").checked=false;
   if(k0)$("lk").value=k0;
   const p0=localStorage.getItem("hatirla_p");
-  if(p0&&on!=="0")$("lp").value=decodeURIComponent(escape(atob(p0)));
+  if(p0)localStorage.removeItem("hatirla_p"); /* eski cihazlarda kayıtlı şifreyi sil */
 }catch(_){}
 $("bK").onclick=async()=>{
   const n=$("rn").value.trim(),k=$("rk").value.trim().toLowerCase(),p=$("rp").value,r=$("rr").value;$("eK").textContent="";
@@ -449,7 +451,7 @@ $("bAd").onclick=()=>{const n=prompt("Yeni ad soyad:",rec&&rec.ad);if(n&&n.trim(
 /* ---------- Veri ---------- */
 function yukle(){
   if(uRef)uRef.off();
-  uRef=db.ref(M().yol).orderByChild("eklenmeTarihi").limitToLast(limit);
+  uRef=db.ref(M().yol).orderByChild("durum").equalTo(tab).limitToLast(limit);
   uRef.on("value",s=>{
     const v=s.val()||{};
     urunler=Object.keys(v).map(k=>Object.assign({id:k},v[k])).sort((a,b)=>(b.eklenmeTarihi||0)-(a.eklenmeTarihi||0));
@@ -483,7 +485,7 @@ const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s||"")?s:"";
 /* ---------- Kayıt ---------- */
 function formTemizle(){
   editId="";fotoData="";
-  ["kg","mu","ur","no","ad","hu","sfi"].forEach(i=>$(i).value="");$("sfe").value="kg";kdvSet("sevk",null);$("pk").value="1";$("tr").valueAsDate=new Date();$("du").value="hazir";
+  ["kg","mu","ur","no","ad","hu","sfi"].forEach(i=>$(i).value="");$("sfe").value="kg";kdvSet("sevk",null);$("pk").value="1";$("tr").value=bugun();$("du").value="hazir";
   $("prev").style.display="none";$("bSave").textContent=M().kayit;$("bCancel").classList.add("hide");
 }
 $("bCancel").onclick=formTemizle;
@@ -522,7 +524,7 @@ function haritaAc(url,adres){
 $("hSec").onclick=()=>{const v=$("hu").value.trim(),a=$("ad").value.trim();haritaAc(safeUrl(v),v&&!safeUrl(v)?v:a)};
 
 /* ---------- Liste ---------- */
-$("tabs").onclick=e=>{const t=e.target.dataset.t;if(!t)return;tab=t;
+$("tabs").onclick=e=>{const t=e.target.dataset.t;if(!t)return;tab=t;limit=20;urunler=[];yukle();
   document.querySelectorAll("#tabs button").forEach(b=>b.className=b.dataset.t===t?{hazir:"a1",sevk_edilecek:"a2",sevk_edildi:"a3"}[t]:"");listele()};
 ["q","d1","d2"].forEach(i=>$(i).addEventListener("input",listele));
 function filtreli(){
@@ -579,7 +581,7 @@ $("liste").onclick=async e=>{
   }catch(err){toast(errText(err))}
 };
 $("bCsv").onclick=()=>{
-  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',n=v=>q(String(+v||0).replace(".",","));
+  const q=v=>'"'+csvS(v).replace(/"/g,'""')+'"',n=v=>q(String(+v||0).replace(".",","));
   const r=[["Tarih","Müşteri","Ürün","Kg","Adet","Adres","Not","Kaydeden"].concat(isAdmin()?["Fiyat (₺)","Esas","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")].concat(filtreli().map(u=>[q(trDate(u.tarih)),q(u.musteri),q(u.urun),n(u.kg),n(u.paket),q(u.adres),q(u.not),q(u.ekleyen)].concat(isAdmin()?sFyCsv(u):[]).join(";")));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download=mod+"-"+tab+".csv";a.click();
 };
@@ -830,7 +832,7 @@ async function gecAc(k){
 }
 /* Excel */
 $("sCsv").onclick=()=>{
-  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',st={ok:"Yeterli",lo:"Azalıyor",no:"Tükendi"};
+  const q=v=>'"'+csvS(v).replace(/"/g,'""')+'"',st={ok:"Yeterli",lo:"Azalıyor",no:"Tükendi"};
   const r=[["Kalem","Kategori","Ebat"].concat(UN.map(u=>u[1]),["Durum","Tedarikçi","Not"],isAdmin()?["Son alış fiyatı (₺)","Fiyat birimi","KDV %","Stok tutarı (₺)","KDV (₺)","Stok toplamı (₺)"]:[]).map(q).join(";")].concat(sKalem.slice().sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr")).map(k=>{const n=norm(k).mik;
     return [q(k.ad),q(k.kategori),q(k.ebat)].concat(UN.map(([u])=>u in n?q(String(+n[u]||0).replace(".",",")):q("")),[q(st[dur(k)]),q(k.tedarikci),q(k.not)],isAdmin()?kFyCsv(k):[]).join(";")}));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download="stok-listesi.csv";a.click();
@@ -1196,7 +1198,7 @@ $("aOk").onclick=async()=>{
   $("aOk").disabled=false;
 };
 $("aCsv").onclick=()=>{
-  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+  const q=v=>'"'+csvS(v).replace(/"/g,'""')+'"';
   const r=[["Firma / Müşteri","Yetkili","Telefon","2. Telefon","İl / İlçe","Adres","Harita linki","Not"].map(q).join(";")].concat(sAdr.slice().sort(byTr("ad")).map(a=>[a.ad,a.yetkili,a.tel,a.tel2,a.sehir,a.adres,a.haritaUrl,a.not].map(q).join(";")));
   const el=document.createElement("a");el.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));el.download="sevk-adresleri.csv";el.click();
 };
