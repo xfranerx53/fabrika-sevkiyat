@@ -82,9 +82,11 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 </style>
 </head>
 <body>
+<input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
 <div id="boot" style="padding:24px;font-size:15px;color:#334155">Yükleniyor...</div>
 
 <div id="cam">
+  <div id="camT" style="display:none;color:#fff;font-weight:800;font-size:15px;text-align:center;margin-bottom:10px;max-width:500px"></div>
   <video id="vid" autoplay playsinline muted></video>
   <div style="width:100%;max-width:500px;display:flex;gap:10px;margin-top:14px">
     <button class="btn b3" style="padding:15px;font-size:16px" id="snap">📸 FOTOĞRAFI ÇEK</button>
@@ -387,7 +389,7 @@ const MODS={
 };
 let mod="sevk";const M=()=>MODS[mod];
 let user=null,rec=null,recRef=null,uRef=null,started=false,menuOk=false;
-let urunler=[],limit=20,tab="hazir",editId="",fotoData="",stream=null;
+let urunler=[],limit=20,tab="hazir",editId="",fotoData="",stream=null,irsHedef=null;
 const show=v=>{$("boot").classList.add("hide");["vLogin","vWait","vMenu","vApp"].forEach(x=>$(x).classList.toggle("hide",x!==v))};
 const ad=()=>rec?`${rec.ad} (${rec.rol})`:"Bilinmiyor";
 const isAdmin=()=>!!(rec&&rec.yonetici===true&&rec.onay===true);
@@ -475,9 +477,51 @@ $("camO").onclick=async()=>{
   if(!stream){toast("Kameraya erişilemedi. İzin ayarlarını kontrol edin.");return}
   $("vid").srcObject=stream;$("cam").style.display="flex";
 };
-function camKapat(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$("cam").style.display="none"}
+function camKapat(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$("cam").style.display="none";irsHedef=null;$("camT").style.display="none"}
 $("camX").onclick=camKapat;
-$("snap").onclick=()=>{const v=$("vid"),c=document.createElement("canvas");c.width=v.videoWidth||800;c.height=v.videoHeight||600;c.getContext("2d").drawImage(v,0,0,c.width,c.height);sikistir(c.toDataURL("image/jpeg",.9),foto);camKapat()};
+$("snap").onclick=()=>{const v=$("vid"),c=document.createElement("canvas");c.width=v.videoWidth||800;c.height=v.videoHeight||600;c.getContext("2d").drawImage(v,0,0,c.width,c.height);
+  const src=c.toDataURL("image/jpeg",.92),h=irsHedef;camKapat();
+  if(h)irsKaydet(h,src);else sikistir(src,foto)};
+/* ---------- İrsaliye (Sevk Edildi) ---------- */
+function sikistirIrs(src,cb){
+  const im=new Image();
+  im.onload=()=>{let M=1400,q=.75,out="";
+    for(let i=0;i<8;i++){
+      const c=document.createElement("canvas");let w=im.width,h=im.height;
+      if(w>M){h=Math.round(h*M/w);w=M}c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);
+      out=c.toDataURL("image/jpeg",q);if(out.length<280000)break;
+      q=Math.max(.45,q-.1);M=Math.round(M*.85);
+    }
+    cb(out.length<290000?out:"")};
+  im.onerror=()=>cb("");
+  im.src=src;
+}
+async function irsaliyeAc(u){
+  irsHedef=u;
+  $("camT").textContent="📄 İmzalı irsaliyenin fotoğrafını çekin (isim ve imza görünsün) — "+(u.musteri&&u.musteri!=="Etikete Bakınız"?u.musteri:"sevk");
+  $("camT").style.display="block";
+  let st=null;
+  for(const cfg of [{video:{facingMode:{ideal:"environment"}}},{video:true}]){
+    try{st=await navigator.mediaDevices.getUserMedia(cfg);break}catch(e){}
+  }
+  if(!st){ /* kamera açılamazsa telefonun kamera uygulamasına düş */
+    $("camT").style.display="none";toast("Canlı kamera açılamadı, telefon kamerası açılıyor.");
+    $("irsF").onchange=e=>{const f=e.target.files[0];e.target.value="";const h=irsHedef;irsHedef=null;if(!f||!h)return;
+      const r=new FileReader();r.onload=()=>irsKaydet(h,r.result);r.readAsDataURL(f)};
+    $("irsF").click();return;
+  }
+  stream=st;$("vid").srcObject=st;$("cam").style.display="flex";
+}
+function irsKaydet(u,src){
+  toast("Fotoğraf kaydediliyor...");
+  sikistirIrs(src,async d=>{
+    if(!d){toast("Fotoğraf çok büyük veya okunamadı, tekrar deneyin.");return}
+    try{
+      await db.ref(M().yol+"/"+u.id).update({durum:"sevk_edildi",teslimEden:ad(),irsaliye:d,irsaliyeCeken:ad(),irsaliyeTarihi:firebase.database.ServerValue.TIMESTAMP});
+      toast("✓ Sevk edildi, irsaliye eklendi.");
+    }catch(err){toast(errText(err))}
+  });
+}
 const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s||"")?s:"";
 
 /* ---------- Kayıt ---------- */
@@ -558,6 +602,7 @@ function kart(u){
   ${u.not?`<div class="note">📌 <b>Not:</b> ${esc(u.not)}</div>`:""}
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
   ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">${M().teslim}: ${esc(u.teslimEden)}</div>`:""}
+  ${safeImg(u.irsaliye)?`<div class="addr" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;margin-top:8px">📄 <b>İmzalı irsaliye</b>${u.irsaliyeCeken?" · "+esc(u.irsaliyeCeken):""}${u.irsaliyeTarihi?" · "+esc(new Date(u.irsaliyeTarihi).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})):""}</div><img loading="lazy" src="${safeImg(u.irsaliye)}" alt="İrsaliye">`:""}
   <div class="acts">${nx}${eb}${db2}</div></div>`;
 }
 function listele(){
@@ -574,6 +619,7 @@ $("liste").onclick=async e=>{
     if(b.dataset.a==="edit")duzenle(u);
     else if(b.dataset.a==="wa")waGonder(u);
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
+    else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edildi"){await irsaliyeAc(u)}
     else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;await db.ref(M().yol+"/"+u.id).update(up)}
     else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref(M().yol+"/"+u.id).remove();if(isAdmin())db.ref("fiyatlar/sevk/"+u.id).remove().catch(()=>{})}
   }catch(err){toast(errText(err))}
