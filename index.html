@@ -1209,4 +1209,52 @@ formTemizle();modUyg();
 #fvBox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:99998;display:none;flex-direction:column;align-items:center;justify-content:center;padding:12px}
 #fvBox.on{display:flex}
 #fvBox img{max-width:100%;max-height:78vh;object-fit:contain;border-radius:6px;background:#000}
-#fvBox .fvb{display
+#fvBox .fvb{display:flex;gap:10px;margin-top:14px}
+#fvBox .fvb a,#fvBox .fvb button{padding:13px 22px;border-radius:10px;border:0;font-size:15px;font-weight:800;color:#fff;text-decoration:none;cursor:pointer}
+#fvDl{background:#16a34a}#fvCl{background:#64748b}
+#fvBox small{color:#cbd5e1;margin-top:10px;font-size:11px;text-align:center}
+.item img:not(.th){cursor:zoom-in}
+</style>
+<div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
+<script>
+(function(){
+try{
+  var box=document.getElementById("fvBox"),im=document.getElementById("fvImg"),dl=document.getElementById("fvDl"),cl=document.getElementById("fvCl");
+  function ac(src){
+    var d=new Date(),z=function(n){return(n<10?"0":"")+n};
+    im.src=src;dl.href=src;
+    dl.setAttribute("download","foto-"+d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+"-"+z(d.getHours())+z(d.getMinutes())+z(d.getSeconds())+".jpg");
+    box.classList.add("on");
+  }
+  function kapat(){box.classList.remove("on");im.removeAttribute("src")}
+  function tikla(e){
+    var t=e.currentTarget;
+    e.preventDefault();e.stopPropagation();
+    if(t.src)ac(t.src);
+  }
+  function bagla(){
+    var l=document.querySelectorAll(".item img");
+    for(var i=0;i<l.length;i++){
+      var g=l[i];
+      if(g.__fv||g.classList.contains("th"))continue;
+      g.__fv=1;g.style.cursor="pointer";
+      g.addEventListener("click",tikla);
+      var bt=document.createElement("button");
+      bt.type="button";bt.textContent="🔍 Büyüt / İndir";
+      bt.style.cssText="display:block;width:100%;padding:11px;margin:0 0 8px;border:0;border-radius:8px;background:#0f172a;color:#fff;font-size:14px;font-weight:800;cursor:pointer";
+      bt.__src=g;
+      bt.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(this.__src.src)ac(this.__src.src)});
+      g.insertAdjacentElement("afterend",bt);
+    }
+  }
+  bagla();
+  new MutationObserver(bagla).observe(document.body,{childList:true,subtree:true});
+  setInterval(bagla,1500);
+  cl.addEventListener("click",kapat);
+  box.addEventListener("click",function(e){if(e.target===box)kapat()});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")kapat()});
+}catch(err){console.error("foto görüntüleyici:",err)}
+})();
+</script>
+</body>
+</html>
