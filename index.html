@@ -35,12 +35,6 @@ input:focus,textarea:focus,select:focus{border-color:#2563eb}
 .photo label{background:#64748b;text-transform:none;font-size:14px;margin:0;color:#fff}
 #prev{width:100%;max-height:260px;object-fit:contain;background:#000;border-radius:8px;margin-top:8px;display:none}
 .fast{font-size:18px!important;font-weight:700;padding:12px!important;border:2px solid #2563eb!important;background:#f0f7ff!important}
-#fz{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:10001;display:flex;flex-direction:column}
-#fz .bar{display:flex;gap:8px;padding:10px}
-#fz .bar .btn,#fz .bar a{margin:0;text-align:center;text-decoration:none;display:block}
-#fz .pic{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:6px}
-#fz img{max-width:100%;max-height:100%;object-fit:contain}
-.zm{cursor:zoom-in}
 #cam{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:10000;flex-direction:column;align-items:center;justify-content:center;padding:20px}
 #cam video{width:100%;max-width:500px;border-radius:12px;background:#000}
 .tabs{display:flex;gap:4px;margin-bottom:12px}
@@ -353,10 +347,6 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="gL" style="max-height:60vh;overflow:auto"></div>
   <button class="btn b6" id="gNo">Kapat</button>
 </dialog>
-<div id="fz" class="hide">
-  <div class="bar"><a id="fzDl" class="btn b3" href="#" download="etiket.jpg">⬇️ İndir</a><button type="button" class="btn b6" id="fzX">✕ Kapat</button></div>
-  <div class="pic" id="fzPic"><img id="fzImg" alt="Etiket"></div>
-</div>
 <div id="toast"></div>
 
 <script>
@@ -488,12 +478,6 @@ $("camO").onclick=async()=>{
 function camKapat(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$("cam").style.display="none"}
 $("camX").onclick=camKapat;
 $("snap").onclick=()=>{const v=$("vid"),c=document.createElement("canvas");c.width=v.videoWidth||800;c.height=v.videoHeight||600;c.getContext("2d").drawImage(v,0,0,c.width,c.height);sikistir(c.toDataURL("image/jpeg",.9),foto);camKapat()};
-function fotoBuyut(src,ad){if(!src)return;$("fzImg").src=src;const a=$("fzDl");a.href=src;a.download="etiket-"+(ad||new Date().toISOString().slice(0,10)).replace(/[^\w\-]+/g,"_")+".jpg";$("fz").classList.remove("hide")}
-function fotoKapat(){$("fz").classList.add("hide");$("fzImg").removeAttribute("src")}
-$("fzX").onclick=fotoKapat;
-$("fzPic").onclick=e=>{if(e.target.id==="fzPic")fotoKapat()};
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("fz").classList.contains("hide"))fotoKapat()});
-$("prev").classList.add("zm");$("prev").onclick=()=>fotoBuyut($("prev").src,"yeni");
 const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s||"")?s:"";
 
 /* ---------- Kayıt ---------- */
@@ -564,7 +548,7 @@ function kart(u){
   const db2=canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:"";
   return `<div class="item ${c[0]}">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700;color:#64748b">Tarih: ${esc(trDate(u.tarih))}</span><span class="badge ${c[1]}">${c[2]}</span></div>
-  ${safeImg(u.foto)?`<img loading="lazy" class="zm" data-zoom="${id}" src="${safeImg(u.foto)}" alt="Etiket">`:""}
+  ${safeImg(u.foto)?`<img loading="lazy" src="${safeImg(u.foto)}" alt="Etiket">`:""}
   <div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(u.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(u.paket))} Adet</b></div></div>
   ${m||p?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün/Ebat</small><b>${esc(u.urun)}</b></div></div>`:""}
   ${u.adres?`<div class="addr">📍 <b>Teslimat adresi:</b> ${esc(u.adres)}</div>`:""}
@@ -584,8 +568,6 @@ function listele(){
   $("liste").innerHTML=L.length?L.map(kart).join(""):'<div class="empty">Kayıt bulunamadı.</div>';
 }
 $("liste").onclick=async e=>{
-  const im=e.target.closest("img[data-zoom]");
-  if(im){const z=urunler.find(x=>x.id===im.dataset.zoom);if(z&&safeImg(z.foto))fotoBuyut(z.foto,(z.musteri&&z.musteri!=="Etikete Bakınız"?z.musteri+"-":"")+(z.tarih||""));return}
   const b=e.target.closest("button[data-a]");if(!b)return;
   const u=urunler.find(x=>x.id===b.dataset.id);if(!u)return;
   try{
@@ -1204,4 +1186,27 @@ $("aOk").onclick=async()=>{
   if(d.haritaUrl&&!safeUrl(d.haritaUrl))return err("Harita linki geçerli değil. Boş bırakın veya https:// ile başlayan Google Maps bağlantısını yapıştırın.");
   d.haritaUrl=safeUrl(d.haritaUrl);
   if(!d.adres&&!d.haritaUrl)return err("Açık adres veya harita linki girin.");
-  if((!aEdit||(aEdit.ad||"").toLowerCase
+  if((!aEdit||(aEdit.ad||"").toLowerCase()!==d.ad.toLowerCase())&&sAdr.some(x=>(x.ad||"").toLowerCase()===d.ad.toLowerCase())&&!confirm("Bu isimde bir adres zaten kayıtlı. Yine de eklensin mi?"))return;
+  $("aOk").disabled=true;
+  try{
+    if(aEdit)await db.ref("sevkAdresleri/"+aEdit.id).update(Object.assign(d,{duzenleyen:ad()}));
+    else await db.ref("sevkAdresleri").push().set(Object.assign(d,{ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP}));
+    $("dAdr").close();toast("Adres kaydedildi");
+  }catch(e){err(errText(e))}
+  $("aOk").disabled=false;
+};
+$("aCsv").onclick=()=>{
+  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+  const r=[["Firma / Müşteri","Yetkili","Telefon","2. Telefon","İl / İlçe","Adres","Harita linki","Not"].map(q).join(";")].concat(sAdr.slice().sort(byTr("ad")).map(a=>[a.ad,a.yetkili,a.tel,a.tel2,a.sehir,a.adres,a.haritaUrl,a.not].map(q).join(";")));
+  const el=document.createElement("a");el.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));el.download="sevk-adresleri.csv";el.click();
+};
+
+formTemizle();modUyg();
+
+</script>
+<!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
+<style>
+#fvBox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:99998;display:none;flex-direction:column;align-items:center;justify-content:center;padding:12px}
+#fvBox.on{display:flex}
+#fvBox img{max-width:100%;max-height:78vh;object-fit:contain;border-radius:6px;background:#000}
+#fvBox .fvb{display
