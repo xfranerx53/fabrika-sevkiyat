@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fabrika Stok & Sevkiyat - MAG AMBALAJ</title>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 body{background:#f4f6f9;padding:12px;color:#212529;font-size:14px;min-height:100vh}
@@ -76,21 +79,10 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #pStok .grid .hl{padding:5px}#pStok .grid .hl b{font-size:18px}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99999;max-width:90vw;text-align:center}
 #toast.on{opacity:1}
-.zm{cursor:zoom-in}
-#lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:10020;flex-direction:column}
-#lb.on{display:flex}
-#lbBar{display:flex;justify-content:flex-end;padding:10px}
-#lbBar button{margin:0;width:auto;padding:10px 18px}
-#lbS{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;touch-action:pan-x pan-y pinch-zoom}
-#lbS img{max-width:100%;max-height:100%;object-fit:contain;cursor:zoom-in}
-#lbS.big{display:block}
-#lbS.big img{max-width:none;max-height:none;width:250%;cursor:zoom-out}
 </style>
 </head>
 <body>
 <div id="boot" style="padding:24px;font-size:15px;color:#334155">Yükleniyor...</div>
-<noscript><div style="padding:24px;font-size:16px;color:#b91c1c"><b>JavaScript kapalı.</b> Tarayıcı ayarlarından JavaScript'i açın.</div></noscript>
-<div style="position:fixed;bottom:2px;right:6px;font-size:10px;color:#94a3b8;pointer-events:none;z-index:1">v4</div>
 
 <div id="cam">
   <video id="vid" autoplay playsinline muted></video>
@@ -108,7 +100,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <form id="fG" autocomplete="on">
       <input id="lk" name="username" placeholder="Kullanıcı Adı" autocomplete="username" autocapitalize="none" autocorrect="off">
       <input id="lp" name="password" type="password" placeholder="Şifre" autocomplete="current-password">
-      <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#334155;margin:0 0 10px;text-align:left;cursor:pointer"><input id="lb" type="checkbox" style="width:auto;margin:0" checked> Beni hatırla (oturum açık kalsın)</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#334155;margin:0 0 10px;text-align:left;cursor:pointer"><input id="lb" type="checkbox" style="width:auto;margin:0" checked> Kullanıcı adı ve şifreyi hatırla</label>
       <div class="err" id="eG"></div>
       <button type="button" class="btn b8" id="bG">Sisteme Giriş Yap</button>
     </form>
@@ -355,10 +347,9 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="gL" style="max-height:60vh;overflow:auto"></div>
   <button class="btn b6" id="gNo">Kapat</button>
 </dialog>
-<div id="lb"><div id="lbBar"><button class="btn b5" id="lbX">✕ Kapat</button></div><div id="lbS"><img id="lbI" alt="Fotoğraf"></div></div>
 <div id="toast"></div>
 
-<script type="text/plain" id="appjs">
+<script>
 window.addEventListener("error",function(e){var b=document.getElementById("boot");if(b&&!b.classList.contains("hide"))b.textContent="Hata: "+e.message+" (satır "+e.lineno+")"});
 /* ============ AYAR: Firebase Console > Proje ayarları > Web uygulaması'ndan kopyalayın ============ */
 const CFG={
@@ -373,8 +364,6 @@ const CFG={
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=n=>Number(n||0).toLocaleString("tr-TR",{maximumFractionDigits:2});
-const bugun=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
-const csvS=v=>{v=String(v??"");return /^[=@\t\r]|^[+\-]\D/.test(v)?"'"+v:v};
 const trDate=s=>{const p=(s||"").split("-");return p.length===3?`${p[2]}.${p[1]}.${p[0]}`:"-"};
 function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),2800)}
 function safeUrl(s){try{const u=new URL(s);return(u.protocol==="http:"||u.protocol==="https:")?u.href:""}catch(e){return""}}
@@ -433,7 +422,7 @@ $("bG").onclick=async()=>{
   try{
     await auth.setPersistence(rem?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION);
     await auth.signInWithEmailAndPassword(mail(k),p);
-    try{localStorage.removeItem("hatirla_p");if(rem){localStorage.setItem("hatirla_k",k);localStorage.setItem("hatirla_on","1")}else{localStorage.removeItem("hatirla_k");localStorage.setItem("hatirla_on","0")}}catch(_){}
+    try{if(rem){localStorage.setItem("hatirla_k",k);localStorage.setItem("hatirla_p",btoa(unescape(encodeURIComponent(p))));localStorage.setItem("hatirla_on","1")}else{localStorage.removeItem("hatirla_k");localStorage.removeItem("hatirla_p");localStorage.setItem("hatirla_on","0")}}catch(_){}
     if(!rem)$("lp").value=""
   }catch(e){$("eG").textContent=errText(e)}
 };
@@ -443,7 +432,7 @@ try{
   if(on==="0")$("lb").checked=false;
   if(k0)$("lk").value=k0;
   const p0=localStorage.getItem("hatirla_p");
-  if(p0)localStorage.removeItem("hatirla_p");
+  if(p0&&on!=="0")$("lp").value=decodeURIComponent(escape(atob(p0)));
 }catch(_){}
 $("bK").onclick=async()=>{
   const n=$("rn").value.trim(),k=$("rk").value.trim().toLowerCase(),p=$("rp").value,r=$("rr").value;$("eK").textContent="";
@@ -460,7 +449,7 @@ $("bAd").onclick=()=>{const n=prompt("Yeni ad soyad:",rec&&rec.ad);if(n&&n.trim(
 /* ---------- Veri ---------- */
 function yukle(){
   if(uRef)uRef.off();
-  uRef=db.ref(M().yol).orderByChild("durum").equalTo(tab).limitToLast(limit);
+  uRef=db.ref(M().yol).orderByChild("eklenmeTarihi").limitToLast(limit);
   uRef.on("value",s=>{
     const v=s.val()||{};
     urunler=Object.keys(v).map(k=>Object.assign({id:k},v[k])).sort((a,b)=>(b.eklenmeTarihi||0)-(a.eklenmeTarihi||0));
@@ -491,16 +480,10 @@ $("camX").onclick=camKapat;
 $("snap").onclick=()=>{const v=$("vid"),c=document.createElement("canvas");c.width=v.videoWidth||800;c.height=v.videoHeight||600;c.getContext("2d").drawImage(v,0,0,c.width,c.height);sikistir(c.toDataURL("image/jpeg",.9),foto);camKapat()};
 const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s||"")?s:"";
 
-/* ---------- Fotoğraf büyütme ---------- */
-function zoomAc(src){if(!src)return;$("lbI").src=src;$("lbS").classList.remove("big");$("lb").classList.add("on")}
-function zoomKapat(){$("lb").classList.remove("on")}
-$("lbX").onclick=zoomKapat;
-$("lbI").onclick=()=>$("lbS").classList.toggle("big");
-$("prev").onclick=()=>{if($("prev").src)zoomAc($("prev").src)};
 /* ---------- Kayıt ---------- */
 function formTemizle(){
   editId="";fotoData="";
-  ["kg","mu","ur","no","ad","hu","sfi"].forEach(i=>$(i).value="");$("sfe").value="kg";kdvSet("sevk",null);$("pk").value="1";$("tr").value=bugun();$("du").value="hazir";
+  ["kg","mu","ur","no","ad","hu","sfi"].forEach(i=>$(i).value="");$("sfe").value="kg";kdvSet("sevk",null);$("pk").value="1";$("tr").valueAsDate=new Date();$("du").value="hazir";
   $("prev").style.display="none";$("bSave").textContent=M().kayit;$("bCancel").classList.add("hide");
 }
 $("bCancel").onclick=formTemizle;
@@ -539,7 +522,7 @@ function haritaAc(url,adres){
 $("hSec").onclick=()=>{const v=$("hu").value.trim(),a=$("ad").value.trim();haritaAc(safeUrl(v),v&&!safeUrl(v)?v:a)};
 
 /* ---------- Liste ---------- */
-$("tabs").onclick=e=>{const t=e.target.dataset.t;if(!t)return;tab=t;limit=20;urunler=[];yukle();
+$("tabs").onclick=e=>{const t=e.target.dataset.t;if(!t)return;tab=t;
   document.querySelectorAll("#tabs button").forEach(b=>b.className=b.dataset.t===t?{hazir:"a1",sevk_edilecek:"a2",sevk_edildi:"a3"}[t]:"");listele()};
 ["q","d1","d2"].forEach(i=>$(i).addEventListener("input",listele));
 function filtreli(){
@@ -565,7 +548,7 @@ function kart(u){
   const db2=canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:"";
   return `<div class="item ${c[0]}">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700;color:#64748b">Tarih: ${esc(trDate(u.tarih))}</span><span class="badge ${c[1]}">${c[2]}</span></div>
-  ${safeImg(u.foto)?`<img class="zm" loading="lazy" src="${safeImg(u.foto)}" alt="Etiket">`:""}
+  ${safeImg(u.foto)?`<img loading="lazy" src="${safeImg(u.foto)}" alt="Etiket">`:""}
   <div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(u.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(u.paket))} Adet</b></div></div>
   ${m||p?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün/Ebat</small><b>${esc(u.urun)}</b></div></div>`:""}
   ${u.adres?`<div class="addr">📍 <b>Teslimat adresi:</b> ${esc(u.adres)}</div>`:""}
@@ -585,7 +568,6 @@ function listele(){
   $("liste").innerHTML=L.length?L.map(kart).join(""):'<div class="empty">Kayıt bulunamadı.</div>';
 }
 $("liste").onclick=async e=>{
-  const im=e.target.closest("img.zm");if(im){zoomAc(im.src);return}
   const b=e.target.closest("button[data-a]");if(!b)return;
   const u=urunler.find(x=>x.id===b.dataset.id);if(!u)return;
   try{
@@ -597,7 +579,7 @@ $("liste").onclick=async e=>{
   }catch(err){toast(errText(err))}
 };
 $("bCsv").onclick=()=>{
-  const q=v=>'"'+csvS(v).replace(/"/g,'""')+'"',n=v=>q(String(+v||0).replace(".",","));
+  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',n=v=>q(String(+v||0).replace(".",","));
   const r=[["Tarih","Müşteri","Ürün","Kg","Adet","Adres","Not","Kaydeden"].concat(isAdmin()?["Fiyat (₺)","Esas","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")].concat(filtreli().map(u=>[q(trDate(u.tarih)),q(u.musteri),q(u.urun),n(u.kg),n(u.paket),q(u.adres),q(u.not),q(u.ekleyen)].concat(isAdmin()?sFyCsv(u):[]).join(";")));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download=mod+"-"+tab+".csv";a.click();
 };
@@ -738,7 +720,7 @@ function kkart(k){
     </div><span class="chev">${open?"▲":"▼"}</span>
   </div>
   <div class="dt${open?"":" hide"}">
-    ${ph?`<img class="zm" loading="lazy" src="${ph}" alt="" style="max-height:140px">`:""}
+    ${ph?`<img loading="lazy" src="${ph}" alt="" style="max-height:140px">`:""}
     ${kr?`<div class="sub">Kritik seviye: ${esc(kr)}</div>`:""}
     ${bek.length?`<div class="addr" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">🧾 Siparişte: ${esc(bek.join(" · "))}</div>`:""}
     ${isAdmin()?kFyHtml(k):""}
@@ -749,7 +731,6 @@ function kkart(k){
   </div></div>`;
 }
 $("sList").onclick=async e=>{
-  {const im=e.target.closest("img.zm");if(im){zoomAc(im.src);return}}
   const h=e.target.closest(".kh");
   if(h&&!e.target.closest("button")){const id=h.dataset.id,dt=h.parentElement.querySelector(".dt");
     if(kAcik.has(id))kAcik.delete(id);else kAcik.add(id);
@@ -849,7 +830,7 @@ async function gecAc(k){
 }
 /* Excel */
 $("sCsv").onclick=()=>{
-  const q=v=>'"'+csvS(v).replace(/"/g,'""')+'"',st={ok:"Yeterli",lo:"Azalıyor",no:"Tükendi"};
+  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',st={ok:"Yeterli",lo:"Azalıyor",no:"Tükendi"};
   const r=[["Kalem","Kategori","Ebat"].concat(UN.map(u=>u[1]),["Durum","Tedarikçi","Not"],isAdmin()?["Son alış fiyatı (₺)","Fiyat birimi","KDV %","Stok tutarı (₺)","KDV (₺)","Stok toplamı (₺)"]:[]).map(q).join(";")].concat(sKalem.slice().sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr")).map(k=>{const n=norm(k).mik;
     return [q(k.ad),q(k.kategori),q(k.ebat)].concat(UN.map(([u])=>u in n?q(String(+n[u]||0).replace(".",",")):q("")),[q(st[dur(k)]),q(k.tedarikci),q(k.not)],isAdmin()?kFyCsv(k):[]).join(";")}));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download="stok-listesi.csv";a.click();
@@ -1205,4 +1186,23 @@ $("aOk").onclick=async()=>{
   if(d.haritaUrl&&!safeUrl(d.haritaUrl))return err("Harita linki geçerli değil. Boş bırakın veya https:// ile başlayan Google Maps bağlantısını yapıştırın.");
   d.haritaUrl=safeUrl(d.haritaUrl);
   if(!d.adres&&!d.haritaUrl)return err("Açık adres veya harita linki girin.");
-  if((!aEdit||(aEdit.ad||"").toLowerCase()!==d.ad.toLowerCase())&&sAdr.some(x=>(x.ad||"").toLowerCase()===d.ad.toLowerCase())&&!confirm("Bu isimde bir adres zaten kayıtlı. Yi
+  if((!aEdit||(aEdit.ad||"").toLowerCase()!==d.ad.toLowerCase())&&sAdr.some(x=>(x.ad||"").toLowerCase()===d.ad.toLowerCase())&&!confirm("Bu isimde bir adres zaten kayıtlı. Yine de eklensin mi?"))return;
+  $("aOk").disabled=true;
+  try{
+    if(aEdit)await db.ref("sevkAdresleri/"+aEdit.id).update(Object.assign(d,{duzenleyen:ad()}));
+    else await db.ref("sevkAdresleri").push().set(Object.assign(d,{ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP}));
+    $("dAdr").close();toast("Adres kaydedildi");
+  }catch(e){err(errText(e))}
+  $("aOk").disabled=false;
+};
+$("aCsv").onclick=()=>{
+  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+  const r=[["Firma / Müşteri","Yetkili","Telefon","2. Telefon","İl / İlçe","Adres","Harita linki","Not"].map(q).join(";")].concat(sAdr.slice().sort(byTr("ad")).map(a=>[a.ad,a.yetkili,a.tel,a.tel2,a.sehir,a.adres,a.haritaUrl,a.not].map(q).join(";")));
+  const el=document.createElement("a");el.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));el.download="sevk-adresleri.csv";el.click();
+};
+
+formTemizle();modUyg();
+
+</script>
+</body>
+</html>
