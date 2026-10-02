@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fabrika Stok & Sevkiyat - MAG AMBALAJ</title>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 body{background:#f4f6f9;padding:12px;color:#212529;font-size:14px;min-height:100vh}
@@ -92,6 +89,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 </head>
 <body>
 <div id="boot" style="padding:24px;font-size:15px;color:#334155">Yükleniyor...</div>
+<noscript><div style="padding:24px;font-size:16px;color:#b91c1c"><b>JavaScript kapalı.</b> Tarayıcı ayarlarından JavaScript'i açın.</div></noscript>
+<div style="position:fixed;bottom:2px;right:6px;font-size:10px;color:#94a3b8;pointer-events:none;z-index:1">v4</div>
 
 <div id="cam">
   <video id="vid" autoplay playsinline muted></video>
@@ -359,7 +358,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 <div id="lb"><div id="lbBar"><button class="btn b5" id="lbX">✕ Kapat</button></div><div id="lbS"><img id="lbI" alt="Fotoğraf"></div></div>
 <div id="toast"></div>
 
-<script>
+<script type="text/plain" id="appjs">
 window.addEventListener("error",function(e){var b=document.getElementById("boot");if(b&&!b.classList.contains("hide"))b.textContent="Hata: "+e.message+" (satır "+e.lineno+")"});
 /* ============ AYAR: Firebase Console > Proje ayarları > Web uygulaması'ndan kopyalayın ============ */
 const CFG={
@@ -1206,5 +1205,4 @@ $("aOk").onclick=async()=>{
   if(d.haritaUrl&&!safeUrl(d.haritaUrl))return err("Harita linki geçerli değil. Boş bırakın veya https:// ile başlayan Google Maps bağlantısını yapıştırın.");
   d.haritaUrl=safeUrl(d.haritaUrl);
   if(!d.adres&&!d.haritaUrl)return err("Açık adres veya harita linki girin.");
-  if((!aEdit||(aEdit.ad||"").toLowerCase()!==d.ad.toLowerCase())&&sAdr.some(x=>(x.ad||"").toLowerCase()===d.ad.toLowerCase())&&!confirm("Bu isimde bir adres zaten kayıtlı. Yine de eklensin mi?"))return;
-  $("aOk").dis
+  if((!aEdit||(aEdit.ad||"").toLowerCase()!==d.ad.toLowerCase())&&sAdr.some(x=>(x.ad||"").toLowerCase()===d.ad.toLowerCase())&&!confirm("Bu isimde bir adres zaten kayıtlı. Yi
