@@ -79,6 +79,16 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #pStok .grid .hl{padding:5px}#pStok .grid .hl b{font-size:18px}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99999;max-width:90vw;text-align:center}
 #toast.on{opacity:1}
+.zm{cursor:zoom-in}
+#lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:10020;flex-direction:column}
+#lb.on{display:flex}
+#lbBar{display:flex;gap:8px;justify-content:flex-end;padding:10px;padding-top:calc(10px + env(safe-area-inset-top,0px))}
+#lbBar .btn{margin:0;width:auto;padding:10px 16px;text-decoration:none;display:inline-block;text-align:center}
+#lbS{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;touch-action:pan-x pan-y pinch-zoom;-webkit-overflow-scrolling:touch}
+#lbS img{max-width:100%;max-height:100%;object-fit:contain;cursor:zoom-in}
+#lbS.big{display:block}
+#lbS.big img{max-width:none;max-height:none;width:250%;cursor:zoom-out}
+#lbH{color:#94a3b8;font-size:12px;text-align:center;padding:6px}
 </style>
 </head>
 <body>
@@ -347,6 +357,28 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="gL" style="max-height:60vh;overflow:auto"></div>
   <button class="btn b6" id="gNo">Kapat</button>
 </dialog>
+<!-- Fotoğraf büyütme -->
+<div id="lb">
+  <div id="lbBar"><a class="btn b4" id="lbD" download="foto.jpg">⬇ İndir</a><button class="btn b5" id="lbX">✕ Kapat</button></div>
+  <div id="lbS"><img id="lbI" alt="Fotoğraf"></div>
+  <div id="lbH">Yakınlaştırmak için fotoğrafa dokunun veya iki parmakla açın</div>
+</div>
+
+<!-- İrsaliye (sevk edildi) -->
+<div id="vIrs" class="overlay hide">
+  <div class="box" style="max-height:94vh;overflow:auto">
+    <h3 id="irT" style="margin-bottom:6px">İrsaliye fotoğrafı</h3>
+    <p style="font-size:12px;color:#475569;margin-bottom:10px">İsim soyisimli imzalı irsaliyenin fotoğrafını çekin. Çekim net ve tüm sayfa görünür olmalı.</p>
+    <div class="photo">
+      <button type="button" id="irCam">📸 CANLI KAMERAYI AÇ</button>
+      <label for="irGal">🖼️ Galeri</label>
+      <input type="file" id="irGal" accept="image/*" class="hide">
+    </div>
+    <img id="irPrev" class="zm" alt="İrsaliye önizleme" style="width:100%;max-height:300px;object-fit:contain;background:#000;border-radius:8px;margin-top:8px;display:none">
+    <div class="err" id="irE" style="margin-top:8px"></div>
+    <div style="display:flex;gap:8px"><button class="btn b6" id="irNo">Vazgeç</button><button class="btn b3" id="irOk">✓ Sevk edildi olarak kaydet</button></div>
+  </div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -463,24 +495,79 @@ $("bMore").onclick=()=>{limit+=20;yukle()};
 
 /* ---------- Fotoğraf ---------- */
 function sikistir(src,cb,mx){
+  /* Büyük ve okunaklı çıktı: önce kaliteyi, sonra çözünürlüğü düşürerek ~240 KB altına sığdırır (kural sınırı 300000 karakter) */
   const im=new Image();
-  im.onload=()=>{const c=document.createElement("canvas"),M=mx||800;let w=im.width,h=im.height;
-    if(w>M){h=Math.round(h*M/w);w=M}c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);cb(c.toDataURL("image/jpeg",.6))};
+  im.onload=()=>{let Mx=mx||1280,d="";
+    for(let t=0;t<6;t++){
+      let w=im.width,h=im.height;const mm=Math.max(w,h);
+      if(mm>Mx){const r=Mx/mm;w=Math.round(w*r);h=Math.round(h*r)}
+      const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);
+      for(const q of [.75,.65,.55,.45]){d=c.toDataURL("image/jpeg",q);if(d.length<=240000){cb(d);return}}
+      Mx=Math.round(Mx*.8)}
+    cb(d)};
   im.src=src;
 }
 function foto(d){fotoData=d;const p=$("prev");p.src=d;p.style.display="block"}
 $("gal").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>sikistir(r.result,foto);r.readAsDataURL(f);e.target.value=""};
-$("camO").onclick=async()=>{
+var camCb=null;
+async function camAc(cb){camCb=cb;
   for(const cfg of [{video:{facingMode:{ideal:"environment"}}},{video:true}]){
     try{stream=await navigator.mediaDevices.getUserMedia(cfg);break}catch(e){}
   }
   if(!stream){toast("Kameraya erişilemedi. İzin ayarlarını kontrol edin.");return}
   $("vid").srcObject=stream;$("cam").style.display="flex";
-};
+}
+$("camO").onclick=()=>camAc(foto);
 function camKapat(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$("cam").style.display="none"}
 $("camX").onclick=camKapat;
-$("snap").onclick=()=>{const v=$("vid"),c=document.createElement("canvas");c.width=v.videoWidth||800;c.height=v.videoHeight||600;c.getContext("2d").drawImage(v,0,0,c.width,c.height);sikistir(c.toDataURL("image/jpeg",.9),foto);camKapat()};
+$("snap").onclick=()=>{const v=$("vid"),c=document.createElement("canvas");c.width=v.videoWidth||800;c.height=v.videoHeight||600;c.getContext("2d").drawImage(v,0,0,c.width,c.height);const cb=camCb||foto;sikistir(c.toDataURL("image/jpeg",.92),cb);camKapat()};
 const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s||"")?s:"";
+
+/* ---------- Fotoğraf büyütme ---------- */
+function zoomAc(src){if(!src)return;$("lbI").src=src;$("lbD").href=src;$("lbS").classList.remove("big");$("lb").classList.add("on")}
+function zoomKapat(){$("lb").classList.remove("on");$("lbI").removeAttribute("src")}
+$("lbX").onclick=zoomKapat;
+$("lbI").onclick=()=>$("lbS").classList.toggle("big");
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("lb").classList.contains("on"))zoomKapat()});
+$("prev").onclick=()=>{if($("prev").src)zoomAc($("prev").src)};
+$("irPrev").onclick=()=>{if($("irPrev").src)zoomAc($("irPrev").src)};
+
+/* ---------- İrsaliye (sevk edildi) ---------- */
+var irU=null,irData="",irOnly=false;
+function irFoto(d){irData=d;const p=$("irPrev");p.src=d;p.style.display="block";$("irE").textContent=""}
+function irsAc(u,only){
+  irU=u;irOnly=!!only;irData=safeImg(u.irsaliyeFoto)?u.irsaliyeFoto:"";
+  $("irT").textContent=irOnly?"İrsaliye fotoğrafı":"Sevk edildi — irsaliye";
+  $("irOk").textContent=irOnly?"💾 İrsaliyeyi kaydet":"✓ Sevk edildi olarak kaydet";
+  $("irE").textContent="";const p=$("irPrev");
+  if(irData){p.src=irData;p.style.display="block"}else{p.removeAttribute("src");p.style.display="none"}
+  $("vIrs").classList.remove("hide");
+}
+function irKapat(){$("vIrs").classList.add("hide");irU=null;irData=""}
+$("irCam").onclick=()=>camAc(irFoto);
+$("irGal").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>sikistir(r.result,irFoto);r.readAsDataURL(f);e.target.value=""};
+$("irNo").onclick=irKapat;
+$("irOk").onclick=async()=>{
+  if(!irU)return;
+  if(!irData){$("irE").textContent="İrsaliye fotoğrafını çekin.";return}
+  const b=$("irOk");b.disabled=true;
+  try{
+    const up={irsaliyeFoto:irData,irsaliyeEden:ad(),irsaliyeTarihi:firebase.database.ServerValue.TIMESTAMP};
+    if(!irOnly){up.durum="sevk_edildi";up.teslimEden=ad()}
+    await db.ref(M().yol+"/"+irU.id).update(up);
+    irKapat();toast(irOnly?"İrsaliye kaydedildi":"Sevk edildi olarak kaydedildi");
+  }catch(e){$("irE").textContent=errText(e)}
+  b.disabled=false;
+};
+async function irsPaylas(u){
+  const d=safeImg(u.irsaliyeFoto);if(!d)return;
+  const nm=((u.musteri&&u.musteri!=="Etikete Bakınız"?u.musteri:"sevkiyat")+"-irsaliye").replace(/[^\w\u00C0-\u024F-]+/g,"_")+".jpg";
+  try{
+    const bl=await(await fetch(d)).blob(),f=new File([bl],nm,{type:"image/jpeg"});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"İrsaliye",text:"İrsaliye - "+trDate(u.tarih)});return}
+  }catch(e){if(e&&e.name==="AbortError")return}
+  const a=document.createElement("a");a.href=d;a.download=nm;a.click();toast("Bu cihaz doğrudan paylaşımı desteklemiyor, fotoğraf indirildi.");
+}
 
 /* ---------- Kayıt ---------- */
 function formTemizle(){
@@ -550,12 +637,13 @@ function kart(u){
   const db2=canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:"";
   return `<div class="item ${c[0]}">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700;color:#64748b">Tarih: ${esc(trDate(u.tarih))}</span><span class="badge ${c[1]}">${c[2]}</span></div>
-  ${safeImg(u.foto)?`<img loading="lazy" src="${safeImg(u.foto)}" alt="Etiket">`:""}
+  ${safeImg(u.foto)?`<img class="zm" loading="lazy" src="${safeImg(u.foto)}" alt="Etiket">`:""}
   <div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(u.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(u.paket))} Adet</b></div></div>
   ${m||p?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün/Ebat</small><b>${esc(u.urun)}</b></div></div>`:""}
   ${u.adres?`<div class="addr">📍 <b>Teslimat adresi:</b> ${esc(u.adres)}</div>`:""}
   ${u.haritaUrl||u.adres?`<button class="btn b7" data-a="map" data-id="${id}">🚀 Yol Tarifi Al</button>`:""}
   <button class="btn b3" data-a="wa" data-id="${id}">📲 WhatsApp ile paylaş</button>
+  ${u.durum==="sevk_edildi"?(safeImg(u.irsaliyeFoto)?`<div class="who" style="font-weight:700;color:#0f766e;margin:8px 0 0">🧾 İrsaliye (isim soyisimli)</div><img class="zm" loading="lazy" src="${safeImg(u.irsaliyeFoto)}" alt="İrsaliye"><button class="btn b3" data-a="irsshare" data-id="${id}">📤 İrsaliyeyi paylaş</button>`:`<div class="note">⚠️ Bu sevkiyat için irsaliye fotoğrafı yok.</div>`)+`<button class="btn b7" data-a="irs" data-id="${id}">📸 ${safeImg(u.irsaliyeFoto)?"İrsaliyeyi değiştir":"İrsaliye fotoğrafı ekle"}</button>`:""}
   ${isAdmin()?sFyHtml(u):""}
   ${u.not?`<div class="note">📌 <b>Not:</b> ${esc(u.not)}</div>`:""}
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
@@ -570,13 +658,16 @@ function listele(){
   $("liste").innerHTML=L.length?L.map(kart).join(""):'<div class="empty">Kayıt bulunamadı.</div>';
 }
 $("liste").onclick=async e=>{
+  const im=e.target.closest("img.zm");if(im){zoomAc(im.src);return}
   const b=e.target.closest("button[data-a]");if(!b)return;
   const u=urunler.find(x=>x.id===b.dataset.id);if(!u)return;
   try{
     if(b.dataset.a==="edit")duzenle(u);
     else if(b.dataset.a==="wa")waGonder(u);
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
-    else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;await db.ref(M().yol+"/"+u.id).update(up)}
+    else if(b.dataset.a==="irs")irsAc(u,true);
+    else if(b.dataset.a==="irsshare")irsPaylas(u);
+    else if(b.dataset.a==="durum"){if(b.dataset.to==="sevk_edildi"){irsAc(u,false);return}await db.ref(M().yol+"/"+u.id).update({durum:b.dataset.to,teslimEden:null})}
     else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref(M().yol+"/"+u.id).remove();if(isAdmin())db.ref("fiyatlar/sevk/"+u.id).remove().catch(()=>{})}
   }catch(err){toast(errText(err))}
 };
@@ -722,7 +813,7 @@ function kkart(k){
     </div><span class="chev">${open?"▲":"▼"}</span>
   </div>
   <div class="dt${open?"":" hide"}">
-    ${ph?`<img loading="lazy" src="${ph}" alt="" style="max-height:140px">`:""}
+    ${ph?`<img class="zm" loading="lazy" src="${ph}" alt="" style="max-height:140px">`:""}
     ${kr?`<div class="sub">Kritik seviye: ${esc(kr)}</div>`:""}
     ${bek.length?`<div class="addr" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">🧾 Siparişte: ${esc(bek.join(" · "))}</div>`:""}
     ${isAdmin()?kFyHtml(k):""}
@@ -733,6 +824,7 @@ function kkart(k){
   </div></div>`;
 }
 $("sList").onclick=async e=>{
+  {const im=e.target.closest("img.zm");if(im){zoomAc(im.src);return}}
   const h=e.target.closest(".kh");
   if(h&&!e.target.closest("button")){const id=h.dataset.id,dt=h.parentElement.querySelector(".dt");
     if(kAcik.has(id))kAcik.delete(id);else kAcik.add(id);
@@ -1139,72 +1231,4 @@ function adrListele(){
 }
 function akart(a){
   const id=esc(a.id),canDel=isAdmin()||(a.ekleyenUid&&a.ekleyenUid===user.uid),
-        tels=[a.tel,a.tel2].filter(Boolean).map(x=>`<a href="tel:${esc(String(x).replace(/[^\d+]/g,""))}">📞 ${esc(x)}</a>`).join(" · ");
-  return `<div class="item c tamam-border">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(a.ad)}</b>${a.sehir?`<span class="badge" style="background:#64748b">${esc(a.sehir)}</span>`:""}</div>
-  ${a.yetkili||tels?`<div class="sub" style="font-size:13px">${a.yetkili?"👤 "+esc(a.yetkili)+" ":""}${tels}</div>`:""}
-  ${a.adres?`<div class="sub" style="font-size:12.5px;color:#334155">📍 ${esc(a.adres)}</div>`:""}
-  ${a.not?`<div class="sub">📌 ${esc(a.not)}</div>`:""}
-  <div class="acts s"><button class="btn b1" data-a="sevk" data-id="${id}">🚚 Sevkiyat oluştur</button><button class="btn b7" data-a="map" data-id="${id}">🗺️ Harita</button>
-  <button class="btn b6 i" data-a="edit" data-id="${id}">✏️</button>${canDel?`<button class="btn b5 i" data-a="del" data-id="${id}">🗑️</button>`:""}</div></div>`;
-}
-$("aList").onclick=async e=>{
-  const b=e.target.closest("button[data-a]");if(!b)return;const a=sAdr.find(x=>x.id===b.dataset.id);if(!a)return;const k=b.dataset.a;
-  if(k==="map")haritaAc(safeUrl(a.haritaUrl),a.adres||a.ad);
-  else if(k==="edit")aAc(a);
-  else if(k==="sevk")adrSevk(a);
-  else if(k==="del"&&confirm(`"${a.ad}" adresi silinsin mi? (Mevcut sevkiyat kayıtları etkilenmez)`)){try{await db.ref("sevkAdresleri/"+a.id).remove();toast("Silindi")}catch(err){toast(errText(err))}}
-};
-/* adresi sevkiyat formuna aktar */
-function adrDoldur(a){$("mu").value=a.ad||"";$("ad").value=a.adres||"";$("hu").value=a.haritaUrl||"";$("mu").closest("details").open=true}
-function adrSevk(a){if(editId)formTemizle();adrDoldur(a);vTabSet("sev");window.scrollTo({top:0,behavior:"smooth"});toast("Adres forma aktarıldı. Etiket fotoğrafını çekin.")}
-/* kayıtlı adreste arayarak seç */
-function adrAra(){
-  const box=$("adrRes");if(box.classList.contains("hide"))return;
-  const w=$("adrQ").value.toLowerCase().trim().split(/\s+/).filter(Boolean),
-    R=sAdr.filter(a=>{const h=[a.ad,a.yetkili,a.tel,a.tel2,a.sehir,a.adres,a.not].join(" ").toLowerCase();return w.every(t=>h.includes(t))}).sort(byTr("ad"));
-  box.innerHTML=R.length?R.map(a=>`<div data-id="${esc(a.id)}" style="padding:9px 11px;border-bottom:1px solid #e2e8f0;cursor:pointer"><b style="font-size:13px">${esc(a.ad)}</b>${a.sehir?` <span class="mut" style="font-size:11px">· ${esc(a.sehir)}</span>`:""}${a.adres?`<div class="sub" style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.adres)}</div>`:""}</div>`).join(""):`<div style="padding:12px;text-align:center;color:#94a3b8;font-weight:700">${sAdr.length?"Aramaya uygun adres yok":"Kayıtlı adres yok"}</div>`}
-function adrAc(){$("adrRes").classList.remove("hide");adrAra()}
-$("adrQ").addEventListener("focus",adrAc);$("adrQ").addEventListener("input",adrAc);
-$("adrRes").addEventListener("mousedown",e=>e.preventDefault());
-$("adrRes").onclick=e=>{const d=e.target.closest("[data-id]");if(!d)return;const a=sAdr.find(x=>x.id===d.dataset.id);if(!a)return;
-  adrDoldur(a);$("adrQ").value="";$("adrRes").classList.add("hide");$("adrQ").blur();toast("Adres dolduruldu: "+a.ad)};
-document.addEventListener("click",e=>{if(!e.target.closest("#adrQ")&&!e.target.closest("#adrRes"))$("adrRes").classList.add("hide")});
-$("adrSave").onclick=()=>{
-  let ad0=$("ad").value.trim();const hu=$("hu").value.trim();if(hu&&!safeUrl(hu)&&!ad0)ad0=hu;
-  const mu=$("mu").value.trim();
-  aAc(null,{ad:mu==="Etikete Bakınız"?"":mu,adres:ad0,haritaUrl:safeUrl(hu)});
-};
-/* ekle / düzenle */
-const AF=[["aFi","ad"],["aYt","yetkili"],["aTl","tel"],["aTl2","tel2"],["aSh","sehir"],["aAd","adres"],["aHu","haritaUrl"],["aNt","not"]];
-function aAc(a,pre){aEdit=a||null;const v=a||pre||{};$("aT").textContent=a?"Sevk adresini düzenle":"Yeni sevk adresi";$("aE").textContent="";
-  AF.forEach(([i,f])=>$(i).value=v[f]||"");$("dAdr").showModal()}
-$("aAdd").onclick=()=>aAc(null);
-$("aX").onclick=()=>$("dAdr").close();
-$("aHs").onclick=()=>{const v=$("aHu").value.trim(),a0=$("aAd").value.trim();haritaAc(safeUrl(v),v&&!safeUrl(v)?v:(a0||$("aFi").value.trim()))};
-$("aOk").onclick=async()=>{
-  const err=m=>{$("aE").textContent=m},d={};AF.forEach(([i,f])=>d[f]=$(i).value.trim());
-  if(!d.ad)return err("Firma / müşteri adı gerekli.");
-  if(d.haritaUrl&&!safeUrl(d.haritaUrl))return err("Harita linki geçerli değil. Boş bırakın veya https:// ile başlayan Google Maps bağlantısını yapıştırın.");
-  d.haritaUrl=safeUrl(d.haritaUrl);
-  if(!d.adres&&!d.haritaUrl)return err("Açık adres veya harita linki girin.");
-  if((!aEdit||(aEdit.ad||"").toLowerCase()!==d.ad.toLowerCase())&&sAdr.some(x=>(x.ad||"").toLowerCase()===d.ad.toLowerCase())&&!confirm("Bu isimde bir adres zaten kayıtlı. Yine de eklensin mi?"))return;
-  $("aOk").disabled=true;
-  try{
-    if(aEdit)await db.ref("sevkAdresleri/"+aEdit.id).update(Object.assign(d,{duzenleyen:ad()}));
-    else await db.ref("sevkAdresleri").push().set(Object.assign(d,{ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP}));
-    $("dAdr").close();toast("Adres kaydedildi");
-  }catch(e){err(errText(e))}
-  $("aOk").disabled=false;
-};
-$("aCsv").onclick=()=>{
-  const q=v=>'"'+csvS(v).replace(/"/g,'""')+'"';
-  const r=[["Firma / Müşteri","Yetkili","Telefon","2. Telefon","İl / İlçe","Adres","Harita linki","Not"].map(q).join(";")].concat(sAdr.slice().sort(byTr("ad")).map(a=>[a.ad,a.yetkili,a.tel,a.tel2,a.sehir,a.adres,a.haritaUrl,a.not].map(q).join(";")));
-  const el=document.createElement("a");el.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));el.download="sevk-adresleri.csv";el.click();
-};
-
-formTemizle();modUyg();
-
-</script>
-</body>
-</html>
+  
