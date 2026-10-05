@@ -349,6 +349,18 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="gL" style="max-height:60vh;overflow:auto"></div>
   <button class="btn b6" id="gNo">Kapat</button>
 </dialog>
+<dialog id="dTur">
+  <h3 style="margin-bottom:4px">✓ Sevk Edildi</h3>
+  <p class="mut" style="font-size:12px;margin-bottom:10px">Hangi fotoğrafı ekleyeceksiniz?</p>
+  <div id="turBtns" style="display:grid;gap:8px">
+    <button type="button" class="btn b4" style="margin:0;padding:16px;font-size:15px" data-t="irsaliye">📄 İmzalı irsaliye</button>
+    <button type="button" class="btn b2" style="margin:0;padding:16px;font-size:15px" data-t="iade">↩️ İade</button>
+    <button type="button" class="btn b6" style="margin:0;padding:16px;font-size:15px" data-t="diger">📝 Diğer</button>
+  </div>
+  <div id="turNotW" class="hide" style="margin-top:10px"><label for="turNot">Ne olduğunu yazın</label><input id="turNot" maxlength="100" placeholder="Örn: Hasarlı teslim, müşteri yoktu, eksik mal..."></div>
+  <div class="err" id="turE" style="margin-top:6px"></div>
+  <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="turX">Vazgeç</button><button type="button" class="btn b3 hide" id="turOk">📸 Kamerayı aç</button></div>
+</dialog>
 <div id="toast"></div>
 
 <script>
@@ -498,7 +510,8 @@ function sikistirIrs(src,cb){
 }
 async function irsaliyeAc(u){
   irsHedef=u;
-  $("camT").textContent="📄 İmzalı irsaliyenin fotoğrafını çekin (isim ve imza görünsün) — "+(u.musteri&&u.musteri!=="Etikete Bakınız"?u.musteri:"sevk");
+  const tm=sevkTur.tur==="iade"?"↩️ İade fotoğrafını çekin":sevkTur.tur==="diger"?"📝 "+sevkTur.not+" — fotoğrafını çekin":"📄 İmzalı irsaliyenin fotoğrafını çekin (isim ve imza görünsün)";
+  $("camT").textContent=tm+" — "+(u.musteri&&u.musteri!=="Etikete Bakınız"?u.musteri:"sevk");
   $("camT").style.display="block";
   let st=null;
   for(const cfg of [{video:{facingMode:{ideal:"environment"}}},{video:true}]){
@@ -513,15 +526,37 @@ async function irsaliyeAc(u){
   stream=st;$("vid").srcObject=st;$("cam").style.display="flex";
 }
 function irsKaydet(u,src){
+  const st=Object.assign({},sevkTur);
   toast("Fotoğraf kaydediliyor...");
   sikistirIrs(src,async d=>{
     if(!d){toast("Fotoğraf çok büyük veya okunamadı, tekrar deneyin.");return}
     try{
-      await db.ref(M().yol+"/"+u.id).update({durum:"sevk_edildi",teslimEden:ad(),irsaliye:d,irsaliyeCeken:ad(),irsaliyeTarihi:firebase.database.ServerValue.TIMESTAMP});
+      await db.ref(M().yol+"/"+u.id).update({durum:"sevk_edildi",teslimEden:ad(),irsaliye:d,irsTur:st.tur||"irsaliye",irsNot:st.tur==="diger"?(st.not||""):null,irsaliyeCeken:ad(),irsaliyeTarihi:firebase.database.ServerValue.TIMESTAMP});
       toast("✓ Sevk edildi, irsaliye eklendi.");
     }catch(err){toast(errText(err))}
   });
 }
+/* ---------- Sevk Edildi: fotoğraf türü (irsaliye / iade / diğer) ---------- */
+let sevkTur={tur:"irsaliye",not:""},turU=null;
+function turEtiket(u){
+  const t=u.irsTur||"irsaliye";
+  if(t==="iade")return "↩️ <b>İade</b>";
+  if(t==="diger")return "📝 <b>Diğer"+(u.irsNot?": "+esc(u.irsNot):"")+"</b>";
+  return "📄 <b>İmzalı irsaliye</b>";
+}
+function turAc(u){
+  turU=u;sevkTur={tur:"irsaliye",not:""};
+  $("turNotW").classList.add("hide");$("turOk").classList.add("hide");$("turNot").value="";$("turE").textContent="";
+  $("dTur").showModal();
+}
+function turBaslat(t,n){sevkTur={tur:t,not:n};const u=turU;$("dTur").close();if(u)irsaliyeAc(u)}
+$("turBtns").onclick=e=>{
+  const b=e.target.closest("button[data-t]");if(!b)return;const t=b.dataset.t;
+  if(t==="diger"){$("turNotW").classList.remove("hide");$("turOk").classList.remove("hide");$("turNot").focus();return}
+  turBaslat(t,"");
+};
+$("turOk").onclick=()=>{const n=$("turNot").value.trim();if(!n){$("turE").textContent="Lütfen ne olduğunu yazın.";return}turBaslat("diger",n)};
+$("turX").onclick=()=>$("dTur").close();
 const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s||"")?s:"";
 
 /* ---------- Kayıt ---------- */
@@ -602,7 +637,7 @@ function kart(u){
   ${u.not?`<div class="note">📌 <b>Not:</b> ${esc(u.not)}</div>`:""}
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
   ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">${M().teslim}: ${esc(u.teslimEden)}</div>`:""}
-  ${safeImg(u.irsaliye)?`<div class="addr" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;margin-top:8px">📄 <b>İmzalı irsaliye</b>${u.irsaliyeCeken?" · "+esc(u.irsaliyeCeken):""}${u.irsaliyeTarihi?" · "+esc(new Date(u.irsaliyeTarihi).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})):""}</div><img loading="lazy" src="${safeImg(u.irsaliye)}" alt="İrsaliye">`:""}
+  ${safeImg(u.irsaliye)?`<div class="addr" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;margin-top:8px">${turEtiket(u)}${u.irsaliyeCeken?" · "+esc(u.irsaliyeCeken):""}${u.irsaliyeTarihi?" · "+esc(new Date(u.irsaliyeTarihi).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})):""}</div><img loading="lazy" src="${safeImg(u.irsaliye)}" alt="İrsaliye">`:""}
   <div class="acts">${nx}${eb}${db2}</div></div>`;
 }
 function listele(){
@@ -619,7 +654,7 @@ $("liste").onclick=async e=>{
     if(b.dataset.a==="edit")duzenle(u);
     else if(b.dataset.a==="wa")waGonder(u);
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
-    else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edildi"){await irsaliyeAc(u)}
+    else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edildi"){turAc(u)}
     else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;await db.ref(M().yol+"/"+u.id).update(up)}
     else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref(M().yol+"/"+u.id).remove();if(isAdmin())db.ref("fiyatlar/sevk/"+u.id).remove().catch(()=>{})}
   }catch(err){toast(errText(err))}
