@@ -77,6 +77,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .acts.s{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.acts.s .btn{flex:1;min-width:62px;padding:8px 4px;font-size:12px}.acts.s .btn.i{flex:0 0 42px;min-width:0}
 .chev{font-size:10px;color:#94a3b8;flex:none}.dt{margin-top:6px;border-top:1px solid #f1f5f9;padding-top:4px}
 #pStok .grid .hl{padding:5px}#pStok .grid .hl b{font-size:18px}
+.dosya{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px;margin-top:8px;cursor:pointer;color:#1e40af;font-size:13px;-webkit-tap-highlight-color:transparent}
+.dosya:active{transform:scale(.98)}.dosya b{font-size:13px}.dosya .dm{flex:1;min-width:0}.dosya .dd{font-size:11px;color:#64748b;margin-top:2px}.dosya .dz{font-size:20px;flex:none}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99999;max-width:90vw;text-align:center}
 #toast.on{opacity:1}
 </style>
@@ -350,11 +352,10 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <button class="btn b6" id="gNo">Kapat</button>
 </dialog>
 <dialog id="dTur">
-  <h3 style="margin-bottom:4px">✓ Sevk Edildi</h3>
+  <h3 style="margin-bottom:4px">✓ Teslim Edildi</h3>
   <p class="mut" style="font-size:12px;margin-bottom:10px">Hangi fotoğrafı ekleyeceksiniz?</p>
   <div id="turBtns" style="display:grid;gap:8px">
     <button type="button" class="btn b4" style="margin:0;padding:16px;font-size:15px" data-t="irsaliye">📄 İmzalı irsaliye</button>
-    <button type="button" class="btn b2" style="margin:0;padding:16px;font-size:15px" data-t="iade">↩️ İade</button>
     <button type="button" class="btn b6" style="margin:0;padding:16px;font-size:15px" data-t="diger">📝 Diğer</button>
   </div>
   <div id="turNotW" class="hide" style="margin-top:10px"><label for="turNot">Ne olduğunu yazın</label><input id="turNot" maxlength="100" placeholder="Örn: Hasarlı teslim, müşteri yoktu, eksik mal..."></div>
@@ -396,7 +397,7 @@ firebase.initializeApp(CFG);
 const auth=firebase.auth(),db=firebase.database();
 
 const MODS={
- sevk:{yol:"urunler",baslik:"SEVKİYAT",tab:["HAZIR ÜRÜNLER","SEVK EDİLECEKLER","SEVK EDİLENLER"],rozet:["HAZIR STOK","SEVK EDİLECEK","SEVK EDİLDİ"],ileri:["➡️ Sevk Listesine Al","✓ Sevk Edildi"],geri:["↩️ Hazır Ürünlere Geri Al","↩️ Sevk Edilecek'e Geri Al"],sec:["SEVKİYATA HAZIR","SEVK EDİLECEK"],kayit:"+ STOĞA EKLENENİ KAYDET",teslim:"Teslim eden",mu:"Müşteri"},
+ sevk:{yol:"urunler",baslik:"SEVKİYAT",tab:["HAZIR ÜRÜNLER","SEVK EDİLECEKLER","SEVK EDİLENLER"],rozet:["HAZIR STOK","SEVK EDİLECEK","SEVK EDİLDİ"],ileri:["➡️ Sevk Listesine Al","✓ Teslim Edildi"],geri:["↩️ Hazır Ürünlere Geri Al","↩️ Sevk Edilecek'e Geri Al"],sec:["SEVKİYATA HAZIR","SEVK EDİLECEK"],kayit:"+ STOĞA EKLENENİ KAYDET",teslim:"Teslim eden",mu:"Müşteri"},
  stok:{yol:"stok",baslik:"STOK",tab:["STOKTAKİ ÜRÜNLER","KULLANIMA AYRILANLAR","KULLANILANLAR"],rozet:["STOKTA","KULLANIMA AYRILDI","KULLANILDI"],ileri:["➡️ Kullanıma Ayır","✓ Kullanıldı"],geri:["↩️ Stoka Geri Al","↩️ Kullanıma Ayrılana Geri Al"],sec:["STOKTA","KULLANIMA AYRILDI"],kayit:"+ STOĞA EKLE",teslim:"İşlemi yapan",mu:"Tedarikçi / Firma"}
 };
 let mod="sevk";const M=()=>MODS[mod];
@@ -510,7 +511,7 @@ function sikistirIrs(src,cb){
 }
 async function irsaliyeAc(u){
   irsHedef=u;
-  const tm=sevkTur.tur==="iade"?"↩️ İade fotoğrafını çekin":sevkTur.tur==="diger"?"📝 "+sevkTur.not+" — fotoğrafını çekin":"📄 İmzalı irsaliyenin fotoğrafını çekin (isim ve imza görünsün)";
+  const tm=sevkTur.tur==="diger"?"📝 "+sevkTur.not+" — fotoğrafını çekin":"📄 İmzalı irsaliyenin fotoğrafını çekin (isim ve imza görünsün)";
   $("camT").textContent=tm+" — "+(u.musteri&&u.musteri!=="Etikete Bakınız"?u.musteri:"sevk");
   $("camT").style.display="block";
   let st=null;
@@ -532,7 +533,7 @@ function irsKaydet(u,src){
     if(!d){toast("Fotoğraf çok büyük veya okunamadı, tekrar deneyin.");return}
     try{
       await db.ref(M().yol+"/"+u.id).update({durum:"sevk_edildi",teslimEden:ad(),irsaliye:d,irsTur:st.tur||"irsaliye",irsNot:st.tur==="diger"?(st.not||""):null,irsaliyeCeken:ad(),irsaliyeTarihi:firebase.database.ServerValue.TIMESTAMP});
-      toast("✓ Sevk edildi, irsaliye eklendi.");
+      toast("✓ Teslim edildi, fotoğraf eklendi.");
     }catch(err){toast(errText(err))}
   });
 }
@@ -637,7 +638,7 @@ function kart(u){
   ${u.not?`<div class="note">📌 <b>Not:</b> ${esc(u.not)}</div>`:""}
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
   ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">${M().teslim}: ${esc(u.teslimEden)}</div>`:""}
-  ${safeImg(u.irsaliye)?`<div class="addr" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;margin-top:8px">${turEtiket(u)}${u.irsaliyeCeken?" · "+esc(u.irsaliyeCeken):""}${u.irsaliyeTarihi?" · "+esc(new Date(u.irsaliyeTarihi).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})):""}</div><img loading="lazy" src="${safeImg(u.irsaliye)}" alt="İrsaliye">`:""}
+  ${safeImg(u.irsaliye)?`<button type="button" class="dosya" data-a="irs" data-id="${id}"><img class="th" src="${safeImg(u.irsaliye)}" alt=""><div class="dm"><div>${turEtiket(u)}</div><div class="dd">${u.irsaliyeTarihi?esc(new Date(u.irsaliyeTarihi).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})):""}${u.irsaliyeCeken?" · "+esc(u.irsaliyeCeken):""}</div></div><span class="dz">🔍</span></button>`:""}
   <div class="acts">${nx}${eb}${db2}</div></div>`;
 }
 function listele(){
@@ -652,6 +653,7 @@ $("liste").onclick=async e=>{
   const u=urunler.find(x=>x.id===b.dataset.id);if(!u)return;
   try{
     if(b.dataset.a==="edit")duzenle(u);
+    else if(b.dataset.a==="irs"){const g=safeImg(u.irsaliye);if(g&&window.fvAc)window.fvAc(g)}
     else if(b.dataset.a==="wa")waGonder(u);
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
     else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edildi"){turAc(u)}
@@ -1328,6 +1330,7 @@ try{
       g.insertAdjacentElement("afterend",bt);
     }
   }
+  window.fvAc=ac;
   bagla();
   new MutationObserver(bagla).observe(document.body,{childList:true,subtree:true});
   setInterval(bagla,1500);
