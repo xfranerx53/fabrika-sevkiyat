@@ -475,7 +475,10 @@ $("camO").onclick=async()=>{
   for(const cfg of [{video:{facingMode:{ideal:"environment"}}},{video:true}]){
     try{stream=await navigator.mediaDevices.getUserMedia(cfg);break}catch(e){}
   }
-  if(!stream){toast("Kameraya erişilemedi. İzin ayarlarını kontrol edin.");return}
+  if(!stream){ /* canlı kamera açılamazsa telefonun kamera uygulamasına düş */
+    toast("Canlı kamera açılamadı, telefon kamerası açılıyor.");
+    $("irsF").onchange=e=>{const f=e.target.files[0];e.target.value="";if(!f)return;const r=new FileReader();r.onload=()=>sikistir(r.result,foto);r.readAsDataURL(f)};
+    $("irsF").click();return}
   $("vid").srcObject=stream;$("cam").style.display="flex";
 };
 function camKapat(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$("cam").style.display="none";irsHedef=null;$("camT").style.display="none"}
