@@ -262,6 +262,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 <dialog id="dAdm">
   <h3 style="margin-bottom:8px">Kullanıcılar</h3>
   <div id="ulist"></div>
+  <div class="addr" style="margin:10px 0;background:#eff6ff;border-color:#bfdbfe;color:#1e40af"><b>🗂️ Eski fotoğrafları taşı</b><br><small id="migS">Eski kayıtlardaki büyük fotoğrafları ayrı alana taşır; liste çok daha hızlı açılır. Wi-Fi'da çalıştırın, bitene kadar sayfayı kapatmayın.</small><button class="btn b4 sm" id="migB" style="margin-top:6px;width:100%">Taşımayı başlat</button></div>
   <button class="btn b6" id="dClose">Kapat</button>
 </dialog>
 <dialog id="dKalem">
@@ -517,12 +518,31 @@ function irsKaydet(u,src){
   sikistirIrs(src,async d=>{
     if(!d){toast("Fotoğraf çok büyük veya okunamadı, tekrar deneyin.");return}
     try{
-      await db.ref(M().yol+"/"+u.id).update({durum:"sevk_edildi",teslimEden:ad(),irsaliye:d,irsaliyeCeken:ad(),irsaliyeTarihi:firebase.database.ServerValue.TIMESTAMP});
+      const P=M().yol+"/"+u.id+"/";
+      await db.ref().update({[P+"durum"]:"sevk_edildi",[P+"teslimEden"]:ad(),[P+"irsVar"]:true,[P+"irsaliye"]:null,[P+"irsaliyeCeken"]:ad(),[P+"irsaliyeTarihi"]:firebase.database.ServerValue.TIMESTAMP,["fotolar/urunler/"+u.id+"/irsaliye"]:d});
+      delete fCache[u.id+"/irsaliye"];
       toast("✓ Sevk edildi, irsaliye eklendi.");
     }catch(err){toast(errText(err))}
   });
 }
 const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s||"")?s:"";
+/* ---------- Fotoğraflar ayrı düğümde: fotolar/urunler/<id>/foto|irsaliye ---------- */
+const fCache={};
+function thumbYap(s){return Promise.race([new Promise(r=>sikistir(s,r,360)),new Promise(r=>setTimeout(()=>r(""),6000))])}
+async function fotoAc(id,tur){
+  const k=id+"/"+tur;
+  try{
+    if(!fCache[k]){
+      toast("Fotoğraf yükleniyor...");
+      const s=await db.ref("fotolar/urunler/"+id+"/"+tur).once("value");
+      const v=safeImg(s.val());
+      if(!v){toast("Fotoğraf bulunamadı.");return}
+      if(Object.keys(fCache).length>=8)for(const x in fCache)delete fCache[x];
+      fCache[k]=v;
+    }
+    if(window.fvAc)window.fvAc(fCache[k]);
+  }catch(e){toast(errText(e))}
+}
 
 /* ---------- Kayıt ---------- */
 function formTemizle(){
@@ -541,10 +561,17 @@ $("bSave").onclick=async()=>{
   const d={musteri:$("mu").value.trim()||"Etikete Bakınız",urun:$("ur").value.trim()||"Etikete Bakınız",kg,paket:pk,tarih:$("tr").value,durum:$("du").value,not:$("no").value.trim(),adres,haritaUrl:url};
   const b=$("bSave");b.disabled=true;
   try{
-    if(fotoData)d.foto=fotoData;
-    let sid=editId;
-    if(editId){d.duzenleyen=ad();await db.ref(M().yol+"/"+editId).update(d)}
-    else{d.ekleyen=ad();d.ekleyenUid=user.uid;d.eklenmeTarihi=firebase.database.ServerValue.TIMESTAMP;const nr=db.ref(M().yol).push();sid=nr.key;await nr.set(d)}
+    const Y=M().yol;let sid=editId,th="";
+    if(fotoData)th=await thumbYap(fotoData);
+    if(editId){
+      d.duzenleyen=ad();const up={};Object.keys(d).forEach(k=>up[Y+"/"+editId+"/"+k]=d[k]);
+      if(fotoData){up[Y+"/"+editId+"/thumb"]=th||null;up[Y+"/"+editId+"/fotoVar"]=true;up[Y+"/"+editId+"/foto"]=null;up["fotolar/urunler/"+editId+"/foto"]=fotoData;delete fCache[editId+"/foto"]}
+      await db.ref().update(up);
+    }else{
+      d.ekleyen=ad();d.ekleyenUid=user.uid;d.eklenmeTarihi=firebase.database.ServerValue.TIMESTAMP;d.fotoVar=true;if(th)d.thumb=th;
+      sid=db.ref(Y).push().key;
+      await db.ref().update({[Y+"/"+sid]:d,["fotolar/urunler/"+sid+"/foto"]:fotoData});
+    }
     if(isAdmin()){const f=parseFloat($("sfi").value),kd=kdvGet("sevk")||{};await db.ref("fiyatlar/sevk/"+sid).set(f>=0?Object.assign({tutar:f,esas:$("sfe").value},kd):null);if(f>=0&&kd.kdv!=null)await kdvKaydet(kd.kdv)}
     formTemizle();toast("Kaydedildi");
   }catch(e){toast("Kaydedilemedi: "+errText(e))}
@@ -555,7 +582,7 @@ function duzenle(u){
   $("mu").value=u.musteri==="Etikete Bakınız"?"":u.musteri||"";$("ur").value=u.urun==="Etikete Bakınız"?"":u.urun||"";
   $("kg").value=u.kg;$("pk").value=u.paket;$("tr").value=u.tarih;$("du").value=u.durum==="sevk_edildi"?"sevk_edilecek":u.durum;
   $("no").value=u.not||"";$("ad").value=u.adres||"";$("hu").value=u.haritaUrl||"";{const f=(fyat.sevk||{})[u.id];$("sfi").value=f?f.tutar:"";$("sfe").value=f?f.esas:"kg";kdvSet("sevk",f)}
-  const p=$("prev");if(safeImg(u.foto)){p.src=u.foto;p.style.display="block"}else p.style.display="none";
+  const p=$("prev"),pv=safeImg(u.foto)||safeImg(u.thumb);if(pv){p.src=pv;p.style.display="block"}else p.style.display="none";
   $("bSave").textContent="💾 Değişiklikleri Kaydet";$("bCancel").classList.remove("hide");window.scrollTo({top:0,behavior:"smooth"});
 }
 function haritaAc(url,adres){
@@ -592,7 +619,7 @@ function kart(u){
   const db2=canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:"";
   return `<div class="item ${c[0]}">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700;color:#64748b">Tarih: ${esc(trDate(u.tarih))}</span><span class="badge ${c[1]}">${c[2]}</span></div>
-  ${safeImg(u.foto)?`<img loading="lazy" src="${safeImg(u.foto)}" alt="Etiket">`:""}
+  ${safeImg(u.foto)?`<img loading="lazy" src="${safeImg(u.foto)}" alt="Etiket">`:safeImg(u.thumb)?`<img loading="lazy" src="${safeImg(u.thumb)}" alt="Etiket" data-fid="${id}" data-ft="foto">`:u.fotoVar?`<button class="btn b6" data-a="fto" data-id="${id}">🖼️ Fotoğrafı göster</button>`:""}
   <div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(u.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(u.paket))} Adet</b></div></div>
   ${m||p?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün/Ebat</small><b>${esc(u.urun)}</b></div></div>`:""}
   ${u.adres?`<div class="addr">📍 <b>Teslimat adresi:</b> ${esc(u.adres)}</div>`:""}
@@ -602,7 +629,7 @@ function kart(u){
   ${u.not?`<div class="note">📌 <b>Not:</b> ${esc(u.not)}</div>`:""}
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
   ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">${M().teslim}: ${esc(u.teslimEden)}</div>`:""}
-  ${safeImg(u.irsaliye)?`<div class="addr" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;margin-top:8px">📄 <b>İmzalı irsaliye</b>${u.irsaliyeCeken?" · "+esc(u.irsaliyeCeken):""}${u.irsaliyeTarihi?" · "+esc(new Date(u.irsaliyeTarihi).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})):""}</div><img loading="lazy" src="${safeImg(u.irsaliye)}" alt="İrsaliye">`:""}
+  ${(safeImg(u.irsaliye)||u.irsVar)?`<div class="addr" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;margin-top:8px">📄 <b>İmzalı irsaliye</b>${u.irsaliyeCeken?" · "+esc(u.irsaliyeCeken):""}${u.irsaliyeTarihi?" · "+esc(new Date(u.irsaliyeTarihi).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})):""}</div>${safeImg(u.irsaliye)?`<img loading="lazy" src="${safeImg(u.irsaliye)}" alt="İrsaliye">`:`<button class="btn b4" data-a="irs" data-id="${id}">📄 İrsaliyeyi göster / indir</button>`}`:""}
   <div class="acts">${nx}${eb}${db2}</div></div>`;
 }
 function listele(){
@@ -617,11 +644,13 @@ $("liste").onclick=async e=>{
   const u=urunler.find(x=>x.id===b.dataset.id);if(!u)return;
   try{
     if(b.dataset.a==="edit")duzenle(u);
+    else if(b.dataset.a==="fto")await fotoAc(u.id,"foto");
+    else if(b.dataset.a==="irs")await fotoAc(u.id,"irsaliye");
     else if(b.dataset.a==="wa")waGonder(u);
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
     else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edildi"){await irsaliyeAc(u)}
     else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;await db.ref(M().yol+"/"+u.id).update(up)}
-    else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref(M().yol+"/"+u.id).remove();if(isAdmin())db.ref("fiyatlar/sevk/"+u.id).remove().catch(()=>{})}
+    else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref().update({[M().yol+"/"+u.id]:null,["fotolar/urunler/"+u.id]:null});if(isAdmin())db.ref("fiyatlar/sevk/"+u.id).remove().catch(()=>{})}
   }catch(err){toast(errText(err))}
 };
 $("bCsv").onclick=()=>{
@@ -643,6 +672,38 @@ async function kullanicilar(){
 }
 $("bAdm").onclick=()=>{$("dAdm").showModal();kullanicilar()};
 $("dClose").onclick=()=>$("dAdm").close();
+$("migB").onclick=async()=>{
+  if(!isAdmin())return;
+  if(!confirm("Eski kayıtların fotoğrafları ayrı alana taşınacak. Wi-Fi'da olun ve bitene kadar sayfayı kapatmayın. Devam edilsin mi?"))return;
+  const b=$("migB"),s=$("migS"),seen=new Set();let end=null,moved=0,total=0;b.disabled=true;
+  try{
+    for(;;){
+      let q=db.ref("urunler").orderByChild("eklenmeTarihi");
+      q=end===null?q.limitToLast(10):q.endAt(end).limitToLast(10);
+      const v=(await q.once("value")).val()||{};
+      const arr=Object.keys(v).map(k=>Object.assign({id:k},v[k])).sort((x,y)=>(y.eklenmeTarihi||0)-(x.eklenmeTarihi||0)).filter(r=>!seen.has(r.id));
+      if(!arr.length)break;
+      for(const r of arr){
+        seen.add(r.id);total++;
+        const up={},P="urunler/"+r.id+"/";
+        if(safeImg(r.foto)){
+          const th=await thumbYap(r.foto);
+          up["fotolar/urunler/"+r.id+"/foto"]=r.foto;up[P+"thumb"]=th||null;up[P+"fotoVar"]=true;up[P+"foto"]=null;
+        }
+        if(safeImg(r.irsaliye)){
+          up["fotolar/urunler/"+r.id+"/irsaliye"]=r.irsaliye;up[P+"irsVar"]=true;up[P+"irsaliye"]=null;
+        }
+        if(Object.keys(up).length){await db.ref().update(up);moved++}
+        s.textContent="Taranan: "+total+" · Taşınan: "+moved+" ...";
+      }
+      const last=arr[arr.length-1];
+      if(last.eklenmeTarihi==null)break;
+      end=last.eklenmeTarihi;
+    }
+    s.textContent="Bitti. Taranan: "+total+" · Taşınan: "+moved;toast("Taşıma tamamlandı");
+  }catch(e){s.textContent="Hata: "+errText(e)+" (Taşınan: "+moved+"). Tekrar başlatabilirsiniz, kaldığı yerden devam eder.";toast(errText(e))}
+  b.disabled=false;
+};
 $("ulist").onclick=async e=>{const b=e.target.closest("button[data-u]");if(!b)return;
   try{await db.ref("kullanicilar/"+b.dataset.u+"/"+b.dataset.f).set(b.dataset.v==="true");kullanicilar()}catch(err){toast(errText(err))}};
 
@@ -1273,10 +1334,14 @@ try{
     box.classList.add("on");
   }
   function kapat(){box.classList.remove("on");im.removeAttribute("src")}
+  function ac2(g){
+    if(g.dataset&&g.dataset.fid&&window.fotoAc)window.fotoAc(g.dataset.fid,g.dataset.ft||"foto");
+    else if(g.src)ac(g.src);
+  }
   function tikla(e){
     var t=e.currentTarget;
     e.preventDefault();e.stopPropagation();
-    if(t.src)ac(t.src);
+    ac2(t);
   }
   function bagla(){
     var l=document.querySelectorAll(".item img");
@@ -1289,10 +1354,11 @@ try{
       bt.type="button";bt.textContent="🔍 Büyüt / İndir";
       bt.style.cssText="display:block;width:100%;padding:11px;margin:0 0 8px;border:0;border-radius:8px;background:#0f172a;color:#fff;font-size:14px;font-weight:800;cursor:pointer";
       bt.__src=g;
-      bt.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(this.__src.src)ac(this.__src.src)});
+      bt.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();ac2(this.__src)});
       g.insertAdjacentElement("afterend",bt);
     }
   }
+  window.fvAc=ac;
   bagla();
   new MutationObserver(bagla).observe(document.body,{childList:true,subtree:true});
   setInterval(bagla,1500);
