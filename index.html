@@ -33,7 +33,7 @@ input:focus,textarea:focus,select:focus{border-color:#2563eb}
 .photo{display:flex;gap:8px}
 .photo>*{flex:1;text-align:center;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:0;color:#fff;background:#2563eb}
 .photo label{background:#64748b;text-transform:none;font-size:14px;margin:0;color:#fff}
-#prev{width:100%;max-height:260px;object-fit:contain;background:#000;border-radius:8px;margin-top:8px;display:none}
+#prev{width:100%;height:auto;max-height:none;background:none;border-radius:8px;margin-top:8px;display:none}
 .fast{font-size:18px!important;font-weight:700;padding:12px!important;border:2px solid #2563eb!important;background:#f0f7ff!important}
 #cam{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:10000;flex-direction:column;align-items:center;justify-content:center;padding:20px}
 #cam video{width:100%;max-width:500px;border-radius:12px;background:#000}
@@ -45,7 +45,7 @@ input:focus,textarea:focus,select:focus{border-color:#2563eb}
 .hazir-border{border-left:8px solid #2ec4b6}.sevk-border{border-left:8px solid #ff9f1c}.tamam-border{border-left:8px solid #3b82f6}
 .badge{font-size:11px;font-weight:800;padding:5px 8px;border-radius:6px;color:#fff;display:inline-block}
 .badge-hazir{background:#2ec4b6}.badge-sevk{background:#ff9f1c}.badge-tamam{background:#3b82f6}
-.item img{width:100%;max-height:300px;object-fit:contain;background:#0f172a;border-radius:8px;margin:8px 0}
+.item img{width:100%;height:auto;max-height:none;background:none;border-radius:8px;margin:8px 0}
 .hl{background:#e0f2fe;border:2px solid #0284c7;border-radius:8px;padding:10px;text-align:center}
 .hl.fl{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .1s}.hl.fl:active{transform:scale(.96)}.hl.fl.act{box-shadow:0 0 0 3px #0f172a}
 .hl small{display:block;font-size:11px;font-weight:800;color:#0369a1}.hl b{font-size:22px;font-weight:900;color:#0c4a6e}
@@ -465,8 +465,15 @@ $("bMore").onclick=()=>{limit+=20;yukle()};
 /* ---------- Fotoğraf ---------- */
 function sikistir(src,cb,mx){
   const im=new Image();
-  im.onload=()=>{const c=document.createElement("canvas"),M=mx||800;let w=im.width,h=im.height;
-    if(w>M){h=Math.round(h*M/w);w=M}c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);cb(c.toDataURL("image/jpeg",.6))};
+  im.onload=()=>{let M=mx||1100,q=.72,out="";const lim=mx&&mx<=600?90000:270000;
+    for(let i=0;i<7;i++){
+      const c=document.createElement("canvas");let w=im.width,h=im.height;const L=Math.max(w,h);
+      if(L>M){w=Math.round(w*M/L);h=Math.round(h*M/L)}
+      c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);
+      out=c.toDataURL("image/jpeg",q);if(out.length<lim)break;
+      q=Math.max(.4,q-.08);M=Math.round(M*.88);
+    }
+    cb(out)};
   im.src=src;
 }
 function foto(d){fotoData=d;const p=$("prev");p.src=d;p.style.display="block"}
@@ -531,7 +538,7 @@ function irsKaydet(u,src){
 const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s||"")?s:"";
 /* ---------- Fotoğraflar ayrı düğümde: fotolar/urunler/<id>/foto|irsaliye ---------- */
 const fCache={};
-function thumbYap(s){return Promise.race([new Promise(r=>sikistir(s,r,360)),new Promise(r=>setTimeout(()=>r(""),6000))])}
+function thumbYap(s){return Promise.race([new Promise(r=>sikistir(s,r,520)),new Promise(r=>setTimeout(()=>r(""),6000))])}
 async function fotoAc(id,tur){
   const k=id+"/"+tur;
   try{
