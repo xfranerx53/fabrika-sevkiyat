@@ -1515,7 +1515,7 @@ function isListele(){
 function isKart(e){
   const id=esc(e.id),o=asOrd(e),i=o.indexOf(e.asama),nx=o[i+1],canDel=isAdmin()||(e.ekleyenUid&&e.ekleyenUid===user.uid);
   const C=icols(e).map(c=>`<div class="info" style="margin-top:4px"><b>${esc(fmt(c.kg))} kg</b> · ${esc(c.en||"-")} · ${esc(c.mikron||"-")}µ · ${esc(c.korona||"-")}${c.boy?" · boy "+esc(c.boy):""}</div>`).join("");
-  const lg=Object.entries(e.log||{}).map(([k,v])=>`<div class="who">${esc(ASL[k]||k)}: ${v.kg!=null?esc(fmt(v.kg))+" kg":""}${v.paket?" · "+esc(fmt(v.paket))+" adet":""} — ${esc(v.kim||"")} ${esc(tarih(v.zaman))}${k==="depo"&&Array.isArray(v.kalem)?"<br>"+v.kalem.map((x,i)=>{const c=icols(e)[i]||{};return esc((i+1)+". sütun"+(c.en?" ("+c.en+")":"")+": "+fmt(x&&x.kg)+" kg · "+fmt(x&&x.paket)+" paket")}).join("<br>"):""}</div>`).join("");
+  const lg=Object.entries(e.log||{}).map(([k,v])=>`<div class="who">${esc(ASL[k]||k)}: ${v.kg!=null?esc(fmt(v.kg))+" kg":""}${v.paket?" · "+esc(fmt(v.paket))+" adet":""} — ${esc(v.kim||"")} ${esc(tarih(v.zaman))}${k==="depo"&&Array.isArray(v.kalem)?"<br>"+v.kalem.map((x,i)=>{const c=icols(e)[i]||{};return esc([i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - ")+": "+fmt(x&&x.kg)+" kg · "+fmt(x&&x.paket)+" paket")}).join("<br>"):""}</div>`).join("");
   return `<div class="item sevk-border">
   <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:16px">${esc(e.no)}</b><span class="badge badge-sevk">${esc(ASL[e.asama]||e.asama)}</span></div>
   <div class="sub" style="font-size:13px;color:#0f172a;font-weight:700">${esc(e.musteri)}${e.isAdi?" · "+esc(e.isAdi):""}</div>
@@ -1563,7 +1563,7 @@ $("iList").onclick=async ev=>{
 var depoE=null;
 function depoAc(e){
   depoE=e;const C=icols(e);$("dpT").textContent=e.no+" — depoya giriş";$("dpE").textContent="";
-  $("dpRows").innerHTML=(C.length?C:[{}]).map((c,i)=>`<div style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px"><b style="font-size:13px">${i+1}. sütun${c.en?" · "+esc(c.en):""}${c.kg?" · sipariş "+esc(fmt(c.kg))+" kg":""}</b><div class="grid" style="margin-top:6px"><input data-i="${i}" data-f="kg" type="number" inputmode="decimal" min="0" step="any" placeholder="Kg"><input data-i="${i}" data-f="paket" type="number" inputmode="numeric" min="0" step="1" placeholder="Paket / koli"></div></div>`).join("");
+  $("dpRows").innerHTML=(C.length?C:[{}]).map((c,i)=>`<div style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px"><b style="font-size:13px">${esc([i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - "))}${c.kg?" · sipariş "+esc(fmt(c.kg))+" kg":""}</b><div class="grid" style="margin-top:6px"><input data-i="${i}" data-f="kg" type="number" inputmode="decimal" min="0" step="any" placeholder="Kg"><input data-i="${i}" data-f="paket" type="number" inputmode="numeric" min="0" step="1" placeholder="Paket / koli"></div></div>`).join("");
   $("dDepo").showModal();
 }
 $("dpNo").onclick=()=>$("dDepo").close();
