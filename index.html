@@ -89,6 +89,10 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #vDos .hl{padding:5px}#vDos .hl b{font-size:18px}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99999;max-width:90vw;text-align:center}
 #toast.on{opacity:1}
+#fGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.fth{position:relative}.fth img{width:100%;height:110px;object-fit:cover;border-radius:8px;background:#0f172a;cursor:zoom-in}
+.fth .fx{position:absolute;top:4px;right:4px;width:28px;height:28px;border:0;border-radius:50%;background:#e71d36;color:#fff;font-size:14px;font-weight:900;cursor:pointer;line-height:1}
+#fSay{font-size:11px;color:#64748b;margin-top:4px}
 </style>
 </head>
 <body>
@@ -121,7 +125,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
       <input id="rn" placeholder="Adınız Soyadınız">
       <input id="rk" placeholder="Kullanıcı Adı (harf/rakam)" autocomplete="username">
       <input id="rp" type="password" placeholder="Şifre (en az 6 karakter)" autocomplete="new-password">
-      <select id="rr"><option>Depo Görevlisi</option><option>Sevkiyat Sorumlusu</option></select>
+      <select id="rr"><option>Depo Görevlisi</option><option>Sevkiyat Sorumlusu</option><option>Ekstruder Operatörü</option><option>Matbaa Operatörü</option><option>Kesim Operatörü</option><option>Muhasebe</option></select>
       <div class="err" id="eK"></div>
       <button class="btn b3" id="bK">Hesap Oluştur</button>
       <p style="font-size:12px;color:#64748b;margin-top:8px">Hesabınız yönetici onayından sonra açılır.</p>
@@ -145,6 +149,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <p>Hoş geldiniz, <b id="menuAd"></b><br>Girmek istediğiniz bölümü seçin</p>
     <button class="menuBtn" style="background:#ff9f1c" data-go="sevk"><span class="ic">🚚</span><div>SEVKİYAT<small>Hazır ürünler, sevk listesi, adresler</small></div></button>
     <button class="menuBtn" style="background:#2563eb" data-go="stok"><span class="ic">📦</span><div>STOK<small>Stok, sipariş, tedarikçi, hareketler</small></div></button>
+    <button class="menuBtn" style="background:#c82333" data-go="is"><span class="ic">📋</span><div>İŞ EMİRLERİ<small>Ekstruder, baskı, kesim, depo takibi</small></div></button>
     <button class="btn b6" data-out>Çıkış</button>
   </div>
 </div>
@@ -168,13 +173,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="vSev">
   <div class="card"><div class="grid">
     <div class="full">
-      <label style="color:#2563eb;font-size:12px">1. Etiket fotoğrafını çek (yeni kayıtta zorunlu)</label>
+      <label style="color:#2563eb;font-size:12px">1. Fotoğraf ekle (yeni kayıtta en az 1, en fazla 6 · ✖ ile kaldırılır)</label>
       <div class="photo">
         <button type="button" id="camO">📸 CANLI KAMERAYI AÇ</button>
         <label for="gal">🖼️ Galeri</label>
-        <input type="file" id="gal" accept="image/*" class="hide">
+        <input type="file" id="gal" accept="image/*" multiple class="hide">
       </div>
-      <img id="prev" alt="Etiket önizleme">
+      <div id="fGrid"></div><div id="fSay"></div>
     </div>
     <div><label style="color:#0284c7">Ağırlık (kg)</label><input type="number" id="kg" inputmode="decimal" min="0" step="any" placeholder="Örn: 20" class="fast"></div>
     <div><label style="color:#0284c7">Paket / Adet</label><input type="number" id="pk" inputmode="numeric" min="0" step="1" value="1" class="fast"></div>
@@ -194,7 +199,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <div class="full"><details><summary style="font-size:11px;font-weight:700;color:#64748b;cursor:pointer">➕ Opsiyonel: Müşteri / Ürün adı</summary>
       <div class="grid" style="margin-top:8px">
         <div><label id="lMu">Müşteri</label><input id="mu" placeholder="Örn: Güneli Fırın"></div>
-        <div><label>Ürün / Ebat</label><input id="ur" placeholder="Örn: Kulplu Poşet 32x40"></div>
+        <div><label>Ürün / Ebat</label><textarea id="ur" rows="2" placeholder="Örn: Kulplu Poşet 32x40"></textarea></div>
       </div></details></div>
     <div><label>Tarih</label><input type="date" id="tr"></div>
     <div><label>Durum</label><select id="du"><option value="hazir">SEVKİYATA HAZIR</option><option value="sevk_edilecek">SEVK EDİLECEK</option></select></div>
@@ -253,6 +258,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   </div>
   </div>
 
+  <div id="pIs" class="hide">
+    <button class="btn b1" style="margin:0 0 10px" id="iAdd">＋ Yeni iş emri aç</button>
+    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: yazdırma-v11 (iş emri kartlarında 🖨️ Yazdır butonu var)</div>
+    <input id="iq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
+    <div class="tabs stabs" id="iTabs"></div>
+    <div id="iList"></div>
+  </div>
   <div id="pStok" class="hide">
     <div class="tabs stabs" id="stabs"><button data-s="kal" class="on">📦 KALEMLER</button><button data-s="sip" id="stO">🧾 SİPARİŞLER</button><button data-s="ted">🏢 TEDARİKÇİLER</button></div>
     <div id="sKal">
@@ -385,18 +397,45 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div class="err" id="turE" style="margin-top:6px"></div>
   <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="turX">Vazgeç</button><button type="button" class="btn b3 hide" id="turOk">📸 Kamerayı aç</button></div>
 </dialog>
+<dialog id="iDlg">
+  <h3 id="iT" style="margin-bottom:6px">Yeni iş emri</h3>
+  <div class="grid"><input id="iNo" placeholder="Seri no (MG-0945)"><input id="iTr" type="date"></div>
+  <input id="iMu" placeholder="Müşteri" style="margin-top:6px">
+  <input id="iAdi" placeholder="İşin adı (isteğe bağlı)" style="margin-top:6px">
+  <input id="iSt" placeholder="Stok adı (OR.LDPE BASKISIZ ATLET POŞET)" style="margin-top:6px">
+  <input id="iFx" placeholder="F/X (F-PEŞİN, X-VADE...)" style="margin-top:6px">
+  <input id="iFo" placeholder="Ürün formülü (F-2 ŞEFFAF ORJİNAL LİNERLİ)" style="margin-top:6px">
+  <div id="iFyW" class="hide" style="margin-top:8px"><div class="grid"><input id="iFy" inputmode="decimal" placeholder="Birim fiyat (₺ / kg)"><label class="chip"><input type="checkbox" id="iKd">KDV dahil</label></div></div>
+  <label style="margin-top:10px">Sipariş sütunları (en fazla 3 ebat)</label>
+  <div id="iCols"></div>
+  <div id="iNtU" data-ph="Üretim notu (Kg geçmesin, mikrona dikkat...)"></div>
+  <label class="chip" style="margin-top:8px"><input type="checkbox" id="iBv">Baskılı iş (matbaaya gider)</label>
+  <input id="iBU" placeholder="Ürün adı (ATLET)" style="margin-top:6px">
+  <input id="iRenk" placeholder="Baskı rengi / klişe" style="margin-top:6px">
+  <div id="iNtB" data-ph="Baskı-kesim notu (H.T., 25 kg'lık torbalanacak...)" style="margin-top:6px"></div>
+  <div id="iDL"></div>
+  <div class="err" id="iE" style="margin-top:8px"></div>
+  <div style="display:flex;gap:8px"><button class="btn b6" id="iNo2">Vazgeç</button><button class="btn b1" id="iOk">Kaydet</button></div>
+</dialog>
+<dialog id="dDepo">
+  <h3 id="dpT" style="margin-bottom:4px">Depoya giriş</h3>
+  <p class="mut" style="font-size:11px;margin-bottom:8px">Her sipariş sütunu için depoya giren kg ve paket / koli sayısını yazın. Boş bıraktığınız sütun kaydedilmez.</p>
+  <div id="dpRows"></div>
+  <div class="err" id="dpE" style="margin-top:6px"></div>
+  <div style="display:flex;gap:8px"><button class="btn b6" id="dpNo">Vazgeç</button><button class="btn b3" id="dpOk">Kaydet → BİTEN</button></div>
+</dialog>
 <div id="toast"></div>
 
 <script>
 window.addEventListener("error",function(e){var b=document.getElementById("boot");if(b&&!b.classList.contains("hide"))b.textContent="Hata: "+e.message+" (satır "+e.lineno+")"});
 /* ============ AYAR: Firebase Console > Proje ayarları > Web uygulaması'ndan kopyalayın ============ */
 const CFG={
-  apiKey:"AIzaSyA_ZyOtWAvaYQvU8KaJnAJZK1s4Qd80FtU",
-  authDomain:"sevkiyat-fc22b.firebaseapp.com",
-  databaseURL:"https://sevkiyat-fc22b-default-rtdb.firebaseio.com",
-  projectId:"sevkiyat-fc22b",
-  storageBucket:"sevkiyat-fc22b.firebasestorage.app",
-  appId:"1:449531312842:web:33e750da974679f87f1233"
+  apiKey:"AIzaSyB-QzxvARbpoUYPGHAUX_kb_w-VFDJZz9c",
+  authDomain:"magdeneme-8bf13.firebaseapp.com",
+  databaseURL:"https://magdeneme-8bf13-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"magdeneme-8bf13",
+  storageBucket:"magdeneme-8bf13.firebasestorage.app",
+  appId:"1:866427134112:web:327118a48e823a89df69c5"
 };
 /* ================================================================================================= */
 const $=id=>document.getElementById(id);
@@ -425,14 +464,14 @@ const MODS={
 };
 let mod="sevk";const M=()=>MODS[mod];
 let user=null,rec=null,recRef=null,uRef=null,started=false,menuOk=false;
-let urunler=[],limit=20,tab="hazir",editId="",fotoData="",stream=null,irsHedef=null;
+let urunler=[],limit=20,tab="hazir",editId="",fotos=[],stream=null,irsHedef=null;
 const show=v=>{$("boot").classList.add("hide");["vLogin","vWait","vMenu","vApp"].forEach(x=>$(x).classList.toggle("hide",x!==v))};
 const ad=()=>rec?`${rec.ad} (${rec.rol})`:"Bilinmiyor";
 const isAdmin=()=>!!(rec&&rec.yonetici===true&&rec.onay===true);
 
 /* ---------- Oturum ---------- */
 auth.onAuthStateChanged(u=>{
-  if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null} if(window.tRef){tRef.off();tRef=null} if(window.oRef){oRef.off();oRef=null} if(window.aRef){aRef.off();aRef=null} if(window.dRef){dRef.off();dRef=null} dosya=[]; if(window.fRef){fRef.off();fRef=null} fyat={sevk:{},stok:{},siparis:{}};
+  if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null} if(window.tRef){tRef.off();tRef=null} if(window.oRef){oRef.off();oRef=null} if(window.aRef){aRef.off();aRef=null} if(window.dRef){dRef.off();dRef=null} dosya=[]; if(window.fRef){fRef.off();fRef=null} if(window.iRef){iRef.off();iRef=null} fyat={sevk:{},stok:{},siparis:{}};
   started=false;menuOk=false;urunler=[];rec=null;user=u;
   if(!u){show("vLogin");return}
   recRef=db.ref("kullanicilar/"+u.uid);
@@ -504,8 +543,15 @@ function sikistir(src,cb,mx){
     if(w>M){h=Math.round(h*M/w);w=M}c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);cb(c.toDataURL("image/jpeg",.6))};
   im.src=src;
 }
-function foto(d){fotoData=d;const p=$("prev");p.src=d;p.style.display="block"}
-$("gal").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>sikistir(r.result,foto);r.readAsDataURL(f);e.target.value=""};
+const FMAX=6;
+function fotoCiz(){
+  $("fGrid").innerHTML=fotos.map((s,i)=>`<div class="fth"><img src="${s}" alt="Foto ${i+1}" data-z="${i}"><button type="button" class="fx" data-x="${i}" aria-label="Kaldır">✖</button></div>`).join("");
+  $("fSay").textContent=fotos.length?fotos.length+"/"+FMAX+" fotoğraf":"";
+}
+$("fGrid").onclick=e=>{const x=e.target.closest("[data-x]");if(x){fotos.splice(+x.dataset.x,1);fotoCiz();return}
+  const z=e.target.closest("[data-z]");if(z&&window.fvAc)window.fvAc(fotos[+z.dataset.z])};
+function foto(d){if(fotos.length>=FMAX){toast("En fazla "+FMAX+" fotoğraf eklenebilir.");return}fotos.push(d);fotoCiz()}
+$("gal").onchange=e=>{[...e.target.files].forEach(f=>{const r=new FileReader();r.onload=()=>sikistir(r.result,foto);r.readAsDataURL(f)});e.target.value=""};
 $("camO").onclick=async()=>{
   for(const cfg of [{video:{facingMode:{ideal:"environment"}}},{video:true}]){
     try{stream=await navigator.mediaDevices.getUserMedia(cfg);break}catch(e){}
@@ -582,17 +628,19 @@ $("turBtns").onclick=e=>{
 $("turOk").onclick=()=>{const n=$("turNot").value.trim();if(!n){$("turE").textContent="Lütfen ne olduğunu yazın.";return}turBaslat("diger",n)};
 $("turX").onclick=()=>$("dTur").close();
 const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s||"")?s:"";
+const ekFoto=u=>(Array.isArray(u.fotolar)?u.fotolar:Object.values(u.fotolar||{})).map(safeImg).filter(Boolean);
+const fotoListe=u=>[safeImg(u.foto)].filter(Boolean).concat(ekFoto(u));
 
 /* ---------- Kayıt ---------- */
 function formTemizle(){
-  editId="";fotoData="";
+  editId="";fotos=[];
   ["kg","mu","ur","no","ad","hu","sfi"].forEach(i=>$(i).value="");$("sfe").value="kg";kdvSet("sevk",null);$("pk").value="1";$("tr").valueAsDate=new Date();$("du").value="hazir";
-  $("prev").style.display="none";$("bSave").textContent=M().kayit;$("bCancel").classList.add("hide");
+  fotoCiz();$("bSave").textContent=M().kayit;$("bCancel").classList.add("hide");
 }
 $("bCancel").onclick=formTemizle;
 $("bSave").onclick=async()=>{
   const kg=parseFloat($("kg").value)||0,pk=parseInt($("pk").value)||0;
-  if(!editId&&!fotoData){toast("Önce etiketin fotoğrafını çekin.");return}
+  if(!editId&&!fotos.length){toast("Önce en az bir fotoğraf ekleyin.");return}
   if(kg<=0&&pk<=0){toast("Kilo veya paket sayısını girin.");return}
   if(isAdmin()&&kdvGet("sevk")===null){toast("KDV oranı 0 ile 100 arasında olmalı.");return}
   let adres=$("ad").value.trim(),hu=$("hu").value.trim(),url=safeUrl(hu);
@@ -600,7 +648,7 @@ $("bSave").onclick=async()=>{
   const d={musteri:$("mu").value.trim()||"Etikete Bakınız",urun:$("ur").value.trim()||"Etikete Bakınız",kg,paket:pk,tarih:$("tr").value,durum:$("du").value,not:$("no").value.trim(),adres,haritaUrl:url};
   const b=$("bSave");b.disabled=true;
   try{
-    if(fotoData)d.foto=fotoData;
+    d.foto=fotos[0]||null;d.fotolar=fotos.length>1?fotos.slice(1):null;
     let sid=editId;
     if(editId){d.duzenleyen=ad();await db.ref(M().yol+"/"+editId).update(d)}
     else{d.ekleyen=ad();d.ekleyenUid=user.uid;d.eklenmeTarihi=firebase.database.ServerValue.TIMESTAMP;const nr=db.ref(M().yol).push();sid=nr.key;await nr.set(d)}
@@ -610,11 +658,11 @@ $("bSave").onclick=async()=>{
   b.disabled=false;
 };
 function duzenle(u){
-  editId=u.id;fotoData="";
+  editId=u.id;
   $("mu").value=u.musteri==="Etikete Bakınız"?"":u.musteri||"";$("ur").value=u.urun==="Etikete Bakınız"?"":u.urun||"";
   $("kg").value=u.kg;$("pk").value=u.paket;$("tr").value=u.tarih;$("du").value=u.durum==="sevk_edildi"?"sevk_edilecek":u.durum;
   $("no").value=u.not||"";$("ad").value=u.adres||"";$("hu").value=u.haritaUrl||"";{const f=(fyat.sevk||{})[u.id];$("sfi").value=f?f.tutar:"";$("sfe").value=f?f.esas:"kg";kdvSet("sevk",f)}
-  const p=$("prev");if(safeImg(u.foto)){p.src=u.foto;p.style.display="block"}else p.style.display="none";
+  fotos=fotoListe(u);fotoCiz();
   $("bSave").textContent="💾 Değişiklikleri Kaydet";$("bCancel").classList.remove("hide");window.scrollTo({top:0,behavior:"smooth"});
 }
 function haritaAc(url,adres){
@@ -650,11 +698,14 @@ function kart(u){
   const eb=`<button class="btn b6" ${canDel?"":'style="grid-column:span 2" '}data-a="edit" data-id="${id}">✏️ Düzenle</button>`;
   const db2=canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:"";
   const onb=(u.durum==="sevk_edildi"&&mod==="sevk"&&isAdmin())?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:15px" data-a="onay" data-id="${id}">✅ ONAYLA (Dosyalara taşı)</button>`:"";
+  const K2=Array.isArray(u.kalem)&&u.kalem.length>1?u.kalem:null;
+  const mid=K2?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün</small><b>${esc(u.urunAd||u.urun)}</b></div></div>`+K2.map(k=>`<div style="margin:12px 0 4px;font-weight:800;font-size:13px;color:#334155">${esc(k.ad)}</div><div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(k.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(k.paket))} Adet</b></div></div>`).join(""):`  <div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(u.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(u.paket))} Adet</b></div></div>
+  ${m||p?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün/Ebat</small><b style="white-space:pre-line">${esc(u.urun)}</b></div></div>`:""}
+`;
   return `<div class="item ${c[0]}">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700;color:#64748b">Tarih: ${esc(trDate(u.tarih))}</span><span class="badge ${c[1]}">${c[2]}</span></div>
-  ${safeImg(u.foto)?`<img loading="lazy" src="${safeImg(u.foto)}" alt="Etiket">`:""}
-  <div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(u.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(u.paket))} Adet</b></div></div>
-  ${m||p?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün/Ebat</small><b>${esc(u.urun)}</b></div></div>`:""}
+  ${fotoListe(u).map(s=>`<img loading="lazy" src="${s}" alt="Etiket">`).join("")}
+  ${mid}
   ${u.adres?`<div class="addr">📍 <b>Teslimat adresi:</b> ${esc(u.adres)}</div>`:""}
   ${u.haritaUrl||u.adres?`<button class="btn b7" data-a="map" data-id="${id}">🚀 Yol Tarifi Al</button>`:""}
   <button class="btn b3" data-a="wa" data-id="${id}">📲 WhatsApp ile paylaş</button>
@@ -663,7 +714,7 @@ function kart(u){
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
   ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">${M().teslim}: ${esc(u.teslimEden)}</div>`:""}
   ${safeImg(u.irsaliye)?`<button type="button" class="dosya" data-a="irs" data-id="${id}"><img class="th" src="${safeImg(u.irsaliye)}" alt=""><div class="dm"><div>${turEtiket(u)}</div><div class="dd">${u.irsaliyeTarihi?esc(new Date(u.irsaliyeTarihi).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})):""}${u.irsaliyeCeken?" · "+esc(u.irsaliyeCeken):""}</div></div><span class="dz">🔍</span></button>`:""}
-  <div class="acts">${onb}${nx}${eb}${db2}</div></div>`;
+  <div class="acts">${onb}${u.isEmriNo&&u.durum==="hazir"&&mod==="sevk"?`<button class="btn b2" style="grid-column:span 2" data-a="isgeri" data-id="${id}">↩️ İş emrine geri al (Biten)</button>`:""}${nx}${eb}${db2}</div></div>`;
 }
 function listele(){
   if(!started)return;
@@ -680,6 +731,7 @@ $("liste").onclick=async e=>{
     else if(b.dataset.a==="irs"){const g=safeImg(u.irsaliye);if(g&&window.fvAc)window.fvAc(g)}
     else if(b.dataset.a==="onay"){if(isAdmin()&&confirm("Bu sevk onaylansın ve Dosyalar bölümüne taşınsın mı?"))await dosyayaTasi(u)}
     else if(b.dataset.a==="wa")waGonder(u);
+    else if(b.dataset.a==="isgeri")await isGeri(u);
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
     else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edildi"){turAc(u)}
     else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;await db.ref(M().yol+"/"+u.id).update(up)}
@@ -691,6 +743,25 @@ $("bCsv").onclick=()=>{
   const r=[["Tarih","Müşteri","Ürün","Kg","Adet","Adres","Not","Kaydeden"].concat(isAdmin()?["Fiyat (₺)","Esas","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")].concat(filtreli().map(u=>[q(trDate(u.tarih)),q(u.musteri),q(u.urun),n(u.kg),n(u.paket),q(u.adres),q(u.not),q(u.ekleyen)].concat(isAdmin()?sFyCsv(u):[]).join(";")));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download=mod+"-"+tab+".csv";a.click();
 };
+
+/* ---------- Hazır üründen iş emrine (BİTEN) geri alma ---------- */
+async function isGeri(u){
+  if(!confirm("Bu ürün iş emrine geri alınsın ve İş Emirleri > BİTEN bölümüne dönsün mü?"))return;
+  let e=null;
+  if(u.isEmriId){const s=await db.ref("isEmirleri/"+u.isEmriId).once("value");if(s.exists())e=Object.assign({id:u.isEmriId},s.val())}
+  if(!e&&u.isEmriNo){const s=await db.ref("isEmirleri").orderByChild("eklenmeTarihi").limitToLast(300).once("value"),v=s.val()||{},k=Object.keys(v).find(x=>v[x].no===u.isEmriNo);if(k)e=Object.assign({id:k},v[k])}
+  if(!e){toast("Bağlı iş emri bulunamadı (silinmiş olabilir).");return}
+  let keys=e.aktarKeys?Object.keys(e.aktarKeys):[];if(!keys.includes(u.id))keys=[u.id];
+  const up={};
+  for(const k of keys){
+    const [a,d]=await Promise.all([db.ref("urunler/"+k).once("value"),db.ref("dosyalar/"+k).once("value")]);
+    if(d.exists()){toast("Bu iş emrinin bir kısmı onaylanıp Dosyalar'a taşınmış, geri alınamaz.");return}
+    if(a.exists()){if(a.val().durum!=="hazir"){toast("Bu iş emrinin bir kısmı sevk listesine alınmış. Önce hepsini Hazır Ürünlere geri alın.");return}up["urunler/"+k]=null}
+  }
+  up["isEmirleri/"+e.id+"/aktarildi"]=null;up["isEmirleri/"+e.id+"/aktarTarih"]=null;up["isEmirleri/"+e.id+"/aktarKeys"]=null;
+  await db.ref().update(up);
+  toast("✓ "+(e.no||"İş emri")+" BİTEN bölümüne geri alındı");
+}
 
 /* ---------- Yönetici paneli ---------- */
 async function kullanicilar(){
@@ -777,9 +848,9 @@ const dur=k=>{const n=norm(k),ks=Object.keys(n.mik);if(!ks.length||ks.every(u=>!
 const fmtQ=(o,z)=>UN.filter(([u])=>o&&u in o&&(z||+o[u]>0)).map(([u,l])=>fmt(o[u])+" "+l).join(", ")||"-";
 function modSec(m){panel=m;
   document.querySelectorAll("#mods button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
-  $("pSevk").classList.toggle("hide",m!=="sevk");$("pStok").classList.toggle("hide",m!=="stok");
-  $("mt").textContent=m==="sevk"?"SEVKİYAT":"STOK";
-  if(m==="stok")stokYukle();else stokKapat()}
+  $("pSevk").classList.toggle("hide",m!=="sevk");$("pStok").classList.toggle("hide",m!=="stok");$("pIs").classList.toggle("hide",m!=="is");
+  $("mt").textContent=m==="sevk"?"SEVKİYAT":m==="is"?"İŞ EMİRLERİ":"STOK";
+  if(m==="stok")stokYukle();else stokKapat();if(m==="is")isYukle();else isKapat();$("iAdd").classList.toggle("hide",!canIsAc())}
 $("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===panel)return;modSec(m)};
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{menuOk=true;modSec(b.dataset.go);show("vApp");window.scrollTo(0,0)});
 $("bMenu").onclick=()=>{menuOk=false;show("vMenu");window.scrollTo(0,0)};
@@ -834,7 +905,7 @@ function kkart(k){
     ${isAdmin()?kFyHtml(k):""}
     ${k.not?`<div class="note">📌 ${esc(k.not)}</div>`:""}
     <div class="acts s"><button class="btn b3" data-a="in" data-id="${id}">＋ Giriş</button><button class="btn b2" data-a="out" data-id="${id}">− Çıkış</button>
-    <button class="btn b6" data-a="gec" data-id="${id}">📜 Geçmiş</button><button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>
+    <button class="btn b6" data-a="gec" data-id="${id}">📜 Geçmiş</button><button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button><button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>
     ${canDel?`<button class="btn b5 i" data-a="del" data-id="${id}">🗑️</button>`:""}</div>
   </div></div>`;
 }
@@ -1354,7 +1425,7 @@ function dDetay(d){
     ${d.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">Teslim eden: ${esc(d.teslimEden)}${d.irsaliyeTarihi?" · "+esc(dTam(d.irsaliyeTarihi)):""}</div>`:""}
     <div class="who" style="color:#0f766e;font-weight:700">✅ Onaylayan: ${esc(d.onaylayan||"-")}${d.onayTarihi?" · "+esc(dTam(d.onayTarihi)):""}</div>
     ${isAdmin()?sFyHtml(d):""}
-    <div class="acts s">${d.fotoVar?`<button class="btn b6" data-a="dfoto" data-p="foto" data-id="${id}">🏷️ Etiket fotoğrafı</button>`:""}${d.irsVar?`<button class="btn b4" data-a="dfoto" data-p="irsaliye" data-id="${id}">${ic} ${esc(tn)} fotoğrafı</button>`:""}</div>
+    <div class="acts s">${d.fotoVar?`<button class="btn b6" data-a="dfoto" data-p="foto" data-id="${id}">🏷️ Etiket fotoğrafı</button>`:""}${Array.from({length:+d.fotoSayi||0},(_,i)=>`<button class="btn b6" data-a="dfoto" data-p="fotolar/${i}" data-id="${id}">🏷️ Foto ${i+2}</button>`).join("")}${d.irsVar?`<button class="btn b4" data-a="dfoto" data-p="irsaliye" data-id="${id}">${ic} ${esc(tn)} fotoğrafı</button>`:""}</div>
     ${isAdmin()?`<div class="acts"><button class="btn b6" data-a="dgeri" data-id="${id}">↩️ Onayı kaldır</button><button class="btn b5" data-a="dsil" data-id="${id}">🗑️ Sil</button></div>`:""}
   </div>`;
 }
@@ -1377,19 +1448,21 @@ async function dosFoto(id,p){
   if(window.fvAc)window.fvAc(dFoto[k]);
 }
 async function dosyayaTasi(u){
-  const L=Object.assign({},u);delete L.id;delete L.foto;delete L.irsaliye;
-  L.fotoVar=!!safeImg(u.foto);L.irsVar=!!safeImg(u.irsaliye);
+  const L=Object.assign({},u);delete L.id;delete L.foto;delete L.irsaliye;delete L.fotolar;
+  L.fotoVar=!!safeImg(u.foto);L.irsVar=!!safeImg(u.irsaliye);L.fotoSayi=ekFoto(u).length;
   L.onayTarihi=firebase.database.ServerValue.TIMESTAMP;L.onaylayan=ad();
   const up={["dosyalar/"+u.id]:L,["urunler/"+u.id]:null};
   if(L.fotoVar)up["dosyaFoto/"+u.id+"/foto"]=u.foto;
   if(L.irsVar)up["dosyaFoto/"+u.id+"/irsaliye"]=u.irsaliye;
+  if(L.fotoSayi)up["dosyaFoto/"+u.id+"/fotolar"]=ekFoto(u);
   await db.ref().update(up);
   toast("✓ Onaylandı, Dosyalar bölümüne taşındı");
 }
 async function dosyaGeri(d){
   const s=await db.ref("dosyaFoto/"+d.id).once("value"),P=s.val()||{},R=Object.assign({},d);
-  ["id","onayTarihi","onaylayan","fotoVar","irsVar"].forEach(k=>delete R[k]);
+  ["id","onayTarihi","onaylayan","fotoVar","irsVar","fotoSayi"].forEach(k=>delete R[k]);
   if(safeImg(P.foto))R.foto=P.foto;if(safeImg(P.irsaliye))R.irsaliye=P.irsaliye;
+  {const ek=ekFoto(P);if(ek.length)R.fotolar=ek}
   await db.ref().update({["urunler/"+d.id]:R,["dosyalar/"+d.id]:null,["dosyaFoto/"+d.id]:null});
   dAcik.delete(d.id);
   toast("Onay kaldırıldı, Sevk Edilenler'e geri alındı");
@@ -1419,7 +1492,208 @@ $("dCsv").onclick=()=>{
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download="dosyalar.csv";a.click();
 };
 
+
+/* ================= İŞ EMİRLERİ (üretim takip formu) ================= */
+var iRef=null,isE=[],iTab="ekstruder",iEdit=null;
+const AS=[["ekstruder","🏭 EKSTRUDER"],["baski","🖨️ BASKI"],["kesim","✂️ KESİM"],["depo","📦 DEPO"],["bitti","✅ BİTEN"]],ASL=Object.fromEntries(AS);
+const asOrd=e=>e&&e.baskiVar?["ekstruder","baski","kesim","depo","bitti"]:["ekstruder","kesim","depo","bitti"];
+const bugun=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const icols=e=>Object.values(e.siparis||{}).filter(Boolean);
+function isKapat(){if(iRef){iRef.off();iRef=null}}
+function isYukle(){isKapat();iRef=db.ref("isEmirleri").orderByChild("eklenmeTarihi").limitToLast(300);
+  iRef.on("value",s=>{const v=s.val()||{};isE=Object.keys(v).map(k=>Object.assign({id:k},v[k])).sort((a,b)=>(b.eklenmeTarihi||0)-(a.eklenmeTarihi||0));isListele()},
+  e=>toast("İş emirleri okunamadı: "+errText(e)+" (Firebase kurallarını güncellediniz mi?)"))}
+$("iq").addEventListener("input",()=>isListele());
+$("iTabs").onclick=e=>{const b=e.target.closest("button[data-t]");if(b){iTab=b.dataset.t;isListele()}};
+function isListele(){
+  if(panel!=="is")return;
+  const q=$("iq").value.toLowerCase().trim();
+  $("iTabs").innerHTML=AS.map(([k,l])=>{const n=isE.filter(e=>e.asama===k&&!e.aktarildi).length;return `<button data-t="${k}" style="font-size:10px" class="${k===iTab?"on":""}">${l}${k!=="bitti"&&n?" ("+n+")":""}</button>`}).join("");
+  const L=isE.filter(e=>e.asama===iTab&&!e.aktarildi&&(!q||[e.no,e.musteri,e.stok,e.isAdi].some(x=>(x||"").toLowerCase().includes(q))));
+  $("iList").innerHTML=L.length?L.map(isKart).join(""):'<div class="empty">Bu aşamada iş emri yok.</div>';
+}
+function isKart(e){
+  const id=esc(e.id),o=asOrd(e),i=o.indexOf(e.asama),nx=o[i+1],canDel=isAdmin()||(e.ekleyenUid&&e.ekleyenUid===user.uid);
+  const C=icols(e).map(c=>`<div class="info" style="margin-top:4px"><b>${esc(fmt(c.kg))} kg</b> · ${esc(c.en||"-")} · ${esc(c.mikron||"-")}µ · ${esc(c.korona||"-")}${c.boy?" · boy "+esc(c.boy):""}</div>`).join("");
+  const lg=Object.entries(e.log||{}).map(([k,v])=>`<div class="who">${esc(ASL[k]||k)}: ${v.kg!=null?esc(fmt(v.kg))+" kg":""}${v.paket?" · "+esc(fmt(v.paket))+" adet":""} — ${esc(v.kim||"")} ${esc(tarih(v.zaman))}${k==="depo"&&Array.isArray(v.kalem)?"<br>"+v.kalem.map((x,i)=>{const c=icols(e)[i]||{};return esc((i+1)+". sütun"+(c.en?" ("+c.en+")":"")+": "+fmt(x&&x.kg)+" kg · "+fmt(x&&x.paket)+" paket")}).join("<br>"):""}</div>`).join("");
+  return `<div class="item sevk-border">
+  <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:16px">${esc(e.no)}</b><span class="badge badge-sevk">${esc(ASL[e.asama]||e.asama)}</span></div>
+  <div class="sub" style="font-size:13px;color:#0f172a;font-weight:700">${esc(e.musteri)}${e.isAdi?" · "+esc(e.isAdi):""}</div>
+  <div class="sub">${esc(e.stok||"")}${e.formul?" · "+esc(e.formul):""}</div>
+  <div class="sub">${e.spTarih?"Sipariş: "+esc(trDate(e.spTarih)):""}${e.fx?" · "+esc(e.fx):""}${e.baskiVar?" · 🖨️ baskılı":""}</div>
+  ${C}
+  ${e.notU?`<div class="note">📌 <b>Üretim:</b> ${notHtml(e.notU)}</div>`:""}
+  ${e.baskiVar||e.notB?`<div class="addr">🖨️ ${esc(e.urunAdi||"")} ${e.renk?"· "+esc(e.renk):""}${e.notB?"<br>"+notHtml(e.notB):""}</div>`:""}
+  ${lg}
+  <div class="acts">${nx?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:15px" data-a="ileri" data-id="${id}">${e.asama==="depo"?"📦 Depoya girişi kaydet → BİTEN":"✓ Bitti → "+esc(ASL[nx])}</button>`:""}
+  ${i>0?`<button class="btn b6" data-a="geri" data-id="${id}">↩️ Geri al</button>`:""}<button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button><button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div>
+  ${e.asama==="bitti"&&e.bekleAktar&&!e.aktarildi?`<button class="btn b4" style="width:100%;margin-top:8px;padding:14px;font-size:15px" data-a="aktar" data-id="${id}">📦 Hazır ürünlere aktar</button>`:""}${e.aktarildi?`<div class="note" style="margin-top:8px">✅ Hazır ürünlere aktarıldı</div>`:""}</div>`;
+}
+$("iList").onclick=async ev=>{
+  const b=ev.target.closest("button[data-a]");if(!b)return;const e=isE.find(x=>x.id===b.dataset.id);if(!e)return;
+  const a=b.dataset.a,o=asOrd(e),i=o.indexOf(e.asama),TS=firebase.database.ServerValue.TIMESTAMP;
+  try{
+    if(a==="yaz")isYazdir(e);
+    else if(a==="aktar"){
+      const d=(e.log&&e.log.depo)||{},C=icols(e);
+      const P=Array.isArray(d.kalem)?d.kalem.map((x,i)=>({i,kg:+(x&&x.kg)||0,paket:+(x&&x.paket)||0,c:C[i]||{}})).filter(x=>x.kg>0||x.paket>0):[{i:0,kg:+d.kg||0,paket:+d.paket||0,c:C[0]||{}}];
+      if(!P.length||P.every(x=>x.kg<=0&&x.paket<=0)){toast("Depo girişi boş.");return}
+      if(!confirm(e.no+" hazır ürünlere aktarılsın mı?\n"+P.map(x=>(x.c.en||"-")+": "+x.kg+" kg, "+x.paket+" paket").join("\n")))return;
+      const up={},K={},key=db.ref("urunler").push().key;
+      const lab=P.map(x=>[x.i+1,x.c.en,x.c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - "));
+      const lines=P.map((x,j)=>lab[j]+": "+[x.kg>0?fmt(x.kg)+" kg":"",x.paket>0?x.paket+" paket":""].filter(Boolean).join(" · "));
+      const tkg=Math.round(P.reduce((a,x)=>a+x.kg,0)*1000)/1000,tpk=P.reduce((a,x)=>a+x.paket,0);
+      up["urunler/"+key]={musteri:e.musteri||"Etikete Bakınız",urun:((e.stok||"")+(lines.length?"\n"+lines.join("\n"):""))||"Etikete Bakınız",kg:tkg,paket:tpk,tarih:bugun(),durum:"hazir",not:"İş emri "+e.no+(e.fx?" · "+e.fx:""),adres:"",haritaUrl:"",ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:TS,isEmriNo:e.no,isEmriId:e.id,urunAd:e.stok||"",kalem:P.length>1?P.map((x,j)=>({ad:lab[j],kg:x.kg,paket:x.paket})):null};K[key]=true;
+      up["isEmirleri/"+e.id+"/aktarildi"]=true;up["isEmirleri/"+e.id+"/aktarTarih"]=TS;up["isEmirleri/"+e.id+"/aktarKeys"]=K;
+      await db.ref().update(up);
+      toast("✓ Sevkiyat > Hazır ürünlere aktarıldı");
+    }
+    else if(a==="edit")iAc(e);
+    else if(a==="geri"&&i>0)await db.ref("isEmirleri/"+e.id).update({asama:o[i-1]});
+    else if(a==="del"&&confirm(e.no+" silinsin mi?"))await db.ref("isEmirleri/"+e.id).remove();
+    else if(a==="ileri"&&i>=0&&i<o.length-1){
+      if(e.asama==="depo"){depoAc(e);return}else{
+        const s=prompt("Bu aşamada çıkan kg (boş bırakılabilir):","");if(s===null)return;
+        const kg=parseFloat(s.replace(",","."));
+        await db.ref("isEmirleri/"+e.id).update({asama:o[i+1],["log/"+e.asama]:{kg:isNaN(kg)?null:kg,kim:ad(),zaman:TS}});
+      }
+    }
+  }catch(err){toast(errText(err))}
+};
+var depoE=null;
+function depoAc(e){
+  depoE=e;const C=icols(e);$("dpT").textContent=e.no+" — depoya giriş";$("dpE").textContent="";
+  $("dpRows").innerHTML=(C.length?C:[{}]).map((c,i)=>`<div style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px"><b style="font-size:13px">${i+1}. sütun${c.en?" · "+esc(c.en):""}${c.kg?" · sipariş "+esc(fmt(c.kg))+" kg":""}</b><div class="grid" style="margin-top:6px"><input data-i="${i}" data-f="kg" type="number" inputmode="decimal" min="0" step="any" placeholder="Kg"><input data-i="${i}" data-f="paket" type="number" inputmode="numeric" min="0" step="1" placeholder="Paket / koli"></div></div>`).join("");
+  $("dDepo").showModal();
+}
+$("dpNo").onclick=()=>$("dDepo").close();
+$("dpOk").onclick=async()=>{
+  const e=depoE;if(!e)return;const n=Math.max(icols(e).length,1),K=[];let tk=0,tp=0;
+  const v=(i,f)=>$("dpRows").querySelector(`[data-i="${i}"][data-f="${f}"]`).value;
+  for(let i=0;i<n;i++){const kg=parseFloat(String(v(i,"kg")).replace(",","."))||0,pk=parseInt(v(i,"paket"))||0;
+    if(kg<0||pk<0){$("dpE").textContent="Değerler 0 veya daha büyük olmalı.";return}
+    K.push({kg,paket:pk});tk+=kg;tp+=pk}
+  if(tk<=0&&tp<=0){$("dpE").textContent="En az bir sütuna kg veya paket yazın.";return}
+  $("dpOk").disabled=true;
+  try{
+    await db.ref("isEmirleri/"+e.id).update({asama:"bitti",bekleAktar:true,["log/depo"]:{kg:Math.round(tk*1000)/1000,paket:tp,kalem:K,kim:ad(),zaman:firebase.database.ServerValue.TIMESTAMP}});
+    $("dDepo").close();toast("✓ BİTEN'e alındı. Hazır ürünlere aktarmak için butona bas.");
+  }catch(err){$("dpE").textContent=errText(err)}
+  $("dpOk").disabled=false;
+};
+/* Önceki iş emrinden sonraki seri no: MG-0945 -> MG-0946 */
+function iNext(){
+  const son=isE[0]&&isE[0].no;const m=son&&String(son).match(/^(.*?)(\d+)$/);if(!m)return"";
+  let n=+m[2];const mk=x=>m[1]+String(x).padStart(m[2].length,"0");
+  while(isE.some(x=>x.no===mk(n+1)))n++;return mk(n+1);
+}
+/* Geçmiş girişlerden öneri listeleri (yazdıkça filtrelenir) */
+function iDL(){
+  const uniq=a=>{const s=new Set(),o=[];a.forEach(v=>{v=String(v==null?"":v).trim();const k=v.toLowerCase();if(v&&!s.has(k)){s.add(k);o.push(v)}});return o};
+  const mk=(f,a)=>`<datalist id="dl_${f}">${a.map(v=>`<option value="${esc(v)}">`).join("")}</datalist>`;
+  const top=["musteri","isAdi","stok","fx","formul","urunAdi","renk"],col=["en","mikron","korona","boy"];
+  $("iDL").innerHTML=top.map(f=>mk(f,uniq(isE.map(e=>e[f])))).concat(col.map(f=>mk(f,uniq(isE.flatMap(e=>icols(e).map(c=>c[f])))))).join("");
+  [["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"],["iBU","urunAdi"],["iRenk","renk"]].forEach(([i,f])=>$(i).setAttribute("list","dl_"+f));
+}
+/* ===== Notlar: madde madde ===== */
+const notL=t=>String(t==null?"":t).split("\n").map(x=>x.trim().replace(/^•\s*/,"")).filter(Boolean);
+const notHtml=t=>{const a=notL(t);return a.length>1?"<br>"+a.map(x=>"• "+esc(x)).join("<br>"):esc(a[0]||"")};
+const notP=t=>{const a=notL(t);return a.length>1?'<div style="text-align:left">'+a.map(x=>"• "+esc(x)).join("<br>")+"</div>":esc(a[0]||"-")};
+function notRow(el,val,ph){
+  const r=document.createElement("div");r.style.cssText="display:flex;gap:6px;margin-bottom:4px";
+  const i=document.createElement("input");i.type="text";i.value=val||"";i.maxLength=200;i.placeholder=ph||"Madde";i.style.cssText="flex:1;min-width:0";
+  const x=document.createElement("button");x.type="button";x.textContent="✖";x.setAttribute("aria-label","Maddeyi kaldır");x.style.cssText="width:36px;border:0;border-radius:8px;background:#e71d36;color:#fff;font-weight:900;cursor:pointer";
+  x.onclick=()=>{if(el.querySelectorAll("input").length>1)r.remove();else i.value=""};
+  i.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const n=notRow(el,"");n.querySelector("input").focus()}};
+  r.append(i,x);el.insertBefore(r,el.querySelector(".nadd"));return r;
+}
+function notSet(id,txt){
+  const el=$(id),a=notL(txt);el.innerHTML="";
+  const b=document.createElement("button");b.type="button";b.className="btn b6 nadd";b.textContent="+ Madde ekle";b.style.cssText="padding:6px;margin-bottom:4px";
+  b.onclick=()=>notRow(el,"").querySelector("input").focus();el.appendChild(b);
+  (a.length?a:[""]).forEach((v,k)=>notRow(el,v,k===0?el.dataset.ph:"Madde"));
+}
+const notGet=id=>[...$(id).querySelectorAll("input")].map(i=>i.value.trim()).filter(Boolean).join("\n");
+/* ===== YAZDIRMA: A4 yatay, yan yana 2 adet üretim iş takip formu ===== */
+function isForm(e,fy){
+  const C=icols(e),L=e.log||{},bos=n=>{let r="";for(let i=0;i<n;i++)r+="<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>";return r};
+  const satir=(k,ad)=>{if(k==="depo"){const R=(C.length?C:[{}]).map((c,i)=>`<tr><th>${esc([i+1,c.en,c.boy].filter(x=>x!==undefined&&x!==null&&String(x).trim()!=="").join(" - "))}</th><td></td><td></td></tr>`).join("");return `<tr><th>DEPO</th><td colspan="3" style="padding:0"><table class="pd"><tr><th>Ebat</th><th>Çıkan Kg</th><th>Paket Sayısı</th></tr>${R}</table></td></tr>`}const g=L[k]||{};return `<tr><th>${ad}</th><td></td><td></td><td></td></tr>`};
+  const st=[["ekstruder","EKSTRUDER"]].concat(e.baskiVar?[["baski","BASKI"]]:[]).concat([["kesim","KESİM"],["depo","DEPO"]]);
+  const cr=C.map((c,i)=>`<tr><td>${i+1}</td><td><b>${esc(fmt(c.kg))}</b></td><td>${esc(c.en||"")}</td><td>${esc(c.mikron||"")}</td><td>${esc(c.korona||"")}</td><td>${esc(c.boy||"")}</td></tr>`).join("");
+  const U=v=>esc(v||"-"),X=i=>C[i]||null,k3=(fn,cl)=>[0,1,2].map(i=>`<td colspan="2" class="v">${fn(X(i),i)}</td>`).join(""),
+    pair=(f,u)=>[0,1,2].map(i=>{const c=X(i),v=c&&c[f]?(f==="kg"?fmt(c.kg):c[f]):"";return `<td class="v">${v?esc(v):"-"}</td><td class="u">${u}</td>`}).join(""),
+    fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ₺ <small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:"",
+    logo='<svg viewBox="0 0 60 30"><ellipse cx="30" cy="15" rx="28" ry="12" fill="none" stroke="#000" stroke-width="3"/><path d="M10 11L24 24L30 13L36 24L50 11" fill="none" stroke="#000" stroke-width="3.5"/></svg>';
+  return `<div class="pf">
+  <div class="hdr"><div class="lg">${logo}mag ambalaj</div><div class="sn"><small>SERİ NO:</small><b>${esc(e.no||"")}</b></div></div>
+  <div class="tt">ÜRETİM İŞ TAKİP FORMU</div>
+  <table class="px top"><colgroup><col style="width:20%"><col style="width:42%"><col style="width:16%"><col style="width:22%"></colgroup>
+  <tr><th>MÜŞTERİ :</th><td class="v">${U(e.musteri)}</td><th>SP.<br>TARİHİ:</th><td class="v">${esc(trDate(e.spTarih))}</td></tr>
+  <tr><th>İŞİN ADI :</th><td class="v">${U(e.isAdi)}</td><th>F/X :</th><td class="v">${U(e.fx)}</td></tr>
+  ${fyT?`<tr><th rowspan="2">STOK ADI :</th><td class="v" rowspan="2">${U(e.stok)}</td><th>FİYAT :</th><td class="v">${fyT}</td></tr><tr><th>KLİŞE :</th><td class="v">-</td></tr>`:`<tr><th>STOK ADI :</th><td class="v">${U(e.stok)}</td><th>SP.<br>NO:</th><td class="v">-</td></tr>`}
+  </table>
+  <table class="px"><colgroup><col style="width:20%">${'<col style="width:21%"><col style="width:6%">'.repeat(3)}</colgroup>
+  <tr><th>SİPARİŞ<br>MİKTARI :</th>${pair("kg","Kg")}</tr>
+  <tr><th>ÜRÜN<br>FORMÜLÜ :</th><td class="v" colspan="6" style="font-size:calc(15pt*var(--z))">${U(e.formul)}</td></tr>
+  <tr><th>EN :</th>${k3(c=>c&&c.en?esc(c.en):"-")}</tr>
+  <tr><th>MİKRON :</th>${pair("mikron","µ")}</tr>
+  <tr><th>KORONA :</th>${k3(c=>c&&c.korona?esc(c.korona):"-")}</tr>
+  <tr><th>NOT :</th><td class="v n" colspan="6">${notP(e.notU)}</td></tr>
+  <tr><th class="hd" colspan="7">BASKI - KESİM İŞ TAKİP FORMU</th></tr>
+  <tr><th>ÜRÜN ADI :</th>${k3((c,i)=>i===0?U(e.urunAdi):"-")}</tr>
+  <tr><th>BOY/KAZAN :</th>${k3(c=>c&&c.boy?esc(c.boy):"-")}</tr>
+  <tr><th>BASKI RENGİ :</th>${k3((c,i)=>i===0?U(e.renk):"-")}</tr>
+  <tr><th>NOT :</th><td class="v n" colspan="6" style="height:calc(14mm*var(--z))">${notP(e.notB)}</td></tr>
+  </table>
+  <table class="pt pc ps"><tr><th>Aşama</th><th>Tarih</th><th>Operatör</th><th>Biten Ürün</th></tr>${st.map(x=>satir(x[0],x[1])).join("")}</table>
+  </div>`;
+}
+function isYazdir(e){
+  const h=isForm(e),P=$("prn");
+  P.innerHTML=`<div class="prow">${h}<div class="pcut"></div>${isForm(e,true)}</div>`;
+  /* Sayfaya sığan en büyük yazı boyutunu bul (ekranda ölç, sonra yazdır) */
+  P.classList.add("meas");
+  const f=P.querySelector(".pf:last-child"),hedef=192*96/25.4;
+  let z=1.25;P.style.setProperty("--z",z);
+  while(f.offsetHeight>hedef&&z>0.6){z=Math.round((z-0.03)*100)/100;P.style.setProperty("--z",z)}
+  P.classList.remove("meas");
+  const t=document.title;document.title=(e.no||"is-emri")+" - iş takip formu";
+  window.onafterprint=()=>{document.title=t;P.innerHTML=""};
+  setTimeout(()=>window.print(),150);
+}
+const canIsAc=()=>!!rec&&(rec.yonetici===true||rec.rol==="Muhasebe"||rec.rol==="Depo Görevlisi");
+function iAc(e){
+  iEdit=e||null;const v=e||{},C=e?icols(e):[];$("iT").textContent=e?"İş emrini düzenle":"Yeni iş emri";$("iE").textContent="";
+  [["iNo","no"],["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"],["iBU","urunAdi"],["iRenk","renk"]].forEach(([i,f])=>$(i).value=v[f]||"");
+  notSet("iNtU",v.notU);notSet("iNtB",v.notB);
+  if(!e)$("iNo").value=iNext();iDL();
+  $("iTr").value=v.spTarih||bugun();$("iBv").checked=!!v.baskiVar;
+  $("iFyW").classList.toggle("hide",!canIsAc());$("iFy").value=v.fiyat!=null?String(v.fiyat).replace(".",","):"";$("iKd").checked=!!v.kdvDahil;
+  $("iCols").innerHTML=[0,1,2].map(n=>{const c=C[n]||{};return `<div style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:6px"><b style="font-size:12px">${n+1}. ebat</b><div class="grid" style="margin-top:4px">`+[["kg","Kg"],["en","En (42*14*14)"],["mikron","Mikron"],["korona","Korona (bomlu/bomsuz)"],["boy","Boy / kazan (cm)"]].map(([f,p])=>`<input data-c="${n}" data-f="${f}" list="dl_${f}" placeholder="${p}"${f==="kg"?' type="number" inputmode="decimal" min="0" step="any"':""} value="${esc(c[f]??"")}">`).join("")+`</div></div>`}).join("");
+  $("iDlg").showModal();
+}
+$("iAdd").onclick=()=>{if(!canIsAc())return toast("Yeni iş emrini sadece muhasebe, depo görevlisi ve yönetici açabilir.");iAc(null)};
+$("iNo2").onclick=()=>$("iDlg").close();
+$("iOk").onclick=async()=>{
+  const err=m=>{$("iE").textContent=m},g=id=>$(id).value.trim(),no=g("iNo").toUpperCase();
+  if(!no)return err("Seri no gerekli (örn: MG-0945).");
+  if(!g("iMu"))return err("Müşteri adı gerekli.");
+  const S=[];[0,1,2].forEach(n=>{const c={};document.querySelectorAll(`#iCols [data-c="${n}"]`).forEach(i=>c[i.dataset.f]=i.value.trim());c.kg=parseFloat(c.kg)||0;if(c.kg>0||c.en)S.push(c)});
+  if(!S.length)return err("En az bir ebat için kg veya en girin.");
+  if((!iEdit||iEdit.no!==no)&&isE.some(x=>x.no===no))return err("Bu seri no zaten kayıtlı.");
+  const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:notGet("iNtU"),baskiVar:$("iBv").checked,urunAdi:g("iBU"),renk:g("iRenk"),notB:notGet("iNtB"),siparis:S};
+  if(canIsAc()){const fy=parseFloat(g("iFy").replace(",","."));d.fiyat=fy>0?fy:null;d.kdvDahil=$("iKd").checked}
+  $("iOk").disabled=true;
+  try{
+    if(iEdit){d.duzenleyen=ad();if(!d.baskiVar&&iEdit.asama==="baski")d.asama="kesim";await db.ref("isEmirleri/"+iEdit.id).update(d)}
+    else{Object.assign(d,{asama:"ekstruder",ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP});await db.ref("isEmirleri").push().set(d)}
+    $("iDlg").close();toast("İş emri kaydedildi");
+  }catch(e){err(errText(e))}
+  $("iOk").disabled=false;
+};
+
 formTemizle();modUyg();
+
 
 </script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
@@ -1473,6 +1747,7 @@ try{
   box.addEventListener("click",function(e){if(e.target===box)kapat()});
   document.addEventListener("keydown",function(e){if(e.key==="Escape")kapat()});
 }catch(err){console.error("foto görüntüleyici:",err)}
+
 })();
 </script>
 <script>
@@ -1484,5 +1759,51 @@ try{
   }catch(err){console.error("saat:",err)}
 })();
 </script>
+<style>
+#prn{display:none;--z:1}
+#prn.meas{display:block;position:absolute;left:-10000px;top:0;width:285mm}
+@media print{
+  @page{size:A4 landscape;margin:6mm}
+  html,body{background:#fff!important;margin:0!important;padding:0!important}
+  body>*:not(#prn){display:none!important}
+  #prn{display:block!important}
+}
+#prn .prow{display:flex;width:285mm;height:196mm;color:#000;font-family:Arial,Helvetica,sans-serif;font-weight:700}
+#prn .pf{flex:1 1 0;width:0;min-width:0;align-self:flex-start;padding:0 calc(3mm*var(--z));box-sizing:border-box;font-size:calc(13pt*var(--z))}
+#prn .pcut{flex:0 0 0;border-left:1.5px dashed #777;align-self:stretch}
+#prn .ph{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #000;padding-bottom:calc(2mm*var(--z));margin-bottom:calc(2.5mm*var(--z))}
+#prn .pfirma{font-size:calc(14pt*var(--z));font-weight:900;letter-spacing:.5px}
+#prn .pbas{font-size:calc(17pt*var(--z));font-weight:900}
+#prn .pno{font-size:calc(27pt*var(--z));font-weight:900;border:2px solid #000;padding:calc(1mm*var(--z)) calc(3mm*var(--z))}
+#prn .pt{width:100%;border-collapse:collapse;margin-bottom:calc(2.5mm*var(--z))}
+#prn .pt th,#prn .pt td{border:1.2px solid #000;padding:calc(1.4mm*var(--z)) calc(1.8mm*var(--z));text-align:left;vertical-align:middle;font-size:calc(13pt*var(--z));font-weight:700;word-break:break-word}
+#prn .pt th{background:#e5e5e5;font-weight:900;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#prn .pc th,#prn .pc td{text-align:center}
+#prn .pc td{font-size:calc(15pt*var(--z));font-weight:800}
+#prn .ps td,#prn .ps th{height:calc(10mm*var(--z))}
+#prn .ps th{text-align:left}
+#prn .pn{border:1.2px solid #000;padding:calc(2mm*var(--z));margin-bottom:calc(2.5mm*var(--z));min-height:calc(11mm*var(--z));font-size:calc(13pt*var(--z));font-weight:700}
+#prn .pd{width:100%;border-collapse:collapse;margin:0}
+#prn .pd th,#prn .pd td{border:0;border-top:1.2px solid #000;border-right:1.2px solid #000;height:calc(10mm*var(--z));font-size:calc(12.5pt*var(--z))}
+#prn .pd tr:first-child th{border-top:0;height:calc(8mm*var(--z))}
+#prn .pd th:last-child,#prn .pd td:last-child{border-right:0}
+#prn .pd th:first-child{width:34%;text-align:left}
+#prn .hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:calc(1mm*var(--z))}
+#prn .lg{display:flex;align-items:center;gap:calc(2mm*var(--z));font-style:italic;font-weight:900;font-size:calc(29pt*var(--z));letter-spacing:-1px;line-height:1}
+#prn .lg svg{width:calc(17mm*var(--z));height:calc(9mm*var(--z))}
+#prn .sn{text-align:right;line-height:1.1}#prn .sn small{display:block;font-size:calc(11pt*var(--z))}#prn .sn b{font-size:calc(22pt*var(--z));font-weight:900}
+#prn .tt{text-align:center;font-weight:900;font-size:calc(17pt*var(--z));border:1.5px solid #000;border-bottom:0;padding:calc(1mm*var(--z))}
+#prn .px{width:100%;border-collapse:collapse;table-layout:fixed}
+#prn .px th,#prn .px td{border:1.5px solid #000;padding:calc(1.2mm*var(--z)) calc(1.5mm*var(--z));font-size:calc(11.5pt*var(--z));font-weight:800;vertical-align:middle;word-break:break-word;background:#fff}
+#prn .px th{text-align:left;line-height:1.1;white-space:nowrap;font-size:calc(10.5pt*var(--z))}
+#prn .px td.v{text-align:center;font-size:calc(14pt*var(--z))}
+#prn .px td.u{font-size:calc(10pt*var(--z));font-weight:700;text-align:left;padding-left:calc(.8mm*var(--z))}
+#prn .px td.n{font-size:calc(11pt*var(--z));height:calc(11mm*var(--z))}
+#prn .px th.hd{text-align:center;font-size:calc(14pt*var(--z))}
+#prn .px.top tr:first-child th,#prn .px.top tr:first-child td{height:calc(10mm*var(--z))}
+#prn .px small{font-size:.62em;font-weight:700}
+#prn .ps{margin-top:calc(2.5mm*var(--z))}
+</style>
+<div id="prn"></div>
 </body>
 </html>
