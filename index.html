@@ -239,6 +239,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
       <select id="asf"><option value="">Tüm iller / ilçeler</option></select>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn b1" style="margin:0" id="aAdd">＋ Yeni adres ekle</button><button class="btn b6" style="margin:0;width:auto;padding:0 14px" id="aCsv">Excel</button></div>
+    <button class="btn b7" style="margin:-4px 0 10px" id="aToplu">📋 Toplu ekle (firma + harita linki)</button>
     <div id="aSay" class="shd"></div>
     <div id="aList"></div>
   </div>
@@ -330,6 +331,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <label for="aNt" style="margin-top:8px">Not (isteğe bağlı)</label><input id="aNt" placeholder="Örn: teslimat 08:00-17:00, arka kapı">
   <div class="err" id="aE" style="margin-top:8px"></div>
   <div style="display:flex;gap:8px"><button class="btn b6" id="aX">Vazgeç</button><button class="btn b1" id="aOk">Kaydet</button></div>
+</dialog>
+<dialog id="dTop">
+  <h3 style="margin-bottom:4px">📋 Toplu adres ekle</h3>
+  <p class="mut" style="font-size:12px;margin:0 0 8px">Her satıra bir firma yazın: <b>firma adı</b> ve yanına <b>harita linki</b>. Araya | veya boşluk koyabilirsiniz.</p>
+  <textarea id="tpT" rows="9" placeholder="Güneli Fırın | https://maps.app.goo.gl/abc123&#10;Çınar Market https://maps.app.goo.gl/xyz789"></textarea>
+  <div class="err" id="tpE" style="margin-top:6px"></div>
+  <div style="display:flex;gap:8px"><button class="btn b6" id="tpX">Vazgeç</button><button class="btn b1" id="tpOk">Ekle</button></div>
 </dialog>
 <dialog id="dTed">
   <h3 id="tT" style="margin-bottom:6px">Yeni tedarikçi</h3>
@@ -1411,6 +1419,30 @@ $("aOk").onclick=async()=>{
     $("dAdr").close();toast("Adres kaydedildi");
   }catch(e){err(errText(e))}
   $("aOk").disabled=false;
+};
+/* toplu ekle: her satır "firma adı | harita linki" */
+$("aToplu").onclick=()=>{$("tpT").value="";$("tpE").textContent="";$("dTop").showModal()};
+$("tpX").onclick=()=>$("dTop").close();
+$("tpOk").onclick=async()=>{
+  const err=m=>{$("tpE").textContent=m},mevcut=new Set(sAdr.map(x=>(x.ad||"").trim().toLowerCase())),goruldu=new Set(),yeni=[],atla=[],hata=[];
+  $("tpT").value.split(/\r?\n/).forEach(h=>{
+    h=h.trim();if(!h)return;
+    const m=h.match(/https?:\/\/\S+/i),url=m?safeUrl(m[0]):"",ad0=(m?h.replace(m[0],""):h).replace(/^[\s|;,\t\-–:]+|[\s|;,\t\-–:]+$/g,"").trim();
+    if(!ad0||!url){hata.push(h.slice(0,40));return}
+    const k=ad0.toLowerCase();if(mevcut.has(k)||goruldu.has(k)){atla.push(ad0);return}
+    goruldu.add(k);yeni.push({ad:ad0,url});
+  });
+  if(!yeni.length)return err(hata.length?"Firma adı ve link birlikte olmalı. Okunamayan satır: "+hata[0]:atla.length?"Hepsi zaten kayıtlı.":"Eklenecek satır yok.");
+  if(yeni.length>200)return err("Tek seferde en fazla 200 adres eklenebilir.");
+  $("tpOk").disabled=true;
+  try{
+    const up={},TS=firebase.database.ServerValue.TIMESTAMP;
+    yeni.forEach(x=>{up[db.ref("sevkAdresleri").push().key]={ad:x.ad,haritaUrl:x.url,ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:TS}});
+    await db.ref("sevkAdresleri").update(up);
+    $("dTop").close();
+    toast("✓ "+yeni.length+" adres eklendi"+(atla.length?", "+atla.length+" zaten kayıtlı olduğu için atlandı":"")+(hata.length?", "+hata.length+" satır okunamadı":"")+".");
+  }catch(e){err(errText(e))}
+  $("tpOk").disabled=false;
 };
 $("aCsv").onclick=()=>{
   const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
