@@ -116,7 +116,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <div class="tabs2"><button id="tG" class="on">Giriş Yap</button><button id="tK">Kayıt Ol</button></div>
     <form id="fG" autocomplete="on">
       <input id="lk" name="username" placeholder="Kullanıcı Adı" autocomplete="username" autocapitalize="none" autocorrect="off">
-      <input id="lp" name="password" type="password" placeholder="Şifre" autocomplete="current-password">
+      <input id="lp" name="password" type="password" placeholder="Şifre" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false">
       <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#334155;margin:0 0 10px;text-align:left;cursor:pointer"><input id="lb" type="checkbox" style="width:auto;margin:0" checked> Kullanıcı adı ve şifreyi hatırla</label>
       <div class="err" id="eG"></div>
       <button type="button" class="btn b8" id="bG">Sisteme Giriş Yap</button>
@@ -124,7 +124,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <div id="fK" class="hide">
       <input id="rn" placeholder="Adınız Soyadınız">
       <input id="rk" placeholder="Kullanıcı Adı (harf/rakam)" autocomplete="username">
-      <input id="rp" type="password" placeholder="Şifre (en az 6 karakter)" autocomplete="new-password">
+      <input id="rp" type="password" placeholder="Şifre (en az 6 karakter)" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false">
       <select id="rr"><option>Depo Görevlisi</option><option>Sevkiyat Sorumlusu</option><option>Ekstruder Operatörü</option><option>Matbaa Operatörü</option><option>Kesim Operatörü</option><option>Muhasebe</option></select>
       <div class="err" id="eK"></div>
       <button class="btn b3" id="bK">Hesap Oluştur</button>
@@ -452,7 +452,14 @@ const fmt=n=>Number(n||0).toLocaleString("tr-TR",{maximumFractionDigits:2});
 const trDate=s=>{const p=(s||"").split("-");return p.length===3?`${p[2]}.${p[1]}.${p[0]}`:"-"};
 function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),2800)}
 function safeUrl(s){try{const u=new URL(s);return(u.protocol==="http:"||u.protocol==="https:")?u.href:""}catch(e){return""}}
-function errText(e){const m={"auth/email-already-in-use":"Bu kullanıcı adı zaten alınmış.","auth/wrong-password":"Kullanıcı adı veya şifre hatalı.","auth/user-not-found":"Kullanıcı adı veya şifre hatalı.","auth/invalid-credential":"Kullanıcı adı veya şifre hatalı.","auth/weak-password":"Şifre en az 6 karakter olmalı.","auth/too-many-requests":"Çok fazla deneme. Biraz bekleyin.","auth/network-request-failed":"İnternet bağlantısı yok.","PERMISSION_DENIED":"Bu işlem için yetkiniz yok."};return m[e.code]||m[(e.message||"").split(":")[0]]||e.message}
+function errText(e){const m={"auth/email-already-in-use":"Bu kullanıcı adı zaten alınmış.","auth/wrong-password":"Kullanıcı adı veya şifre hatalı.","auth/user-not-found":"Kullanıcı adı veya şifre hatalı.","auth/invalid-credential":"Kullanıcı adı veya şifre hatalı.","auth/weak-password":"Şifre en az 6 karakter olmalı.","auth/too-many-requests":"Çok fazla deneme. Biraz bekleyin.","auth/network-request-failed":"İnternet bağlantısı yok.","PERMISSION_DENIED":"Bu işlem için yetkiniz yok."};const ms=e.message||"";
+  if(/EMAIL_EXISTS/.test(ms)||e.code==="auth/email-already-in-use")return "Bu kullanıcı adı zaten alınmış.";
+  if(/ADMIN_ONLY_OPERATION|OPERATION_NOT_ALLOWED/.test(ms)||e.code==="auth/operation-not-allowed"||e.code==="auth/admin-restricted-operation")return "Yeni kayıt Firebase tarafında kapalı. Firebase > Authentication > Settings > User actions bölümünde 'Enable create (sign-up)' açık olmalı.";
+  if(/WEAK_PASSWORD/.test(ms))return "Şifre en az 6 karakter olmalı.";
+  if(/TOO_MANY_ATTEMPTS/.test(ms))return "Çok fazla deneme. Biraz bekleyin.";
+  if(/INVALID_EMAIL/.test(ms))return "Kullanıcı adı geçersiz (sadece harf, rakam, . _ - kullanın).";
+  if(/API_KEY|API key|referer|blocked/i.test(ms))return "Firebase API anahtarı bu siteye izin vermiyor. Google Cloud > API ve Hizmetler > Kimlik Bilgileri bölümünde anahtarın site kısıtlamasını kontrol edin.";
+  if(/INVALID_LOGIN_CREDENTIALS|INVALID_PASSWORD|EMAIL_NOT_FOUND/.test(ms))return "Kullanıcı adı veya şifre hatalı (ya da bu kullanıcı kayıtlı değil).";return m[e.code]||m[ms.split(":")[0]]||ms}
 
 if(CFG.apiKey.startsWith("BURAYA")){
   document.body.innerHTML='<div style="padding:24px;font-size:16px"><b>Ayar eksik.</b><br><br>Dosyanın içindeki <code>CFG</code> bölümüne Firebase apiKey ve appId değerlerini yazın.</div>';
@@ -506,7 +513,7 @@ $("bG").onclick=async()=>{
   const rem=$("lb").checked;
   try{
     await auth.setPersistence(rem?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION);
-    await auth.signInWithEmailAndPassword(mail(k),p);
+    try{await auth.signInWithEmailAndPassword(mail(k),p)}catch(e1){if(p!==p.trim()&&p.trim())await auth.signInWithEmailAndPassword(mail(k),p.trim());else throw e1}
     try{if(rem){localStorage.setItem("hatirla_k",k);localStorage.setItem("hatirla_p",btoa(unescape(encodeURIComponent(p))));localStorage.setItem("hatirla_on","1")}else{localStorage.removeItem("hatirla_k");localStorage.removeItem("hatirla_p");localStorage.setItem("hatirla_on","0")}}catch(_){}
     if(!rem)$("lp").value=""
   }catch(e){$("eG").textContent=errText(e)}
