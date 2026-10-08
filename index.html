@@ -334,8 +334,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 </dialog>
 <dialog id="dTop">
   <h3 style="margin-bottom:4px">📋 Toplu adres ekle</h3>
-  <p class="mut" style="font-size:12px;margin:0 0 8px">Her satıra bir firma yazın: <b>firma adı</b> ve yanına <b>harita linki</b>. Araya | veya boşluk koyabilirsiniz.</p>
-  <textarea id="tpT" rows="9" placeholder="Güneli Fırın | https://maps.app.goo.gl/abc123&#10;Çınar Market https://maps.app.goo.gl/xyz789"></textarea>
+  <p class="mut" style="font-size:12px;margin:0 0 8px">Firma adını yazın, <b>linki aynı satıra ya da hemen altındaki satıra</b> koyun. Her firma için bu şekilde devam edin.</p>
+  <textarea id="tpT" rows="9" placeholder="HMT GROSS MARKET&#10;https://maps.app.goo.gl/abc123&#10;Çınar Market https://maps.app.goo.gl/xyz789"></textarea>
   <div class="err" id="tpE" style="margin-top:6px"></div>
   <div style="display:flex;gap:8px"><button class="btn b6" id="tpX">Vazgeç</button><button class="btn b1" id="tpOk">Ekle</button></div>
 </dialog>
@@ -1425,13 +1425,18 @@ $("aToplu").onclick=()=>{$("tpT").value="";$("tpE").textContent="";$("dTop").sho
 $("tpX").onclick=()=>$("dTop").close();
 $("tpOk").onclick=async()=>{
   const err=m=>{$("tpE").textContent=m},mevcut=new Set(sAdr.map(x=>(x.ad||"").trim().toLowerCase())),goruldu=new Set(),yeni=[],atla=[],hata=[];
+  const kes=t=>t.replace(/^[\s|;,\t\-–:]+|[\s|;,\t\-–:]+$/g,"").trim();
+  let bek="";
+  const ekle=(ad0,url)=>{const k=ad0.toLowerCase();if(mevcut.has(k)||goruldu.has(k)){atla.push(ad0);return}goruldu.add(k);yeni.push({ad:ad0,url})};
   $("tpT").value.split(/\r?\n/).forEach(h=>{
     h=h.trim();if(!h)return;
-    const m=h.match(/https?:\/\/\S+/i),url=m?safeUrl(m[0]):"",ad0=(m?h.replace(m[0],""):h).replace(/^[\s|;,\t\-–:]+|[\s|;,\t\-–:]+$/g,"").trim();
-    if(!ad0||!url){hata.push(h.slice(0,40));return}
-    const k=ad0.toLowerCase();if(mevcut.has(k)||goruldu.has(k)){atla.push(ad0);return}
-    goruldu.add(k);yeni.push({ad:ad0,url});
+    const m=h.match(/https?:\/\/\S+/i);
+    if(!m){if(bek)hata.push(bek.slice(0,40));bek=kes(h);return}   /* sadece isim satırı: linki sonraki satırda beklenir */
+    const url=safeUrl(m[0]),ad0=kes(h.replace(m[0],""))||bek;bek="";
+    if(!ad0||!url){hata.push((ad0||h).slice(0,40));return}
+    ekle(ad0,url);
   });
+  if(bek)hata.push(bek.slice(0,40));
   if(!yeni.length)return err(hata.length?"Firma adı ve link birlikte olmalı. Okunamayan satır: "+hata[0]:atla.length?"Hepsi zaten kayıtlı.":"Eklenecek satır yok.");
   if(yeni.length>200)return err("Tek seferde en fazla 200 adres eklenebilir.");
   $("tpOk").disabled=true;
