@@ -138,6 +138,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div class="box">
     <h2 style="margin-bottom:8px">Onay bekleniyor</h2>
     <p style="color:#475569;margin-bottom:12px">Hesabınız oluşturuldu. Bir yönetici onayladığında bu ekran kendiliğinden açılır.</p>
+    <div class="err" id="wE"></div>
+    <button class="btn b3 hide" id="wR">🔄 Kaydı yeniden gönder</button>
     <button class="btn b6" data-out>Çıkış</button>
   </div>
 </div>
@@ -438,12 +440,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 window.addEventListener("error",function(e){var b=document.getElementById("boot");if(b&&!b.classList.contains("hide"))b.textContent="Hata: "+e.message+" (satır "+e.lineno+")"});
 /* ============ AYAR: Firebase Console > Proje ayarları > Web uygulaması'ndan kopyalayın ============ */
 const CFG={
-  apiKey:"AIzaSyB-QzxvARbpoUYPGHAUX_kb_w-VFDJZz9c",
-  authDomain:"magdeneme-8bf13.firebaseapp.com",
-  databaseURL:"https://magdeneme-8bf13-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId:"magdeneme-8bf13",
-  storageBucket:"magdeneme-8bf13.firebasestorage.app",
-  appId:"1:866427134112:web:327118a48e823a89df69c5"
+  apiKey:"AIzaSyA_ZyOtWAvaYQvU8KaJnAJZK1s4Qd80FtU",
+  authDomain:"sevkiyat-fc22b.firebaseapp.com",
+  databaseURL:"https://sevkiyat-fc22b-default-rtdb.firebaseio.com",
+  projectId:"sevkiyat-fc22b",
+  storageBucket:"sevkiyat-fc22b.firebasestorage.app",
+  messagingSenderId:"449531312842",
+  appId:"1:449531312842:web:33e750da974679f87f1233"
 };
 /* ================================================================================================= */
 const $=id=>document.getElementById(id);
@@ -485,6 +488,14 @@ const ad=()=>rec?`${rec.ad} (${rec.rol})`:"Bilinmiyor";
 const isAdmin=()=>!!(rec&&rec.yonetici===true&&rec.onay===true);
 
 /* ---------- Oturum ---------- */
+let pendReg=null,kayitDevam=false;const kyTry={};
+async function kayitYaz(u){
+  if(!u)return;const ad0=(u.email||"").split("@")[0],P=pendReg||{n:ad0,k:ad0,r:"Depo Görevlisi"};
+  $("wE").textContent="Kayıt veritabanına yazılıyor...";$("wR").classList.add("hide");
+  try{await db.ref("kullanicilar/"+u.uid).set({ad:P.n,kullanici:P.k,rol:P.r,onay:false,yonetici:false});$("wE").textContent=""}
+  catch(e){$("wE").textContent="Kayıt veritabanına yazılamadı: "+errText(e);$("wR").classList.remove("hide")}
+}
+$("wR").onclick=()=>kayitYaz(auth.currentUser);
 auth.onAuthStateChanged(u=>{
   if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null} if(window.tRef){tRef.off();tRef=null} if(window.oRef){oRef.off();oRef=null} if(window.aRef){aRef.off();aRef=null} if(window.dRef){dRef.off();dRef=null} dosya=[]; if(window.fRef){fRef.off();fRef=null} if(window.iRef){iRef.off();iRef=null} fyat={sevk:{},stok:{},siparis:{}};
   started=false;menuOk=false;urunler=[];rec=null;user=u;
@@ -499,8 +510,8 @@ auth.onAuthStateChanged(u=>{
       show(menuOk?"vApp":"vMenu");
       if(!started){started=true;yukle();adrYukle();if(panel==="stok")stokYukle()}
       listele();
-    }else{show("vWait")}
-  },e=>{toast("Hesap okunamadı: "+errText(e));show("vWait")});
+    }else{show("vWait");if(!rec&&!kayitDevam&&!kyTry[u.uid]){kyTry[u.uid]=1;kayitYaz(u)}}
+  },e=>{toast("Hesap okunamadı: "+errText(e));$("wE").textContent="Hesap okunamadı: "+errText(e);show("vWait")});
 });
 document.querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>auth.signOut());
 
@@ -531,10 +542,15 @@ $("bK").onclick=async()=>{
   if(!n){$("eK").textContent="Adınızı yazın.";return}
   if(!/^[a-z0-9._-]{3,20}$/.test(k)){$("eK").textContent="Kullanıcı adı 3-20 karakter olmalı (harf, rakam, . _ -).";return}
   if(p.length<6){$("eK").textContent="Şifre en az 6 karakter olmalı.";return}
+  $("bK").disabled=true;$("eK").style.color="#475569";$("eK").textContent="Hesap oluşturuluyor...";
+  let c=null;pendReg={n,k,r};kayitDevam=true;
+  try{c=await auth.createUserWithEmailAndPassword(mail(k),p)}
+  catch(e){kayitDevam=false;$("eK").style.color="";$("eK").textContent="1/2 Hesap açılamadı: "+errText(e);$("bK").disabled=false;return}
   try{
-    const c=await auth.createUserWithEmailAndPassword(mail(k),p);
     await db.ref("kullanicilar/"+c.user.uid).set({ad:n,kullanici:k,rol:r,onay:false,yonetici:false});
-  }catch(e){$("eK").textContent=errText(e)}
+    $("eK").textContent="";$("wE").textContent="";
+  }catch(e){$("eK").style.color="";$("eK").textContent="2/2 Hesap açıldı ama kayıt veritabanına yazılamadı: "+errText(e);$("wE").textContent="Kayıt veritabanına yazılamadı: "+errText(e);$("wR").classList.remove("hide")}
+  kayitDevam=false;$("bK").disabled=false;
 };
 $("bAd").onclick=()=>{const n=prompt("Yeni ad soyad:",rec&&rec.ad);if(n&&n.trim())db.ref("kullanicilar/"+user.uid+"/ad").set(n.trim()).catch(e=>toast(errText(e)))};
 
