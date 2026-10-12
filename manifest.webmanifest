@@ -3,7 +3,7 @@
   "short_name": "Fabrika",
   "description": "MAG AMBALAJ fabrika stok, sipariş ve sevkiyat takibi",
   "lang": "tr",
-  "id": "/fabrika-sevkiyat/?app=mag",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
