@@ -36,7 +36,10 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #cbd5e1;border-
 input:focus,textarea:focus,select:focus{border-color:#2563eb}
 .btn{width:100%;padding:12px;border-radius:8px;font-weight:700;font-size:13px;border:0;cursor:pointer;color:#fff;margin-top:6px}
 .btn:disabled{opacity:.5}
-.b1{background:#2563eb}.b2{background:#ff9f1c}.b3{background:#2ec4b6}.b4{background:#3b82f6}.b5{background:#e71d36}.b6{background:#64748b}.b7{background:#0f766e}.b8{background:#c82333}
+.b1{background:#2563eb}.b2{background:#ff9f1c}.b3{background:#2ec4b6}.b4{background:#3b82f6}.b5{background:#e71d36}.b6{background:#64748b}.b7{background:#0f766e}
+.big{padding:16px!important;font-size:15px!important}
+.kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.kgrid .fth img{height:90px}.b8{background:#c82333}
 .sm{padding:5px 9px;font-size:11px;width:auto;margin:0}
 .photo{display:flex;gap:8px}
 .photo>*{flex:1;text-align:center;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:0;color:#fff;background:#2563eb}
@@ -289,18 +292,18 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
       <input id="sq" placeholder="🔍 Kalem ara (poşet, bant, koli, masura...)" style="margin-bottom:8px">
       <div style="display:flex;gap:6px"><select id="sc"><option value="">Tüm kategoriler</option></select><select id="sd"><option value="">Tüm durumlar</option><option value="lo">Azalan</option><option value="no">Tükenen</option></select></div>
     </div>
-    <div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn b1" style="margin:0" id="sAdd">＋ Yeni kalem ekle</button><button class="btn b6" style="margin:0;width:auto;padding:0 14px" id="sCsv">Excel</button></div>
+    <div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn b2 big" style="margin:0" id="sAdd">＋ Yeni kalem ekle</button><button class="btn b6" style="margin:0;width:auto;padding:0 14px" id="sCsv">Excel</button></div>
     <button class="btn b2 hide" style="margin:0 0 10px" id="sTas"></button>
     <div id="sList"></div>
     </div>
     <div id="sSip" class="hide">
-      <button class="btn b1" style="margin:0 0 10px" id="oAdd">＋ Yeni sipariş oluştur</button>
+      <button class="btn b2 big" style="margin:0 0 10px" id="oAdd">＋ Yeni sipariş oluştur</button>
       <input id="oq" placeholder="🔍 Sipariş ara (kalem, kategori, tedarikçi, tarih, not...)" style="margin-bottom:8px">
       <div class="tabs stabs" id="oVt"><button data-o="kat" class="on">📁 KATEGORİYE GÖRE</button><button data-o="lis">🧾 SİPARİŞ LİSTESİ</button></div>
       <div id="oList"></div>
     </div>
     <div id="sTed" class="hide">
-      <button class="btn b1" style="margin:0 0 10px" id="tAdd">＋ Yeni tedarikçi ekle</button>
+      <button class="btn b2 big" style="margin:0 0 10px" id="tAdd">＋ Yeni tedarikçi ekle</button>
       <input id="tq" placeholder="🔍 Tedarikçi ara (firma, kişi, telefon...)" style="margin-bottom:12px">
       <div id="tList"></div>
     </div>
@@ -323,8 +326,10 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <p class="mut" style="font-size:11px;margin:0 0 4px">Mevcut miktar ve kritik seviye (altına düşünce uyarır) isteğe bağlıdır.</p>
   <label for="ste" style="margin-top:8px">Tedarikçi (isteğe bağlı)</label><input id="ste" list="dlt" placeholder="Önceden girdikleriniz burada çıkar" autocomplete="off"><datalist id="dlt"></datalist>
   <label for="sno" style="margin-top:8px">Not (isteğe bağlı)</label><input id="sno">
-  <label for="sfoto" style="margin-top:8px">Fotoğraf (isteğe bağlı)</label><input id="sfoto" type="file" accept="image/*">
-  <img id="sprev" alt="" style="display:none;width:100%;max-height:160px;object-fit:contain;background:#0f172a;border-radius:8px;margin-top:8px">
+  <label style="margin-top:8px">Fotoğraflar (isteğe bağlı, birden fazla eklenebilir)</label>
+  <div style="display:flex;gap:6px"><button type="button" class="btn b4" style="margin:0" id="kGalB">🖼️ Galeriden ekle</button><button type="button" class="btn b7" style="margin:0" id="kCamB">📷 Fotoğraf çek</button></div>
+  <input id="kGal" type="file" accept="image/*" multiple class="hide"><input id="kCam" type="file" accept="image/*" capture="environment" class="hide">
+  <div id="kGrid" class="kgrid"></div><div id="kSay" class="mut" style="font-size:11px;margin-top:4px"></div>
   <div class="err" id="kE" style="margin-top:8px"></div>
   <div style="display:flex;gap:8px"><button class="btn b6" id="kNo">Vazgeç</button><button class="btn b1" id="kOk">Kaydet</button></div>
 </dialog>
@@ -869,7 +874,7 @@ function modUyg(){
 
 /* ================= STOK (satın alınan malzemeler) ================= */
 var fRef=null,fyErr=0,fyat={sevk:{},stok:{},siparis:{}},kFB="";
-var panel="sevk",sRef=null,sKalem=[],kEdit=null,kFoto="",hs=null,kSel=new Set(),kVals={};
+var panel="sevk",sRef=null,sKalem=[],kEdit=null,kFotos=[],hs=null,kSel=new Set(),kVals={};
 const UN=[["adet","Adet"],["koli","Koli"],["paket","Paket"],["rulo","Rulo"],["masura","Masura"],["kg","Kg"],["metre","Metre"]],UL=Object.fromEntries(UN);
 const norm=k=>{
   if(k.mik&&typeof k.mik==="object")return{mik:k.mik,min:(k.min&&typeof k.min==="object")?k.min:{}};
@@ -976,7 +981,7 @@ function kkart(k){
     </div><span class="chev">${open?"▲":"▼"}</span>
   </div>
   <div class="dt${open?"":" hide"}">
-    ${ph?`<img loading="lazy" src="${ph}" alt="" style="max-height:140px">`:""}
+    ${(()=>{const L=fotoListe(k);return L.length===1?`<img loading="lazy" src="${L[0]}" alt="" style="max-height:140px">`:L.length?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">${L.map(x=>`<img loading="lazy" src="${x}" alt="" style="width:calc(50% - 3px);height:110px;margin:0;object-fit:cover">`).join("")}</div>`:""})()}
     ${kr?`<div class="sub">Kritik seviye: ${esc(kr)}</div>`:""}
     ${bek.length?`<div class="addr" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">🧾 Siparişte: ${esc(bek.join(" · "))}</div>`:""}
     ${isAdmin()?kFyHtml(k):""}
@@ -1009,17 +1014,27 @@ function kDraw(){
 }
 $("ub").onchange=e=>{const u=e.target.dataset.c;if(!u)return;kRead();if(e.target.checked)kSel.add(u);else kSel.delete(u);kDraw()};
 function kAc(k){
-  kEdit=k||null;kFoto="";kVals={};$("kT").textContent=k?"Kalemi düzenle":"Yeni kalem";$("kE").textContent="";
+  kEdit=k||null;kFotos=k?fotoListe(k).slice(0,FMAX):[];kVals={};$("kT").textContent=k?"Kalemi düzenle":"Yeni kalem";$("kE").textContent="";
   $("sad").value=k?k.ad:"";$("skat").value=k?k.kategori||"":"";$("seb").value=k?k.ebat||"":"";$("ste").value=k?k.tedarikci||"":"";$("sno").value=k?k.not||"":"";
   if(k){const n=norm(k);kSel=new Set(Object.keys(n.mik).filter(u=>UL[u]));kSel.forEach(u=>{if(+n.min[u]>0)kVals[u]={min:n.min[u]}})}else kSel=new Set(["adet"]);
   kDraw();
-  const p=$("sprev");if(k&&safeImg(k.foto)){p.src=k.foto;p.style.display="block"}else p.style.display="none";
+  kFotoCiz();
   $("dKalem").showModal();
 }
 $("sAdd").onclick=()=>kAc(null);
 $("kNo").onclick=()=>$("dKalem").close();
-$("sfoto").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=()=>sikistir(r.result,d=>{kFoto=d;$("sprev").src=d;$("sprev").style.display="block"},500);r.readAsDataURL(f);e.target.value=""};
+function kFotoCiz(){
+  $("kGrid").innerHTML=kFotos.map((x,i)=>`<div class="fth"><img src="${x}" alt="Foto ${i+1}" data-z="${i}"><button type="button" class="fx" data-x="${i}" aria-label="Kaldır">✖</button></div>`).join("");
+  $("kSay").textContent=kFotos.length?kFotos.length+"/"+FMAX+" fotoğraf":"";
+}
+$("kGrid").onclick=e=>{const x=e.target.closest("[data-x]");if(x){kFotos.splice(+x.dataset.x,1);kFotoCiz();return}
+  const z=e.target.closest("[data-z]");if(z&&window.fvAc)window.fvAc(kFotos[+z.dataset.z])};
+function kFotoEkle(files){[...files].forEach(f=>{
+  if(kFotos.length>=FMAX){toast("En fazla "+FMAX+" fotoğraf eklenebilir.");return}
+  const r=new FileReader();r.onload=()=>sikistir(r.result,d=>{if(kFotos.length>=FMAX)return;kFotos.push(d);kFotoCiz()},500);r.readAsDataURL(f)})}
+$("kGalB").onclick=()=>$("kGal").click();$("kCamB").onclick=()=>$("kCam").click();
+$("kGal").onchange=e=>{kFotoEkle(e.target.files);e.target.value=""};
+$("kCam").onchange=e=>{kFotoEkle(e.target.files);e.target.value=""};
 $("kOk").onclick=async()=>{
   kRead();const nm=$("sad").value.trim(),err=m=>{$("kE").textContent=m};
   if(!nm)return err("Kalem adı gerekli.");
@@ -1038,14 +1053,14 @@ $("kOk").onclick=async()=>{
   try{
     if(kEdit){
       const up=Object.assign({ad:nm,duzenleyen:ad(),min:Object.keys(min).length?min:null},extra);
-      if(kFoto)up.foto=kFoto;
+      up.foto=kFotos[0]||null;up.fotolar=kFotos.length>1?kFotos.slice(1):null;
       if(!kEdit.mik){Object.keys(old).forEach(u=>{if(kSel.has(u))up["mik/"+u]=old[u]});up.miktar=null;up.birim=null}
       else Object.keys(old).forEach(u=>{if(!kSel.has(u))up["mik/"+u]=null});
       Object.keys(mik).forEach(u=>{up["mik/"+u]=mik[u]});
       await db.ref("stokKalem/"+kEdit.id).update(up);
     }else{
       const d=Object.assign({ad:nm,mik,ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:TS},extra);
-      if(Object.keys(min).length)d.min=min;if(kFoto)d.foto=kFoto;
+      if(Object.keys(min).length)d.min=min;if(kFotos.length){d.foto=kFotos[0];if(kFotos.length>1)d.fotolar=kFotos.slice(1)}
       const r=db.ref("stokKalem").push();newId=r.key;await r.set(d);
       const pos=Object.fromEntries(Object.entries(mik).filter(([,v])=>v>0));
       if(Object.keys(pos).length)await db.ref("stokHareket").push().set({kalemId:r.key,ad:nm,tip:"giris",mik:pos,kalan:mik,not:"İlk kayıt",kullanici:ad(),uid:user.uid,zaman:TS});
@@ -1916,6 +1931,18 @@ try{
 #prn .ps{margin-top:calc(2.5mm*var(--z))}
 </style>
 <div id="prn"></div>
+<script>
+(function(){
+  document.querySelectorAll("dialog").forEach(function(d){
+    var v=Array.prototype.find.call(d.querySelectorAll("button"),function(b){return b.textContent.trim()==="Vazgeç"});
+    if(!v)return;
+    var dis=function(e){var r=d.getBoundingClientRect();return e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom};
+    var basla=false;
+    d.addEventListener("pointerdown",function(e){basla=e.target===d&&dis(e)});
+    d.addEventListener("click",function(e){if(basla&&e.target===d&&dis(e))v.click();basla=false});
+  });
+})();
+</script>
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
 </script>
