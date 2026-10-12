@@ -274,7 +274,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
   <div id="pIs" class="hide">
     <button class="btn b2 big" style="margin:0 0 10px" id="iAdd">＋ Yeni iş emri aç</button>
-    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: yazdırma-v11 (iş emri kartlarında 🖨️ Yazdır butonu var)</div>
+    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v12 (iş emri kaydedilince etiket ekranı açılır; kartlarda 🏷️ Etiket butonu var)</div>
     <input id="iq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="iTabs"></div>
     <div id="iList"></div>
@@ -1652,7 +1652,7 @@ function isKart(e){
   ${e.baskiVar||e.notB?`<div class="addr">🖨️ ${esc(e.urunAdi||"")} ${e.renk?"· "+esc(e.renk):""}${e.notB?"<br>"+notHtml(e.notB):""}</div>`:""}
   ${lg}
   <div class="acts">${nx?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:15px" data-a="ileri" data-id="${id}">${e.asama==="depo"?"📦 Depoya girişi kaydet → BİTEN":"✓ Bitti → "+esc(ASL[nx])}</button>`:""}
-  ${i>0?`<button class="btn b6" data-a="geri" data-id="${id}">↩️ Geri al</button>`:""}<button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button><button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div>
+  ${i>0?`<button class="btn b6" data-a="geri" data-id="${id}">↩️ Geri al</button>`:""}<button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button><button class="btn b7" data-a="etik" data-id="${id}">🏷️ Etiket</button><button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div>
   ${e.asama==="bitti"&&e.bekleAktar&&!e.aktarildi?`<button class="btn b4" style="width:100%;margin-top:8px;padding:14px;font-size:15px" data-a="aktar" data-id="${id}">📦 Hazır ürünlere aktar</button>`:""}${e.aktarildi?`<div class="note" style="margin-top:8px">✅ Hazır ürünlere aktarıldı</div>`:""}</div>`;
 }
 $("iList").onclick=async ev=>{
@@ -1660,6 +1660,7 @@ $("iList").onclick=async ev=>{
   const a=b.dataset.a,o=asOrd(e),i=o.indexOf(e.asama),TS=firebase.database.ServerValue.TIMESTAMP;
   try{
     if(a==="yaz")isYazdir(e);
+    else if(a==="etik")etiketAc(e);
     else if(a==="aktar"){
       const d=(e.log&&e.log.depo)||{},C=icols(e);
       const P=Array.isArray(d.kalem)?d.kalem.map((x,i)=>({i,kg:+(x&&x.kg)||0,paket:+(x&&x.paket)||0,c:C[i]||{}})).filter(x=>x.kg>0||x.paket>0):[{i:0,kg:+d.kg||0,paket:+d.paket||0,c:C[0]||{}}];
@@ -1818,7 +1819,7 @@ $("iOk").onclick=async()=>{
   try{
     if(iEdit){d.duzenleyen=ad();if(!d.baskiVar&&iEdit.asama==="baski")d.asama="kesim";await db.ref("isEmirleri/"+iEdit.id).update(d)}
     else{Object.assign(d,{asama:"ekstruder",ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP});await db.ref("isEmirleri").push().set(d)}
-    $("iDlg").close();toast("İş emri kaydedildi");
+    $("iDlg").close();toast("İş emri kaydedildi");if(!iEdit&&typeof etiketAc==="function")setTimeout(()=>etiketAc(d),250);
   }catch(e){err(errText(e))}
   $("iOk").disabled=false;
 };
@@ -1946,6 +1947,146 @@ try{
     d.addEventListener("pointerdown",function(e){basla=e.target===d&&dis(e)});
     d.addEventListener("click",function(e){if(basla&&e.target===d&&dis(e))v.click();basla=false});
   });
+})();
+</script>
+<!-- ===================== ETİKET BASMA (Godex / etiket yazıcı) ===================== -->
+<style>
+#lbDlg{width:min(500px,95vw)}
+#lbDlg .lbrow{border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin:8px 0}
+#lbDlg .g2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+#lbDlg .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px}
+#lbDlg label.s{font-size:11px;color:#64748b;font-weight:700;display:block;margin-top:6px}
+#lbPrevW{background:#e2e8f0;border-radius:8px;padding:8px;margin:8px 0;overflow:hidden}
+#lbPrev{transform-origin:top left}
+.lb,.lb *{box-sizing:border-box}
+.lb{position:relative;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-weight:900;overflow:hidden;padding:3mm;display:flex;flex-direction:column}
+.lb .lbh{flex:0 0 19%;display:flex;gap:1.5mm;margin-bottom:1.5mm}
+.lb .lbx{flex:1;border:.9mm solid #000;display:flex;flex-direction:column;min-height:0}
+.lb .lbr{flex:1;display:flex;border-top:.7mm solid #000;min-height:0}
+.lb .lbr:first-child{border-top:0}
+.lb .lbc{display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap;padding:0 1.5mm;min-width:0;flex:1}
+.lb .lbc span{display:inline-block;line-height:1}
+.lb .lbk{flex:0 0 24%;border-right:.7mm solid #000}
+.lb .blk{flex:0 0 27%;background:#000;color:#fff;font-style:italic;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.lb .lbf{flex:0 0 15%;display:flex;flex-direction:column;margin-top:1.5mm}
+.lb .lbf .lbc{font-weight:700}
+#lprn{display:none}
+#lprn.meas{display:block;position:absolute;left:-10000px;top:0}
+@media print{
+  body.lblp{background:#fff!important;margin:0!important;padding:0!important;min-height:0!important;height:auto!important}
+  body.lblp>*:not(#lprn){display:none!important}
+  body.lblp>#lprn{display:block!important;position:static!important}
+  body.lblp .lb{break-after:page;page-break-after:always}
+  body.lblp .lb:last-child{break-after:auto;page-break-after:auto}
+}
+</style>
+<dialog id="lbDlg">
+  <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket bas</h3>
+  <p class="mut" style="font-size:11px;margin-bottom:6px">Bilgiler iş emrinden dolduruldu. Gerekirse değiştirin, adedi yazın ve yazdırın. Yazıcı olarak Godex'i seçin.</p>
+  <label class="s">Müşteri</label><input id="lbMu" maxlength="60">
+  <div id="lbRows"></div>
+  <div class="g3">
+    <div><label class="s">Etiket eni (mm)</label><input id="lbW" type="number" inputmode="decimal" min="20" max="300" step="any"></div>
+    <div><label class="s">Etiket boyu (mm)</label><input id="lbH" type="number" inputmode="decimal" min="20" max="300" step="any"></div>
+    <div><label class="s">Tasarım</label><select id="lbMag"><option value="1">Logolu</option><option value="0">Sade</option></select></div>
+  </div>
+  <div id="lbPrevW"><div id="lbPrev"></div></div>
+  <div class="err" id="lbE"></div>
+  <div style="display:flex;gap:8px"><button class="btn b6" id="lbNo" type="button">Kapat</button><button class="btn b3" id="lbOk" type="button">🖨️ Etiketleri yazdır</button></div>
+</dialog>
+<div id="lprn"></div>
+<script>
+(function(){
+  var g=function(id){return document.getElementById(id)};
+  var CK="lblCfg",cur=null;
+  function cfgGet(){var d={w:100,h:100,mag:1};try{var s=JSON.parse(localStorage.getItem(CK)||"{}");if(s.w>0)d.w=s.w;if(s.h>0)d.h=s.h;if(s.mag===0||s.mag===1)d.mag=s.mag}catch(e){}return d}
+  function cfgSet(c){try{localStorage.setItem(CK,JSON.stringify(c))}catch(e){}}
+  function cfgRead(){var w=parseFloat(String(g("lbW").value).replace(",",".")),h=parseFloat(String(g("lbH").value).replace(",","."));return{w:w>=20?w:100,h:h>=20?h:100,mag:g("lbMag").value==="0"?0:1}}
+  var T=function(s){return String(s==null?"":s).trim().toLocaleUpperCase("tr-TR")};
+  var X=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+  var N=function(n){return Number(n||0).toLocaleString("tr-TR",{maximumFractionDigits:3})};
+  var LOGO='<svg viewBox="0 0 60 30" style="height:.8em;width:1.6em;vertical-align:-.08em;margin-right:.2em"><ellipse cx="30" cy="15" rx="28" ry="12" fill="none" stroke="#fff" stroke-width="3"/><path d="M10 11L24 24L30 13L36 24L50 11" fill="none" stroke="#fff" stroke-width="3.5"/></svg>';
+  var cols=function(e){return Object.values((e&&e.siparis)||{}).filter(Boolean)};
+
+  /* Etiket HTML'i: o={mu,urun,ebat,kg}, c={w,h,mag} */
+  function row(t,k){return '<div class="lbr">'+(k?'<div class="lbc lbk" data-g="k"><span>'+k+'</span></div>':"")+'<div class="lbc"><span>'+X(T(t))+'</span></div></div>'}
+  function lblHtml(o,c){
+    var kg=o.kg>0?N(o.kg)+" KG":"";
+    var h='<div class="lb" style="width:'+c.w+'mm;height:'+(c.h-0.3)+'mm">';
+    if(c.mag)h+='<div class="lbh"><div class="lbc blk"><span>'+LOGO+'magpack</span></div><div class="lbc"><span>MAG AMBALAJ A.Ş.</span></div><div class="lbc blk"><span>'+LOGO+'mag ambalaj</span></div></div>';
+    h+='<div class="lbx">'+row(o.mu,"")+row(o.urun,c.mag?"ÜRÜN":"")+row(o.ebat,c.mag?"EBAT":"")+row(kg,c.mag?"KG":"")+'</div>';
+    if(c.mag)h+='<div class="lbf"><div class="lbc" data-g="f"><span>Cumhuriyet Mahallesi Meclis Caddesi No:62 Silivri/İSTANBUL</span></div><div class="lbc" data-g="f"><span>info@magambalaj.com</span></div><div class="lbc" data-g="f"><span>www.magambalaj.com</span></div></div>';
+    return h+'</div>';
+  }
+  /* Her yazıyı kutusuna sığacak en büyük boyuta ayarla */
+  function fit(root){
+    root.querySelectorAll(".lbc").forEach(function(c){
+      var s=c.firstElementChild;if(!s)return;
+      var cs=getComputedStyle(c),av=c.clientWidth-parseFloat(cs.paddingLeft)*2;
+      var sz=Math.max(6,Math.floor(c.clientHeight*(c.dataset.g==="f"?0.8:0.68)));
+      s.style.fontSize=sz+"px";
+      var w=s.offsetWidth;
+      if(w>av&&w>0){sz=Math.max(5,Math.floor(sz*av/w));s.style.fontSize=sz+"px";var n=0;while(s.offsetWidth>av&&sz>5&&n++<40){sz--;s.style.fontSize=sz+"px"}}
+    });
+    ["k","f"].forEach(function(gr){
+      var a=[].slice.call(root.querySelectorAll('[data-g="'+gr+'"]'));if(!a.length)return;
+      var m=Math.min.apply(null,a.map(function(c){return parseFloat(c.firstElementChild.style.fontSize)}));
+      a.forEach(function(c){c.firstElementChild.style.fontSize=m+"px"});
+    });
+  }
+  /* Önerilen değerler */
+  function urunOner(e){var s=T(e.urunAdi)||T(e.stok).replace(/^(OR\.?|ORJ\.?)\s*/,"").replace(/^(LDPE|HDPE|LLDPE|PP)\s*/,"");return s}
+  function ebatOner(c){var en=String(c.en||"").trim(),boy=String(c.boy||"").trim();return en&&boy?en+" X "+boy:(en||boy)}
+  function temizle(){var s=g("lbPage");if(s)s.remove();document.body.classList.remove("lblp");var p=g("lprn");p.innerHTML="";p.className=""}
+
+  window.etiketAc=function(e){
+    try{
+      temizle();cur=e;var C=cols(e),c=cfgGet();
+      g("lbT").textContent="🏷️ Etiket bas — "+(e.no||"");g("lbE").textContent="";
+      g("lbMu").value=T(e.musteri);g("lbW").value=c.w;g("lbH").value=c.h;g("lbMag").value=String(c.mag);
+      g("lbRows").innerHTML=(C.length?C:[{}]).map(function(x,i){
+        var kg=20,ad=x.kg>0?Math.max(1,Math.ceil(x.kg/kg)):1;
+        return '<div class="lbrow"><b style="font-size:12px">'+(i+1)+'. ebat'+(x.kg?' · sipariş '+X(N(x.kg))+' kg':'')+'</b>'+
+        '<label class="s">Ürün</label><input data-i="'+i+'" data-f="urun" maxlength="60" value="'+X(urunOner(e))+'">'+
+        '<label class="s">Ebat</label><input data-i="'+i+'" data-f="ebat" maxlength="40" value="'+X(ebatOner(x))+'">'+
+        '<div class="g2"><div><label class="s">Koli / paket kg</label><input data-i="'+i+'" data-f="kg" type="number" inputmode="decimal" min="0" step="any" value="'+kg+'"></div>'+
+        '<div><label class="s">Etiket adedi</label><input data-i="'+i+'" data-f="adet" type="number" inputmode="numeric" min="0" step="1" value="'+ad+'"></div></div></div>';
+      }).join("");
+      g("lbDlg").showModal();prev();
+    }catch(err){console.error("etiket:",err)}
+  };
+  function collect(){
+    var rows=[];g("lbRows").querySelectorAll(".lbrow").forEach(function(r,i){
+      var v=function(f){return r.querySelector('[data-f="'+f+'"]').value};
+      rows.push({urun:v("urun").trim(),ebat:v("ebat").trim(),kg:parseFloat(String(v("kg")).replace(",","."))||0,adet:parseInt(v("adet"))||0});
+    });
+    return{mu:g("lbMu").value.trim(),rows:rows};
+  }
+  function prev(){
+    var c=cfgRead(),d=collect(),r=d.rows.filter(function(x){return x.adet>0})[0]||d.rows[0]||{};
+    var P=g("lbPrev"),W=g("lbPrevW");
+    P.style.transform="none";P.innerHTML=lblHtml({mu:d.mu,urun:r.urun,ebat:r.ebat,kg:r.kg},c);fit(P);
+    var pw=c.w*96/25.4,ph=c.h*96/25.4,av=W.clientWidth-16,s=Math.min(1,av/pw);
+    P.style.transform="scale("+s+")";P.style.width=pw+"px";P.style.height=ph+"px";W.style.height=(ph*s+16)+"px";
+  }
+  g("lbDlg").addEventListener("input",function(){clearTimeout(prev.h);prev.h=setTimeout(prev,120)});
+  g("lbNo").onclick=function(){g("lbDlg").close()};
+  g("lbOk").onclick=function(){
+    var c=cfgRead(),d=collect(),L=d.rows.filter(function(x){return x.adet>0&&(x.urun||x.ebat)}),err=g("lbE");
+    if(!d.mu&&!L.length){err.textContent="Müşteri ve ürün bilgisi boş.";return}
+    if(!L.length){err.textContent="En az bir ebat için ürün/ebat ve adet (1 veya daha fazla) girin.";return}
+    var tot=L.reduce(function(a,x){return a+x.adet},0);
+    if(tot>500&&!confirm(tot+" etiket basılacak. Devam edilsin mi?"))return;
+    cfgSet(c);err.textContent="";
+    var P=g("lprn"),out="";P.className="meas";
+    L.forEach(function(x){P.innerHTML=lblHtml({mu:d.mu,urun:x.urun,ebat:x.ebat,kg:x.kg},c);fit(P);out+=P.innerHTML.repeat(x.adet)});
+    P.innerHTML=out;P.className="";
+    var st=document.createElement("style");st.id="lbPage";st.textContent="@media print{@page{size:"+c.w+"mm "+c.h+"mm;margin:0}}";document.head.appendChild(st);
+    document.body.classList.add("lblp");g("lbDlg").close();
+    var t=document.title;document.title=(cur&&cur.no||"etiket")+" - etiket";
+    window.onafterprint=function(){document.title=t;temizle();window.onafterprint=null};
+    setTimeout(function(){window.print()},200);
+  };
 })();
 </script>
 <script>
