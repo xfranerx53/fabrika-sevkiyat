@@ -426,9 +426,9 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <input id="iMu" placeholder="Müşteri" style="margin-top:6px">
   <input id="iAdi" placeholder="İşin adı (isteğe bağlı)" style="margin-top:6px">
   <input id="iSt" placeholder="Stok adı (OR.LDPE BASKISIZ ATLET POŞET)" style="margin-top:6px">
-  <input id="iFx" placeholder="F/X (F-PEŞİN, X-VADE...)" style="margin-top:6px">
+  <select id="iFx" style="margin-top:6px"><option value="X-PEŞİN">X-PEŞİN</option><option value="F-PEŞİN">F-PEŞİN</option></select>
   <input id="iFo" placeholder="Ürün formülü (F-2 ŞEFFAF ORJİNAL LİNERLİ)" style="margin-top:6px">
-  <div id="iFyW" class="hide" style="margin-top:8px"><div class="grid"><input id="iFy" inputmode="decimal" placeholder="Birim fiyat (₺ / kg)"><label class="chip"><input type="checkbox" id="iKd">KDV dahil</label></div></div>
+  <div id="iFyW" class="hide" style="margin-top:8px"><div class="grid"><input id="iFy" inputmode="decimal" placeholder="Birim fiyat (₺ / kg)"><label class="chip"><input type="checkbox" id="iKd">+KDV</label></div></div>
   <label style="margin-top:10px">Sipariş sütunları (en fazla 3 ebat)</label>
   <div id="iCols"></div>
   <div id="iNtU" data-ph="Üretim notu (Kg geçmesin, mikrona dikkat...)"></div>
@@ -1794,12 +1794,17 @@ function iAc(e){
   notSet("iNtU",v.notU);notSet("iNtB",v.notB);
   if(!e)$("iNo").value=iNext();iDL();
   $("iTr").value=v.spTarih||bugun();$("iBv").checked=!!v.baskiVar;
-  $("iFyW").classList.toggle("hide",!canIsAc());$("iFy").value=v.fiyat!=null?String(v.fiyat).replace(".",","):"";$("iKd").checked=!!v.kdvDahil;
+  $("iFyW").classList.toggle("hide",!canIsAc());$("iFy").value=v.fiyat!=null?String(v.fiyat).replace(".",","):"";
+  {const sx=$("iFx");[...sx.options].forEach(o=>{if(o.dataset.ek)o.remove()});
+   if(v.fx&&v.fx!=="X-PEŞİN"&&v.fx!=="F-PEŞİN"){const o=document.createElement("option");o.value=o.textContent=v.fx;o.dataset.ek="1";sx.appendChild(o)}
+   sx.value=v.fx||"X-PEŞİN";
+   $("iKd").checked=v.fiyat!=null?!v.kdvDahil:sx.value==="F-PEŞİN"}
   $("iCols").innerHTML=[0,1,2].map(n=>{const c=C[n]||{};return `<div style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:6px"><b style="font-size:12px">${n+1}. ebat</b><div class="grid" style="margin-top:4px">`+[["kg","Kg"],["en","En (42*14*14)"],["mikron","Mikron"],["korona","Korona (bomlu/bomsuz)"],["boy","Boy / kazan (cm)"]].map(([f,p])=>`<input data-c="${n}" data-f="${f}" list="dl_${f}" placeholder="${p}"${f==="kg"?' type="number" inputmode="decimal" min="0" step="any"':""} value="${esc(c[f]??"")}">`).join("")+`</div></div>`}).join("");
   $("iDlg").showModal();
 }
 $("iAdd").onclick=()=>{if(!canIsAc())return toast("Yeni iş emrini sadece muhasebe, depo görevlisi ve yönetici açabilir.");iAc(null)};
 $("iNo2").onclick=()=>$("iDlg").close();
+$("iFx").onchange=()=>{$("iKd").checked=$("iFx").value==="F-PEŞİN"};
 $("iOk").onclick=async()=>{
   const err=m=>{$("iE").textContent=m},g=id=>$(id).value.trim(),no=g("iNo").toUpperCase();
   if(!no)return err("Seri no gerekli (örn: MG-0945).");
@@ -1808,7 +1813,7 @@ $("iOk").onclick=async()=>{
   if(!S.length)return err("En az bir ebat için kg veya en girin.");
   if((!iEdit||iEdit.no!==no)&&isE.some(x=>x.no===no))return err("Bu seri no zaten kayıtlı.");
   const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:notGet("iNtU"),baskiVar:$("iBv").checked,urunAdi:g("iBU"),renk:g("iRenk"),notB:notGet("iNtB"),siparis:S};
-  if(canIsAc()){const fy=parseFloat(g("iFy").replace(",","."));d.fiyat=fy>0?fy:null;d.kdvDahil=$("iKd").checked}
+  if(canIsAc()){const fy=parseFloat(g("iFy").replace(",","."));d.fiyat=fy>0?fy:null;d.kdvDahil=!$("iKd").checked}
   $("iOk").disabled=true;
   try{
     if(iEdit){d.duzenleyen=ad();if(!d.baskiVar&&iEdit.asama==="baski")d.asama="kesim";await db.ref("isEmirleri/"+iEdit.id).update(d)}
