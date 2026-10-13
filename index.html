@@ -422,7 +422,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="turX">Vazgeç</button><button type="button" class="btn b3 hide" id="turOk">📸 Kamerayı aç</button></div>
 </dialog>
 <dialog id="iDlg">
-  <h3 id="iT" style="margin-bottom:6px">Yeni iş emri</h3>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><h3 id="iT">Yeni iş emri</h3><button type="button" class="btn b7" id="iGet" style="width:auto;margin:0;padding:7px 14px;font-size:13px">📋 Getir</button></div>
   <div class="grid"><input id="iNo" placeholder="Seri no (MG-0945)"><input id="iTr" type="date"></div>
   <input id="iMu" placeholder="Müşteri" style="margin-top:6px">
   <input id="iAdi" placeholder="İşin adı (isteğe bağlı)" style="margin-top:6px">
@@ -1798,7 +1798,7 @@ function isYazdir(e){
 }
 const canIsAc=()=>!!rec&&(rec.yonetici===true||rec.rol==="Muhasebe"||rec.rol==="Depo Görevlisi");
 function iAc(e){
-  iEdit=e||null;const v=e||{},C=e?icols(e):[];$("iT").textContent=e?"İş emrini düzenle":"Yeni iş emri";$("iE").textContent="";
+  iEdit=e||null;const v=e||{},C=e?icols(e):[];$("iT").textContent=e?"İş emrini düzenle":"Yeni iş emri";$("iGet").style.display=e?"none":"";$("iE").textContent="";
   [["iNo","no"],["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"],["iBU","urunAdi"],["iRenk","renk"]].forEach(([i,f])=>$(i).value=v[f]||"");
   notSet("iNtU",v.notU);notSet("iNtB",v.notB);
   if(!e)$("iNo").value=iNext();iDL();
@@ -2150,6 +2150,49 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     g("lbWarn").close();if(!wE)return;
     db.ref("isEmirleri/"+wE.id).update({asama:"ekstruder",etiketsiz:true}).catch(function(er){toast(errText(er))});
   };
+})();
+</script>
+<dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
+  <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
+  <p style="font-size:11px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
+  <input id="gQ" placeholder="Müşteri, işin adı, ürün, ebat, seri no ara..." autocomplete="off">
+  <div class="grid" style="margin-top:6px"><div><label style="font-size:11px">Başlangıç</label><input id="gD1" type="date"></div><div><label style="font-size:11px">Bitiş</label><input id="gD2" type="date"></div></div>
+  <div id="gSum" style="font-size:12px;font-weight:700;color:#64748b;margin:8px 0 4px"></div>
+  <div id="gL"></div>
+  <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
+</dialog>
+<script>
+(function(){
+  var g=function(i){return document.getElementById(i)};
+  var low=function(x){return String(x==null?"":x).toLocaleLowerCase("tr-TR")};
+  var done=function(e){return e.asama==="bitti"||e.aktarildi};
+  function hay(e){var c=icols(e).map(function(x){return[x.en,x.boy,x.mikron,x.korona,x.kg].join(" ")}).join(" ");
+    return low([e.no,e.musteri,e.isAdi,e.stok,e.urunAdi,e.fx,e.formul,e.renk,c].join(" "))}
+  function liste(){
+    var w=low(g("gQ").value).split(/\s+/).filter(Boolean),a=g("gD1").value,b=g("gD2").value;
+    var L=(window.isE||[]).filter(function(e){if(!done(e))return false;var h=hay(e),t=e.spTarih||"";
+      return w.every(function(k){return h.indexOf(k)>-1})&&(!a||t>=a)&&(!b||t<=b)});
+    g("gSum").textContent=L.length+" tamamlanan iş emri"+(L.length>60?" (ilk 60 gösteriliyor, aramayı daraltın)":"");
+    g("gL").innerHTML=L.length?L.slice(0,60).map(function(e){
+      var C=icols(e).map(function(c){return[c.en,c.boy].filter(Boolean).join(" x ")+(c.mikron?" · "+c.mikron+"µ":"")+(c.kg?" · "+fmt(c.kg)+" kg":"")}).join(" | ");
+      return '<button type="button" class="item" data-id="'+esc(e.id)+'" style="display:block;width:100%;text-align:left;margin:6px 0;cursor:pointer;border:1.5px solid #cbd5e1;background:#fff"><b style="font-size:14px">'+esc(e.musteri||"-")+(e.isAdi?" — "+esc(e.isAdi):"")+'</b><div style="font-size:12px;color:#475569;margin-top:2px">'+esc(e.no||"")+" · "+esc(e.stok||"")+'</div><div style="font-size:12px;color:#0369a1;font-weight:700;margin-top:2px">'+esc(C)+'</div></button>'}).join(""):'<div class="empty">Tamamlanmış iş emri bulunamadı.</div>';
+  }
+  g("iGet").onclick=function(){g("gQ").value="";g("gD1").value="";g("gD2").value="";liste();g("gDlg").showModal()};
+  ["gQ","gD1","gD2"].forEach(function(i){g(i).addEventListener("input",liste);g(i).addEventListener("change",liste)});
+  g("gX").onclick=function(){g("gDlg").close()};
+  g("gL").onclick=function(ev){
+    var b=ev.target.closest("button[data-id]");if(!b)return;
+    var src=(window.isE||[]).find(function(e){return e.id===b.dataset.id});if(!src)return;
+    var c={};["musteri","isAdi","stok","fx","formul","notU","baskiVar","urunAdi","renk","notB","siparis","fiyat","kdvDahil"].forEach(function(k){if(src[k]!==undefined)c[k]=src[k]});
+    g("gDlg").close();g("iDlg").close();
+    iAc(c);iEdit=null;
+    g("iT").textContent="Yeni iş emri";g("iGet").style.display="";
+    g("iNo").value=iNext();g("iTr").value=bugun();
+    toast("Bilgiler getirildi: "+(src.no||""));
+  };
+  var d=g("gDlg"),dn=false,out=function(ev){var r=d.getBoundingClientRect();return ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom};
+  d.addEventListener("pointerdown",function(ev){dn=ev.target===d&&out(ev)});
+  d.addEventListener("click",function(ev){if(dn&&ev.target===d&&out(ev))d.close();dn=false});
 })();
 </script>
 <script>
