@@ -2158,7 +2158,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
   <input id="gQ" placeholder="Müşteri, işin adı, ürün, ebat, seri no ara..." autocomplete="off">
   <div class="grid" style="margin-top:6px"><div><label style="font-size:11px">Başlangıç</label><input id="gD1" type="date"></div><div><label style="font-size:11px">Bitiş</label><input id="gD2" type="date"></div></div>
   <div id="gSum" style="font-size:12px;font-weight:700;color:#64748b;margin:8px 0 4px"></div>
-  <div id="gL"></div>
+  <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
 <script>
@@ -2174,15 +2174,15 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
       return w.every(function(k){return h.indexOf(k)>-1})&&(!a||t>=a)&&(!b||t<=b)});
     g("gSum").textContent=L.length+" tamamlanan iş emri"+(L.length>60?" (ilk 60 gösteriliyor, aramayı daraltın)":"");
     var T=function(v){return v==null||typeof v==="object"?"":String(v)};
-    try{g("gL").innerHTML=L.length?L.slice(0,60).map(function(e){
+    try{g("gtL").innerHTML=L.length?L.slice(0,60).map(function(e){
       var C="";
       try{C=icols(e).map(function(c){c=c&&typeof c==="object"?c:{};return[T(c.en),T(c.boy)].filter(Boolean).join(" x ")+(T(c.mikron)?" · "+T(c.mikron)+"µ":"")+(+c.kg>0?" · "+fmt(c.kg)+" kg":"")}).join(" | ")}catch(x){C=""}
-      return '<button type="button" class="item" data-id="'+esc(T(e.id))+'" style="display:block;width:100%;text-align:left;margin:6px 0;cursor:pointer;border:1.5px solid #cbd5e1;background:#fff;color:#0f172a"><b style="font-size:14px">'+esc(T(e.musteri)||"-")+(T(e.isAdi)?" — "+esc(T(e.isAdi)):"")+'</b><div style="font-size:12px;color:#475569;margin-top:2px">'+esc(T(e.no))+" · "+esc(T(e.stok))+'</div><div style="font-size:12px;color:#0369a1;font-weight:700;margin-top:2px">'+esc(C)+'</div></button>'}).join(""):'<div class="empty">Tamamlanmış iş emri bulunamadı.</div>';}catch(x){g("gL").innerHTML='<div class="empty">Liste hatası: '+esc(x&&x.message)+'</div>'}
+      return '<button type="button" class="item" data-id="'+esc(T(e.id))+'" style="display:block;width:100%;text-align:left;margin:6px 0;cursor:pointer;border:1.5px solid #cbd5e1;background:#fff;color:#0f172a"><b style="font-size:14px">'+esc(T(e.musteri)||"-")+(T(e.isAdi)?" — "+esc(T(e.isAdi)):"")+'</b><div style="font-size:12px;color:#475569;margin-top:2px">'+esc(T(e.no))+" · "+esc(T(e.stok))+'</div><div style="font-size:12px;color:#0369a1;font-weight:700;margin-top:2px">'+esc(C)+'</div></button>'}).join(""):'<div class="empty">Tamamlanmış iş emri bulunamadı.</div>';}catch(x){g("gtL").innerHTML='<div class="empty">Liste hatası: '+esc(x&&x.message)+'</div>'}
   }
   g("iGet").onclick=function(){g("gQ").value="";g("gD1").value="";g("gD2").value="";liste();g("gDlg").showModal()};
   ["gQ","gD1","gD2"].forEach(function(i){g(i).addEventListener("input",liste);g(i).addEventListener("change",liste)});
   g("gX").onclick=function(){g("gDlg").close()};
-  g("gL").onclick=function(ev){
+  g("gtL").onclick=function(ev){
     var b=ev.target.closest("button[data-id]");if(!b)return;
     var src=(window.isE||[]).find(function(e){return e.id===b.dataset.id});if(!src)return;
     var c={};["musteri","isAdi","stok","fx","formul","notU","baskiVar","urunAdi","renk","notB","siparis","fiyat","kdvDahil"].forEach(function(k){if(src[k]!==undefined)c[k]=src[k]});
