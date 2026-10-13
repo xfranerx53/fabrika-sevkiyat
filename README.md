@@ -1,2 +1,1 @@
-
-](https://xfranerx53.github.io/fabrika-sevkiyat/)
+https://xfranerx53.github.io/fabrika-sevkiyat/
