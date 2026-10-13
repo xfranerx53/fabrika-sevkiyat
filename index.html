@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdnjs.cloudflare.com https://apis.google.com https://www.google.com/recaptcha/ 'sha256-TaiYQMY/O9PNJe9U9pJN4AF0m7CVLvrwYLk5D/XW73M=' 'sha256-ksIbOj8vaCS1qyTr6DYaYbnfcg8Zj9xSOIl9+S4jkI0=' 'sha256-wXFxzrjlLASbvDBlXRB7YHqYveGeNSDb5uA9MApJ4f8=' 'sha256-k0Mwen57CKJwE9D1lfQrYwM3TLv2uMZh2V/XN4et4ls=' 'sha256-xngTDU/BiJgruaHnWm+Ju8oI5fS2bpnB+VkHmRWYjGY=' 'sha256-92IoMf8N1kc74+W3Xa1xc0lMcG2lmiY80ymEQ8r7k7k=' 'sha256-BcUohLXZHN9pbyszy8v/fMNiovaMKC6S/ZEUp8iyQxk=' 'sha256-JPxtUUUNkmNFLtnBa+zhb2IouC3XP1KEnR5op6a2+fU=' 'sha256-s9Y14DiRVa/dddOU+0W3Uzb53SAwl8MlRV2J7Rd/1iM='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: data:; font-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app https://*.cloudfunctions.net https://www.google.com https://www.gstatic.com; frame-src https://*.firebaseapp.com https://www.google.com https://apis.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdnjs.cloudflare.com https://apis.google.com https://www.google.com/recaptcha/ 'sha256-TaiYQMY/O9PNJe9U9pJN4AF0m7CVLvrwYLk5D/XW73M=' 'sha256-qsuV6UJjb1XZgd9ppyBRFntyJKGEyTLMOV1/K/KGX3I=' 'sha256-wXFxzrjlLASbvDBlXRB7YHqYveGeNSDb5uA9MApJ4f8=' 'sha256-k0Mwen57CKJwE9D1lfQrYwM3TLv2uMZh2V/XN4et4ls=' 'sha256-xngTDU/BiJgruaHnWm+Ju8oI5fS2bpnB+VkHmRWYjGY=' 'sha256-92IoMf8N1kc74+W3Xa1xc0lMcG2lmiY80ymEQ8r7k7k=' 'sha256-BcUohLXZHN9pbyszy8v/fMNiovaMKC6S/ZEUp8iyQxk=' 'sha256-D250rmeUqPbiNY+ao1icO13UBeb9tJmnx6a+sJh+uFg=' 'sha256-s9Y14DiRVa/dddOU+0W3Uzb53SAwl8MlRV2J7Rd/1iM='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: data:; font-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app https://*.cloudfunctions.net https://www.google.com https://www.gstatic.com; frame-src https://*.firebaseapp.com https://www.google.com https://apis.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#c82333">
 <link rel="manifest" href="manifest.webmanifest">
@@ -287,7 +287,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
   <div id="pIs" class="hide">
     <button class="btn b2 big" style="margin:0 0 10px" id="iAdd">＋ Yeni iş emri aç</button>
-    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v16 (QR kodlu etiket)</div>
+    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v17 (iş emrinde otomatik QR)</div>
     <input id="iq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="iTabs"></div>
     <div id="iList"></div>
@@ -476,9 +476,20 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div class="err" id="turE" style="margin-top:6px"></div>
   <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="turX">Vazgeç</button><button type="button" class="btn b3 hide" id="turOk">📸 Kamerayı aç</button></div>
 </dialog>
+<dialog id="iqDlg" style="width:min(340px,94vw)">
+  <h3 style="margin-bottom:4px">📱 İş emri QR kodu</h3>
+  <div id="iqS" class="qrBox" style="width:min(260px,70vw);aspect-ratio:1/1;margin:8px auto"></div>
+  <div id="iqN" style="text-align:center;font-weight:900;font-size:20px"></div>
+  <p class="mut" style="font-size:11px;text-align:center;margin:4px 0 0">Okutulunca bu iş emri açılır.</p>
+  <div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn b6" id="iqX">Kapat</button><button type="button" class="btn b3" id="iqP">⬇️ PNG indir</button></div>
+</dialog>
 <dialog id="iDlg">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><h3 id="iT">Yeni iş emri</h3><button type="button" class="btn b7" id="iGet" style="width:auto;margin:0;padding:7px 14px;font-size:13px">📋 Getir</button></div>
   <div class="grid"><input id="iNo" placeholder="Seri no (MG-0945)"><input id="iTr" type="date"></div>
+  <div id="iQrW" style="display:none;align-items:center;gap:10px;margin-top:8px;padding:8px;border:1.5px dashed #cbd5e1;border-radius:8px">
+    <div id="iQrS" class="qrBox" style="width:84px;height:84px;flex:0 0 auto"></div>
+    <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:800">📱 QR kod otomatik oluşturuldu</div><div class="mut" style="font-size:11px;margin:2px 0 6px">Seri no değişince QR de güncellenir. Kayıttan sonra etikette ve iş takip formunda yer alır.</div><button type="button" class="btn b6 sm" id="iQrBtn" style="width:auto;margin:0">🔍 Büyüt / PNG indir</button></div>
+  </div>
   <input id="iMu" placeholder="Müşteri" style="margin-top:6px">
   <input id="iAdi" placeholder="İşin adı (isteğe bağlı)" style="margin-top:6px">
   <input id="iSt" placeholder="Stok adı (OR.LDPE BASKISIZ ATLET POŞET)" style="margin-top:6px">
@@ -2177,7 +2188,7 @@ function isKart(e){
   ${e.baskiVar||e.notB?`<div class="addr">🖨️ ${esc(e.urunAdi||"")} ${e.renk?"· "+esc(e.renk):""}${e.notB?"<br>"+notHtml(e.notB):""}</div>`:""}
   ${lg}
   <div class="acts">${e.asama==="etiket"?`<button class="btn b7" style="grid-column:span 2;padding:14px;font-size:15px" data-a="etik" data-id="${id}">🏷️ Etiket hazırla</button>`:""}${nx?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:15px" data-a="ileri" data-id="${id}">${e.asama==="depo"?"📦 Depoya girişi kaydet → BİTEN":"✓ Bitti → "+esc(ASL[nx])}</button>`:""}
-  ${i>0?`<button class="btn b6" data-a="geri" data-id="${id}">↩️ Geri al</button>`:""}<button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button>${e.asama!=="etiket"?`<button class="btn b7" data-a="etik" data-id="${id}">🏷️ Etiket</button>`:""}<button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button><button class="btn b6" data-a="gecmis" data-id="${id}">🕘 Geçmiş</button>${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div>
+  ${i>0?`<button class="btn b6" data-a="geri" data-id="${id}">↩️ Geri al</button>`:""}<button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button>${e.asama!=="etiket"?`<button class="btn b7" data-a="etik" data-id="${id}">🏷️ Etiket</button>`:""}<button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button><button class="btn b6" data-a="gecmis" data-id="${id}">🕘 Geçmiş</button><button class="btn b6" data-a="qr" data-id="${id}">📱 QR</button>${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div>
   ${e.asama==="bitti"&&e.bekleAktar&&!e.aktarildi?`<button class="btn b4" style="width:100%;margin-top:8px;padding:14px;font-size:15px" data-a="aktar" data-id="${id}">📦 Hazır ürünlere aktar</button>`:""}${e.aktarildi?`<div class="note" style="margin-top:8px">✅ Hazır ürünlere aktarıldı</div>`:""}</div>`;
 }
 const isAksiyon=async ev=>{
@@ -2185,6 +2196,7 @@ const isAksiyon=async ev=>{
   const a=b.dataset.a,o=asOrd(e),i=o.indexOf(e.asama),TS=firebase.database.ServerValue.TIMESTAMP;
   try{
     if(a==="yaz")isYazdir(e);
+    else if(a==="qr")iqAc(e.no);
     else if(a==="etik")etiketAc(e);
     else if(a==="aktar"){
       const d=(e.log&&e.log.depo)||{},C=icols(e);
@@ -2391,7 +2403,7 @@ function isForm(e,fy){
     fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ₺ <small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:"",
     logo='<svg viewBox="0 0 60 30"><ellipse cx="30" cy="15" rx="28" ry="12" fill="none" stroke="#000" stroke-width="3"/><path d="M10 11L24 24L30 13L36 24L50 11" fill="none" stroke="#000" stroke-width="3.5"/></svg>';
   return `<div class="pf">
-  <div class="hdr"><div class="lg">${logo}mag ambalaj</div><div class="sn"><small>SERİ NO:</small><b>${esc(e.no||"")}</b></div></div>
+  <div class="hdr"><div class="lg">${logo}mag ambalaj</div><div class="snw"><div class="sn"><small>SERİ NO:</small><b>${esc(e.no||"")}</b></div>${e.no?`<div class="pq">${isQrSvg(e.no)}</div>`:""}</div></div>
   <div class="tt">ÜRETİM İŞ TAKİP FORMU</div>
   <table class="px top"><colgroup><col style="width:20%"><col style="width:42%"><col style="width:16%"><col style="width:22%"></colgroup>
   <tr><th>MÜŞTERİ :</th><td class="v">${U(e.musteri)}</td><th>SP.<br>TARİHİ:</th><td class="v">${esc(trDate(e.spTarih))}</td></tr>
@@ -2440,7 +2452,7 @@ function iAc(e){
    sx.value=v.fx||"X-PEŞİN";
    $("iKd").checked=v.fiyat!=null?!v.kdvDahil:sx.value==="F-PEŞİN"}
   $("iCols").innerHTML=[0,1,2].map(n=>{const c=C[n]||{};return `<div style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:6px"><b style="font-size:12px">${n+1}. ebat</b><div class="grid" style="margin-top:4px">`+[["kg","Kg"],["en","En (42*14*14)"],["mikron","Mikron"],["korona","Korona (bomlu/bomsuz)"],["boy","Boy / kazan (cm)"]].map(([f,p])=>`<input data-c="${n}" data-f="${f}" list="dl_${f}" placeholder="${p}"${f==="kg"?' type="number" inputmode="decimal" min="0" step="any"':""} value="${esc(c[f]??"")}">`).join("")+`</div></div>`}).join("");
-  $("iDlg").showModal();
+  iQrGuncelle();$("iDlg").showModal();
 }
 $("iAdd").onclick=()=>{if(!canIsAc())return toast("Yeni iş emrini sadece muhasebe, depo görevlisi ve yönetici açabilir.");iAc(null)};
 $("iNo2").onclick=()=>$("iDlg").close();
@@ -2466,6 +2478,33 @@ $("iOk").onclick=async()=>{
   }catch(e){err(errText(e))}
   $("iOk").disabled=false;
 };
+
+/* ===== İŞ EMRİ QR: seri no'dan otomatik üretilir (okutunca iş emri açılır) ===== */
+function isQrNo(no){return String(no==null?"":no).trim().toUpperCase()}
+function isQrUrl(no){return location.href.split(/[?#]/)[0].replace(/index\.html$/,"")+"?is="+encodeURIComponent(isQrNo(no))}
+function isQrMat(no){const q=new window.QRLib(-1,0);q.addData(isQrUrl(no));q.make();return q}
+function isQrSvg(no){no=isQrNo(no);if(!no)return"";
+  const q=isQrMat(no),n=q.getModuleCount(),m=2;let d="";
+  for(let r=0;r<n;r++){let c=0;while(c<n){if(q.isDark(r,c)){const b=c;while(c<n&&q.isDark(r,c))c++;d+="M"+(b+m)+" "+(r+m)+"h"+(c-b)+"v1h-"+(c-b)+"z"}else c++}}
+  const z=n+2*m;
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+z+' '+z+'" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid meet"><rect width="'+z+'" height="'+z+'" fill="#fff"/><path d="'+d+'" fill="#000"/></svg>'}
+function isQrPng(no){no=isQrNo(no);if(!no)return;
+  const q=isQrMat(no),n=q.getModuleCount(),m=4,s=Math.max(4,Math.floor(600/(n+2*m))),z=(n+2*m)*s,cv=document.createElement("canvas");
+  cv.width=cv.height=z;const cx=cv.getContext("2d");cx.fillStyle="#fff";cx.fillRect(0,0,z,z);cx.fillStyle="#000";
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))cx.fillRect((c+m)*s,(r+m)*s,s,s);
+  cv.toBlob(b=>{if(!b)return toast("QR görseli oluşturulamadı.");const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="QR-"+no.replace(/[^A-Z0-9_-]/g,"_")+".png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)},"image/png")}
+function iQrGuncelle(){
+  const no=isQrNo($("iNo").value),w=$("iQrW");
+  if(!no){w.style.display="none";$("iQrS").innerHTML="";return}
+  try{$("iQrS").innerHTML=isQrSvg(no);w.style.display="flex"}catch(e){w.style.display="none"}}
+var iqNo="";
+function iqAc(no){no=isQrNo(no);if(!no)return toast("Önce seri no yazın.");
+  try{$("iqS").innerHTML=isQrSvg(no)}catch(e){return toast("QR oluşturulamadı.")}
+  iqNo=no;$("iqN").textContent=no;$("iqDlg").showModal()}
+$("iNo").addEventListener("input",iQrGuncelle);
+$("iQrBtn").onclick=()=>iqAc($("iNo").value);
+$("iqP").onclick=()=>isQrPng(iqNo);
+$("iqX").onclick=()=>$("iqDlg").close();
 
 /* ================= BİLDİRİMLER + WHATSAPP ================= */
 var bRef=null,bIs=[],bGor={O:[],S:[]},bStok=false,bTm=null;
@@ -2590,6 +2629,11 @@ try{
 })();
 </script>
 <style>
+.qrBox{background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden}
+.qrBox svg{display:block;width:100%;height:100%}
+#prn .snw{display:flex;align-items:flex-end;gap:calc(2.5mm*var(--z))}
+#prn .pq{flex:0 0 auto;width:calc(15mm*var(--z));height:calc(15mm*var(--z));-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#prn .pq svg{display:block;width:100%;height:100%}
 #prn{display:none;--z:1}
 #prn.meas{display:block;position:absolute;left:-10000px;top:0;width:285mm}
 @media print{
@@ -3853,7 +3897,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     g("gDlg").close();g("iDlg").close();
     iAc(c);iEdit=null;
     g("iT").textContent="Yeni iş emri";g("iGet").style.display="";
-    g("iNo").value=iNext();g("iTr").value=bugun();
+    g("iNo").value=iNext();g("iTr").value=bugun();iQrGuncelle();
     toast("Bilgiler getirildi: "+(src.no||""));
   };
   var d=g("gDlg"),dn=false,out=function(ev){var r=d.getBoundingClientRect();return ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom};
