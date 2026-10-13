@@ -1768,7 +1768,7 @@ function isForm(e,fy){
   <tr><th>KORONA :</th>${k3(c=>c&&c.korona?esc(c.korona):"-")}</tr>
   <tr><th>NOT :</th><td class="v n" colspan="6">${notP(e.notU)}</td></tr>
   <tr><th class="hd" colspan="7">BASKI - KESİM İŞ TAKİP FORMU</th></tr>
-  <tr><th>ÜRÜN ADI :</th>${k3((c,i)=>i===0?U(e.urunAdi):"-")}</tr>
+  <tr><th>ÜRÜN ADI :</th>${k3(c=>c?U(e.urunAdi):"-")}</tr>
   <tr><th>BOY/KAZAN :</th>${k3(c=>c&&c.boy?esc(c.boy):"-")}</tr>
   <tr><th>BASKI RENGİ :</th>${k3((c,i)=>i===0?U(e.renk):"-")}</tr>
   <tr><th>NOT :</th><td class="v n" colspan="6" style="height:calc(14mm*var(--z))">${notP(e.notB)}</td></tr>
