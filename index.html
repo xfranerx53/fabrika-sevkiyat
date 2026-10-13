@@ -275,7 +275,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
   <div id="pIs" class="hide">
     <button class="btn b2 big" style="margin:0 0 10px" id="iAdd">＋ Yeni iş emri aç</button>
-    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v14 (etiket başına 1 adet basılır, kopyayı yazdırma ekranından seçin)</div>
+    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v15 (1 adet etiket, üst/alt yazı yok)</div>
     <input id="iq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="iTabs"></div>
     <div id="iList"></div>
@@ -2118,7 +2118,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     up.etiketYapildi=done>=n;up.etiketsiz=null;
     db.ref("isEmirleri/"+cur.id).update(up).catch(function(er){toast(errText(er))});
     rows.forEach(function(r,i){if(L.some(function(x){return x.i===i}))r.querySelector(".ok").textContent="✅ hazırlandı"});
-    var st=document.createElement("style");st.id="lbPage";st.textContent="@media print{@page{size:"+c.w+"mm "+c.h+"mm;margin:0}}";document.head.appendChild(st);
+    var st=document.createElement("style");st.id="lbPage";st.textContent="@media print{@page{size:"+c.w+"mm "+c.h+"mm;margin:0}}";document.body.appendChild(st);
     document.body.classList.add("lblp");g("lbDlg").close();
     var t=document.title;document.title=(cur.no||"etiket")+" - etiket";
     window.onafterprint=function(){document.title=t;temizle();window.onafterprint=null};
