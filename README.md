@@ -1,4 +1,4 @@
-# Şifre sıfırlama fonksiyonu (isteğe bağlı)
+[# Şifre sıfırlama fonksiyonu (isteğe bağlı)
 
 Yönetici panelindeki "🔑 Şifre" düğmesinin çalışması için gerekir. Kurulmazsa düğme
 "fonksiyon kurulu değil" uyarısı verir; kullanıcıların kendi "🔑 Şifre" (şifremi değiştir) düğmesi fonksiyonsuz da çalışır.
@@ -14,3 +14,4 @@ Gereksinim: Firebase projesi **Blaze** planında olmalı (Cloud Functions için)
 
 Fonksiyon, çağıranın veritabanında `yonetici: true` ve `onay: true` olduğunu sunucuda doğrular.
 Şifre sıfırlandığında kullanıcının açık oturumları kapatılır.
+](https://xfranerx53.github.io/fabrika-sevkiyat/)
