@@ -96,6 +96,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .dfile .dz{font-size:20px;flex:none}.dfile .dm{flex:1;min-width:0}
 .dfile .dn{font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dfile .dd{font-size:11px;color:#64748b;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ebad{display:block;font-size:15px;font-weight:900;white-space:pre-line;margin:2px 0 6px}.ebr{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-top:1px dashed #cbd5e1;font-size:13px}.eb1{font-weight:800;color:#0f172a}.eb2{font-weight:800;color:#0369a1;text-align:right;white-space:nowrap}
 .ddet{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px;margin:-2px 0 8px}
 #vDos .hl{padding:5px}#vDos .hl b{font-size:18px}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99999;max-width:90vw;text-align:center}
@@ -780,7 +781,7 @@ function kart(u){
   const onb=(u.durum==="sevk_edildi"&&mod==="sevk"&&isAdmin())?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:15px" data-a="onay" data-id="${id}">✅ ONAYLA (Dosyalara taşı)</button>`:"";
   const K2=Array.isArray(u.kalem)&&u.kalem.length>1?u.kalem:null;
   const mid=K2?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün</small><b>${esc(u.urunAd||u.urun)}</b></div></div>`+K2.map(k=>`<div style="margin:12px 0 4px;font-weight:800;font-size:13px;color:#334155">${esc(k.ad)}</div><div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(k.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(k.paket))} Adet</b></div></div>`).join(""):`  <div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(u.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(u.paket))} Adet</b></div></div>
-  ${m||p?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün/Ebat</small><b style="white-space:pre-line">${esc(u.urun)}</b></div></div>`:""}
+  ${m||p?`<div class="grid" style="margin-top:8px">${m?`<div class="info full"><small>Müşteri</small><b>${esc(u.musteri)}</b></div>`:""}${p?ebatBlok(u.urun):""}</div>`:""}
 `;
   return `<div class="item ${c[0]}">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700;color:#64748b">Tarih: ${esc(trDate(u.tarih))}</span><span class="badge ${c[1]}">${c[2]}</span></div>
@@ -1526,10 +1527,16 @@ function dosFiltre(){
     return w.every(t=>h.includes(t))&&(!a||k>=a)&&(!b||k<=b)&&(!tp||(d.irsTur||"irsaliye")===tp)})
     .sort((x,y)=>(dTarih(y)>dTarih(x)?1:dTarih(y)<dTarih(x)?-1:0)||dZaman(y)-dZaman(x));
 }
+function ebatBlok(urun){
+  const L=String(urun||"").split("\n").map(x=>x.trim()).filter(Boolean),pr=x=>{const i=x.indexOf(": ");return i>0?[x.slice(0,i),x.slice(i+2)]:null};
+  let ad=L[0]||"",rows=[];
+  if(L.length>1&&L.slice(1).every(pr))rows=L.slice(1).map(pr);else ad=L.join("\n");
+  return `<div class="info full"><small>Ürün / Ebat</small><b class="ebad">${esc(ad)}</b>${rows.map(r=>`<div class="ebr"><span class="eb1">${esc(r[0])}</span><span class="eb2">${esc(r[1])}</span></div>`).join("")}</div>`;
+}
 function dSatir(d){
   const id=esc(d.id),open=dAcik.has(d.id),t=d.irsTur||"irsaliye",
     m=d.musteri&&d.musteri!=="Etikete Bakınız",p=d.urun&&d.urun!=="Etikete Bakınız",
-    bas=m&&p?d.musteri+" — "+d.urun:m?d.musteri:p?d.urun:"Etikete bakınız",
+    pf=p?String(d.urun).split("\n")[0]:"",bas=m&&p?d.musteri+" — "+pf:m?d.musteri:p?pf:"Etikete bakınız",
     cls={irsaliye:"",diger:"dg",iade:"di"}[t]||"",ic={irsaliye:"📄",diger:"📝",iade:"↩️"}[t]||"📄",sa=dSaat(d.irsaliyeTarihi);
   return `<button type="button" class="dfile ${cls}" data-id="${id}"><span class="dz">${ic}</span><div class="dm"><div class="dn">${esc(bas)}</div><div class="dd">${esc(fmt(d.kg))} kg · ${esc(fmt(d.paket))} adet · ${esc(turAd(d))}${sa?" · "+esc(sa):""}</div></div><span class="chev">${open?"▲":"▼"}</span></button>${open?dDetay(d):""}`;
 }
@@ -1539,7 +1546,7 @@ function dDetay(d){
     tn=t==="iade"?"İade":t==="diger"?"Diğer":"İmzalı irsaliye";
   return `<div class="ddet">
     <div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(d.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(d.paket))}</b></div></div>
-    ${m||p?`<div class="grid" style="margin-top:6px"><div class="info"><small>Müşteri</small><b>${esc(d.musteri)}</b></div><div class="info"><small>Ürün/Ebat</small><b>${esc(d.urun)}</b></div></div>`:""}
+    ${m||p?`<div class="grid" style="margin-top:6px">${m?`<div class="info full"><small>Müşteri</small><b>${esc(d.musteri)}</b></div>`:""}${p?ebatBlok(d.urun):""}</div>`:""}
     ${d.adres?`<div class="addr">📍 <b>Adres:</b> ${esc(d.adres)}</div>`:""}
     ${d.not?`<div class="note">📌 <b>Not:</b> ${esc(d.not)}</div>`:""}
     <div class="who">Sevk tarihi: ${esc(trDate(d.tarih))} · Kaydeden: ${esc(d.ekleyen||"-")}</div>
@@ -2132,6 +2139,13 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
   };
   g("lbWY").onclick=function(){g("lbWarn").close();if(wE)window.etiketAc(wE)};
   g("lbWX").onclick=function(){g("lbWarn").close()};
+  /* Dışarı dokununca kapat */
+  ["iDlg","lbDlg","lbWarn"].forEach(function(id){
+    var d=document.getElementById(id);if(!d)return;var dn=false;
+    var out=function(ev){var r=d.getBoundingClientRect();return ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom};
+    d.addEventListener("pointerdown",function(ev){dn=ev.target===d&&out(ev)});
+    d.addEventListener("click",function(ev){if(dn&&ev.target===d&&out(ev))d.close();dn=false});
+  });
   g("lbWS").onclick=function(){
     g("lbWarn").close();if(!wE)return;
     db.ref("isEmirleri/"+wE.id).update({asama:"ekstruder",etiketsiz:true}).catch(function(er){toast(errText(er))});
