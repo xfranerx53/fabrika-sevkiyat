@@ -332,6 +332,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 <dialog id="dAdm">
   <h3 style="margin-bottom:8px">Kullanıcılar</h3>
   <div id="ulist"></div>
+  <h3 style="margin:14px 0 6px">💾 Yedekleme</h3>
+  <div id="bkSon" style="font-size:12px;margin-bottom:6px"></div>
+  <label style="display:flex;gap:6px;align-items:center;font-size:12px;margin-bottom:4px"><input type="checkbox" id="bkFoto" checked style="width:auto"> Fotoğrafları da dahil et (JSON; dosya büyük olabilir)</label>
+  <button class="btn b3" id="bkJson">⬇️ Tüm veriyi JSON olarak indir</button>
+  <button class="btn b7" id="bkXlsx">⬇️ Tüm veriyi Excel olarak indir</button>
+  <div id="bkDurum" style="font-size:12px;margin-top:6px;color:#475569"></div>
+  <small style="display:block;margin-top:6px;color:#64748b">JSON dosyası Firebase Konsolu > Realtime Database > ⋮ > JSON'u içe aktar ile geri yüklenebilir. Excel dosyasında fotoğraflar yer almaz. Giriş hesapları (şifreler) yedeğe dahil değildir.</small>
   <button class="btn b6" id="dClose">Kapat</button>
 </dialog>
 <dialog id="dKalem">
@@ -1113,10 +1120,73 @@ async function kullanicilar(){
        <button class="btn sm b6" data-u="${esc(id)}" data-f="yonetici" data-v="${!k.yonetici}">${k.yonetici?"Yöneticiliği al":"Yönetici yap"}</button>`}</div></div>`}).join("")||"<p>Kullanıcı yok.</p>";
   }catch(e){toast(errText(e))}
 }
-$("bAdm").onclick=()=>{$("dAdm").showModal();kullanicilar()};
+$("bAdm").onclick=()=>{$("dAdm").showModal();kullanicilar();bkSonGoster()};
 $("dClose").onclick=()=>$("dAdm").close();
 $("ulist").onclick=async e=>{const b=e.target.closest("button[data-u]");if(!b)return;
   try{await db.ref("kullanicilar/"+b.dataset.u+"/"+b.dataset.f).set(b.dataset.v==="true");kullanicilar()}catch(err){toast(errText(err))}};
+
+/* ---------- Yedekleme: tüm veriyi JSON / Excel olarak indir (sadece yönetici) ---------- */
+const BK_DUGUM=[["kullanicilar",1],["urunler",1],["dosyalar",1],["dosyaFoto",1],["stokKalem",1],["stokHareket",1],["tedarikciler",1],["siparisler",1],["sevkAdresleri",1],["fiyatlar",2],["isEmirleri",1],["isHareket",2],["etiketGecmis",2],["etiketSablon",2],["ayarlar",1]];
+const bkFotoMu=v=>typeof v==="string"&&(v.slice(0,5)==="data:"||v.length>5000);
+function bkTemizle(v,yerine){ // fotoğraf (base64) alanlarını çıkar/yer tutucu koy
+  if(bkFotoMu(v))return yerine;
+  if(Array.isArray(v))return v.map(x=>bkTemizle(x,yerine));
+  if(v&&typeof v==="object"){const o={};Object.keys(v).forEach(k=>{const t=bkTemizle(v[k],yerine);if(t!==undefined)o[k]=t});return o}
+  return v}
+function bkIndir(blob,ad){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=ad;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),20000)}
+function bkTarih(){const d=new Date(),z=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+"_"+z(d.getHours())+z(d.getMinutes())}
+function bkSonGoster(){let t=0;try{t=+localStorage.getItem("sonYedek")||0}catch(e){}
+  const el=$("bkSon");if(!t){el.innerHTML='<b style="color:#e71d36">⚠️ Bu cihazdan henüz yedek alınmadı.</b>';return}
+  const g=Math.floor((Date.now()-t)/864e5),tx=new Date(t).toLocaleString("tr-TR");
+  el.innerHTML=g>=7?'<b style="color:#e71d36">⚠️ Son yedek '+g+' gün önce ('+esc(tx)+'). Yeni yedek alın.</b>':'Son yedek: '+esc(tx)+(g?" ("+g+" gün önce)":" (bugün)")}
+async function bkOku(){ // her düğümü ayrı okur; okunamayanları bildirir
+  const veri={},hata=[];
+  for(let i=0;i<BK_DUGUM.length;i++){const ad=BK_DUGUM[i][0];$("bkDurum").textContent="Okunuyor ("+(i+1)+"/"+BK_DUGUM.length+"): "+ad+"…";
+    try{const s=await db.ref(ad).once("value");if(s.exists())veri[ad]=s.val()}catch(e){hata.push(ad+" ("+errText(e)+")")}}
+  return{veri,hata}}
+function bkBitir(hata,ek){try{localStorage.setItem("sonYedek",String(Date.now()))}catch(e){}
+  $("bkDurum").innerHTML=hata.length?'<b style="color:#e71d36">⚠️ Şu bölümler okunamadı, yedek eksik: '+esc(hata.join("; "))+'</b>':'✓ Yedek indirildi'+(ek?" · "+esc(ek):"");
+  bkSonGoster()}
+async function bkCalistir(btn,fn){
+  if(!isAdmin()){toast("Bu işlem için yönetici olmalısınız.");return}
+  const bt=[$("bkJson"),$("bkXlsx")];bt.forEach(b=>b.disabled=true);
+  try{await fn()}catch(e){$("bkDurum").innerHTML='<b style="color:#e71d36">Yedek alınamadı: '+esc(errText(e))+'</b>'}
+  bt.forEach(b=>b.disabled=false)}
+$("bkJson").onclick=()=>bkCalistir(null,async()=>{
+  const r=await bkOku();let v=r.veri;if(!$("bkFoto").checked)v=bkTemizle(v,undefined);
+  $("bkDurum").textContent="Dosya hazırlanıyor…";
+  const metin=JSON.stringify(v);
+  bkIndir(new Blob([metin],{type:"application/json"}),"fabrika-yedek_"+bkTarih()+".json");
+  bkBitir(r.hata,(metin.length/1048576).toFixed(1)+" MB")});
+let xlsxYuk=null;
+function xlsxHazir(){if(window.XLSX)return Promise.resolve();
+  if(!xlsxYuk)xlsxYuk=new Promise((ok,no)=>{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";sc.onload=ok;sc.onerror=()=>{xlsxYuk=null;no(new Error("Excel bileşeni yüklenemedi. İnternet bağlantısını kontrol edin."))};document.head.appendChild(sc)});
+  return xlsxYuk}
+function bkHucre(k,v){
+  if(v==null)return"";
+  if(typeof v==="number"&&v>1e11&&/(tarih|zaman)/i.test(k))return new Date(v).toLocaleString("tr-TR");
+  if(typeof v==="object")v=JSON.stringify(v);
+  if(typeof v==="string"&&v.length>32000)v=v.slice(0,32000)+"…";
+  return v}
+function bkSatirlar(veri,derin){ // düğümü satırlara çevir: [{grup?, id, alanlar…}]
+  const sat=[];
+  const ekle=(grup,id,kayit)=>{const o={};if(derin===2)o.grup=grup;o.id=id;
+    if(kayit&&typeof kayit==="object"&&!Array.isArray(kayit))Object.keys(kayit).forEach(k=>o[k]=bkHucre(k,bkTemizle(kayit[k],"[foto]")));
+    else o.deger=bkHucre("deger",bkTemizle(kayit,"[foto]"));sat.push(o)};
+  Object.keys(veri||{}).forEach(k1=>{const a=veri[k1];
+    if(derin===2&&a&&typeof a==="object")Object.keys(a).forEach(k2=>ekle(k1,k2,a[k2]));else ekle("",k1,a)});
+  return sat}
+$("bkXlsx").onclick=()=>bkCalistir(null,async()=>{
+  $("bkDurum").textContent="Excel bileşeni yükleniyor…";await xlsxHazir();
+  const r=await bkOku();$("bkDurum").textContent="Excel hazırlanıyor…";
+  const wb=XLSX.utils.book_new();let toplam=0;
+  BK_DUGUM.forEach(([ad,derin])=>{const sat=bkSatirlar(r.veri[ad],derin);if(!sat.length)return;toplam+=sat.length;
+    const baslik=[];sat.forEach(o=>Object.keys(o).forEach(k=>{if(!baslik.includes(k))baslik.push(k)}));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sat,{header:baslik}),ad.slice(0,31))});
+  if(!wb.SheetNames.length)throw new Error("İndirilecek veri bulunamadı.");
+  XLSX.writeFile(wb,"fabrika-yedek_"+bkTarih()+".xlsx");
+  bkBitir(r.hata,toplam+" satır")});
+
 
 function modUyg(){
   const m=M();

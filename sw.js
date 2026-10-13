@@ -1,4 +1,4 @@
-const CACHE = 'fabrika-v15';
+const CACHE = 'fabrika-v16';
 const ASSETS = ['./', './index.html', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
