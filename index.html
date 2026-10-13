@@ -2,6 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdnjs.cloudflare.com https://apis.google.com https://www.google.com/recaptcha/ 'sha256-TaiYQMY/O9PNJe9U9pJN4AF0m7CVLvrwYLk5D/XW73M=' 'sha256-ksIbOj8vaCS1qyTr6DYaYbnfcg8Zj9xSOIl9+S4jkI0=' 'sha256-wXFxzrjlLASbvDBlXRB7YHqYveGeNSDb5uA9MApJ4f8=' 'sha256-k0Mwen57CKJwE9D1lfQrYwM3TLv2uMZh2V/XN4et4ls=' 'sha256-xngTDU/BiJgruaHnWm+Ju8oI5fS2bpnB+VkHmRWYjGY=' 'sha256-92IoMf8N1kc74+W3Xa1xc0lMcG2lmiY80ymEQ8r7k7k=' 'sha256-BcUohLXZHN9pbyszy8v/fMNiovaMKC6S/ZEUp8iyQxk=' 'sha256-JPxtUUUNkmNFLtnBa+zhb2IouC3XP1KEnR5op6a2+fU=' 'sha256-s9Y14DiRVa/dddOU+0W3Uzb53SAwl8MlRV2J7Rd/1iM='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: data:; font-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app https://*.cloudfunctions.net https://www.google.com https://www.gstatic.com; frame-src https://*.firebaseapp.com https://www.google.com https://apis.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#c82333">
 <link rel="manifest" href="manifest.webmanifest">
@@ -15,6 +16,8 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app-check.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 body{background:#f4f6f9;padding:12px;color:#212529;font-size:14px;min-height:100vh}
@@ -184,6 +187,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
       <button class="btn b6 sm bell" id="bBell">🔔<span class="bn hide" id="bBellN"></span></button>
       <button class="btn b7 sm" id="bMenu">🏠 Menü</button>
       <button class="btn b6 sm" id="bAd">İsim</button>
+      <button class="btn b6 sm" id="bSf">🔑 Şifre</button>
       <button class="btn b5 sm" data-out>Çıkış</button>
     </div>
   </div>
@@ -332,6 +336,11 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 <dialog id="dAdm">
   <h3 style="margin-bottom:8px">Kullanıcılar</h3>
   <div id="ulist"></div>
+  <h3 style="margin:14px 0 6px">🛟 Kurtarma ve kayıt</h3>
+  <button class="btn b6" id="copAc">🗑️ Çöp kutusu (silinenler)</button>
+  <button class="btn b6" id="denAc">📜 Denetim kaydı</button>
+  <button class="btn b6" id="fgBtn">🖼️ Eski fotoğrafları hafiflet</button>
+  <div id="bakimDurum" style="font-size:12px;margin-top:6px;color:#475569"></div>
   <h3 style="margin:14px 0 6px">💾 Yedekleme</h3>
   <div id="bkSon" style="font-size:12px;margin-bottom:6px"></div>
   <label style="display:flex;gap:6px;align-items:center;font-size:12px;margin-bottom:4px"><input type="checkbox" id="bkFoto" checked style="width:auto"> Fotoğrafları da dahil et (JSON; dosya büyük olabilir)</label>
@@ -340,6 +349,27 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="bkDurum" style="font-size:12px;margin-top:6px;color:#475569"></div>
   <small style="display:block;margin-top:6px;color:#64748b">JSON dosyası Firebase Konsolu > Realtime Database > ⋮ > JSON'u içe aktar ile geri yüklenebilir. Excel dosyasında fotoğraflar yer almaz. Giriş hesapları (şifreler) yedeğe dahil değildir.</small>
   <button class="btn b6" id="dClose">Kapat</button>
+</dialog>
+<dialog id="dCop">
+  <h3 style="margin-bottom:4px">🗑️ Çöp kutusu</h3>
+  <small style="color:#64748b">Son 50 silinen kayıt. "Geri yükle" kaydı eski yerine koyar.</small>
+  <div id="copList" style="margin-top:8px"></div>
+  <button class="btn b6" id="copKapat">Kapat</button>
+</dialog>
+<dialog id="dDen">
+  <h3 style="margin-bottom:4px">📜 Denetim kaydı</h3>
+  <small style="color:#64748b">Son 100 işlem (silme, geri yükleme, kullanıcı ve şifre değişiklikleri).</small>
+  <div id="denList" style="margin-top:8px"></div>
+  <button class="btn b6" id="denKapat">Kapat</button>
+</dialog>
+<dialog id="dSf">
+  <h3 id="sfT" style="margin-bottom:8px">🔑 Şifremi değiştir</h3>
+  <div id="sfEskiW"><label for="sfEski">Mevcut şifre</label><input type="password" id="sfEski" autocomplete="current-password"></div>
+  <label for="sfYeni" style="margin-top:8px">Yeni şifre (en az 6 karakter)</label><input type="password" id="sfYeni" autocomplete="new-password">
+  <label for="sfYeni2" style="margin-top:8px">Yeni şifre (tekrar)</label><input type="password" id="sfYeni2" autocomplete="new-password">
+  <div id="sfE" style="color:#e71d36;font-size:12px;min-height:16px;margin-top:4px"></div>
+  <button class="btn b3" id="sfOk">Kaydet</button>
+  <button class="btn b6" id="sfIptal">İptal</button>
 </dialog>
 <dialog id="dKalem">
   <h3 id="kT" style="margin-bottom:6px">Yeni kalem</h3>
@@ -702,7 +732,9 @@ const $=id=>document.getElementById(id);
    - Tarih aralığı: başlangıç/bitiş dahil, ters girilirse otomatik düzeltilir
    - "Filtreleri temizle" düğmesi + sonuç sayısı */
 const trn=s=>String(s==null?"":s).toLocaleLowerCase("tr-TR").replace(/ı/g,"i").replace(/ş/g,"s").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ö/g,"o").replace(/ü/g,"u").normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-const gun=v=>{if(!v)return"";if(typeof v==="string"&&/^\d{4}-\d{2}-\d{2}/.test(v))return v.slice(0,10);const n=+v;return n?new Date(n+10800000).toISOString().slice(0,10):""};
+const TRZ="Europe/Istanbul",_trf=new Intl.DateTimeFormat("en-CA",{timeZone:TRZ,year:"numeric",month:"2-digit",day:"2-digit"});
+const trIso=ms=>{const p=_trf.formatToParts(new Date(ms)),g=t=>p.find(x=>x.type===t).value;return g("year")+"-"+g("month")+"-"+g("day")};
+const gun=v=>{if(!v)return"";if(typeof v==="string"&&/^\d{4}-\d{2}-\d{2}/.test(v))return v.slice(0,10);const n=+v;return n?trIso(n):""};
 const FB={};
 function fbKur(q,o){o=o||{};const inp=$(q);if(!inp||FB[q])return;
   const box=inp.closest(".filter");let d1=o.d1,d2=o.d2,r=null;
@@ -750,7 +782,12 @@ if(typeof firebase==="undefined"){bootMsg("Firebase yüklenemedi. İnternet bağ
 if(!/^https?:$/.test(location.protocol))bootMsg("Uygulama dosyadan açılmış ("+location.protocol+"). Giriş sistemi sadece internet adresi (https) üzerinden çalışır.");
 setTimeout(()=>{if(!$("boot").classList.contains("hide")&&$("boot").textContent==="Yükleniyor...")bootMsg("Sunucuya bağlanılamadı. İnternet bağlantısını ve Firebase ayarlarını kontrol edin.")},8000);
 firebase.initializeApp(CFG);
+/* App Check (bot/sahte kayıt koruması): Firebase Konsolu > App Check > Web > reCAPTCHA v3 "site key" değerini aşağıya yazın.
+   Boş bırakılırsa devre dışıdır. Konsolda "Enforce" açmadan önce anahtarı yazıp siteyi yayınlayın. */
+const APPCHECK_KEY="";
+try{if(APPCHECK_KEY&&firebase.appCheck)firebase.appCheck().activate(APPCHECK_KEY,true)}catch(e){}
 const auth=firebase.auth(),db=firebase.database();
+let fbFn=null;try{if(firebase.functions)fbFn=firebase.functions()}catch(e){}
 
 const MODS={
  sevk:{yol:"urunler",baslik:"SEVKİYAT",tab:["HAZIR ÜRÜNLER","SEVK EDİLECEKLER","SEVK EDİLENLER"],rozet:["HAZIR STOK","SEVK EDİLECEK","SEVK EDİLDİ"],ileri:["➡️ Sevk Listesine Al","✓ Teslim Edildi"],geri:["↩️ Hazır Ürünlere Geri Al","↩️ Sevk Edilecek'e Geri Al"],sec:["SEVKİYATA HAZIR","SEVK EDİLECEK"],kayit:"+ STOĞA EKLENENİ KAYDET",teslim:"Teslim eden",mu:"Müşteri"},
@@ -802,7 +839,7 @@ $("bG").onclick=async()=>{
   try{
     await auth.setPersistence(rem?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION);
     try{await auth.signInWithEmailAndPassword(mail(k),p)}catch(e1){if(p!==p.trim()&&p.trim())await auth.signInWithEmailAndPassword(mail(k),p.trim());else throw e1}
-    try{if(rem){localStorage.setItem("hatirla_k",k);localStorage.setItem("hatirla_p",btoa(unescape(encodeURIComponent(p))));localStorage.setItem("hatirla_on","1")}else{localStorage.removeItem("hatirla_k");localStorage.removeItem("hatirla_p");localStorage.setItem("hatirla_on","0")}}catch(_){}
+    try{if(rem){localStorage.setItem("hatirla_k",k);localStorage.removeItem("hatirla_p");localStorage.setItem("hatirla_on","1")}else{localStorage.removeItem("hatirla_k");localStorage.removeItem("hatirla_p");localStorage.setItem("hatirla_on","0")}}catch(_){}
     if(!rem)$("lp").value=""
   }catch(e){$("eG").textContent=errText(e)}
 };
@@ -811,8 +848,7 @@ try{
   const on=localStorage.getItem("hatirla_on"),k0=localStorage.getItem("hatirla_k");
   if(on==="0")$("lb").checked=false;
   if(k0)$("lk").value=k0;
-  const p0=localStorage.getItem("hatirla_p");
-  if(p0&&on!=="0")$("lp").value=decodeURIComponent(escape(atob(p0)));
+  localStorage.removeItem("hatirla_p");
 }catch(_){}
 $("bK").onclick=async()=>{
   const n=$("rn").value.trim(),k=$("rk").value.trim().toLowerCase(),p=$("rp").value,r=$("rr").value;$("eK").textContent="";
@@ -914,8 +950,9 @@ function irsKaydet(u,src){
         nt=tur==="diger"?(st.not||""):"",
         who=cur.durum==="sevk_edildi"&&cur.teslimEden?cur.teslimEden:ad();
       if(n>=IRSMAX){toast("En fazla "+IRSMAX+" fotoğraf eklenebilir.");return}
-      if(!n)await ref.update({durum:"sevk_edildi",teslimEden:who,irsaliye:d,irsTur:tur,irsNot:tur==="diger"?nt:null,irsaliyeCeken:ad(),irsaliyeTarihi:TS});
-      else await ref.update({durum:"sevk_edildi",teslimEden:who,["irsEkler/"+db.ref().push().key]:{f:d,tur:tur,not:nt,ceken:ad(),tarih:TS}});
+      const dd=(await fotoHazirla([d]))[0];
+      if(!n)await ref.update({durum:"sevk_edildi",teslimEden:who,irsaliye:dd,irsTur:tur,irsNot:tur==="diger"?nt:null,irsaliyeCeken:ad(),irsaliyeTarihi:TS});
+      else await ref.update({durum:"sevk_edildi",teslimEden:who,["irsEkler/"+db.ref().push().key]:{f:dd,tur:tur,not:nt,ceken:ad(),tarih:TS}});
       toast(n?"✓ Fotoğraf eklendi ("+(n+1)+"/"+IRSMAX+").":"✓ Teslim edildi, fotoğraf eklendi.");
     }catch(err){toast(errText(err))}
   });
@@ -942,7 +979,26 @@ $("turBtns").onclick=e=>{
 };
 $("turOk").onclick=()=>{const n=$("turNot").value.trim();if(!n){$("turE").textContent="Lütfen ne olduğunu yazın.";return}turBaslat("diger",n)};
 $("turX").onclick=()=>$("dTur").close();
-const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s||"")?s:"";
+const safeImg=s=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+(#[A-Za-z0-9_-]{20})?$/.test(s||"")?s:"";
+/* ---------- Fotoğraf: liste için küçük önizleme + tam boyut ayrı bölümde (fotoTam) ----------
+   Kayıttaki alan: "data:image/jpeg;base64,<küçük önizleme>#<fotoTam anahtarı>". Tam boyut büyütünce yüklenir. */
+const FRAG=/#[A-Za-z0-9_-]{20}$/;
+function kucult(src,mx){return new Promise(ok=>{const im=new Image();
+  im.onload=()=>{try{const c=document.createElement("canvas"),M=mx||320;let w=im.width,h=im.height;
+    if(w>M||h>M){const k=M/Math.max(w,h);w=Math.max(1,Math.round(w*k));h=Math.max(1,Math.round(h*k))}
+    c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);ok(c.toDataURL("image/jpeg",.6))}catch(e){ok("")}};
+  im.onerror=()=>ok("");im.src=src})}
+async function fotoHazirla(list){
+  const out=[];
+  for(const s of list){
+    if(!s||FRAG.test(s)||!safeImg(s)){out.push(s);continue}
+    const th=await kucult(s,320);
+    if(!th||th.length>=s.length){out.push(s);continue}
+    const key=db.ref("fotoTam").push().key;
+    await db.ref("fotoTam/"+key).set(s);
+    out.push(th+"#"+key)}
+  return out}
+window.fotoTamGetir=async function(key){const x=await db.ref("fotoTam/"+key).once("value"),v=x.val();return safeImg(v)&&!FRAG.test(v)?v:""};
 const ekFoto=u=>(Array.isArray(u.fotolar)?u.fotolar:Object.values(u.fotolar||{})).map(safeImg).filter(Boolean);
 const fotoListe=u=>[safeImg(u.foto)].filter(Boolean).concat(ekFoto(u));
 /* ---------- Teslim fotoğrafları (çoklu): ana = irsaliye alanları, ekler = irsEkler/{anahtar} ---------- */
@@ -992,7 +1048,7 @@ $("bSave").onclick=async()=>{
   const d={musteri:$("mu").value.trim()||"Etikete Bakınız",urun:$("ur").value.trim()||"Etikete Bakınız",kg,paket:pk,tarih:$("tr").value,durum:$("du").value,not:$("no").value.trim(),adres,haritaUrl:url};
   const b=$("bSave");b.disabled=true;
   try{
-    d.foto=fotos[0]||null;d.fotolar=fotos.length>1?fotos.slice(1):null;
+    {const fl=await fotoHazirla(fotos);d.foto=fl[0]||null;d.fotolar=fl.length>1?fl.slice(1):null}
     let sid=editId;
     if(editId){d.duzenleyen=ad();await db.ref(M().yol+"/"+editId).update(d)}
     else{d.ekleyen=ad();d.ekleyenUid=user.uid;d.eklenmeTarihi=firebase.database.ServerValue.TIMESTAMP;const nr=db.ref(M().yol).push();sid=nr.key;await nr.set(d)}
@@ -1081,7 +1137,7 @@ $("liste").onclick=async e=>{
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
     else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edildi"){turAc(u)}
     else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;await db.ref(M().yol+"/"+u.id).update(up)}
-    else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await db.ref(M().yol+"/"+u.id).remove();if(isAdmin())db.ref("fiyatlar/sevk/"+u.id).remove().catch(()=>{})}
+    else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await silCop(M().yol,u.id,(u.musteri||"")+" / "+(u.urun||""),isAdmin()?["fiyatlar/sevk/"+u.id]:[]);toast("Silindi (Çöp kutusuna alındı)")}
   }catch(err){toast(errText(err))}
 };
 $("bCsv").onclick=()=>{
@@ -1110,23 +1166,147 @@ async function isGeri(u){
 }
 
 /* ---------- Yönetici paneli ---------- */
+const ROLLER=["Depo Görevlisi","Sevkiyat Sorumlusu","Ekstruder Operatörü","Matbaa Operatörü","Kesim Operatörü","Muhasebe"];
 async function kullanicilar(){
   try{
     const s=await db.ref("kullanicilar").once("value"),v=s.val()||{};
-    $("ulist").innerHTML=Object.keys(v).map(id=>{const k=v[id],self=id===user.uid;
-      return `<div class="urow"><div><b>${esc(k.ad)}</b> <span style="color:#64748b">@${esc(k.kullanici)}</span><br><small>${esc(k.rol)} · ${k.onay?"Onaylı":"Onay bekliyor"}${k.yonetici?" · Yönetici":""}</small></div>
+    $("ulist").innerHTML=Object.keys(v).map(id=>{const k=v[id],self=id===user.uid,da=`data-u="${esc(id)}" data-ad="${esc(k.ad||"")}"`;
+      const opts=(ROLLER.includes(k.rol)?ROLLER:[k.rol].concat(ROLLER)).filter(Boolean).map(r=>`<option${r===k.rol?" selected":""}>${esc(r)}</option>`).join("");
+      return `<div class="urow"><div><b>${esc(k.ad)}</b> <span style="color:#64748b">@${esc(k.kullanici)}</span><br><small>${k.onay?"Onaylı":"⏳ Onay bekliyor — rolü kontrol edip onaylayın"}${k.yonetici?" · Yönetici":""}</small><br>${self?`<small>${esc(k.rol||"")}</small>`:`<select ${da} data-f="rol" style="margin-top:4px;font-size:12px;padding:4px">${opts}</select>`}</div>
       <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">${self?"<small>Siz</small>":
-      `<button class="btn sm ${k.onay?"b5":"b3"}" data-u="${esc(id)}" data-f="onay" data-v="${!k.onay}">${k.onay?"Engelle":"Onayla"}</button>
-       <button class="btn sm b6" data-u="${esc(id)}" data-f="yonetici" data-v="${!k.yonetici}">${k.yonetici?"Yöneticiliği al":"Yönetici yap"}</button>`}</div></div>`}).join("")||"<p>Kullanıcı yok.</p>";
+      `<button class="btn sm ${k.onay?"b5":"b3"}" ${da} data-f="onay" data-v="${!k.onay}">${k.onay?"Engelle":"Onayla"}</button>
+       <button class="btn sm b6" ${da} data-f="yonetici" data-v="${!k.yonetici}">${k.yonetici?"Yöneticiliği al":"Yönetici yap"}</button>
+       <button class="btn sm b4" ${da} data-f="sifre">🔑 Şifre</button>`}</div></div>`}).join("")||"<p>Kullanıcı yok.</p>";
   }catch(e){toast(errText(e))}
 }
 $("bAdm").onclick=()=>{$("dAdm").showModal();kullanicilar();bkSonGoster()};
 $("dClose").onclick=()=>$("dAdm").close();
 $("ulist").onclick=async e=>{const b=e.target.closest("button[data-u]");if(!b)return;
-  try{await db.ref("kullanicilar/"+b.dataset.u+"/"+b.dataset.f).set(b.dataset.v==="true");kullanicilar()}catch(err){toast(errText(err))}};
+  if(b.dataset.f==="sifre"){sfAc(b.dataset.u,b.dataset.ad||"");return}
+  try{await db.ref("kullanicilar/"+b.dataset.u+"/"+b.dataset.f).set(b.dataset.v==="true");
+    denetimYaz("kullanici",b.dataset.ad||"",b.dataset.f+" = "+(b.dataset.v==="true"?"evet":"hayır"),"kullanicilar",b.dataset.u);kullanicilar()}catch(err){toast(errText(err))}};
+$("ulist").onchange=async e=>{const x=e.target.closest("select[data-u]");if(!x)return;
+  try{await db.ref("kullanicilar/"+x.dataset.u+"/rol").set(x.value);denetimYaz("kullanici",x.dataset.ad||"","rol = "+x.value,"kullanicilar",x.dataset.u);toast("Rol güncellendi")}catch(err){toast(errText(err));kullanicilar()}};
+
+
+/* ---------- Denetim kaydı + çöp kutusu ---------- */
+const kisalt=(s,n)=>String(s==null?"":s).slice(0,n);
+const TSV=()=>firebase.database.ServerValue.TIMESTAMP;
+function denetimYaz(tur,baslik,detay,yol,id){
+  const o={tur:kisalt(tur,20),baslik:kisalt(baslik,120),kim:kisalt(ad(),100),uid:user.uid,zaman:TSV()};
+  if(detay)o.detay=kisalt(detay,200);if(yol)o.yol=kisalt(yol,140);if(id)o.id=kisalt(id,100);
+  return db.ref("denetim").push().set(o).catch(()=>{})}
+/* Kaydı çöp kutusuna kopyalayıp asıl yerinden siler (tek işlemde). ek: birlikte silinecek ilgili yollar */
+async function silCop(yol,id,baslik,ek){
+  const s=await db.ref(yol+"/"+id).once("value");if(!s.exists())return false;
+  const k=db.ref("cop").push().key,up={},ekl=[];
+  for(const p of (ek||[])){try{const x=await db.ref(p).once("value");if(x.exists()){ekl.push({p:p,v:x.val()});up[p]=null}}catch(e){}}
+  const c={yol:yol,id:id,tur:kisalt(yol.split("/")[0],20),baslik:kisalt(baslik||id,120),veri:s.val(),kim:kisalt(ad(),100),uid:user.uid,zaman:TSV()};
+  if(ekl.length)c.ek=ekl;
+  up["cop/"+k]=c;up[yol+"/"+id]=null;
+  up["denetim/"+db.ref("denetim").push().key]={tur:"sil",baslik:kisalt(baslik||id,120),yol:kisalt(yol,140),id:kisalt(id,100),kim:kisalt(ad(),100),uid:user.uid,zaman:TSV()};
+  await db.ref().update(up);return true}
+const COP_YOL=/^(urunler|stokKalem|tedarikciler|siparisler|sevkAdresleri|isEmirleri|dosyalar|etiketSablon\/[^\/.$#\[\]]+)$/,
+  COP_EK=/^(fiyatlar\/(sevk|stok|siparis)|isHareket|etiketGecmis|dosyaFoto)\/[^\/.$#\[\]]+$/,COP_ID=/^[^\/.$#\[\]]+$/;
+const zamanTR=t=>t?new Date(t).toLocaleString("tr-TR",{timeZone:TRZ,day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+const TURAD={urunler:"Sevkiyat",stokKalem:"Stok kalemi",tedarikciler:"Tedarikçi",siparisler:"Sipariş",sevkAdresleri:"Sevk adresi",isEmirleri:"İş emri",dosyalar:"Dosya",etiketSablon:"Etiket şablonu"};
+async function copListele(){
+  try{
+    const s=await db.ref("cop").orderByChild("zaman").limitToLast(50).once("value"),v=s.val()||{},ks=Object.keys(v).sort((a,b)=>(v[b].zaman||0)-(v[a].zaman||0));
+    $("copList").innerHTML=ks.map(k=>{const c=v[k];return `<div class="urow"><div><b>${esc(c.baslik||c.id)}</b><br><small>${esc(TURAD[c.tur]||c.tur||"")} · ${esc(c.kim||"")} · ${esc(zamanTR(c.zaman))}</small></div>
+      <div style="display:flex;gap:4px"><button class="btn sm b3" data-c="${esc(k)}" data-a="geri">Geri yükle</button><button class="btn sm b5" data-c="${esc(k)}" data-a="sil">Kalıcı sil</button></div></div>`}).join("")||"<p>Çöp kutusu boş.</p>";
+  }catch(e){toast(errText(e))}}
+async function copGeri(k){
+  const s=await db.ref("cop/"+k).once("value");if(!s.exists())return;const c=s.val();
+  if(!COP_YOL.test(c.yol||"")||!COP_ID.test(c.id||"")||c.veri==null){toast("Bu kayıt güvenlik nedeniyle geri yüklenemez.");return}
+  const mv=await db.ref(c.yol+"/"+c.id).once("value");
+  if(mv.exists()&&!confirm("Aynı kimlikli bir kayıt şu an mevcut. Üzerine yazılsın mı?"))return;
+  const up={};up[c.yol+"/"+c.id]=c.veri;
+  (Array.isArray(c.ek)?c.ek:Object.values(c.ek||{})).forEach(x=>{if(x&&COP_EK.test(x.p||"")&&x.v!=null)up[x.p]=x.v});
+  up["cop/"+k]=null;
+  up["denetim/"+db.ref("denetim").push().key]={tur:"geri",baslik:kisalt(c.baslik||c.id,120),yol:kisalt(c.yol,140),id:kisalt(c.id,100),kim:kisalt(ad(),100),uid:user.uid,zaman:TSV()};
+  await db.ref().update(up);toast("✓ Geri yüklendi")}
+$("copAc").onclick=()=>{$("dCop").showModal();copListele()};
+$("copKapat").onclick=()=>$("dCop").close();
+$("copList").onclick=async e=>{const b=e.target.closest("button[data-c]");if(!b||!isAdmin())return;
+  try{
+    if(b.dataset.a==="geri")await copGeri(b.dataset.c);
+    else if(confirm("Bu kayıt çöp kutusundan da kalıcı olarak silinsin mi? Geri alınamaz.")){await db.ref("cop/"+b.dataset.c).remove();denetimYaz("kalici","Çöp kutusundan kalıcı silindi",null,"cop",b.dataset.c)}
+    copListele()}catch(err){toast(errText(err))}};
+$("denAc").onclick=async()=>{$("dDen").showModal();$("denList").textContent="Yükleniyor…";
+  try{const s=await db.ref("denetim").orderByChild("zaman").limitToLast(100).once("value"),v=s.val()||{},ks=Object.keys(v).sort((a,b)=>(v[b].zaman||0)-(v[a].zaman||0));
+    const AD={sil:"🗑️ Silindi",geri:"♻️ Geri yüklendi",kullanici:"👤 Kullanıcı",sifre:"🔑 Şifre",kalici:"❌ Kalıcı silindi",bakim:"🛠️ Bakım"};
+    $("denList").innerHTML=ks.map(k=>{const d=v[k];return `<div class="urow"><div><b>${esc(AD[d.tur]||d.tur)}</b> ${esc(d.baslik||"")}<br><small>${esc(d.detay||"")}${d.detay?" · ":""}${esc(d.kim||"")} · ${esc(zamanTR(d.zaman))}</small></div></div>`}).join("")||"<p>Kayıt yok.</p>"}
+  catch(e){$("denList").textContent="";toast(errText(e))}};
+$("denKapat").onclick=()=>$("dDen").close();
+
+/* ---------- Şifre değiştir / yönetici şifre sıfırla ---------- */
+let sfHedef=null;
+function sfAc(uid,adi){sfHedef=uid?{uid:uid,adi:adi}:null;
+  $("sfT").textContent=uid?"🔑 Şifre sıfırla: "+adi:"🔑 Şifremi değiştir";$("sfEskiW").classList.toggle("hide",!!uid);
+  ["sfEski","sfYeni","sfYeni2"].forEach(i=>$(i).value="");$("sfE").textContent="";$("dSf").showModal()}
+function sfHata(er){const m=(er&&er.message)||"",c=(er&&er.code)||"";
+  if(/wrong-password|invalid-credential|INVALID_LOGIN|INVALID_PASSWORD/i.test(c+m))return"Mevcut şifre hatalı.";
+  if(/functions\/(not-found|internal|unavailable)/.test(c))return"Şifre sıfırlama fonksiyonu kurulu değil (bkz. functions/README.md).";
+  if(/permission-denied/.test(c))return"Bu işlem için yönetici olmalısınız.";
+  if(/requires-recent-login/.test(c))return"Güvenlik için çıkış yapıp yeniden giriş yapın, sonra tekrar deneyin.";
+  return errText(er)}
+$("bSf").onclick=()=>sfAc(null,"");
+$("sfIptal").onclick=()=>$("dSf").close();
+$("sfOk").onclick=async()=>{
+  const y=$("sfYeni").value,y2=$("sfYeni2").value,e=$("sfE");e.textContent="";
+  if(y.length<6){e.textContent="Yeni şifre en az 6 karakter olmalı.";return}
+  if(y!==y2){e.textContent="Yeni şifreler aynı değil.";return}
+  $("sfOk").disabled=true;
+  try{
+    if(sfHedef){
+      if(!isAdmin())throw new Error("Bu işlem için yönetici olmalısınız.");
+      if(!fbFn)throw new Error("Şifre sıfırlama fonksiyonu kurulu değil (bkz. functions/README.md).");
+      await fbFn.httpsCallable("sifreSifirla")({uid:sfHedef.uid,sifre:y});
+      denetimYaz("sifre",sfHedef.adi,"Yönetici şifreyi sıfırladı","kullanicilar",sfHedef.uid);toast("✓ Şifre sıfırlandı. Kullanıcıya yeni şifreyi iletin.");
+    }else{
+      const eski=$("sfEski").value;if(!eski){e.textContent="Mevcut şifrenizi yazın.";$("sfOk").disabled=false;return}
+      const cu=auth.currentUser;
+      await cu.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(cu.email,eski));
+      await cu.updatePassword(y);
+      denetimYaz("sifre",(rec&&rec.ad)||"","Kullanıcı şifresini değiştirdi","kullanicilar",user.uid);toast("✓ Şifreniz değiştirildi");
+    }
+    $("dSf").close();
+  }catch(er){e.textContent=sfHata(er)}
+  $("sfOk").disabled=false};
+
+/* ---------- Eski (büyük) fotoğrafları hafiflet: önizleme kayıtta kalır, tam boyut fotoTam'a taşınır ---------- */
+async function kayitHafiflet(n,id,r){
+  const up={};let c=0;
+  const dene=async(yol,v)=>{if(!safeImg(v)||FRAG.test(v)||v.length<20000)return;
+    const th=await kucult(v,320);if(!th||th.length>=v.length)return;
+    const key=db.ref("fotoTam").push().key;up["fotoTam/"+key]=v;up[n+"/"+id+"/"+yol]=th+"#"+key;c++};
+  await dene("foto",r.foto);
+  if(r.fotolar)for(const [k,v] of Object.entries(r.fotolar))await dene("fotolar/"+k,v);
+  await dene("irsaliye",r.irsaliye);
+  if(r.irsEkler)for(const [k,x] of Object.entries(r.irsEkler))if(x)await dene("irsEkler/"+k+"/f",x.f);
+  if(c)await db.ref().update(up);
+  return c}
+$("fgBtn").onclick=async()=>{
+  if(!isAdmin())return;
+  if(!confirm("Eski büyük fotoğraflar küçük önizlemeye çevrilecek, tam boyutları ayrı bölüme taşınacak (hiçbir fotoğraf silinmez). İşlem birkaç dakika sürebilir ve ekranı kapatmamalısınız.\n\nÖnce JSON yedek aldınız mı? Devam edilsin mi?"))return;
+  const d=$("bakimDurum");let kayit=0,foto=0,hata=0;$("fgBtn").disabled=true;
+  try{
+    for(const n of ["urunler","stokKalem"]){let son="";
+      for(;;){
+        let q=db.ref(n).orderByKey();q=son?q.startAt(son).limitToFirst(9):q.limitToFirst(8);
+        const s=await q.once("value"),v=s.val()||{},ks=Object.keys(v).filter(k=>k!==son).sort();
+        if(!ks.length)break;
+        for(const k of ks){son=k;d.textContent=n+": "+kayit+" kayıt tarandı, "+foto+" fotoğraf hafifletildi…";
+          try{foto+=await kayitHafiflet(n,k,v[k]||{})}catch(e){hata++}kayit++}
+      }}
+    d.innerHTML='✓ Bitti: '+kayit+' kayıt tarandı, '+foto+' fotoğraf hafifletildi'+(hata?' <b style="color:#e71d36">('+hata+' kayıt atlandı, tekrar çalıştırabilirsiniz)</b>':'')+'.';
+    denetimYaz("bakim","Fotoğraf hafifletme",foto+" fotoğraf, "+kayit+" kayıt")
+  }catch(e){d.innerHTML='<b style="color:#e71d36">Durdu: '+esc(errText(e))+'</b> Tekrar çalıştırabilirsiniz; tamamlananlar korunur.'}
+  $("fgBtn").disabled=false};
 
 /* ---------- Yedekleme: tüm veriyi JSON / Excel olarak indir (sadece yönetici) ---------- */
-const BK_DUGUM=[["kullanicilar",1],["urunler",1],["dosyalar",1],["dosyaFoto",1],["stokKalem",1],["stokHareket",1],["tedarikciler",1],["siparisler",1],["sevkAdresleri",1],["fiyatlar",2],["isEmirleri",1],["isHareket",2],["etiketGecmis",2],["etiketSablon",2],["ayarlar",1]];
+const BK_DUGUM=[["kullanicilar",1],["urunler",1],["dosyalar",1],["dosyaFoto",1],["stokKalem",1],["stokHareket",1],["tedarikciler",1],["siparisler",1],["sevkAdresleri",1],["fiyatlar",2],["isEmirleri",1],["isHareket",2],["etiketGecmis",2],["etiketSablon",2],["ayarlar",1],["cop",1],["denetim",1],["fotoTam",1]];
 const bkFotoMu=v=>typeof v==="string"&&(v.slice(0,5)==="data:"||v.length>5000);
 function bkTemizle(v,yerine){ // fotoğraf (base64) alanlarını çıkar/yer tutucu koy
   if(bkFotoMu(v))return yerine;
@@ -1137,11 +1317,11 @@ function bkIndir(blob,ad){const a=document.createElement("a");a.href=URL.createO
 function bkTarih(){const d=new Date(),z=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+"_"+z(d.getHours())+z(d.getMinutes())}
 function bkSonGoster(){let t=0;try{t=+localStorage.getItem("sonYedek")||0}catch(e){}
   const el=$("bkSon");if(!t){el.innerHTML='<b style="color:#e71d36">⚠️ Bu cihazdan henüz yedek alınmadı.</b>';return}
-  const g=Math.floor((Date.now()-t)/864e5),tx=new Date(t).toLocaleString("tr-TR");
+  const g=Math.floor((Date.now()-t)/864e5),tx=new Date(t).toLocaleString("tr-TR",{timeZone:TRZ});
   el.innerHTML=g>=7?'<b style="color:#e71d36">⚠️ Son yedek '+g+' gün önce ('+esc(tx)+'). Yeni yedek alın.</b>':'Son yedek: '+esc(tx)+(g?" ("+g+" gün önce)":" (bugün)")}
-async function bkOku(){ // her düğümü ayrı okur; okunamayanları bildirir
+async function bkOku(excel){ // her düğümü ayrı okur; okunamayanları bildirir
   const veri={},hata=[];
-  for(let i=0;i<BK_DUGUM.length;i++){const ad=BK_DUGUM[i][0];$("bkDurum").textContent="Okunuyor ("+(i+1)+"/"+BK_DUGUM.length+"): "+ad+"…";
+  for(let i=0;i<BK_DUGUM.length;i++){const ad=BK_DUGUM[i][0];if(excel&&ad==="fotoTam")continue;$("bkDurum").textContent="Okunuyor ("+(i+1)+"/"+BK_DUGUM.length+"): "+ad+"…";
     try{const s=await db.ref(ad).once("value");if(s.exists())veri[ad]=s.val()}catch(e){hata.push(ad+" ("+errText(e)+")")}}
   return{veri,hata}}
 function bkBitir(hata,ek){try{localStorage.setItem("sonYedek",String(Date.now()))}catch(e){}
@@ -1164,7 +1344,7 @@ function xlsxHazir(){if(window.XLSX)return Promise.resolve();
   return xlsxYuk}
 function bkHucre(k,v){
   if(v==null)return"";
-  if(typeof v==="number"&&v>1e11&&/(tarih|zaman)/i.test(k))return new Date(v).toLocaleString("tr-TR");
+  if(typeof v==="number"&&v>1e11&&/(tarih|zaman)/i.test(k))return new Date(v).toLocaleString("tr-TR",{timeZone:TRZ});
   if(typeof v==="object")v=JSON.stringify(v);
   if(typeof v==="string"&&v.length>32000)v=v.slice(0,32000)+"…";
   return v}
@@ -1178,9 +1358,9 @@ function bkSatirlar(veri,derin){ // düğümü satırlara çevir: [{grup?, id, a
   return sat}
 $("bkXlsx").onclick=()=>bkCalistir(null,async()=>{
   $("bkDurum").textContent="Excel bileşeni yükleniyor…";await xlsxHazir();
-  const r=await bkOku();$("bkDurum").textContent="Excel hazırlanıyor…";
+  const r=await bkOku(true);$("bkDurum").textContent="Excel hazırlanıyor…";
   const wb=XLSX.utils.book_new();let toplam=0;
-  BK_DUGUM.forEach(([ad,derin])=>{const sat=bkSatirlar(r.veri[ad],derin);if(!sat.length)return;toplam+=sat.length;
+  BK_DUGUM.forEach(([ad,derin])=>{if(ad==="fotoTam")return;const sat=bkSatirlar(r.veri[ad],derin);if(!sat.length)return;toplam+=sat.length;
     const baslik=[];sat.forEach(o=>Object.keys(o).forEach(k=>{if(!baslik.includes(k))baslik.push(k)}));
     XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sat,{header:baslik}),ad.slice(0,31))});
   if(!wb.SheetNames.length)throw new Error("İndirilecek veri bulunamadı.");
@@ -1329,7 +1509,7 @@ $("sList").onclick=async e=>{
   if(a==="in"||a==="out")hAc(k,a==="in"?"giris":"cikis");
   else if(a==="gec")gecAc(k);
   else if(a==="edit")kAc(k);
-  else if(a==="del"&&confirm(`"${k.ad}" silinsin mi? (Geçmiş hareket kayıtları saklanır)`)){try{await db.ref("stokKalem/"+k.id).remove();if(isAdmin())db.ref("fiyatlar/stok/"+k.id).remove().catch(()=>{});toast("Silindi")}catch(err){toast(errText(err))}}
+  else if(a==="del"&&confirm(`"${k.ad}" silinsin mi? (Geçmiş hareket kayıtları saklanır)`)){try{await silCop("stokKalem",k.id,k.ad,isAdmin()?["fiyatlar/stok/"+k.id]:[]);toast("Silindi (Çöp kutusuna alındı)")}catch(err){toast(errText(err))}}
 };
 /* kalem ekle / düzenle */
 function kRead(){document.querySelectorAll("#kur input").forEach(i=>{(kVals[i.dataset.u]=kVals[i.dataset.u]||{})[i.dataset.f]=i.value})}
@@ -1381,14 +1561,14 @@ $("kOk").onclick=async()=>{
   try{
     if(kEdit){
       const up=Object.assign({ad:nm,duzenleyen:ad(),min:Object.keys(min).length?min:null},extra);
-      up.foto=kFotos[0]||null;up.fotolar=kFotos.length>1?kFotos.slice(1):null;
+      {const fl=await fotoHazirla(kFotos);up.foto=fl[0]||null;up.fotolar=fl.length>1?fl.slice(1):null}
       if(!kEdit.mik){Object.keys(old).forEach(u=>{if(kSel.has(u))up["mik/"+u]=old[u]});up.miktar=null;up.birim=null}
       else Object.keys(old).forEach(u=>{if(!kSel.has(u))up["mik/"+u]=null});
       Object.keys(mik).forEach(u=>{up["mik/"+u]=mik[u]});
       await db.ref("stokKalem/"+kEdit.id).update(up);
     }else{
       const d=Object.assign({ad:nm,mik,ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:TS},extra);
-      if(Object.keys(min).length)d.min=min;if(kFotos.length){d.foto=kFotos[0];if(kFotos.length>1)d.fotolar=kFotos.slice(1)}
+      if(Object.keys(min).length)d.min=min;if(kFotos.length){const fl=await fotoHazirla(kFotos);d.foto=fl[0];if(fl.length>1)d.fotolar=fl.slice(1)}
       const r=db.ref("stokKalem").push();newId=r.key;await r.set(d);
       const pos=Object.fromEntries(Object.entries(mik).filter(([,v])=>v>0));
       if(Object.keys(pos).length)await db.ref("stokHareket").push().set({kalemId:r.key,ad:nm,tip:"giris",mik:pos,kalan:mik,not:"İlk kayıt",kullanici:ad(),uid:user.uid,zaman:TS});
@@ -1474,7 +1654,7 @@ $("tList").onclick=async e=>{
   const b=e.target.closest("button[data-a]");if(!b)return;const t=sTed.find(x=>x.id===b.dataset.id);if(!t)return;const a=b.dataset.a;
   if(a==="ord")oAc(null,t.id);
   else if(a==="edit")tAc(t);
-  else if(a==="del"&&confirm(`"${t.firma}" silinsin mi? (Geçmiş siparişler saklanır)`)){try{await db.ref("tedarikciler/"+t.id).remove();toast("Silindi")}catch(err){toast(errText(err))}}
+  else if(a==="del"&&confirm(`"${t.firma}" silinsin mi? (Geçmiş siparişler saklanır)`)){try{await silCop("tedarikciler",t.id,t.firma);toast("Silindi (Çöp kutusuna alındı)")}catch(err){toast(errText(err))}}
 };
 const TF=[["tfi","firma"],["tyt","yetkili"],["ttl","tel"],["ttl2","tel2"],["tml","mail"],["tad","adres"],["tno","not"]];
 function tAc(t){tEdit=t||null;$("tT").textContent=t?"Tedarikçiyi düzenle":"Yeni tedarikçi";$("tE").textContent="";
@@ -1560,7 +1740,7 @@ $("oList").onclick=async e=>{
   const b=e.target.closest("button[data-a]");if(!b)return;const o=sSip.find(x=>x.id===b.dataset.id);if(!o)return;const a=b.dataset.a;
   if(a==="in")teslimAl(o);
   else if(a==="edit")oAc(o);
-  else if(a==="del"&&confirm(o.durum==="geldi"?"Bu teslim kaydı silinsin mi? (Stoktan düşmez)":"Sipariş iptal edilsin mi?")){try{await db.ref("siparisler/"+o.id).remove();if(isAdmin())db.ref("fiyatlar/siparis/"+o.id).remove().catch(()=>{});toast("Silindi")}catch(err){toast(errText(err))}}
+  else if(a==="del"&&confirm(o.durum==="geldi"?"Bu teslim kaydı silinsin mi? (Stoktan düşmez)":"Sipariş iptal edilsin mi?")){try{await silCop("siparisler",o.id,"Sipariş: "+String(o.tedAd||o.tedarikci||o.firma||o.no||o.id),isAdmin()?["fiyatlar/siparis/"+o.id]:[]);toast("Silindi (Çöp kutusuna alındı)")}catch(err){toast(errText(err))}}
 };
 var tesO=null,tesKilit=false;
 function teslimAl(o){
@@ -1754,7 +1934,7 @@ $("aList").onclick=async e=>{
   if(k==="map")haritaAc(safeUrl(a.haritaUrl),a.adres||a.ad);
   else if(k==="edit")aAc(a);
   else if(k==="sevk")adrSevk(a);
-  else if(k==="del"&&confirm(`"${a.ad}" adresi silinsin mi? (Mevcut sevkiyat kayıtları etkilenmez)`)){try{await db.ref("sevkAdresleri/"+a.id).remove();toast("Silindi")}catch(err){toast(errText(err))}}
+  else if(k==="del"&&confirm(`"${a.ad}" adresi silinsin mi? (Mevcut sevkiyat kayıtları etkilenmez)`)){try{await silCop("sevkAdresleri",a.id,a.ad);toast("Silindi (Çöp kutusuna alındı)")}catch(err){toast(errText(err))}}
 };
 /* adresi sevkiyat formuna aktar */
 function adrDoldur(a){$("mu").value=a.ad||"";$("ad").value=a.adres||"";$("hu").value=a.haritaUrl||"";$("mu").closest("details").open=true}
@@ -1939,8 +2119,7 @@ $("dList").onclick=async e=>{
       if(a==="dfoto")await dosFoto(d.id,b.dataset.p);
       else if(a==="dgeri"&&isAdmin()&&confirm("Onay kaldırılsın ve sevk 'Sevk Edilenler' bölümüne geri alınsın mı?"))await dosyaGeri(d);
       else if(a==="dsil"&&isAdmin()&&confirm("Bu dosya kalıcı olarak silinsin mi?")){
-        await db.ref().update({["dosyalar/"+d.id]:null,["dosyaFoto/"+d.id]:null});
-        db.ref("fiyatlar/sevk/"+d.id).remove().catch(()=>{});
+        await silCop("dosyalar",d.id,(d.musteri||"")+" / "+(d.urun||"Dosya"),["dosyaFoto/"+d.id,"fiyatlar/sevk/"+d.id]);
         dAcik.delete(d.id);toast("Silindi");
       }
     }catch(err){toast(errText(err))}
@@ -1961,7 +2140,7 @@ $("dCsv").onclick=()=>{
 var iRef=null,isE=[],iTab="etiket",iEdit=null;
 const AS=[["etiket","🏷️ ETİKET"],["ekstruder","🏭 EKSTRUDER"],["baski","🖨️ BASKI"],["kesim","✂️ KESİM"],["depo","📦 DEPO"],["bitti","✅ BİTEN"]],ASL=Object.fromEntries(AS);
 const asOrd=e=>e&&e.baskiVar?["etiket","ekstruder","baski","kesim","depo","bitti"]:["etiket","ekstruder","kesim","depo","bitti"];
-const bugun=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const bugun=()=>trIso(Date.now());
 const icols=e=>Object.values(e.siparis||{}).filter(Boolean);
 /* ---- Hareket geçmişi: isHareket/<isEmriId>/<pushId> (sadece eklenir, değiştirilemez) ---- */
 const HT={olustur:"🆕 Oluşturdu",ileri:"✅ İlerletti",geri:"↩️ Geri aldı",etiketsiz:"⚠️ Etiketsiz ilerletti",etiket:"🏷️ Etiket bastı",duzenle:"✏️ Düzenledi",aktar:"📦 Hazır ürünlere aktardı"};
@@ -2026,7 +2205,7 @@ const isAksiyon=async ev=>{
     else if(a==="edit")iAc(e);
     else if(a==="gecmis")hrkAc(e);
     else if(a==="geri"&&i>0){const up={};up["isEmirleri/"+e.id+"/asama"]=o[i-1];hrkEk(up,e.id,{tur:"geri",kimden:e.asama,kime:o[i-1]});await db.ref().update(up)}
-    else if(a==="del"&&confirm(e.no+" silinsin mi?")){const up={};up["isEmirleri/"+e.id]=null;if(isAdmin()){up["isHareket/"+e.id]=null;up["etiketGecmis/"+e.id]=null}await db.ref().update(up)}
+    else if(a==="del"&&confirm(e.no+" silinsin mi?"))await silCop("isEmirleri",e.id,e.no||"İş emri",isAdmin()?["isHareket/"+e.id,"etiketGecmis/"+e.id]:[])
     else if(a==="ileri"&&i>=0&&i<o.length-1){
       if(e.asama==="etiket"){etiketIleri(e);return}else if(e.asama==="depo"){depoAc(e);return}else{
         const s=prompt("Bu aşamada çıkan kg (boş bırakılabilir):","");if(s===null)return;
@@ -2360,13 +2539,16 @@ formTemizle();modUyg();
 (function(){
 try{
   var box=document.getElementById("fvBox"),im=document.getElementById("fvImg"),dl=document.getElementById("fvDl"),cl=document.getElementById("fvCl");
+  var tok=0;
   function ac(src){
     var d=new Date(),z=function(n){return(n<10?"0":"")+n};
+    var my=++tok,mm=/#([A-Za-z0-9_-]{20})$/.exec(src||"");
     im.src=src;dl.href=src;
+    if(mm&&window.fotoTamGetir){im.style.opacity=".6";window.fotoTamGetir(mm[1]).then(function(f){if(my!==tok)return;im.style.opacity="";if(f){im.src=f;dl.href=f}}).catch(function(){if(my===tok)im.style.opacity=""})}
     dl.setAttribute("download","foto-"+d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+"-"+z(d.getHours())+z(d.getMinutes())+z(d.getSeconds())+".jpg");
     box.classList.add("on");
   }
-  function kapat(){box.classList.remove("on");im.removeAttribute("src")}
+  function kapat(){tok++;im.style.opacity="";box.classList.remove("on");im.removeAttribute("src")}
   function tikla(e){
     var t=e.currentTarget;
     e.preventDefault();e.stopPropagation();
@@ -3606,7 +3788,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
       db.ref("etiketSablon/"+tplKey+"/"+key).set(rec).then(function(){tpl[key]=Object.assign({},rec,{zaman:Date.now()});sablonListe();r.querySelector("[data-t]").value=key;toast("📋 Şablon kaydedildi")}).catch(function(er){toast(errText(er))})}
     else if(b.hasAttribute("data-ss")){var k=r.querySelector("[data-t]").value;
       if(!k)return toast("Önce silinecek şablonu seçin.");if(!confirm("Seçili şablon silinsin mi?"))return;
-      db.ref("etiketSablon/"+tplKey+"/"+k).remove().then(function(){delete tpl[k];sablonListe();toast("Şablon silindi")}).catch(function(er){toast(errText(er))})}
+      silCop("etiketSablon/"+tplKey,k,"Etiket şablonu").then(function(){delete tpl[k];sablonListe();toast("Şablon silindi")}).catch(function(er){toast(errText(er))})}
   });
 
   /* ---- ETİKET → EKSTRUDER geçişi ---- */
