@@ -284,7 +284,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
   <div id="pIs" class="hide">
     <button class="btn b2 big" style="margin:0 0 10px" id="iAdd">＋ Yeni iş emri aç</button>
-    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v19 (QR 26mm, form sayfaya tam sığar)</div>
+    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v20 (QR 22mm, büyük yazı)</div>
     <input id="iq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="iTabs"></div>
     <div id="iList"></div>
@@ -2408,7 +2408,7 @@ function isForm(e,fy){
     fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ₺ <small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:"",
     logo='<svg viewBox="0 0 60 30"><ellipse cx="30" cy="15" rx="28" ry="12" fill="none" stroke="#000" stroke-width="3"/><path d="M10 11L24 24L30 13L36 24L50 11" fill="none" stroke="#000" stroke-width="3.5"/></svg>';
   return `<div class="pf">
-  <div class="hdr"><div class="lg">${logo}mag ambalaj</div><div class="snw"><div class="sn"><small>SERİ NO:</small><b>${esc(e.no||"")}</b></div>${e.no?`<div class="pq">${isQrSvg(e.no)}</div>`:""}</div></div>
+  <div class="hdr"><div class="lg">${logo}mag ambalaj</div><div class="snw"><div class="sn"><small>SERİ NO:</small><b>${esc(e.no||"")}</b></div>${e.no?`<div class="pq">${isQrSvg(e.no,1)}</div>`:""}</div></div>
   <div class="tt">ÜRETİM İŞ TAKİP FORMU</div>
   <table class="px top"><colgroup><col style="width:20%"><col style="width:42%"><col style="width:16%"><col style="width:22%"></colgroup>
   <tr><th>MÜŞTERİ :</th><td class="v">${U(e.musteri)}</td><th>SP.<br>TARİHİ:</th><td class="v">${esc(trDate(e.spTarih))}</td></tr>
@@ -2417,7 +2417,7 @@ function isForm(e,fy){
   </table>
   <table class="px"><colgroup><col style="width:20%">${'<col style="width:21%"><col style="width:6%">'.repeat(3)}</colgroup>
   <tr><th>SİPARİŞ<br>MİKTARI :</th>${pair("kg","Kg")}</tr>
-  <tr><th>ÜRÜN<br>FORMÜLÜ :</th><td class="v" colspan="6" style="font-size:calc(15pt*var(--z))">${U(e.formul)}</td></tr>
+  <tr><th>ÜRÜN<br>FORMÜLÜ :</th><td class="v" colspan="6" style="font-size:calc(15pt*var(--z)*var(--fk))">${U(e.formul)}</td></tr>
   <tr><th>EN :</th>${k3(c=>c&&c.en?esc(c.en):"-")}</tr>
   <tr><th>MİKRON :</th>${pair("mikron","µ")}</tr>
   <tr><th>KORONA :</th>${k3(c=>c&&c.korona?esc(c.korona):"-")}</tr>
@@ -2488,8 +2488,8 @@ $("iOk").onclick=async()=>{
 function isQrNo(no){return String(no==null?"":no).trim().toUpperCase()}
 function isQrUrl(no){return location.href.split(/[?#]/)[0].replace(/index\.html$/,"")+"?is="+encodeURIComponent(isQrNo(no))}
 function isQrMat(no){const q=new window.QRLib(-1,0);q.addData(isQrUrl(no));q.make();return q}
-function isQrSvg(no){no=isQrNo(no);if(!no)return"";
-  const q=isQrMat(no),n=q.getModuleCount(),m=2;let d="";
+function isQrSvg(no,mg){no=isQrNo(no);if(!no)return"";
+  const q=isQrMat(no),n=q.getModuleCount(),m=mg||2;let d="";
   for(let r=0;r<n;r++){let c=0;while(c<n){if(q.isDark(r,c)){const b=c;while(c<n&&q.isDark(r,c))c++;d+="M"+(b+m)+" "+(r+m)+"h"+(c-b)+"v1h-"+(c-b)+"z"}else c++}}
   const z=n+2*m;
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+z+' '+z+'" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid meet"><rect width="'+z+'" height="'+z+'" fill="#fff"/><path d="'+d+'" fill="#000"/></svg>'}
@@ -2637,9 +2637,9 @@ try{
 .qrBox{background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden}
 .qrBox svg{display:block;width:100%;height:100%}
 #prn .snw{display:flex;align-items:flex-end;gap:calc(2.5mm*var(--z))}
-#prn .pq{flex:0 0 auto;width:26mm;height:26mm;margin-bottom:1mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#prn .pq{flex:0 0 auto;width:22mm;height:22mm;margin-bottom:1mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #prn .pq svg{display:block;width:100%;height:100%}
-#prn{display:none;--z:1}
+#prn{display:none;--z:1;--fk:1.35}
 #prn.meas{display:block;position:absolute;left:-10000px;top:0;width:285mm}
 @media print{
   @page{size:A4 landscape;margin:6mm}
@@ -2648,37 +2648,37 @@ try{
   #prn{display:block!important}
 }
 #prn .prow{display:flex;width:285mm;height:196mm;color:#000;font-family:Arial,Helvetica,sans-serif;font-weight:700}
-#prn .pf{flex:1 1 0;width:0;min-width:0;align-self:flex-start;padding:0 calc(3mm*var(--z));box-sizing:border-box;font-size:calc(13pt*var(--z))}
+#prn .pf{flex:1 1 0;width:0;min-width:0;align-self:flex-start;padding:0 calc(3mm*var(--z));box-sizing:border-box;font-size:calc(13pt*var(--z)*var(--fk))}
 #prn .pcut{flex:0 0 0;border-left:1.5px dashed #777;align-self:stretch}
 #prn .ph{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #000;padding-bottom:calc(2mm*var(--z));margin-bottom:calc(2.5mm*var(--z))}
-#prn .pfirma{font-size:calc(14pt*var(--z));font-weight:900;letter-spacing:.5px}
-#prn .pbas{font-size:calc(17pt*var(--z));font-weight:900}
-#prn .pno{font-size:calc(27pt*var(--z));font-weight:900;border:2px solid #000;padding:calc(1mm*var(--z)) calc(3mm*var(--z))}
+#prn .pfirma{font-size:calc(14pt*var(--z)*var(--fk));font-weight:900;letter-spacing:.5px}
+#prn .pbas{font-size:calc(17pt*var(--z)*var(--fk));font-weight:900}
+#prn .pno{font-size:calc(27pt*var(--z)*var(--fk));font-weight:900;border:2px solid #000;padding:calc(1mm*var(--z)) calc(3mm*var(--z))}
 #prn .pt{width:100%;border-collapse:collapse;margin-bottom:calc(2.5mm*var(--z))}
-#prn .pt th,#prn .pt td{border:1.2px solid #000;padding:calc(1.4mm*var(--z)) calc(1.8mm*var(--z));text-align:left;vertical-align:middle;font-size:calc(13pt*var(--z));font-weight:700;word-break:break-word}
+#prn .pt th,#prn .pt td{border:1.2px solid #000;padding:calc(1.4mm*var(--z)) calc(1.8mm*var(--z));text-align:left;vertical-align:middle;font-size:calc(13pt*var(--z)*var(--fk));font-weight:700;word-break:break-word}
 #prn .pt th{background:#e5e5e5;font-weight:900;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #prn .pc th,#prn .pc td{text-align:center}
-#prn .pc td{font-size:calc(15pt*var(--z));font-weight:800}
+#prn .pc td{font-size:calc(15pt*var(--z)*var(--fk));font-weight:800}
 #prn .ps td,#prn .ps th{height:calc(10mm*var(--z))}
 #prn .ps th{text-align:left}
-#prn .pn{border:1.2px solid #000;padding:calc(2mm*var(--z));margin-bottom:calc(2.5mm*var(--z));min-height:calc(11mm*var(--z));font-size:calc(13pt*var(--z));font-weight:700}
+#prn .pn{border:1.2px solid #000;padding:calc(2mm*var(--z));margin-bottom:calc(2.5mm*var(--z));min-height:calc(11mm*var(--z));font-size:calc(13pt*var(--z)*var(--fk));font-weight:700}
 #prn .pd{width:100%;border-collapse:collapse;margin:0}
-#prn .pd th,#prn .pd td{border:0;border-top:1.2px solid #000;border-right:1.2px solid #000;height:calc(10mm*var(--z));font-size:calc(12.5pt*var(--z))}
+#prn .pd th,#prn .pd td{border:0;border-top:1.2px solid #000;border-right:1.2px solid #000;height:calc(10mm*var(--z));font-size:calc(12.5pt*var(--z)*var(--fk))}
 #prn .pd tr:first-child th{border-top:0;height:calc(8mm*var(--z))}
 #prn .pd th:last-child,#prn .pd td:last-child{border-right:0}
 #prn .pd th:first-child{width:34%;text-align:left}
 #prn .hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:calc(1mm*var(--z))}
-#prn .lg{display:flex;align-items:center;gap:calc(2mm*var(--z));font-style:italic;font-weight:900;font-size:calc(29pt*var(--z));letter-spacing:-1px;line-height:1}
+#prn .lg{display:flex;align-items:center;gap:calc(2mm*var(--z));font-style:italic;font-weight:900;font-size:calc(29pt*var(--z)*var(--fk));letter-spacing:-1px;line-height:1}
 #prn .lg svg{width:calc(17mm*var(--z));height:calc(9mm*var(--z))}
-#prn .sn{text-align:right;line-height:1.1}#prn .sn small{display:block;font-size:calc(11pt*var(--z))}#prn .sn b{font-size:calc(22pt*var(--z));font-weight:900}
-#prn .tt{text-align:center;font-weight:900;font-size:calc(17pt*var(--z));border:1.5px solid #000;border-bottom:0;padding:calc(1mm*var(--z))}
+#prn .sn{text-align:right;line-height:1.1}#prn .sn small{display:block;font-size:calc(11pt*var(--z)*var(--fk))}#prn .sn b{font-size:calc(22pt*var(--z)*var(--fk));font-weight:900}
+#prn .tt{text-align:center;font-weight:900;font-size:calc(17pt*var(--z)*var(--fk));border:1.5px solid #000;border-bottom:0;padding:calc(1mm*var(--z))}
 #prn .px{width:100%;border-collapse:collapse;table-layout:fixed}
-#prn .px th,#prn .px td{border:1.5px solid #000;padding:calc(1.2mm*var(--z)) calc(1.5mm*var(--z));font-size:calc(11.5pt*var(--z));font-weight:800;vertical-align:middle;word-break:break-word;background:#fff}
-#prn .px th{text-align:left;line-height:1.1;white-space:nowrap;font-size:calc(10.5pt*var(--z))}
-#prn .px td.v{text-align:center;font-size:calc(14pt*var(--z))}
-#prn .px td.u{font-size:calc(10pt*var(--z));font-weight:700;text-align:left;padding-left:calc(.8mm*var(--z))}
-#prn .px td.n{font-size:calc(11pt*var(--z));height:calc(11mm*var(--z))}
-#prn .px th.hd{text-align:center;font-size:calc(14pt*var(--z))}
+#prn .px th,#prn .px td{border:1.5px solid #000;padding:calc(1.2mm*var(--z)) calc(1.5mm*var(--z));font-size:calc(11.5pt*var(--z)*var(--fk));font-weight:800;vertical-align:middle;word-break:break-word;background:#fff}
+#prn .px th{text-align:left;line-height:1.1;white-space:nowrap;font-size:calc(10.5pt*var(--z)*var(--fk))}
+#prn .px td.v{text-align:center;font-size:calc(14pt*var(--z)*var(--fk))}
+#prn .px td.u{font-size:calc(10pt*var(--z)*var(--fk));font-weight:700;text-align:left;padding-left:calc(.8mm*var(--z))}
+#prn .px td.n{font-size:calc(11pt*var(--z)*var(--fk));height:calc(11mm*var(--z))}
+#prn .px th.hd{text-align:center;font-size:calc(14pt*var(--z)*var(--fk))}
 #prn .px.top tr:first-child th,#prn .px.top tr:first-child td{height:calc(10mm*var(--z))}
 #prn .px small{font-size:.62em;font-weight:700}
 #prn .ps{margin-top:calc(2.5mm*var(--z))}
