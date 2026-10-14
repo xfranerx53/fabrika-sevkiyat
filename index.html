@@ -194,7 +194,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
   <div class="tabs stabs" id="vtabs"><button data-v="sev" class="on">🚚 SEVKİYATLAR</button><button data-v="adr" id="vtA">📍 SEVK ADRESLERİ</button><button data-v="dos" id="vtD">📁 DOSYALAR</button></div>
   <div id="vSev">
-  <div class="card"><div class="grid">
+  <div class="card" id="sevForm"><div class="grid">
     <div class="full">
       <label style="color:#2563eb;font-size:14px">1. Fotoğraf ekle (yeni kayıtta en az 1, en fazla 6 · ✖ ile kaldırılır)</label>
       <div class="photo">
@@ -839,6 +839,8 @@ const modGor=m=>yAcik()||(iz(m)!==undefined?iz(m):!!(yRol()&&yRol().mod.includes
 const asamaYap=a=>yAcik()||(iz("a_"+a)!==undefined?iz("a_"+a):!!(yRol()&&yRol().asama.includes(a))); /* aşamayı ilerletebilir mi */
 const islemYap=k=>yAcik()||(iz(k)!==undefined?iz(k):!!(yRol()&&yRol()[k]));                /* isDuzenle, geriAl, isSil, fiyat */
 const asamaGor=a=>yAcik()||iz("a_"+a)===true||(yRol()?(!yRol().goster||yRol().goster.includes(a)):false); /* iş emirlerinde bu aşamayı görebilir mi */
+/* Sevkiyat Sorumlusu: kayıt ekleme/düzenleme formunu (kamera, adres, not, ürün adı...) kullanamaz */
+const sevForm=()=>yAcik()||!(rec&&rec.rol==="Sevkiyat Sorumlusu");
 const anaBolum=()=>(YETKI_UYGULA&&!isAdmin()&&yRol()&&yRol().ana)||null;
 /* kayıt ekranındaki rol listesi de aynı tablodan dolar */
 try{const rs=$("rr");if(rs)rs.innerHTML=Object.keys(YETKI).map(r=>`<option>${r}</option>`).join("")}catch(e){}
@@ -1105,6 +1107,7 @@ $("bSave").onclick=async()=>{
   b.disabled=false;
 };
 function duzenle(u){
+  if(!sevForm())return;
   editId=u.id;
   $("mu").value=u.musteri==="Etikete Bakınız"?"":u.musteri||"";$("ur").value=u.urun==="Etikete Bakınız"?"":u.urun||"";
   $("tr").value=u.tarih;$("du").value=u.durum==="sevk_edildi"?"sevk_edilecek":u.durum;
@@ -1142,7 +1145,7 @@ function kart(u){
   const ileri=u.durum==="hazir"?["sevk_edilecek",M().ileri[0],"b2"]:u.durum==="sevk_edilecek"?["sevk_edildi",M().ileri[1],"b4"]:null;
   const both=geri&&ileri,canDel=isAdmin()||(u.ekleyenUid&&u.ekleyenUid===user.uid);
   const nx=(geri?bt(geri[0],geri[1],geri[2],!both):"")+(ileri?bt(ileri[0],ileri[1],ileri[2],!both):"");
-  const eb=`<button class="btn b6" ${canDel?"":'style="grid-column:span 2" '}data-a="edit" data-id="${id}">✏️ Düzenle</button>`;
+  const eb=!sevForm()?"":`<button class="btn b6" ${canDel?"":'style="grid-column:span 2" '}data-a="edit" data-id="${id}">✏️ Düzenle</button>`;
   const db2=canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:"";
   const onb=(u.durum==="sevk_edildi"&&mod==="sevk"&&isAdmin())?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:18px" data-a="onay" data-id="${id}">✅ ONAYLA (Dosyalara taşı)</button>`:"";
   const K2=Array.isArray(u.kalem)&&u.kalem.length>1?u.kalem:null;
@@ -1512,6 +1515,7 @@ function menuUygula(){
   const is=modGor("is");["mQr","bBell"].forEach(id=>{const el=$(id);if(el)el.classList.toggle("hide",!is)});
   const n=$("menuYok");if(n)n.classList.toggle("hide",!!ilkBolum());
   $("bMenu").classList.toggle("hide",!!anaBolum());
+  {const f=$("sevForm");if(f)f.classList.toggle("hide",!sevForm())}
 }
 function modSec(m){
   if(!modGor(m)){const f=ilkBolum();if(!f){toast("Bu bölüm için yetkiniz yok.");menuOk=false;show("vMenu");return}m=f}
