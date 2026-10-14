@@ -32,9 +32,9 @@
     var k=$("talKart");if(!k)return;
     var V=L.filter(gorunur),acik=V.filter(function(x){return x.durum!=="yapildi"}).sort(function(a,b){return a.zaman-b.zaman}),
         bit=V.filter(function(x){return x.durum==="yapildi"}).sort(function(a,b){return (b.yapilmaZaman||b.zaman)-(a.yapilmaZaman||a.zaman)}).slice(0,20);
-    k.classList.toggle("hide",!(canAta()||V.length));
     $("talYeni").classList.toggle("hide",!canAta());
     $("talH").textContent="📋 TALİMATLAR"+(acik.length?" ("+acik.length+" bekliyor)":"");
+    $("vtT").textContent="📋 TALİMATLAR"+(acik.length?" ("+acik.length+")":"");
     var h=acik.length?acik.map(function(x){return kart(x,false)}).join(""):'<div class="sub" style="padding:6px 0">Bekleyen talimat yok.</div>';
     if(bit.length)h+='<details style="margin-top:6px"><summary style="font-size:13px;font-weight:700;color:#64748b;cursor:pointer">Yapılanlar ('+bit.length+')</summary><div style="margin-top:6px">'+bit.map(function(x){return kart(x,true)}).join("")+'</div></details>';
     $("talList").innerHTML=h;
@@ -44,9 +44,9 @@
     if(!rec||!rec.onay||!modGor("sevk"))return;
     ref=db.ref("sevkTalimat").orderByChild("zaman").limitToLast(50);
     ref.on("value",function(s){var v=s.val()||{};L=Object.keys(v).map(function(k){return Object.assign({id:k},v[k])});ciz()},
-      function(e){var k=$("talKart");if(k)k.classList.add("hide");toast("Talimatlar okunamadı: "+errText(e)+" (Firebase kuralını güncellediniz mi?)")});
+      function(e){toast("Talimatlar okunamadı: "+errText(e)+" (Firebase kuralını güncellediniz mi?)")});
   };
-  window.talDurdur=function(){if(ref){ref.off();ref=null}L=[];var k=$("talKart");if(k)k.classList.add("hide")};
+  window.talDurdur=function(){if(ref){ref.off();ref=null}L=[];var l=$("talList");if(l)l.innerHTML="";var v=$("vtT");if(v)v.textContent="📋 TALİMATLAR"};
 
   $("talList").onclick=async function(e){
     var im=e.target.closest("img[data-z]");

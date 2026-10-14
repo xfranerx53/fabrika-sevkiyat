@@ -7,7 +7,7 @@
 (function(){
   var ref=null,L=[],FM=6,TF=[],mod="talep",mevcut=null,sek="bek",don="bugun",ara="";
   var TRZ="Europe/Istanbul";
-  var canTah=function(){return !!(rec&&rec.onay&&modGor("tah"))};
+  var canTah=function(){return !!(rec&&rec.onay&&modGor("sevk"))}; /* Tahsilat, Sevkiyat bölümünün bir sekmesidir: sevkiyat yetkisi olan görür */
   var benimMi=function(x){return !!(user&&x.talepUid===user.uid)};
   var silebilir=function(x){return isAdmin()||benimMi(x)};
   var geriAlabilir=function(x){return isAdmin()||(user&&x.alanUid===user.uid)};
@@ -60,6 +60,7 @@
     var bit=V.filter(function(x){return x.durum==="alindi"&&uyar(x.alinmaZaman||x.zaman)}).sort(function(a,b){return (b.alinmaZaman||b.zaman)-(a.alinmaZaman||a.zaman)});
     $("tahTB").textContent="⏳ BEKLEYENLER"+(L.filter(function(x){return x.durum!=="alindi"}).length?" ("+L.filter(function(x){return x.durum!=="alindi"}).length+")":"");
     $("tahTA").textContent="✓ ALINANLAR";
+    var bn=L.filter(function(x){return x.durum!=="alindi"}).length;$("vtH").textContent="💰 TAHSİLAT"+(bn?" ("+bn+")":"");
     $("tahTB").classList.toggle("on",sek==="bek");$("tahTA").classList.toggle("on",sek==="alin");
     $("tahDonW").classList.toggle("hide",sek!=="alin");
     if(sek==="bek"){
@@ -79,7 +80,7 @@
     ref.on("value",function(s){var v=s.val()||{};L=Object.keys(v).map(function(k){return Object.assign({id:k},v[k])});ciz()},
       function(e){toast("Tahsilat okunamadı: "+errText(e)+" (Firebase kuralını güncellediniz mi?)")});
   };
-  window.tahDurdur=function(){if(ref){ref.off();ref=null}L=[];if($("tahList"))$("tahList").innerHTML=""};
+  window.tahDurdur=function(){if(ref){ref.off();ref=null}L=[];if($("tahList"))$("tahList").innerHTML="";if($("vtH"))$("vtH").textContent="💰 TAHSİLAT"};
 
   $("tahTB").onclick=function(){sek="bek";ciz()};
   $("tahTA").onclick=function(){sek="alin";ciz()};

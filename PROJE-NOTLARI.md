@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v44**
-Son güncelleme: 2026-10-14 (v44: Tahsilat bölümü)
+**GÜNCEL SÜRÜM: v45**
+Son güncelleme: 2026-10-14 (v45: Sevkiyat sekmeleri, Dosyalar iş emirlerine)
 
 ---
 
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v44)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v45)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -162,9 +162,9 @@ açamaz (rules engeller).
 
 **İzin anahtarları** (`kullanicilar/{uid}/izin/...`, true = rolden bağımsız ver, false = rol
 varsayılanını kapat, yoksa rol varsayılanı geçerli):
-`sevk`, `stok`, `is`, `rap`, `tah`, `a_etiket`, `a_ekstruder`, `a_baski`, `a_kesim`, `a_depo`,
+`sevk`, `stok`, `is`, `rap`, `a_etiket`, `a_ekstruder`, `a_baski`, `a_kesim`, `a_depo`,
 `isAc`, `isDuzenle`, `geriAl`, `isSil`, `fiyat`.
-(`tah` = Tahsilat bölümü; varsayılan olarak Depo Görevlisi, Sevkiyat Sorumlusu ve Muhasebe görür.)
+(Tahsilat ve Talimatlar ayrı izin istemez: Sevkiyat bölümünün sekmeleridir, `sevk` yetkisi olan görür. Muhasebe'ye vermek için `sevk` izni açılmalı.)
 
 **Rol varsayılanları tek yerde:** `app.js` içindeki `YETKI` tablosu ("YETKİ TABLOSU" yorumu).
 Özet:
@@ -182,24 +182,25 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
 - **Görünümler (index.html):** `vLogin`, `vWait` (onay bekleme), `vMenu`, `vApp` (stok), `vSev`
   (sevkiyat), `vAdr` (adresler), `vDos` (dosyalar).
 - **Modüller:** 🚚 SEVKİYAT, 📦 STOK (üstte sekme).
+- **Sevkiyat sekmeleri (v45):** 🚚 SEVKİYATLAR · 📋 TALİMATLAR · 💰 TAHSİLAT · 📍 SEVK ADRESLERİ (`vtabs`, `vTabSet`). **📁 DOSYALAR artık İŞ EMİRLERİ bölümünde** (üstte İŞ EMİRLERİ / DOSYALAR sekmesi `isMT`, `isMTSet`; `sevk` veya `rap` yetkisi olan görür, operatörler görmez). Sevkiyat kartındaki "ONAYLA" yine sevkiyatta, onaylananlar Dosyalar'a düşer.
 - **Sevkiyat modülü:** SEVKİYATLAR (HAZIR ÜRÜNLER → SEVK EDİLECEKLER → SEVK EDİLENLER; Excel'e
   aktar), SEVK ADRESLERİ, DOSYALAR (yönetici "ONAYLA" ile arşive taşır). Ürün kartında: fotoğraf,
   irsaliye fotoğrafı (tür: irsaliye/iade/diğer), araç/sorumlu, Yol tarifi, WhatsApp ile paylaşma,
   İş emrine geri al.
-- **Sevkiyat talimatları:** SEVKİYATLAR sekmesinin en üstünde "📋 TALİMATLAR" kutusu. Yönetici ve Depo Görevlisi
+- **Sevkiyat talimatları:** artık ayrı "📋 TALİMATLAR" sekmesi (`vTal`; sekme adında bekleyen sayısı görünür). Yönetici ve Depo Görevlisi
   "＋ Yeni talimat" ile iş yazar (örn. "A fabrikasından masura alınacak") ve en fazla 6 fotoğraf ekler (✖ ile kaldırılır; kamera/galeri).
   İsteğe bağlı adres: kayıtlı sevk adreslerinde arayıp ekle (`sAdr`) veya "Haritada Seç" (Google Maps linki/adres); kartta "🗺️ Harita / Yol tarifi".
   "Kime" seçimi yok: talimat tüm sevkiyat sorumlularına gider (kayıtta `hedefUid:"*"`; eski kişiye özel kayıtlar hâlâ çalışır).
   Sevkiyat sorumlusu kendine/herkese verilenleri görür, "✓ Yaptım" der (yapan + saat kaydolur), "↩ Geri al" yapabilir.
   Silmeyi yönetici veya talimatı yazan yapar. Kod: `talimat.js` (+ `app.js`'te `bildBaslat/bildDurdur` içinde çağrı). Yeni izin anahtarı yok:
   yazma yetkisi `rules.json`'da rol bazlı (yönetici + Depo Görevlisi). Yedeğe (`BK_DUGUM`) dahil.
-- **Tahsilat bölümü (v44):** Ana menüde 💰 TAHSİLAT. Kod: `tahsilat.js`, panel `pTah`, pencere `dTah` (index.html). WhatsApp tahsilat grubundaki akışın karşılığı:
+- **Tahsilat (v44, v45'te Sevkiyat sekmesi oldu):** Sevkiyat içinde 💰 TAHSİLAT sekmesi (ana menüde ayrı bölüm yok). Kod: `tahsilat.js`, panel `vTah`, pencere `dTah` (index.html). WhatsApp tahsilat grubundaki akışın karşılığı:
   - **＋ Tahsilat talebi:** ofis firma + not yazar ("Çek hazır, sevkiyat uygunluğuna göre alalım", "Kaşe imzalı ekstre ile gidilsin"). Kayıt `bekliyor` olur, ⏳ BEKLEYENLER'de görünür.
   - **✓ Tahsil ettim:** sahadaki kişi bekleyen talepte (veya talep olmadan "✓ Tahsil ettim" düğmesiyle) nakit ve/veya çek tutarı (en az biri), makbuz no, makbuz/çek fotoğrafı (en fazla 6), not girer. Kayıt `alindi` olur, ✓ ALINANLAR'a geçer.
   - ✓ ALINANLAR: dönem seçilir (Bugün / Son 7 gün / Bu ay / Hepsi), üstte nakit + çek + toplam gösterilir. Arama kutusu firma, makbuz no, not, kişi içinde arar.
   - Tutar yazımı: `110.059` = 110059, `11.500,50` = 11500,5 (Türkçe biçim).
   - Silme: kaydı açan veya yönetici. Geri al (alındıyı tekrar bekliyora çevirir, tutar/foto silinir): tahsil eden veya yönetici. Silinen kayıt çöp kutusuna gitmez (talimat gibi doğrudan silinir).
-  - Rules: `tahsilatlar` okuma/yazma = onaylı + (yönetici | `tah` izni | rol Depo/Sevkiyat/Muhasebe). Alım alanlarını yalnız ilk dolduran veya yönetici değiştirebilir. Yedeğe (`BK_DUGUM`) dahil.
+  - Rules: `tahsilatlar` okuma/yazma = sevkiyat yetkisi (yönetici | `sevk` izni | rol Depo/Sevkiyat). Alım alanlarını yalnız ilk dolduran veya yönetici değiştirebilir. Yedeğe (`BK_DUGUM`) dahil.
 - **Stok modülü:** KALEMLER (giriş/çıkış, geçmiş, yazdır), SİPARİŞLER (kategoriye göre / liste),
   TEDARİKÇİLER.
 - **İş emirleri aşama akışı:** `etiket → ekstruder → (baskı varsa baski) → kesim → depo → bitti`.
@@ -229,7 +230,8 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-14: v41 — Sevkiyat talimatları eklendi. Dosyalar: talimat.js (yeni), index.html, app.js, sw.js, rules.json, PROJE-NOTLARI.md. Rules DEĞİŞTİ (yeni yol `sevkTalimat`).
 - 2026-10-14: v42 — Talimattan "Kime" kaldırıldı, 6 fotoğraf eklendi. Dosyalar: talimat.js, index.html, rules.json (fotolar kuralı), PROJE-NOTLARI.md, sw.js. Rules DEĞİŞTİ.
 - 2026-10-14: v43 — Talimata adres eklendi (kayıtlı adresten veya haritadan). Dosyalar: talimat.js, index.html, rules.json, PROJE-NOTLARI.md, sw.js, README.md. Rules DEĞİŞTİ.
-- 2026-10-14: v44 — Tahsilat bölümü eklendi (WhatsApp "MAG TAHSİLAT" grubunun karşılığı). Dosyalar: tahsilat.js (yeni), index.html, app.js, sw.js, rules.json, kontrol.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ (yeni yol `tahsilatlar`, yeni izin `tah`).
+- 2026-10-14: v44 — Tahsilat bölümü eklendi (WhatsApp "MAG TAHSİLAT" grubunun karşılığı). Dosyalar: tahsilat.js (yeni), index.html, app.js, sw.js, rules.json, kontrol.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ (yeni yol `tahsilatlar`).
+- 2026-10-14: v45 — Tahsilat ve Talimatlar Sevkiyat içinde sekme oldu (ayrı `tah` bölümü/izni kaldırıldı); Dosyalar sevkiyattan iş emirlerine taşındı. Dosyalar: index.html, app.js, talimat.js, tahsilat.js, sw.js, rules.json, kontrol.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ (`tahsilatlar` yetkisi sevk'e bağlandı, `tah` izni kalktı).
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
