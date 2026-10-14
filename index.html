@@ -284,7 +284,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
   <div id="pIs" class="hide">
     <button class="btn b2 big" style="margin:0 0 10px" id="iAdd">＋ Yeni iş emri aç</button>
-    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v18 (büyük QR 30mm + net tarama)</div>
+    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v19 (QR 26mm, form sayfaya tam sığar)</div>
     <input id="iq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="iTabs"></div>
     <div id="iList"></div>
@@ -2436,9 +2436,9 @@ function isYazdir(e){
   P.innerHTML=`<div class="prow">${h}<div class="pcut"></div>${isForm(e,true)}</div>`;
   /* Sayfaya sığan en büyük yazı boyutunu bul (ekranda ölç, sonra yazdır) */
   P.classList.add("meas");
-  const f=P.querySelector(".pf:last-child"),hedef=192*96/25.4;
+  const f=P.querySelector(".pf:last-child"),hedef=198*96/25.4;
   let z=1.25;P.style.setProperty("--z",z);
-  while(f.offsetHeight>hedef&&z>0.6){z=Math.round((z-0.03)*100)/100;P.style.setProperty("--z",z)}
+  while(f.offsetHeight>hedef&&z>0.6){z=Math.round((z-0.01)*100)/100;P.style.setProperty("--z",z)}
   P.classList.remove("meas");
   const t=document.title;document.title=(e.no||"is-emri")+" - iş takip formu";
   window.onafterprint=()=>{document.title=t;P.innerHTML=""};
@@ -2637,7 +2637,7 @@ try{
 .qrBox{background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden}
 .qrBox svg{display:block;width:100%;height:100%}
 #prn .snw{display:flex;align-items:flex-end;gap:calc(2.5mm*var(--z))}
-#prn .pq{flex:0 0 auto;width:30mm;height:30mm;margin-bottom:1mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#prn .pq{flex:0 0 auto;width:26mm;height:26mm;margin-bottom:1mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #prn .pq svg{display:block;width:100%;height:100%}
 #prn{display:none;--z:1}
 #prn.meas{display:block;position:absolute;left:-10000px;top:0;width:285mm}
