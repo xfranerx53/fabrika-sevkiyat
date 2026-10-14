@@ -2,6 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' https://*.gstatic.com https://cdnjs.cloudflare.com https://*.google.com https://*.googleapis.com https://*.firebaseapp.com 'sha256-FMMfM4a1bF0Db++M7xAeXxjDj2L/Zhk58jUL7c+jBw4=' 'sha256-YVWkC+pRwGfS7jf3l2NFW6+9YVOSqhi/Lwgbu8WZ1l0=' 'sha256-BiiuNOb2OwOKIDQX9/nivqDZvOr+yPvspcHbwjS9AeM=' 'sha256-k0Mwen57CKJwE9D1lfQrYwM3TLv2uMZh2V/XN4et4ls=' 'sha256-xngTDU/BiJgruaHnWm+Ju8oI5fS2bpnB+VkHmRWYjGY=' 'sha256-92IoMf8N1kc74+W3Xa1xc0lMcG2lmiY80ymEQ8r7k7k=' 'sha256-Kz9BDj5sDXCeO1w2/wQnrrXcE7yJxItNHxzyX+IgkYg=' 'sha256-fzCBmtKOdOCCapTPRp9uyQ2uZk65voCs3xmkrMPH6WY=' 'sha256-s9Y14DiRVa/dddOU+0W3Uzb53SAwl8MlRV2J7Rd/1iM='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: data:; font-src 'self' data:; connect-src 'self' https: wss:; frame-src https:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#c82333">
 <link rel="manifest" href="manifest.webmanifest">
@@ -464,6 +465,14 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="gL" style="max-height:60vh;overflow:auto"></div>
   <button class="btn b6" id="gNo">Kapat</button>
 </dialog>
+<dialog id="dArac">
+  <h3 style="margin-bottom:4px">➡️ Sevk Listesine Al</h3>
+  <p class="mut" style="font-size:14px;margin-bottom:10px">Sevkiyat sorumlusunu ve aracı seçin.</p>
+  <label for="sorS">Sevkiyat sorumlusu</label><select id="sorS"><option value="">Yükleniyor...</option></select>
+  <label for="aracS" style="margin-top:8px">Araç</label><select id="aracS"><option value="">Araç seçin</option><option value="isuzu">Isuzu Kamyon (34 DFV 172)</option><option value="ford">Ford Minibüs (34 EOM 772)</option></select>
+  <div class="err" id="aracE" style="margin-top:6px"></div>
+  <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="aracX">Vazgeç</button><button type="button" class="btn b3" id="aracOk">✓ Sevk listesine al</button></div>
+</dialog>
 <dialog id="dTur">
   <h3 id="turH" style="margin-bottom:4px">✓ Teslim Edildi</h3>
   <p class="mut" style="font-size:14px;margin-bottom:10px">Hangi fotoğrafı ekleyeceksiniz?</p>
@@ -816,6 +825,7 @@ let urunler=[],limit=20,tab="hazir",editId="",fotos=[],stream=null,irsHedef=null
 const show=v=>{$("boot").classList.add("hide");["vLogin","vWait","vMenu","vApp"].forEach(x=>$(x).classList.toggle("hide",x!==v))};
 const ad=()=>rec?`${rec.ad} (${rec.rol})`:"Bilinmiyor";
 const isAdmin=()=>!!(rec&&rec.yonetici===true&&rec.onay===true);
+const ARACLAR={isuzu:"Isuzu Kamyon (34 DFV 172)",ford:"Ford Minibüs (34 EOM 772)"};
 
 /* ===================== YETKİ TABLOSU (adım 1) =====================
    Hangi rol hangi bölümü görür, hangi aşamayı ilerletir, hangi işlemi yapar — TEK yerde.
@@ -869,12 +879,12 @@ auth.onAuthStateChanged(u=>{
     rec=s.val();
     if(rec&&rec.onay){
       $("me").textContent=ad();
-      $("bAdm").classList.toggle("hide",!isAdmin());$("fSevk").classList.toggle("hide",!isAdmin());fiyatBaglan();
+      $("bAdm").classList.toggle("hide",!isAdmin());$("fSevk").classList.add("hide");fiyatBaglan();
       $("menuAd").textContent=rec.ad||"";menuUygula();
       if(anaBolum()&&!menuOk){menuOk=true;modSec(anaBolum())} /* operatör: menü yerine doğrudan kendi ekranı */
       show(menuOk?"vApp":"vMenu");
       if(!started){started=true;if(modGor("sevk")){yukle();adrYukle()} /* adım 3: sevk verisini sadece sevk bölümünü görebilen roller okur */bildBaslat();if(panel==="stok")stokYukle()}
-      listele();qrBasla();
+      listele();qrBasla();sevkSorKaydet();
     }else{show("vWait");if(!rec&&!kayitDevam&&!kyTry[u.uid]){kyTry[u.uid]=1;kayitYaz(u)}}
   },e=>{toast("Hesap okunamadı: "+errText(e));$("wE").textContent="Hesap okunamadı: "+errText(e);show("vWait")});
 });
@@ -1093,7 +1103,6 @@ function formTemizle(){
 $("bCancel").onclick=formTemizle;
 $("bSave").onclick=async()=>{
   if(!editId&&!fotos.length){toast("Önce en az bir fotoğraf ekleyin.");return}
-  if(isAdmin()&&kdvGet("sevk")===null){toast("KDV oranı 0 ile 100 arasında olmalı.");return}
   let adres=$("ad").value.trim(),hu=$("hu").value.trim(),url=safeUrl(hu);
   if(hu&&!url&&!adres)adres=hu;
   const d={musteri:$("mu").value.trim()||"Etikete Bakınız",urun:$("ur").value.trim()||"Etikete Bakınız",tarih:$("tr").value,durum:$("du").value,not:$("no").value.trim(),adres,haritaUrl:url};
@@ -1109,7 +1118,6 @@ $("bSave").onclick=async()=>{
     let sid=editId;
     if(editId){d.duzenleyen=ad();await db.ref(M().yol+"/"+editId).update(d)}
     else{d.ekleyen=ad();d.ekleyenUid=user.uid;d.eklenmeTarihi=firebase.database.ServerValue.TIMESTAMP;const nr=db.ref(M().yol).push();sid=nr.key;await nr.set(d)}
-    if(isAdmin()){const f=parseFloat($("sfi").value),kd=kdvGet("sevk")||{};await db.ref("fiyatlar/sevk/"+sid).set(f>=0?Object.assign({tutar:f,esas:$("sfe").value},kd):null);if(f>=0&&kd.kdv!=null)await kdvKaydet(kd.kdv)}
     formTemizle();toast("Kaydedildi");
   }catch(e){toast("Kaydedilemedi: "+errText(e))}
   b.disabled=false;
@@ -1143,7 +1151,7 @@ function waGonder(u){
   const t=["🚚 *MAG AMBALAJ - "+(M().baslik||"Sevkiyat")+"*","Tarih: "+trDate(u.tarih),
     u.musteri?"Müşteri: "+u.musteri:"",u.urun?"Ürün/Ebat: "+u.urun:"",
     "Ağırlık: "+fmt(u.kg)+" kg","Adet: "+fmt(u.paket),
-    u.adres?"📍 "+u.adres:"",u.haritaUrl||"",u.not?"📌 Not: "+u.not:""].filter(Boolean).join("\n");
+    u.arac&&ARACLAR[u.arac]&&u.durum!=="hazir"?"🚚 Araç: "+ARACLAR[u.arac]:"",u.adres?"📍 "+u.adres:"",u.haritaUrl||"",u.not?"📌 Not: "+u.not:""].filter(Boolean).join("\n");
   window.open("https://wa.me/?text="+encodeURIComponent(t),"_blank");
 }
 function kart(u){
@@ -1151,7 +1159,7 @@ function kart(u){
   const m=u.musteri&&u.musteri!=="Etikete Bakınız",p=u.urun&&u.urun!=="Etikete Bakınız",id=esc(u.id);
   const bt=(to,t,cl,span)=>`<button class="btn ${cl}" ${span?'style="grid-column:span 2" ':''}data-a="durum" data-to="${to}" data-id="${id}">${t}</button>`;
   const geri=u.durum==="sevk_edilecek"?["hazir",M().geri[0],"b6"]:u.durum==="sevk_edildi"?["sevk_edilecek",M().geri[1],"b2"]:null;
-  const ileri=u.durum==="hazir"?["sevk_edilecek",M().ileri[0],"b2"]:u.durum==="sevk_edilecek"?["sevk_edildi",M().ileri[1],"b4"]:null;
+  const ileri=u.durum==="hazir"?((mod==="sevk"&&!sevForm())?null:["sevk_edilecek",M().ileri[0],"b2"]):u.durum==="sevk_edilecek"?["sevk_edildi",M().ileri[1],"b4"]:null;
   const both=geri&&ileri,canDel=sevForm()&&(isAdmin()||(u.ekleyenUid&&u.ekleyenUid===user.uid));
   const nx=(geri?bt(geri[0],geri[1],geri[2],!both):"")+(ileri?bt(ileri[0],ileri[1],ileri[2],!both):"");
   const eb=!sevForm()?"":`<button class="btn b6" ${canDel?"":'style="grid-column:span 2" '}data-a="edit" data-id="${id}">✏️ Düzenle</button>`;
@@ -1168,18 +1176,23 @@ function kart(u){
   ${u.adres?`<div class="addr">📍 <b>Teslimat adresi:</b> ${esc(u.adres)}</div>`:""}
   ${u.haritaUrl||u.adres?`<button class="btn b7" data-a="map" data-id="${id}">🚀 Yol Tarifi Al</button>`:""}
   <button class="btn b3" data-a="wa" data-id="${id}">📲 WhatsApp ile paylaş</button>
-  ${isAdmin()?sFyHtml(u):""}
   ${u.not?`<div class="note">📌 <b>Not:</b> ${esc(u.not)}</div>`:""}
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
+  ${mod==="sevk"&&u.durum!=="hazir"&&ARACLAR[u.arac]?`<div class="who" style="color:#0f766e;font-weight:700">🚚 ${esc(ARACLAR[u.arac])}${u.sevkSorumlu?" · Sevk sorumlusu: "+esc(u.sevkSorumlu):""}</div>`:""}
   ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">${M().teslim}: ${esc(u.teslimEden)}</div>`:""}
   ${irsHtml(u)}
-  <div class="acts">${onb}${u.isEmriNo&&u.durum==="hazir"&&mod==="sevk"&&sevForm()?`<button class="btn b2" style="grid-column:span 2" data-a="isgeri" data-id="${id}">↩️ İş emrine geri al (Biten)</button>`:""}${nx}${eb}${db2}</div></div>`;
+  <div class="acts">${onb}${mod==="sevk"&&u.durum==="sevk_edilecek"&&sevForm()?`<button class="btn b6" style="grid-column:span 2" data-a="arac" data-id="${id}">🚚 Araç / sorumlu değiştir</button>`:""}${u.isEmriNo&&u.durum==="hazir"&&mod==="sevk"&&sevForm()?`<button class="btn b2" style="grid-column:span 2" data-a="isgeri" data-id="${id}">↩️ İş emrine geri al (Biten)</button>`:""}${nx}${eb}${db2}</div></div>`;
 }
 function listele(){
   if(!started)return;
   const L=filtreli();
   $("sumT").textContent=`${L.length} kayıt · ${fmt(L.reduce((s,u)=>s+(+u.kg||0),0))} kg · ${fmt(L.reduce((s,u)=>s+(+u.paket||0),0))} adet`;
-  if(isAdmin()){const t=sumV(L,sevkTop);if(t.t>0)$("sumT").textContent+=" · "+sumTxt(t)}
+  if(mod==="sevk"&&tab==="sevk_edilecek"){
+    const bl=(t,A)=>`<div style="margin:14px 0 8px;padding:10px 12px;border-radius:10px;background:#0f766e;color:#fff;font-weight:800;font-size:16px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span>🚚 ${esc(t)}</span><span style="font-size:13px;font-weight:700">${A.length} kayıt · ${esc(fmt(A.reduce((x,u)=>x+(+u.kg||0),0)))} kg</span></div>`+(A.length?A.map(kart).join(""):'<div class="empty">Bu araca atanmış kayıt yok.</div>');
+    const dg=L.filter(u=>!ARACLAR[u.arac]);
+    $("liste").innerHTML=bl(ARACLAR.isuzu,L.filter(u=>u.arac==="isuzu"))+bl(ARACLAR.ford,L.filter(u=>u.arac==="ford"))+(dg.length?bl("Araç atanmamış",dg):"");
+    return;
+  }
   $("liste").innerHTML=L.length?L.map(kart).join(""):'<div class="empty">Kayıt bulunamadı.</div>';
 }
 $("liste").onclick=async e=>{
@@ -1194,14 +1207,55 @@ $("liste").onclick=async e=>{
     else if(b.dataset.a==="wa")waGonder(u);
     else if(b.dataset.a==="isgeri")await isGeri(u);
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
+    else if(b.dataset.a==="arac"){if(sevForm())aracAc(u)}
+    else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edilecek"&&u.durum==="hazir"){if(!sevForm()){toast("Sevkiyat sorumluları sevk listesine alamaz.");return}aracAc(u)}
     else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edildi"){turAc(u)}
-    else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;await db.ref(M().yol+"/"+u.id).update(up)}
+    else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;if(mod==="sevk"&&b.dataset.to==="hazir"&&sevForm()){up.arac=null;up.sevkSorumlu=null;up.sevkSorumluUid=null}await db.ref(M().yol+"/"+u.id).update(up)}
     else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await silCop(M().yol,u.id,(u.musteri||"")+" / "+(u.urun||""),isAdmin()?["fiyatlar/sevk/"+u.id]:[]);toast("Silindi (Çöp kutusuna alındı)")}
   }catch(err){toast(errText(err))}
 };
+/* ---------- Sevk listesine al: sevkiyat sorumlusu + araç seçimi ---------- */
+let aracU=null,sorL=[];
+async function aracAc(u){
+  aracU=u;$("aracE").textContent="";$("aracS").value=ARACLAR[u.arac]?u.arac:"";
+  const sel=$("sorS");sel.innerHTML='<option value="">Yükleniyor...</option>';$("dArac").showModal();
+  try{
+    const sn=await db.ref("sevkSorumlulari").once("value"),v=sn.val()||{};
+    sorL=Object.keys(v).map(k=>({uid:k,ad:String((v[k]&&v[k].ad)||"?")})).sort((a,b)=>a.ad.localeCompare(b.ad,"tr"));
+    sel.innerHTML='<option value="">Sevkiyat sorumlusu seçin</option>'+sorL.map(x=>`<option value="${esc(x.uid)}"${x.uid===u.sevkSorumluUid?" selected":""}>${esc(x.ad)}</option>`).join("");
+    if(!sorL.length)$("aracE").textContent="Sevkiyat sorumlusu listesi boş. Yönetici bir kez giriş yapınca liste dolar.";
+  }catch(e){sel.innerHTML='<option value="">Liste okunamadı</option>';$("aracE").textContent=errText(e)}
+}
+$("aracX").onclick=()=>$("dArac").close();
+$("aracOk").onclick=async()=>{
+  const u=aracU,x=sorL.find(y=>y.uid===$("sorS").value),ar=$("aracS").value;
+  if(!u)return;
+  if(!x){$("aracE").textContent="Lütfen sevkiyat sorumlusunu seçin.";return}
+  if(!ARACLAR[ar]){$("aracE").textContent="Lütfen aracı seçin.";return}
+  const b=$("aracOk");b.disabled=true;
+  try{
+    await db.ref(M().yol+"/"+u.id).update({durum:"sevk_edilecek",teslimEden:null,arac:ar,sevkSorumlu:x.ad,sevkSorumluUid:x.uid});
+    $("dArac").close();toast("✓ Sevk listesine alındı: "+ARACLAR[ar]);
+  }catch(err){$("aracE").textContent=errText(err)}
+  b.disabled=false;
+};
+/* Sevkiyat sorumlusu listesi: yönetici girişte kullanıcılardan doldurur, sorumlular da kendilerini ekler */
+const sorDone={};
+function sevkSorYaz(v){
+  if(!isAdmin())return;const o={};
+  Object.keys(v||{}).forEach(k=>{const x=v[k];if(x&&x.onay===true&&x.rol==="Sevkiyat Sorumlusu")o[k]={ad:String(x.ad||x.kullanici||"?").slice(0,100)}});
+  return db.ref("sevkSorumlulari").set(o).catch(()=>{});
+}
+async function sevkSorKaydet(){
+  if(!user||!rec||!rec.onay||sorDone[user.uid])return;sorDone[user.uid]=1;
+  try{
+    if(isAdmin()){const sn=await db.ref("kullanicilar").once("value");await sevkSorYaz(sn.val()||{})}
+    else if(rec.rol==="Sevkiyat Sorumlusu")await db.ref("sevkSorumlulari/"+user.uid).set({ad:String(rec.ad||"?").slice(0,100)});
+  }catch(e){sorDone[user.uid]=0}
+}
 $("bCsv").onclick=()=>{
   const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',n=v=>q(String(+v||0).replace(".",","));
-  const r=[["Tarih","Müşteri","Ürün","Kg","Adet","Adres","Not","Kaydeden"].concat(isAdmin()?["Fiyat (₺)","Esas","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")].concat(filtreli().map(u=>[q(trDate(u.tarih)),q(u.musteri),q(u.urun),n(u.kg),n(u.paket),q(u.adres),q(u.not),q(u.ekleyen)].concat(isAdmin()?sFyCsv(u):[]).join(";")));
+  const r=[["Tarih","Müşteri","Ürün","Kg","Adet","Adres","Not","Kaydeden","Araç","Sevk sorumlusu"].map(q).join(";")].concat(filtreli().map(u=>[q(trDate(u.tarih)),q(u.musteri),q(u.urun),n(u.kg),n(u.paket),q(u.adres),q(u.not),q(u.ekleyen),q(u.durum!=="hazir"&&ARACLAR[u.arac]?ARACLAR[u.arac]:""),q(u.durum!=="hazir"?u.sevkSorumlu||"":"")].join(";")));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download=mod+"-"+tab+".csv";a.click();
 };
 
@@ -1240,6 +1294,7 @@ async function kullanicilar(){
   try{
     const s=await db.ref("kullanicilar").once("value"),v=s.val()||{};
     Object.keys(izKayit).forEach(x=>delete izKayit[x]);Object.keys(v).forEach(x=>{izKayit[x]=v[x]});
+    sevkSorYaz(v);
     $("ulist").innerHTML=Object.keys(v).map(id=>{const k=v[id],self=id===user.uid,da=`data-u="${esc(id)}" data-ad="${esc(k.ad||"")}"`;
       const opts=(ROLLER.includes(k.rol)?ROLLER:[k.rol].concat(ROLLER)).filter(Boolean).map(r=>`<option${r===k.rol?" selected":""}>${esc(r)}</option>`).join("");
       return `<div class="uw"><div class="urow"><div><b>${esc(k.ad)}</b> <span style="color:#64748b">@${esc(k.kullanici)}</span><br><small>${k.onay?"Onaylı":"⏳ Onay bekliyor — rolü kontrol edip onaylayın"}${k.yonetici?" · Yönetici":""}</small><br>${self?`<small>${esc(k.rol||"")}</small>`:`<select ${da} data-f="rol" style="margin-top:4px;font-size:14px;padding:4px">${opts}</select>`}</div>
