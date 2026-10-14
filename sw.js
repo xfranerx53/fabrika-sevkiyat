@@ -1,8 +1,8 @@
-const CACHE = 'fabrika-v40';
-const V = '?v=40';
+const CACHE = 'fabrika-v41';
+const V = '?v=41';
 const ASSETS = ['./', './index.html', './manifest.webmanifest',
   './style.css'+V, './raporlar.js'+V, './app.js'+V, './foto-onizleme.js'+V, './saat.js'+V, './diyalog.js'+V,
-  './qr.js'+V, './etiket.js'+V, './arama.js'+V, './sw-kayit.js'+V,
+  './qr.js'+V, './etiket.js'+V, './arama.js'+V, './talimat.js'+V, './sw-kayit.js'+V,
   './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

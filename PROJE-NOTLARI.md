@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v40**
-Son güncelleme: 2026-10-14 (notlar zip'teki gerçek duruma göre baştan yazıldı)
+**GÜNCEL SÜRÜM: v41**
+Son güncelleme: 2026-10-14 (v41: sevkiyat talimatları eklendi)
 
 ---
 
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v40)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v41)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -89,6 +89,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 | `raporlar.js` | Raporlar | GitHub |
 | `etiket.js` | Etiket tasarımı/basımı | GitHub |
 | `qr.js` | QR kod üretimi (kütüphane) | GitHub |
+| `talimat.js` | Sevkiyat talimatları (Bölüm 7): yönetici/Depo Görevlisi sevkiyat sorumlusuna iş verir, o "Yaptım" der | GitHub |
 | `arama.js`, `saat.js`, `diyalog.js`, `foto-onizleme.js`, `sw-kayit.js` | Küçük yardımcılar | GitHub |
 | `sw.js` | Çevrimdışı önbellek. `CACHE='fabrika-vNN'` ve `V='?v=NN'` | GitHub |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `favicon-32.png` | Telefona kurulum ve ikonlar | GitHub |
@@ -137,13 +138,14 @@ Satır içi `<script>` yazma; kodu `.js` dosyasına koy.
 | `fiyatlar/{m}/{id}` | Fiyatlar (`tutar`, `kdv`, `f`); sadece yönetici okur/yazar |
 | `isEmirleri/{id}` | İş emirleri (aşama akışı Bölüm 7) |
 | `isHareket/{id}/{h}` | İş emri hareket kayıtları (yalnız eklenir) |
+| `sevkTalimat/{id}` | Sevkiyat talimatları: `metin`, `hedefUid` (`*`=tüm sorumlular), `hedefAd`, `atayan`, `atayanUid`, `zaman`, `durum` (`bekliyor`/`yapildi`), `yapan`, `yapanUid`, `yapilmaZaman` |
 | `etiketGecmis/{id}/{h}`, `etiketSablon/{m}/{k}` | Etiket basım geçmişi ve şablonlar |
 | `ayarlar/etiket` | Etiket ayarı (`w`, `h`, `mag`) |
 | `cop/{id}` | Çöp kutusu: silinenlerin yedeği (yönetici geri yükler) |
 | `denetim/{id}` | Denetim günlüğü (kim ne yaptı), sadece yönetici okur |
 
 Fotoğraflar `data:image/jpeg;base64,...` metni olarak tutulur (300.000 karakter sınırı).
-`rules.json` içinde 19 ana yol vardır ve yukarıdaki listeyle aynıdır.
+`rules.json` içinde 20 ana yol vardır ve yukarıdaki listeyle aynıdır.
 Yeni bir yol eklenirse: rules'a ekle; yedekleme (`bkIndir`/`bkCalistir`) ve silme/çöp (`silCop`)
 akışlarına eklenmesi gerekip gerekmediğini düşün.
 
@@ -181,6 +183,11 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
   aktar), SEVK ADRESLERİ, DOSYALAR (yönetici "ONAYLA" ile arşive taşır). Ürün kartında: fotoğraf,
   irsaliye fotoğrafı (tür: irsaliye/iade/diğer), araç/sorumlu, Yol tarifi, WhatsApp ile paylaşma,
   İş emrine geri al.
+- **Sevkiyat talimatları:** SEVKİYATLAR sekmesinin en üstünde "📋 TALİMATLAR" kutusu. Yönetici ve Depo Görevlisi
+  "＋ Yeni talimat" ile bir sevkiyat sorumlusuna (veya hepsine) iş yazar (örn. "A fabrikasından masura alınacak").
+  Sevkiyat sorumlusu sadece kendine/herkese verilenleri görür, "✓ Yaptım" der (yapan + saat kaydolur), "↩ Geri al" yapabilir.
+  Silmeyi yönetici veya talimatı yazan yapar. Kod: `talimat.js` (+ `app.js`'te `bildBaslat/bildDurdur` içinde çağrı). Yeni izin anahtarı yok:
+  yazma yetkisi `rules.json`'da rol bazlı (yönetici + Depo Görevlisi). Yedeğe (`BK_DUGUM`) dahil.
 - **Stok modülü:** KALEMLER (giriş/çıkış, geçmiş, yazdır), SİPARİŞLER (kategoriye göre / liste),
   TEDARİKÇİLER.
 - **İş emirleri aşama akışı:** `etiket → ekstruder → (baskı varsa baski) → kesim → depo → bitti`.
@@ -207,12 +214,13 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-14: Notlar zip'teki gerçek duruma göre baştan yazıldı (sürüm v40, ayrı .js dosyaları,
   hash'siz CSP, rules.json mevcut). `kontrol.js` eklendi. Site kodu değişmedi, sürüm v40 kaldı,
   rules değişmedi.
+- 2026-10-14: v41 — Sevkiyat talimatları eklendi. Dosyalar: talimat.js (yeni), index.html, app.js, sw.js, rules.json, PROJE-NOTLARI.md. Rules DEĞİŞTİ (yeni yol `sevkTalimat`).
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
 **Yapılacaklar (kullanıcı isteklerini buraya yaz, bitenleri günlüğe taşı):**
-- (şimdilik boş)
+- Talimatlar için olası ek: zil bildirimi / WhatsApp önerisi, talimata fotoğraf veya not ekleme (kullanıcı istemedi, yapılmadı).
 
 **Yarım kalan iş (sohbet kesilirse buraya yaz: ne yapılıyordu, hangi dosyada, neresi kaldı):**
 - (yok)

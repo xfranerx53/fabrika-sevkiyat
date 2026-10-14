@@ -715,7 +715,7 @@ $("fgBtn").onclick=async()=>{
   $("fgBtn").disabled=false};
 
 /* ---------- Yedekleme: tüm veriyi JSON / Excel olarak indir (sadece yönetici) ---------- */
-const BK_DUGUM=[["kullanicilar",1],["urunler",1],["dosyalar",1],["dosyaFoto",1],["stokKalem",1],["stokHareket",1],["tedarikciler",1],["siparisler",1],["sevkAdresleri",1],["fiyatlar",2],["isEmirleri",1],["isHareket",2],["etiketGecmis",2],["etiketSablon",2],["ayarlar",1],["cop",1],["denetim",1],["fotoTam",1]];
+const BK_DUGUM=[["kullanicilar",1],["urunler",1],["dosyalar",1],["dosyaFoto",1],["stokKalem",1],["stokHareket",1],["tedarikciler",1],["siparisler",1],["sevkAdresleri",1],["sevkTalimat",1],["fiyatlar",2],["isEmirleri",1],["isHareket",2],["etiketGecmis",2],["etiketSablon",2],["ayarlar",1],["cop",1],["denetim",1],["fotoTam",1]];
 const bkFotoMu=v=>typeof v==="string"&&(v.slice(0,5)==="data:"||v.length>5000);
 function bkTemizle(v,yerine){ // fotoğraf (base64) alanlarını çıkar/yer tutucu koy
   if(bkFotoMu(v))return yerine;
@@ -1930,8 +1930,8 @@ function waTel(t){let d=String(t||"").replace(/\D/g,"");if(d.startsWith("00"))d=
 const waUrl=m=>"https://wa.me/"+waTel(bAyar().tel)+"?text="+encodeURIComponent(m);
 const mevTxt=k=>{const n=norm(k);return UN.filter(([u])=>u in n.mik).map(([u,l])=>fmt(n.mik[u])+" "+l).join(" + ")};
 function stokWa(L){return "⚠️ *Stok uyarısı*\n"+L.map(k=>"• "+(k.ad||"-")+(k.ebat?" ("+k.ebat+")":"")+": "+mevTxt(k)+" — "+(dur(k)==="no"?"TÜKENDİ":"azalıyor")).join("\n")}
-function bildDurdur(){if(window.etAyarDurdur)window.etAyarDurdur();if(bRef){bRef.off();bRef=null}if(bTm){clearInterval(bTm);bTm=null}bIs=[];bStok=false;bRozet()}
-function bildBaslat(){bildDurdur();if(window.etAyarBaslat)window.etAyarBaslat();if(!bAyar().son)bYaz("bildSon",Date.now());
+function bildDurdur(){if(window.etAyarDurdur)window.etAyarDurdur();if(window.talDurdur)window.talDurdur();if(bRef){bRef.off();bRef=null}if(bTm){clearInterval(bTm);bTm=null}bIs=[];bStok=false;bRozet()}
+function bildBaslat(){bildDurdur();if(window.etAyarBaslat)window.etAyarBaslat();if(window.talBaslat)window.talBaslat();if(!bAyar().son)bYaz("bildSon",Date.now());
   bRef=db.ref("isEmirleri").orderByChild("eklenmeTarihi").limitToLast(30);
   bRef.on("value",s=>{const v=s.val()||{};bIs=Object.keys(v).map(k=>Object.assign({id:k},v[k]));bRozet()},()=>{});
   bTm=setInterval(bRozet,20000)}
