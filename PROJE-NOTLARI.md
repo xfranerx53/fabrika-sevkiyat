@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v43**
-Son güncelleme: 2026-10-14 (v43: talimata adres)
+**GÜNCEL SÜRÜM: v44**
+Son güncelleme: 2026-10-14 (v44: Tahsilat bölümü)
 
 ---
 
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v43)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v44)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -90,6 +90,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 | `etiket.js` | Etiket tasarımı/basımı | GitHub |
 | `qr.js` | QR kod üretimi (kütüphane) | GitHub |
 | `talimat.js` | Sevkiyat talimatları (Bölüm 7): yönetici/Depo Görevlisi sevkiyat sorumlusuna iş verir, o "Yaptım" der | GitHub |
+| `tahsilat.js` | Tahsilat bölümü (Bölüm 7): WhatsApp "MAG TAHSİLAT" grubunun yerine geçer. Ofis talep açar, sahadaki kişi "Tahsil ettim" der | GitHub |
 | `arama.js`, `saat.js`, `diyalog.js`, `foto-onizleme.js`, `sw-kayit.js` | Küçük yardımcılar | GitHub |
 | `sw.js` | Çevrimdışı önbellek. `CACHE='fabrika-vNN'` ve `V='?v=NN'` | GitHub |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `favicon-32.png` | Telefona kurulum ve ikonlar | GitHub |
@@ -139,13 +140,14 @@ Satır içi `<script>` yazma; kodu `.js` dosyasına koy.
 | `isEmirleri/{id}` | İş emirleri (aşama akışı Bölüm 7) |
 | `isHareket/{id}/{h}` | İş emri hareket kayıtları (yalnız eklenir) |
 | `sevkTalimat/{id}` | Sevkiyat talimatları: `metin`, `hedefUid` (`*`=tüm sorumlular), `hedefAd`, `atayan`, `atayanUid`, `zaman`, `durum` (`bekliyor`/`yapildi`), `yapan`, `yapanUid`, `yapilmaZaman`, `fotolar` (en fazla 6 küçültülmüş jpeg), `adres`, `haritaUrl`, `adresAd` (isteğe bağlı) |
+| `tahsilatlar/{id}` | Tahsilat kayıtları: `cari`, `durum` (`bekliyor`/`alindi`), `not`, `talepUid`, `talepEden`, `zaman`, `talepTur` (`talep`/`dogrudan`); alınınca: `nakit`, `cek` (₺, yalnız >0 olanlar yazılır), `makbuzNo`, `alan`, `alanUid`, `alinmaZaman`, `alanNot`, `fotolar` (en fazla 6 küçültülmüş jpeg). `zaman` üzerinde indeks var, uygulama son 300 kaydı okur |
 | `etiketGecmis/{id}/{h}`, `etiketSablon/{m}/{k}` | Etiket basım geçmişi ve şablonlar |
 | `ayarlar/etiket` | Etiket ayarı (`w`, `h`, `mag`) |
 | `cop/{id}` | Çöp kutusu: silinenlerin yedeği (yönetici geri yükler) |
 | `denetim/{id}` | Denetim günlüğü (kim ne yaptı), sadece yönetici okur |
 
 Fotoğraflar `data:image/jpeg;base64,...` metni olarak tutulur (300.000 karakter sınırı).
-`rules.json` içinde 20 ana yol vardır ve yukarıdaki listeyle aynıdır.
+`rules.json` içinde 21 ana yol vardır ve yukarıdaki listeyle aynıdır.
 Yeni bir yol eklenirse: rules'a ekle; yedekleme (`bkIndir`/`bkCalistir`) ve silme/çöp (`silCop`)
 akışlarına eklenmesi gerekip gerekmediğini düşün.
 
@@ -160,8 +162,9 @@ açamaz (rules engeller).
 
 **İzin anahtarları** (`kullanicilar/{uid}/izin/...`, true = rolden bağımsız ver, false = rol
 varsayılanını kapat, yoksa rol varsayılanı geçerli):
-`sevk`, `stok`, `is`, `rap`, `a_etiket`, `a_ekstruder`, `a_baski`, `a_kesim`, `a_depo`,
+`sevk`, `stok`, `is`, `rap`, `tah`, `a_etiket`, `a_ekstruder`, `a_baski`, `a_kesim`, `a_depo`,
 `isAc`, `isDuzenle`, `geriAl`, `isSil`, `fiyat`.
+(`tah` = Tahsilat bölümü; varsayılan olarak Depo Görevlisi, Sevkiyat Sorumlusu ve Muhasebe görür.)
 
 **Rol varsayılanları tek yerde:** `app.js` içindeki `YETKI` tablosu ("YETKİ TABLOSU" yorumu).
 Özet:
@@ -190,6 +193,13 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
   Sevkiyat sorumlusu kendine/herkese verilenleri görür, "✓ Yaptım" der (yapan + saat kaydolur), "↩ Geri al" yapabilir.
   Silmeyi yönetici veya talimatı yazan yapar. Kod: `talimat.js` (+ `app.js`'te `bildBaslat/bildDurdur` içinde çağrı). Yeni izin anahtarı yok:
   yazma yetkisi `rules.json`'da rol bazlı (yönetici + Depo Görevlisi). Yedeğe (`BK_DUGUM`) dahil.
+- **Tahsilat bölümü (v44):** Ana menüde 💰 TAHSİLAT. Kod: `tahsilat.js`, panel `pTah`, pencere `dTah` (index.html). WhatsApp tahsilat grubundaki akışın karşılığı:
+  - **＋ Tahsilat talebi:** ofis firma + not yazar ("Çek hazır, sevkiyat uygunluğuna göre alalım", "Kaşe imzalı ekstre ile gidilsin"). Kayıt `bekliyor` olur, ⏳ BEKLEYENLER'de görünür.
+  - **✓ Tahsil ettim:** sahadaki kişi bekleyen talepte (veya talep olmadan "✓ Tahsil ettim" düğmesiyle) nakit ve/veya çek tutarı (en az biri), makbuz no, makbuz/çek fotoğrafı (en fazla 6), not girer. Kayıt `alindi` olur, ✓ ALINANLAR'a geçer.
+  - ✓ ALINANLAR: dönem seçilir (Bugün / Son 7 gün / Bu ay / Hepsi), üstte nakit + çek + toplam gösterilir. Arama kutusu firma, makbuz no, not, kişi içinde arar.
+  - Tutar yazımı: `110.059` = 110059, `11.500,50` = 11500,5 (Türkçe biçim).
+  - Silme: kaydı açan veya yönetici. Geri al (alındıyı tekrar bekliyora çevirir, tutar/foto silinir): tahsil eden veya yönetici. Silinen kayıt çöp kutusuna gitmez (talimat gibi doğrudan silinir).
+  - Rules: `tahsilatlar` okuma/yazma = onaylı + (yönetici | `tah` izni | rol Depo/Sevkiyat/Muhasebe). Alım alanlarını yalnız ilk dolduran veya yönetici değiştirebilir. Yedeğe (`BK_DUGUM`) dahil.
 - **Stok modülü:** KALEMLER (giriş/çıkış, geçmiş, yazdır), SİPARİŞLER (kategoriye göre / liste),
   TEDARİKÇİLER.
 - **İş emirleri aşama akışı:** `etiket → ekstruder → (baskı varsa baski) → kesim → depo → bitti`.
@@ -219,11 +229,13 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-14: v41 — Sevkiyat talimatları eklendi. Dosyalar: talimat.js (yeni), index.html, app.js, sw.js, rules.json, PROJE-NOTLARI.md. Rules DEĞİŞTİ (yeni yol `sevkTalimat`).
 - 2026-10-14: v42 — Talimattan "Kime" kaldırıldı, 6 fotoğraf eklendi. Dosyalar: talimat.js, index.html, rules.json (fotolar kuralı), PROJE-NOTLARI.md, sw.js. Rules DEĞİŞTİ.
 - 2026-10-14: v43 — Talimata adres eklendi (kayıtlı adresten veya haritadan). Dosyalar: talimat.js, index.html, rules.json, PROJE-NOTLARI.md, sw.js, README.md. Rules DEĞİŞTİ.
+- 2026-10-14: v44 — Tahsilat bölümü eklendi (WhatsApp "MAG TAHSİLAT" grubunun karşılığı). Dosyalar: tahsilat.js (yeni), index.html, app.js, sw.js, rules.json, kontrol.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ (yeni yol `tahsilatlar`, yeni izin `tah`).
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
 **Yapılacaklar (kullanıcı isteklerini buraya yaz, bitenleri günlüğe taşı):**
+- Tahsilat için olası eklemeler (kullanıcı istemedi, yapılmadı): Excel'e aktarma, çek vadesi/banka alanı, firmaya göre toplam/cari özeti, bekleyen talep için bildirim, WhatsApp'a özet gönderme. Ayrıca WhatsApp grubundaki eski kayıtlar uygulamaya aktarılmadı (sadece bundan sonrası).
 - Talimatlar için olası ek: zil bildirimi / WhatsApp önerisi, talimata fotoğraf veya not ekleme (kullanıcı istemedi, yapılmadı).
 
 **Yarım kalan iş (sohbet kesilirse buraya yaz: ne yapılıyordu, hangi dosyada, neresi kaldı):**

@@ -16,7 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=43">
+<link rel="stylesheet" href="style.css?v=44">
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -74,6 +74,7 @@
     <p>Hoş geldiniz, <b id="menuAd"></b><br>Girmek istediğiniz bölümü seçin</p>
     <button class="menuBtn" style="background:#c82333" data-go="is"><span class="ic">📋</span><div>İŞ EMİRLERİ<small>Ekstruder, baskı, kesim, depo takibi</small></div></button>
     <button class="menuBtn" style="background:#ff9f1c" data-go="sevk"><span class="ic">🚚</span><div>SEVKİYAT<small>Hazır ürünler, sevk listesi, adresler</small></div></button>
+    <button class="menuBtn" style="background:#16a34a" data-go="tah"><span class="ic">💰</span><div>TAHSİLAT<small>Alınacak ödemeler, nakit / çek, makbuz</small></div></button>
     <button class="menuBtn" style="background:#2563eb" data-go="stok"><span class="ic">📦</span><div>STOK<small>Stok, sipariş, tedarikçi, hareketler</small></div></button>
     <button class="menuBtn" style="background:#7c3aed" data-go="rap"><span class="ic">📊</span><div>RAPORLAR<small>Üretim, müşteri sevki, malzeme tüketimi, maliyet</small></div></button>
     <button class="menuBtn" style="background:#475569" id="mQr" type="button"><span class="ic">📷</span><div>QR OKUT<small>Etiketteki QR ile iş emrini aç</small></div></button>
@@ -198,6 +199,19 @@
     <input id="iq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="iTabs"></div>
     <div id="iList"></div>
+  </div>
+  <div id="pTah" class="hide">
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn b1" id="tahYeni" type="button" style="margin:0;flex:1;white-space:nowrap">＋ Tahsilat talebi</button>
+        <button class="btn b3" id="tahDog" type="button" style="margin:0;flex:1;white-space:nowrap">✓ Tahsil ettim</button>
+      </div>
+      <input id="tahAra" placeholder="🔍 Firma, makbuz no, not ara..." style="margin-top:8px" autocomplete="off">
+    </div>
+    <div class="tabs stabs" id="tahTabs"><button id="tahTB" class="on" type="button">⏳ BEKLEYENLER</button><button id="tahTA" type="button">✓ ALINANLAR</button></div>
+    <div id="tahDonW" class="hide" style="margin-bottom:6px"><select id="tahDon"><option value="bugun">Bugün</option><option value="7">Son 7 gün</option><option value="ay">Bu ay</option><option value="hepsi">Hepsi (son 300 kayıt)</option></select></div>
+    <div id="tahOz" class="item hide" style="margin-bottom:8px"></div>
+    <div id="tahList"></div>
   </div>
   <div id="pRap" class="hide rp">
     <div class="item" style="margin-bottom:10px">
@@ -380,6 +394,33 @@
   <div class="err" id="aracE" style="margin-top:6px"></div>
   <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="aracX">Vazgeç</button><button type="button" class="btn b3" id="aracOk">✓ Sevk listesine al</button></div>
 </dialog>
+<dialog id="dTah" style="max-height:92vh;overflow:auto">
+  <h3 id="tahH" style="margin-bottom:10px">💰 Yeni Tahsilat Talebi</h3>
+  <label for="tahCari">Firma / kişi</label>
+  <input id="tahCari" list="tahDl" maxlength="100" placeholder="Örn: Doku Ambalaj" autocomplete="off">
+  <datalist id="tahDl"></datalist>
+  <div id="tahOn" class="sub hide" style="white-space:pre-wrap;margin:4px 0 0"></div>
+  <div id="tahAlW" class="hide">
+    <div class="grid" style="margin-top:8px">
+      <div><label for="tahNakit">💵 Nakit (₺)</label><input id="tahNakit" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+      <div><label for="tahCek">🧾 Çek (₺)</label><input id="tahCek" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+    </div>
+    <label for="tahMak" style="margin-top:8px">Makbuz no (isteğe bağlı)</label>
+    <input id="tahMak" maxlength="30" placeholder="Örn: 001818" autocomplete="off">
+    <label style="margin-top:8px">Makbuz / çek fotoğrafı (en fazla 6 · ✖ ile kaldırılır)</label>
+    <div style="display:flex;gap:6px;margin-bottom:4px">
+      <label for="tahCam" class="btn b7" style="margin:0;flex:1;text-align:center;cursor:pointer">📸 Kamera</label>
+      <label for="tahGal" class="btn b6" style="margin:0;flex:1;text-align:center;cursor:pointer">🖼️ Galeri</label>
+    </div>
+    <input type="file" id="tahCam" accept="image/*" capture="environment" class="hide">
+    <input type="file" id="tahGal" accept="image/*" multiple class="hide">
+    <div id="tahFG" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px"></div><div id="tahFS" style="font-size:13px;color:#64748b;margin-top:4px"></div>
+  </div>
+  <label for="tahNot" style="margin-top:8px">Not</label>
+  <textarea id="tahNot" rows="2" maxlength="300"></textarea>
+  <div class="err" id="tahE" style="margin-top:6px"></div>
+  <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="tahX">Vazgeç</button><button type="button" class="btn b3" id="tahOk">✓ Kaydet</button></div>
+</dialog>
 <dialog id="dTal" style="max-height:92vh;overflow:auto">
   <h3 style="margin-bottom:10px">📋 Yeni Talimat</h3>
   <label for="talMetin">Talimat</label><textarea id="talMetin" rows="3" maxlength="500" placeholder="Örn: A fabrikasından masura alınacak"></textarea>
@@ -487,17 +528,17 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="raporlar.js?v=43"></script>
+<script src="raporlar.js?v=44"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=43"></script>
+<script src="app.js?v=44"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=43"></script>
-<script src="saat.js?v=43"></script>
+<script src="foto-onizleme.js?v=44"></script>
+<script src="saat.js?v=44"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=43"></script>
+<script src="diyalog.js?v=44"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -522,8 +563,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=43"></script>
-<script src="etiket.js?v=43"></script>
+<script src="qr.js?v=44"></script>
+<script src="etiket.js?v=44"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -533,8 +574,9 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="talimat.js?v=43"></script>
-<script src="arama.js?v=43"></script>
-<script src="sw-kayit.js?v=43"></script>
+<script src="talimat.js?v=44"></script>
+<script src="tahsilat.js?v=44"></script>
+<script src="arama.js?v=44"></script>
+<script src="sw-kayit.js?v=44"></script>
 </body>
 </html>

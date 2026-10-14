@@ -111,7 +111,7 @@ if (rules) {
   const rulesIzin = [...kIz.matchAll(/=== '([^']+)'/g)].map((m) => m[1]).sort();
   const appIzin = new Set();
   for (const m of app.matchAll(/(?:modGor|iz)\(\s*["']([a-z_A-Z]+)["']/g)) appIzin.add(m[1]);
-  const yoksa = [...appIzin].filter((k) => !rulesIzin.includes(k) && /^(sevk|stok|is|rap|a_\w+|isAc|isDuzenle|geriAl|isSil|fiyat)$/.test(k));
+  const yoksa = [...appIzin].filter((k) => !rulesIzin.includes(k) && /^(sevk|stok|is|rap|tah|a_\w+|isAc|isDuzenle|geriAl|isSil|fiyat)$/.test(k));
   if (yoksa.length) hata("app.js'te kullanılan izin rules.json'da tanımsız: " + yoksa.join(", "));
   else iyi("İzin anahtarları rules.json ile uyumlu (" + rulesIzin.length + " anahtar)");
 }
