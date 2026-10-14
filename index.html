@@ -181,7 +181,6 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <div class="u">
       <div id="me"></div>
       <button class="btn b8 sm hide" id="bAdm">Yönetici</button>
-      <button class="btn b1 sm" id="bQr" type="button">📷 QR</button>
       <button class="btn b6 sm bell" id="bBell">🔔<span class="bn hide" id="bBellN"></span></button>
       <button class="btn b7 sm" id="bMenu">🏠 Menü</button>
       <button class="btn b6 sm" id="bAd">İsim</button>
@@ -826,7 +825,7 @@ const isAdmin=()=>!!(rec&&rec.yonetici===true&&rec.onay===true);
 const YETKI_UYGULA=true;
 const YETKI={
   "Depo Görevlisi":     {mod:["is","stok","sevk"],asama:["etiket","depo"],          isAc:true, isDuzenle:true, geriAl:false,isSil:false,fiyat:false},
-  "Sevkiyat Sorumlusu": {mod:["sevk","is"],       asama:[],                         isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
+  "Sevkiyat Sorumlusu": {mod:["sevk"],            asama:[],                         isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
   "Ekstruder Operatörü":{mod:["is"],              asama:["ekstruder"],ana:"is",goster:["ekstruder"],     isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
   "Matbaa Operatörü":   {mod:["is"],              asama:["baski"],    ana:"is",goster:["baski"],     isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
   "Kesim Operatörü":    {mod:["is"],              asama:["kesim"],    ana:"is",goster:["kesim"],     isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
@@ -1510,7 +1509,7 @@ const fmtQ=(o,z)=>UN.filter(([u])=>o&&u in o&&(z||+o[u]>0)).map(([u,l])=>fmt(o[u
 const BOLUMLER=["sevk","stok","is","rap"],ilkBolum=()=>BOLUMLER.find(modGor)||null;
 function menuUygula(){
   document.querySelectorAll("[data-go]").forEach(b=>b.classList.toggle("hide",!modGor(b.dataset.go)));
-  const is=modGor("is");["mQr","bQr","bBell"].forEach(id=>{const el=$(id);if(el)el.classList.toggle("hide",!is)});
+  const is=modGor("is");["mQr","bBell"].forEach(id=>{const el=$(id);if(el)el.classList.toggle("hide",!is)});
   const n=$("menuYok");if(n)n.classList.toggle("hide",!!ilkBolum());
   $("bMenu").classList.toggle("hide",!!anaBolum());
 }
@@ -2391,7 +2390,7 @@ $("qrTara").addEventListener("close",qrTaraDur);
 $("qtX").onclick=()=>$("qrTara").close();
 const qtGit=()=>{const t=$("qtM").value;if(!qrNo(t)){$("qtE").textContent="Seri no yazın.";return}$("qrTara").close();qrIsle(t)};
 $("qtOk").onclick=qtGit;$("qtM").addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();qtGit()}});
-$("bQr").onclick=qrTaraAc;$("mQr").onclick=qrTaraAc;
+$("mQr").onclick=qrTaraAc;
 /* ---- Geçmiş penceresi ---- */
 async function hrkAc(e){
   $("hkT").textContent="🕘 "+e.no+" — hareket geçmişi";$("hkL").innerHTML='<p class="mut">Yükleniyor...</p>';$("hkDlg").showModal();
