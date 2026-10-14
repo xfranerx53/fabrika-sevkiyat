@@ -204,6 +204,10 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
       </div>
       <div id="fGrid"></div><div id="fSay"></div>
     </div>
+    <div class="full hide" id="kgBox"><div class="grid">
+      <div><label style="color:#0284c7">Ağırlık (kg) · yönetici düzeltmesi</label><input type="number" id="kg" inputmode="decimal" min="0" step="any" placeholder="Örn: 20" class="fast"></div>
+      <div><label style="color:#0284c7">Paket / Adet · yönetici düzeltmesi</label><input type="number" id="pk" inputmode="numeric" min="0" step="1" class="fast"></div>
+    </div></div>
     <div class="full sevkonly">
       <label style="color:#0f766e">📍 Teslimat adresi ve harita</label>
       <div style="position:relative;margin-bottom:6px">
@@ -1082,7 +1086,7 @@ async function irsSil(u,k){
 
 /* ---------- Kayıt ---------- */
 function formTemizle(){
-  editId="";fotos=[];
+  editId="";fotos=[];{const kb=$("kgBox");if(kb){kb.classList.add("hide");$("kg").value="";$("pk").value=""}}
   ["mu","ur","no","ad","hu","sfi"].forEach(i=>$(i).value="");$("sfe").value="kg";kdvSet("sevk",null);$("tr").valueAsDate=new Date();$("du").value="hazir";
   fotoCiz();$("bSave").textContent=M().kayit;$("bCancel").classList.add("hide");
 }
@@ -1095,6 +1099,10 @@ $("bSave").onclick=async()=>{
   const d={musteri:$("mu").value.trim()||"Etikete Bakınız",urun:$("ur").value.trim()||"Etikete Bakınız",tarih:$("tr").value,durum:$("du").value,not:$("no").value.trim(),adres,haritaUrl:url};
   /* Kg / paket sadece iş emrinde «Depoya girişi kaydet» ile girilir; burada yeni kayıtta 0, düzenlemede mevcut değer korunur */
   if(!editId){d.kg=0;d.paket=0}
+  else if(!$("kgBox").classList.contains("hide")){ /* yönetici: elle eklenen kaydın kg / paket düzeltmesi */
+    const kg2=parseFloat(String($("kg").value).replace(",","."))||0,pk2=parseInt($("pk").value)||0;
+    if(kg2<0||pk2<0){toast("Kg ve paket 0 veya daha büyük olmalı.");return}
+    d.kg=kg2;d.paket=pk2}
   const b=$("bSave");b.disabled=true;
   try{
     {const fl=await fotoHazirla(fotos);d.foto=fl[0]||null;d.fotolar=fl.length>1?fl.slice(1):null}
@@ -1109,6 +1117,7 @@ $("bSave").onclick=async()=>{
 function duzenle(u){
   if(!sevForm())return;
   editId=u.id;
+  {const km=isAdmin()&&!u.isEmriNo;$("kgBox").classList.toggle("hide",!km);if(km){$("kg").value=u.kg||0;$("pk").value=u.paket||0}}
   $("mu").value=u.musteri==="Etikete Bakınız"?"":u.musteri||"";$("ur").value=u.urun==="Etikete Bakınız"?"":u.urun||"";
   $("tr").value=u.tarih;$("du").value=u.durum==="sevk_edildi"?"sevk_edilecek":u.durum;
   $("no").value=u.not||"";$("ad").value=u.adres||"";$("hu").value=u.haritaUrl||"";{const f=(fyat.sevk||{})[u.id];$("sfi").value=f?f.tutar:"";$("sfe").value=f?f.esas:"kg";kdvSet("sevk",f)}
@@ -1143,7 +1152,7 @@ function kart(u){
   const bt=(to,t,cl,span)=>`<button class="btn ${cl}" ${span?'style="grid-column:span 2" ':''}data-a="durum" data-to="${to}" data-id="${id}">${t}</button>`;
   const geri=u.durum==="sevk_edilecek"?["hazir",M().geri[0],"b6"]:u.durum==="sevk_edildi"?["sevk_edilecek",M().geri[1],"b2"]:null;
   const ileri=u.durum==="hazir"?["sevk_edilecek",M().ileri[0],"b2"]:u.durum==="sevk_edilecek"?["sevk_edildi",M().ileri[1],"b4"]:null;
-  const both=geri&&ileri,canDel=isAdmin()||(u.ekleyenUid&&u.ekleyenUid===user.uid);
+  const both=geri&&ileri,canDel=sevForm()&&(isAdmin()||(u.ekleyenUid&&u.ekleyenUid===user.uid));
   const nx=(geri?bt(geri[0],geri[1],geri[2],!both):"")+(ileri?bt(ileri[0],ileri[1],ileri[2],!both):"");
   const eb=!sevForm()?"":`<button class="btn b6" ${canDel?"":'style="grid-column:span 2" '}data-a="edit" data-id="${id}">✏️ Düzenle</button>`;
   const db2=canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:"";
@@ -1164,7 +1173,7 @@ function kart(u){
   <div class="who">Kaydeden: ${esc(u.ekleyen||"Bilinmiyor")}${u.duzenleyen?" · Son düzenleyen: "+esc(u.duzenleyen):""}</div>
   ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">${M().teslim}: ${esc(u.teslimEden)}</div>`:""}
   ${irsHtml(u)}
-  <div class="acts">${onb}${u.isEmriNo&&u.durum==="hazir"&&mod==="sevk"?`<button class="btn b2" style="grid-column:span 2" data-a="isgeri" data-id="${id}">↩️ İş emrine geri al (Biten)</button>`:""}${nx}${eb}${db2}</div></div>`;
+  <div class="acts">${onb}${u.isEmriNo&&u.durum==="hazir"&&mod==="sevk"&&sevForm()?`<button class="btn b2" style="grid-column:span 2" data-a="isgeri" data-id="${id}">↩️ İş emrine geri al (Biten)</button>`:""}${nx}${eb}${db2}</div></div>`;
 }
 function listele(){
   if(!started)return;
