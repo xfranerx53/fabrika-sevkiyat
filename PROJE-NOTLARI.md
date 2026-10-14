@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v42**
-Son güncelleme: 2026-10-14 (v42: talimata fotoğraf)
+**GÜNCEL SÜRÜM: v43**
+Son güncelleme: 2026-10-14 (v43: talimata adres)
 
 ---
 
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v42)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v43)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -138,7 +138,7 @@ Satır içi `<script>` yazma; kodu `.js` dosyasına koy.
 | `fiyatlar/{m}/{id}` | Fiyatlar (`tutar`, `kdv`, `f`); sadece yönetici okur/yazar |
 | `isEmirleri/{id}` | İş emirleri (aşama akışı Bölüm 7) |
 | `isHareket/{id}/{h}` | İş emri hareket kayıtları (yalnız eklenir) |
-| `sevkTalimat/{id}` | Sevkiyat talimatları: `metin`, `hedefUid` (`*`=tüm sorumlular), `hedefAd`, `atayan`, `atayanUid`, `zaman`, `durum` (`bekliyor`/`yapildi`), `yapan`, `yapanUid`, `yapilmaZaman`, `fotolar` (en fazla 6 küçültülmüş jpeg) |
+| `sevkTalimat/{id}` | Sevkiyat talimatları: `metin`, `hedefUid` (`*`=tüm sorumlular), `hedefAd`, `atayan`, `atayanUid`, `zaman`, `durum` (`bekliyor`/`yapildi`), `yapan`, `yapanUid`, `yapilmaZaman`, `fotolar` (en fazla 6 küçültülmüş jpeg), `adres`, `haritaUrl`, `adresAd` (isteğe bağlı) |
 | `etiketGecmis/{id}/{h}`, `etiketSablon/{m}/{k}` | Etiket basım geçmişi ve şablonlar |
 | `ayarlar/etiket` | Etiket ayarı (`w`, `h`, `mag`) |
 | `cop/{id}` | Çöp kutusu: silinenlerin yedeği (yönetici geri yükler) |
@@ -185,6 +185,7 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
   İş emrine geri al.
 - **Sevkiyat talimatları:** SEVKİYATLAR sekmesinin en üstünde "📋 TALİMATLAR" kutusu. Yönetici ve Depo Görevlisi
   "＋ Yeni talimat" ile iş yazar (örn. "A fabrikasından masura alınacak") ve en fazla 6 fotoğraf ekler (✖ ile kaldırılır; kamera/galeri).
+  İsteğe bağlı adres: kayıtlı sevk adreslerinde arayıp ekle (`sAdr`) veya "Haritada Seç" (Google Maps linki/adres); kartta "🗺️ Harita / Yol tarifi".
   "Kime" seçimi yok: talimat tüm sevkiyat sorumlularına gider (kayıtta `hedefUid:"*"`; eski kişiye özel kayıtlar hâlâ çalışır).
   Sevkiyat sorumlusu kendine/herkese verilenleri görür, "✓ Yaptım" der (yapan + saat kaydolur), "↩ Geri al" yapabilir.
   Silmeyi yönetici veya talimatı yazan yapar. Kod: `talimat.js` (+ `app.js`'te `bildBaslat/bildDurdur` içinde çağrı). Yeni izin anahtarı yok:
@@ -217,6 +218,7 @@ Satır numaraları kayar; bu başlıkları ara:
   rules değişmedi.
 - 2026-10-14: v41 — Sevkiyat talimatları eklendi. Dosyalar: talimat.js (yeni), index.html, app.js, sw.js, rules.json, PROJE-NOTLARI.md. Rules DEĞİŞTİ (yeni yol `sevkTalimat`).
 - 2026-10-14: v42 — Talimattan "Kime" kaldırıldı, 6 fotoğraf eklendi. Dosyalar: talimat.js, index.html, rules.json (fotolar kuralı), PROJE-NOTLARI.md, sw.js. Rules DEĞİŞTİ.
+- 2026-10-14: v43 — Talimata adres eklendi (kayıtlı adresten veya haritadan). Dosyalar: talimat.js, index.html, rules.json, PROJE-NOTLARI.md, sw.js, README.md. Rules DEĞİŞTİ.
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
