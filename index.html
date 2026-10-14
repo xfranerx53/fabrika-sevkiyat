@@ -16,7 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=45">
+<link rel="stylesheet" href="style.css?v=46">
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -165,7 +165,7 @@
   <button class="btn b6 hide" id="bMore">Daha eski kayıtları yükle</button>
   </div>
   <div id="vTal" class="hide">
-  <div class="card" id="talKart"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><b id="talH" style="font-size:17px">📋 TALİMATLAR</b><button class="btn b1 sm hide" id="talYeni" style="width:auto;margin:0" type="button">＋ Yeni talimat</button></div><div id="talList"></div></div>
+  <div class="card" id="talKart"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><b id="talH" style="font-size:17px">📋 TALİMATLAR</b><button class="btn b1 sm hide" id="talYeni" style="width:auto;margin:0" type="button">＋ Yeni talimat</button></div><div class="tabs stabs" id="talTabs"><button id="talTB" class="on" type="button">⏳ BEKLEYENLER</button><button id="talTA" type="button">✓ TAMAMLANANLAR</button></div><div id="talList"></div></div>
   </div>
   <div id="vTah" class="hide">
     <div class="card" style="margin-bottom:10px">
@@ -532,17 +532,17 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="raporlar.js?v=45"></script>
+<script src="raporlar.js?v=46"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=45"></script>
+<script src="app.js?v=46"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=45"></script>
-<script src="saat.js?v=45"></script>
+<script src="foto-onizleme.js?v=46"></script>
+<script src="saat.js?v=46"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=45"></script>
+<script src="diyalog.js?v=46"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -567,8 +567,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=45"></script>
-<script src="etiket.js?v=45"></script>
+<script src="qr.js?v=46"></script>
+<script src="etiket.js?v=46"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -578,9 +578,9 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="talimat.js?v=45"></script>
-<script src="tahsilat.js?v=45"></script>
-<script src="arama.js?v=45"></script>
-<script src="sw-kayit.js?v=45"></script>
+<script src="talimat.js?v=46"></script>
+<script src="tahsilat.js?v=46"></script>
+<script src="arama.js?v=46"></script>
+<script src="sw-kayit.js?v=46"></script>
 </body>
 </html>

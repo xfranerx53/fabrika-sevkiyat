@@ -3,7 +3,7 @@
    Sevkiyat sorumlusu kendine verilenleri (veya "herkese" verilenleri) görür ve "Yaptım" der.
    Veri yolu: sevkTalimat/{id}  (app.js'teki db, user, rec, isAdmin, $, esc, toast, errText ortak kullanılır) */
 (function(){
-  var ref=null,L=[],FM=6,TF=[];
+  var ref=null,L=[],FM=6,TF=[],sek="bek";
   var rolSor=function(){return !!(rec&&rec.rol==="Sevkiyat Sorumlusu")};
   var canAta=function(){return !!(rec&&rec.onay&&(isAdmin()||rec.rol==="Depo Görevlisi"))};
   var benim=function(x){return x.hedefUid==="*"||(user&&x.hedefUid===user.uid)};
@@ -31,14 +31,19 @@
   function ciz(){
     var k=$("talKart");if(!k)return;
     var V=L.filter(gorunur),acik=V.filter(function(x){return x.durum!=="yapildi"}).sort(function(a,b){return a.zaman-b.zaman}),
-        bit=V.filter(function(x){return x.durum==="yapildi"}).sort(function(a,b){return (b.yapilmaZaman||b.zaman)-(a.yapilmaZaman||a.zaman)}).slice(0,20);
+        bit=V.filter(function(x){return x.durum==="yapildi"}).sort(function(a,b){return (b.yapilmaZaman||b.zaman)-(a.yapilmaZaman||a.zaman)});
     $("talYeni").classList.toggle("hide",!canAta());
     $("talH").textContent="📋 TALİMATLAR"+(acik.length?" ("+acik.length+" bekliyor)":"");
     $("vtT").textContent="📋 TALİMATLAR"+(acik.length?" ("+acik.length+")":"");
-    var h=acik.length?acik.map(function(x){return kart(x,false)}).join(""):'<div class="sub" style="padding:6px 0">Bekleyen talimat yok.</div>';
-    if(bit.length)h+='<details style="margin-top:6px"><summary style="font-size:13px;font-weight:700;color:#64748b;cursor:pointer">Yapılanlar ('+bit.length+')</summary><div style="margin-top:6px">'+bit.map(function(x){return kart(x,true)}).join("")+'</div></details>';
-    $("talList").innerHTML=h;
+    $("talTB").textContent="⏳ BEKLEYENLER"+(acik.length?" ("+acik.length+")":"");
+    $("talTA").textContent="✓ TAMAMLANANLAR"+(bit.length?" ("+bit.length+")":"");
+    $("talTB").classList.toggle("on",sek==="bek");$("talTA").classList.toggle("on",sek==="bit");
+    $("talList").innerHTML=sek==="bek"
+      ?(acik.length?acik.map(function(x){return kart(x,false)}).join(""):'<div class="sub" style="padding:10px 0;text-align:center">Bekleyen talimat yok.</div>')
+      :(bit.length?bit.map(function(x){return kart(x,true)}).join(""):'<div class="sub" style="padding:10px 0;text-align:center">Tamamlanan talimat yok.</div>');
   }
+  $("talTB").onclick=function(){sek="bek";ciz()};
+  $("talTA").onclick=function(){sek="bit";ciz()};
   window.talBaslat=function(){
     window.talDurdur();
     if(!rec||!rec.onay||!modGor("sevk"))return;

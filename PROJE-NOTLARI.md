@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v45**
-Son güncelleme: 2026-10-14 (v45: Sevkiyat sekmeleri, Dosyalar iş emirlerine)
+**GÜNCEL SÜRÜM: v46**
+Son güncelleme: 2026-10-14 (v46: Talimatlar bekleyenler/tamamlananlar)
 
 ---
 
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v45)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v46)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -187,7 +187,7 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
   aktar), SEVK ADRESLERİ, DOSYALAR (yönetici "ONAYLA" ile arşive taşır). Ürün kartında: fotoğraf,
   irsaliye fotoğrafı (tür: irsaliye/iade/diğer), araç/sorumlu, Yol tarifi, WhatsApp ile paylaşma,
   İş emrine geri al.
-- **Sevkiyat talimatları:** artık ayrı "📋 TALİMATLAR" sekmesi (`vTal`; sekme adında bekleyen sayısı görünür). Yönetici ve Depo Görevlisi
+- **Sevkiyat talimatları:** artık ayrı "📋 TALİMATLAR" sekmesi (`vTal`; sekme adında bekleyen sayısı görünür). İçinde ⏳ BEKLEYENLER / ✓ TAMAMLANANLAR alt sekmeleri var (tahsilat gibi); tamamlananlar son 50 talimat içinden listelenir. Yönetici ve Depo Görevlisi
   "＋ Yeni talimat" ile iş yazar (örn. "A fabrikasından masura alınacak") ve en fazla 6 fotoğraf ekler (✖ ile kaldırılır; kamera/galeri).
   İsteğe bağlı adres: kayıtlı sevk adreslerinde arayıp ekle (`sAdr`) veya "Haritada Seç" (Google Maps linki/adres); kartta "🗺️ Harita / Yol tarifi".
   "Kime" seçimi yok: talimat tüm sevkiyat sorumlularına gider (kayıtta `hedefUid:"*"`; eski kişiye özel kayıtlar hâlâ çalışır).
@@ -232,6 +232,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-14: v43 — Talimata adres eklendi (kayıtlı adresten veya haritadan). Dosyalar: talimat.js, index.html, rules.json, PROJE-NOTLARI.md, sw.js, README.md. Rules DEĞİŞTİ.
 - 2026-10-14: v44 — Tahsilat bölümü eklendi (WhatsApp "MAG TAHSİLAT" grubunun karşılığı). Dosyalar: tahsilat.js (yeni), index.html, app.js, sw.js, rules.json, kontrol.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ (yeni yol `tahsilatlar`).
 - 2026-10-14: v45 — Tahsilat ve Talimatlar Sevkiyat içinde sekme oldu (ayrı `tah` bölümü/izni kaldırıldı); Dosyalar sevkiyattan iş emirlerine taşındı. Dosyalar: index.html, app.js, talimat.js, tahsilat.js, sw.js, rules.json, kontrol.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ (`tahsilatlar` yetkisi sevk'e bağlandı, `tah` izni kalktı).
+- 2026-10-14: v46 — Talimatlar sekmesine bekleyenler/tamamlananlar alt sekmeleri eklendi. Dosyalar: index.html, talimat.js, sw.js, PROJE-NOTLARI.md, README.md. Rules değişmedi.
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
