@@ -140,7 +140,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <div id="fK" class="hide">
       <input id="rn" placeholder="Adınız Soyadınız">
       <input id="rk" placeholder="Kullanıcı Adı (harf/rakam)" autocomplete="username">
-      <input id="rp" type="password" placeholder="Şifre (en az 6 karakter)" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <input id="rp" type="password" placeholder="Şifre" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false">
       <select id="rr"><option>Depo Görevlisi</option><option>Sevkiyat Sorumlusu</option><option>Ekstruder Operatörü</option><option>Matbaa Operatörü</option><option>Kesim Operatörü</option><option>Bobinoz Ustası</option><option>Muhasebe</option></select>
       <div class="err" id="eK"></div>
       <button class="btn b3" id="bK">Hesap Oluştur</button>
@@ -363,7 +363,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 <dialog id="dSf">
   <h3 id="sfT" style="margin-bottom:8px">🔑 Şifremi değiştir</h3>
   <div id="sfEskiW"><label for="sfEski">Mevcut şifre</label><input type="password" id="sfEski" autocomplete="current-password"></div>
-  <label for="sfYeni" style="margin-top:8px">Yeni şifre (en az 6 karakter)</label><input type="password" id="sfYeni" autocomplete="new-password">
+  <label for="sfYeni" style="margin-top:8px">Yeni şifre</label><input type="password" id="sfYeni" autocomplete="new-password">
   <label for="sfYeni2" style="margin-top:8px">Yeni şifre (tekrar)</label><input type="password" id="sfYeni2" autocomplete="new-password">
   <div id="sfE" style="color:#e71d36;font-size:12px;min-height:16px;margin-top:4px"></div>
   <button class="btn b3" id="sfOk">Kaydet</button>
@@ -879,6 +879,8 @@ document.querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>auth.signOut())
 
 $("tG").onclick=()=>{$("fG").classList.remove("hide");$("fK").classList.add("hide");$("tG").classList.add("on");$("tK").classList.remove("on")};
 $("tK").onclick=()=>{$("fK").classList.remove("hide");$("fG").classList.add("hide");$("tK").classList.add("on");$("tG").classList.remove("on")};
+/* Firebase Auth en az 6 karakter şart koşar (kapatılamaz). 6'dan kısa şifreler sabit bir ekle tamamlanıp Firebase'e öyle gönderilir. */
+const SF_EK="#magfs",sifreHz=p=>p.length<6?p+SF_EK:p;
 const mail=k=>k+"@mag-sevkiyat.com";
 $("bG").onclick=async()=>{
   const k=$("lk").value.trim().toLowerCase(),p=$("lp").value;$("eG").textContent="";
@@ -886,7 +888,7 @@ $("bG").onclick=async()=>{
   const rem=$("lb").checked;
   try{
     await auth.setPersistence(rem?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION);
-    try{await auth.signInWithEmailAndPassword(mail(k),p)}catch(e1){if(p!==p.trim()&&p.trim())await auth.signInWithEmailAndPassword(mail(k),p.trim());else throw e1}
+    try{await auth.signInWithEmailAndPassword(mail(k),sifreHz(p))}catch(e1){if(p!==p.trim()&&p.trim())await auth.signInWithEmailAndPassword(mail(k),sifreHz(p.trim()));else throw e1}
     try{if(rem){localStorage.setItem("hatirla_k",k);localStorage.removeItem("hatirla_p");localStorage.setItem("hatirla_on","1")}else{localStorage.removeItem("hatirla_k");localStorage.removeItem("hatirla_p");localStorage.setItem("hatirla_on","0")}}catch(_){}
     if(!rem)$("lp").value=""
   }catch(e){$("eG").textContent=errText(e)}
@@ -902,10 +904,10 @@ $("bK").onclick=async()=>{
   const n=$("rn").value.trim(),k=$("rk").value.trim().toLowerCase(),p=$("rp").value,r=$("rr").value;$("eK").textContent="";
   if(!n){$("eK").textContent="Adınızı yazın.";return}
   if(!/^[a-z0-9._-]{3,20}$/.test(k)){$("eK").textContent="Kullanıcı adı 3-20 karakter olmalı (harf, rakam, . _ -).";return}
-  if(p.length<6){$("eK").textContent="Şifre en az 6 karakter olmalı.";return}
+  if(!p){$("eK").textContent="Şifre yazın.";return}
   $("bK").disabled=true;$("eK").style.color="#475569";$("eK").textContent="Hesap oluşturuluyor...";
   let c=null;pendReg={n,k,r};kayitDevam=true;
-  try{c=await auth.createUserWithEmailAndPassword(mail(k),p)}
+  try{c=await auth.createUserWithEmailAndPassword(mail(k),sifreHz(p))}
   catch(e){kayitDevam=false;$("eK").style.color="";$("eK").textContent="1/2 Hesap açılamadı: "+errText(e);$("bK").disabled=false;return}
   try{
     await db.ref("kullanicilar/"+c.user.uid).set({ad:n,kullanici:k,rol:r,onay:false,yonetici:false});
@@ -1326,20 +1328,20 @@ $("bSf").onclick=()=>sfAc(null,"");
 $("sfIptal").onclick=()=>$("dSf").close();
 $("sfOk").onclick=async()=>{
   const y=$("sfYeni").value,y2=$("sfYeni2").value,e=$("sfE");e.textContent="";
-  if(y.length<6){e.textContent="Yeni şifre en az 6 karakter olmalı.";return}
+  if(!y){e.textContent="Yeni şifre yazın.";return}
   if(y!==y2){e.textContent="Yeni şifreler aynı değil.";return}
   $("sfOk").disabled=true;
   try{
     if(sfHedef){
       if(!isAdmin())throw new Error("Bu işlem için yönetici olmalısınız.");
       const fx=await fnYukle();
-      await fx.httpsCallable("sifreSifirla")({uid:sfHedef.uid,sifre:y});
+      await fx.httpsCallable("sifreSifirla")({uid:sfHedef.uid,sifre:sifreHz(y)});
       denetimYaz("sifre",sfHedef.adi,"Yönetici şifreyi sıfırladı","kullanicilar",sfHedef.uid);toast("✓ Şifre sıfırlandı. Kullanıcıya yeni şifreyi iletin.");
     }else{
       const eski=$("sfEski").value;if(!eski){e.textContent="Mevcut şifrenizi yazın.";$("sfOk").disabled=false;return}
       const cu=auth.currentUser;
-      await cu.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(cu.email,eski));
-      await cu.updatePassword(y);
+      await cu.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(cu.email,sifreHz(eski)));
+      await cu.updatePassword(sifreHz(y));
       denetimYaz("sifre",(rec&&rec.ad)||"","Kullanıcı şifresini değiştirdi","kullanicilar",user.uid);toast("✓ Şifreniz değiştirildi");
     }
     $("dSf").close();
