@@ -17,7 +17,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-body{background:#f4f6f9;padding:12px;color:#212529;font-size:14px;min-height:100vh}
+body{background:#f4f6f9;padding:12px;color:#212529;font-size:17px;min-height:100vh}
 .hide{display:none!important}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999;padding:12px}
 .box{background:#fff;padding:20px;border-radius:12px;width:100%;max-width:360px;text-align:center}
@@ -25,103 +25,103 @@ body{background:#f4f6f9;padding:12px;color:#212529;font-size:14px;min-height:100
 .tabs2{display:flex;gap:5px;margin-bottom:14px}
 .tabs2 button{flex:1;padding:8px;border:0;background:#e2e8f0;border-radius:6px;font-weight:700;cursor:pointer}
 .tabs2 button.on{background:#c82333;color:#fff}
-.err{color:#c82333;font-size:13px;min-height:18px;margin-bottom:6px}
+.err{color:#c82333;font-size:16px;min-height:18px;margin-bottom:6px}
 .head{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#1e293b;color:#fff;padding:10px 14px;border-radius:8px;margin-bottom:12px}
-.head .u{font-size:12px;text-align:right}
+.head .u{font-size:14px;text-align:right}
 .head .u div{margin-bottom:3px}
 .card,.filter{background:#fff;padding:14px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px;border:1px solid #e2e8f0}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:span 2}
-label{display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase}
-input,select,textarea{width:100%;padding:10px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:14px;outline:none;background:#fff}
+label{display:block;font-size:13px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase}
+input,select,textarea{width:100%;padding:10px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:17px;outline:none;background:#fff}
 input:focus,textarea:focus,select:focus{border-color:#2563eb}
-.btn{width:100%;padding:12px;border-radius:8px;font-weight:700;font-size:13px;border:0;cursor:pointer;color:#fff;margin-top:6px}
+.btn{width:100%;padding:12px;border-radius:8px;font-weight:700;font-size:16px;border:0;cursor:pointer;color:#fff;margin-top:6px}
 .btn:disabled{opacity:.5}
 .b1{background:#2563eb}.b2{background:#ff9f1c}.b3{background:#2ec4b6}.b4{background:#3b82f6}.b5{background:#e71d36}.b6{background:#64748b}.b7{background:#0f766e}
-.big{padding:16px!important;font-size:15px!important}
+.big{padding:16px!important;font-size:18px!important}
 .kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
 .kgrid .fth img{height:90px}.b8{background:#c82333}
-.sm{padding:5px 9px;font-size:11px;width:auto;margin:0}
+.sm{padding:5px 9px;font-size:13px;width:auto;margin:0}
 .photo{display:flex;gap:8px}
-.photo>*{flex:1;text-align:center;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:0;color:#fff;background:#2563eb}
-.photo label{background:#64748b;text-transform:none;font-size:14px;margin:0;color:#fff}
+.photo>*{flex:1;text-align:center;padding:14px;border-radius:10px;font-size:17px;font-weight:700;cursor:pointer;border:0;color:#fff;background:#2563eb}
+.photo label{background:#64748b;text-transform:none;font-size:17px;margin:0;color:#fff}
 #prev{width:100%;max-height:260px;object-fit:contain;background:#000;border-radius:8px;margin-top:8px;display:none}
-.fast{font-size:18px!important;font-weight:700;padding:12px!important;border:2px solid #2563eb!important;background:#f0f7ff!important}
+.fast{font-size:22px!important;font-weight:700;padding:12px!important;border:2px solid #2563eb!important;background:#f0f7ff!important}
 #cam{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:10000;flex-direction:column;align-items:center;justify-content:center;padding:20px}
 #cam video{width:100%;max-width:500px;border-radius:12px;background:#000}
-.tabs{display:flex;gap:4px;margin-bottom:12px}
-.tabs button{flex:1;padding:10px 4px;border:0;border-radius:8px;background:#e2e8f0;font-size:11px;font-weight:800;color:#475569;cursor:pointer}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+.tabs button{flex:1 1 auto;padding:10px 4px;border:0;border-radius:8px;background:#e2e8f0;font-size:13px;font-weight:800;color:#475569;cursor:pointer}
 .tabs .a1{background:#2ec4b6;color:#fff}.tabs .a2{background:#ff9f1c;color:#fff}.tabs .a3{background:#3b82f6;color:#fff}
-#sum{font-size:13px;font-weight:700;color:#334155;margin:0 2px 8px;display:flex;justify-content:space-between;align-items:center}
+#sum{font-size:16px;font-weight:700;color:#334155;margin:0 2px 8px;display:flex;justify-content:space-between;align-items:center}
 .item{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:2px solid #e2e8f0}
 .hazir-border{border-left:8px solid #2ec4b6}.sevk-border{border-left:8px solid #ff9f1c}.tamam-border{border-left:8px solid #3b82f6}
-.badge{font-size:11px;font-weight:800;padding:5px 8px;border-radius:6px;color:#fff;display:inline-block}
+.badge{font-size:13px;font-weight:800;padding:5px 8px;border-radius:6px;color:#fff;display:inline-block}
 .badge-hazir{background:#2ec4b6}.badge-sevk{background:#ff9f1c}.badge-tamam{background:#3b82f6}
 .item img{width:100%;max-height:300px;object-fit:contain;background:#0f172a;border-radius:8px;margin:8px 0}
 .hl{background:#e0f2fe;border:2px solid #0284c7;border-radius:8px;padding:10px;text-align:center}
 .hl.fl{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .1s}.hl.fl:active{transform:scale(.96)}.hl.fl.act{box-shadow:0 0 0 3px #0f172a}
-.hl small{display:block;font-size:11px;font-weight:800;color:#0369a1}.hl b{font-size:22px;font-weight:900;color:#0c4a6e}
+.hl small{display:block;font-size:13px;font-weight:800;color:#0369a1}.hl b{font-size:26px;font-weight:900;color:#0c4a6e}
 .info{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px}
-.info small{display:block;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase}
-.note{background:#fffbe3;border:1px solid #ffe58f;border-radius:8px;padding:8px;margin-top:6px;font-size:12px;color:#856404}
-.addr{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px;margin-top:6px;font-size:12px;color:#166534}
-.who{font-size:11px;color:#94a3b8;font-style:italic;margin-top:4px}
+.info small{display:block;font-size:12px;font-weight:800;color:#64748b;text-transform:uppercase}
+.note{background:#fffbe3;border:1px solid #ffe58f;border-radius:8px;padding:8px;margin-top:6px;font-size:14px;color:#856404}
+.addr{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px;margin-top:6px;font-size:14px;color:#166534}
+.who{font-size:13px;color:#94a3b8;font-style:italic;margin-top:4px}
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
 .acts .btn{margin:0}
 .empty{text-align:center;padding:30px;color:#94a3b8;font-weight:700}
 dialog{max-height:92vh;overflow:auto;border:0;border-radius:12px;padding:16px;width:min(460px,94vw)}
 dialog::backdrop{background:rgba(0,0,0,.6)}
-.urow{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:13px}
+.urow{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:16px}
 .menuWrap{max-width:420px;margin:0 auto;padding-top:8vh}
 .menuWrap h2{text-align:center;color:#c82333;font-weight:900;margin-bottom:4px}
 .menuWrap p{text-align:center;color:#64748b;margin-bottom:22px;font-size:13px}
 .menuBtn{display:flex;align-items:center;gap:16px;width:100%;padding:22px 18px;margin-bottom:14px;border:0;border-radius:14px;color:#fff;font-size:20px;font-weight:900;cursor:pointer;text-align:left;box-shadow:0 4px 12px rgba(0,0,0,.12);-webkit-tap-highlight-color:transparent}
 .menuBtn:active{transform:scale(.97)}
 .menuBtn span.ic{font-size:38px}.menuBtn small{display:block;font-size:12px;font-weight:600;opacity:.9;margin-top:2px}
-.head strong{font-size:17px}.head .u{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;font-size:15px}.head .u div{width:100%;font-size:15px;font-weight:700;margin:0}.head .sm{font-size:15px;padding:10px 14px;font-weight:800}
-.mods button{font-size:14px;padding:13px 4px}.mods button.on{background:#1e293b;color:#fff}
-.chip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #cbd5e1;border-radius:99px;padding:6px 11px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;text-transform:none;margin:0;color:#334155}.chip input{width:auto;margin:0}.urow2{display:grid;grid-template-columns:64px 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}.urow2 b{font-size:13px}.qbox{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.qbox .hl{flex:1;min-width:88px}
-.badge-no{background:#e71d36}.sub{font-size:12px;color:#64748b;margin-top:2px}
-.stabs button{font-size:12px;padding:11px 2px}.stabs button.on{background:#2563eb;color:#fff}.mut{color:#64748b}.item a{color:#2563eb;font-weight:700;text-decoration:none}.shd{font-size:12px;font-weight:800;color:#475569;margin:6px 2px 8px}
+.head strong{font-size:20px}.head .u{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;font-size:18px}.head .u div{width:100%;font-size:18px;font-weight:700;margin:0}.head .sm{font-size:18px;padding:10px 14px;font-weight:800}
+.mods button{font-size:17px;padding:13px 4px}.mods button.on{background:#1e293b;color:#fff}
+.chip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #cbd5e1;border-radius:99px;padding:6px 11px;font-size:16px;font-weight:700;cursor:pointer;background:#fff;text-transform:none;margin:0;color:#334155}.chip input{width:auto;margin:0}.urow2{display:grid;grid-template-columns:64px 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}.urow2 b{font-size:16px}.qbox{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.qbox .hl{flex:1;min-width:88px}
+.badge-no{background:#e71d36}.sub{font-size:14px;color:#64748b;margin-top:2px}
+.stabs button{font-size:14px;padding:11px 2px}.stabs button.on{background:#2563eb;color:#fff}.mut{color:#64748b}.item a{color:#2563eb;font-weight:700;text-decoration:none}.shd{font-size:14px;font-weight:800;color:#475569;margin:6px 2px 8px}
 .item.c{padding:8px 10px;margin-bottom:6px;border-radius:10px;border-width:1px;border-left-width:5px}
 .item img.th{width:44px;height:44px;max-height:44px;margin:0;border-radius:6px;object-fit:cover;flex:none}
-.item.c .sub{margin-top:1px}.item.c .badge{font-size:9px;padding:3px 6px;flex:none}.item.c .nm{font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.acts.s{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.acts.s .btn{flex:1;min-width:62px;padding:8px 4px;font-size:12px}.acts.s .btn.i{flex:0 0 42px;min-width:0}
-.chev{font-size:10px;color:#94a3b8;flex:none}.dt{margin-top:6px;border-top:1px solid #f1f5f9;padding-top:4px}
-#pStok .grid .hl{padding:5px}#pStok .grid .hl b{font-size:18px}
-.dosya{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px;margin-top:8px;cursor:pointer;color:#1e40af;font-size:13px;-webkit-tap-highlight-color:transparent}
-.dosya:active{transform:scale(.98)}.dosya b{font-size:13px}.dosya .dm{flex:1;min-width:0}.dosya .dd{font-size:11px;color:#64748b;margin-top:2px}.dosya .dz{font-size:20px;flex:none}
-#clk{text-align:right;font-size:12px;font-weight:800;color:#475569;margin:0 2px 8px;font-variant-numeric:tabular-nums}
-.dfile{display:flex;gap:8px;align-items:center;width:100%;text-align:left;background:#fff;border:1px solid #e2e8f0;border-left:5px solid #3b82f6;border-radius:10px;padding:7px 9px;margin-bottom:5px;cursor:pointer;color:#212529;font-size:13px;-webkit-tap-highlight-color:transparent}
+.item.c .sub{margin-top:1px}.item.c .badge{font-size:11px;padding:3px 6px;flex:none}.item.c .nm{font-size:17px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acts.s{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.acts.s .btn{flex:1;min-width:62px;padding:8px 4px;font-size:14px}.acts.s .btn.i{flex:0 0 42px;min-width:0}
+.chev{font-size:12px;color:#94a3b8;flex:none}.dt{margin-top:6px;border-top:1px solid #f1f5f9;padding-top:4px}
+#pStok .grid .hl{padding:5px}#pStok .grid .hl b{font-size:22px}
+.dosya{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px;margin-top:8px;cursor:pointer;color:#1e40af;font-size:16px;-webkit-tap-highlight-color:transparent}
+.dosya:active{transform:scale(.98)}.dosya b{font-size:16px}.dosya .dm{flex:1;min-width:0}.dosya .dd{font-size:13px;color:#64748b;margin-top:2px}.dosya .dz{font-size:24px;flex:none}
+#clk{text-align:right;font-size:14px;font-weight:800;color:#475569;margin:0 2px 8px;font-variant-numeric:tabular-nums}
+.dfile{display:flex;gap:8px;align-items:center;width:100%;text-align:left;background:#fff;border:1px solid #e2e8f0;border-left:5px solid #3b82f6;border-radius:10px;padding:7px 9px;margin-bottom:5px;cursor:pointer;color:#212529;font-size:16px;-webkit-tap-highlight-color:transparent}
 .dfile.dg{border-left-color:#ff9f1c}.dfile.di{border-left-color:#e71d36}
-.dfile .dz{font-size:20px;flex:none}.dfile .dm{flex:1;min-width:0}
-.dfile .dn{font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dfile .dd{font-size:11px;color:#64748b;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ebad{display:block;font-size:15px;font-weight:900;white-space:pre-line;margin:2px 0 6px}.ebr{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-top:1px dashed #cbd5e1;font-size:13px}.eb1{font-weight:800;color:#0f172a}.eb2{font-weight:800;color:#0369a1;text-align:right;white-space:nowrap}
+.dfile .dz{font-size:24px;flex:none}.dfile .dm{flex:1;min-width:0}
+.dfile .dn{font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dfile .dd{font-size:13px;color:#64748b;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ebad{display:block;font-size:18px;font-weight:900;white-space:pre-line;margin:2px 0 6px}.ebr{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-top:1px dashed #cbd5e1;font-size:16px}.eb1{font-weight:800;color:#0f172a}.eb2{font-weight:800;color:#0369a1;text-align:right;white-space:nowrap}
 .ddet{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px;margin:-2px 0 8px}
-#vDos .hl{padding:5px}#vDos .hl b{font-size:18px}
+#vDos .hl{padding:5px}#vDos .hl b{font-size:22px}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99999;max-width:90vw;text-align:center}
 #toast.on{opacity:1}
 #fGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
 .fth{position:relative}.fth img{width:100%;height:110px;object-fit:cover;border-radius:8px;background:#0f172a;cursor:zoom-in}
-.fth .fx{position:absolute;top:4px;right:4px;width:28px;height:28px;border:0;border-radius:50%;background:#e71d36;color:#fff;font-size:14px;font-weight:900;cursor:pointer;line-height:1}
-#fSay{font-size:11px;color:#64748b;margin-top:4px}
-.fbar{display:flex;gap:6px;margin:0 0 8px}.fbar>div{flex:1;min-width:0}.fbar label{font-size:9px}.fbar input{padding:6px;font-size:12px}
-.fbar2{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 6px;font-size:11px;font-weight:700;color:#64748b}
-.fbar2 .btn{padding:6px 10px;font-size:11px}
-.bell{position:relative}.bell .bn{position:absolute;top:-7px;right:-7px;background:#e71d36;color:#fff;border-radius:10px;font-size:11px;font-weight:900;padding:1px 6px;line-height:1.3}
+.fth .fx{position:absolute;top:4px;right:4px;width:28px;height:28px;border:0;border-radius:50%;background:#e71d36;color:#fff;font-size:17px;font-weight:900;cursor:pointer;line-height:1}
+#fSay{font-size:13px;color:#64748b;margin-top:4px}
+.fbar{display:flex;gap:6px;margin:0 0 8px}.fbar>div{flex:1;min-width:0}.fbar label{font-size:11px}.fbar input{padding:6px;font-size:14px}
+.fbar2{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 6px;font-size:13px;font-weight:700;color:#64748b}
+.fbar2 .btn{padding:6px 10px;font-size:13px}
+.bell{position:relative}.bell .bn{position:absolute;top:-7px;right:-7px;background:#e71d36;color:#fff;border-radius:10px;font-size:13px;font-weight:900;padding:1px 6px;line-height:1.3}
 </style>
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
-<div id="boot" style="padding:24px;font-size:15px;color:#334155">Yükleniyor...</div>
+<div id="boot" style="padding:24px;font-size:18px;color:#334155">Yükleniyor...</div>
 <div id="clk"></div>
 
 <div id="cam">
-  <div id="camT" style="display:none;color:#fff;font-weight:800;font-size:15px;text-align:center;margin-bottom:10px;max-width:500px"></div>
+  <div id="camT" style="display:none;color:#fff;font-weight:800;font-size:18px;text-align:center;margin-bottom:10px;max-width:500px"></div>
   <video id="vid" autoplay playsinline muted></video>
   <div style="width:100%;max-width:500px;display:flex;gap:10px;margin-top:14px">
-    <button class="btn b3" style="padding:15px;font-size:16px" id="snap">📸 FOTOĞRAFI ÇEK</button>
-    <button class="btn b5" style="padding:15px;font-size:16px" id="camX">İptal</button>
+    <button class="btn b3" style="padding:15px;font-size:19px" id="snap">📸 FOTOĞRAFI ÇEK</button>
+    <button class="btn b5" style="padding:15px;font-size:19px" id="camX">İptal</button>
   </div>
 </div>
 
@@ -133,7 +133,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <form id="fG" autocomplete="on">
       <input id="lk" name="username" placeholder="Kullanıcı Adı" autocomplete="username" autocapitalize="none" autocorrect="off">
       <input id="lp" name="password" type="password" placeholder="Şifre" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false">
-      <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#334155;margin:0 0 10px;text-align:left;cursor:pointer"><input id="lb" type="checkbox" style="width:auto;margin:0" checked> Kullanıcı adı ve şifreyi hatırla</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:17px;color:#334155;margin:0 0 10px;text-align:left;cursor:pointer"><input id="lb" type="checkbox" style="width:auto;margin:0" checked> Kullanıcı adı ve şifreyi hatırla</label>
       <div class="err" id="eG"></div>
       <button type="button" class="btn b8" id="bG">Sisteme Giriş Yap</button>
     </form>
@@ -144,7 +144,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
       <select id="rr"><option>Depo Görevlisi</option><option>Sevkiyat Sorumlusu</option><option>Ekstruder Operatörü</option><option>Matbaa Operatörü</option><option>Kesim Operatörü</option><option>Bobinoz Ustası</option><option>Muhasebe</option></select>
       <div class="err" id="eK"></div>
       <button class="btn b3" id="bK">Hesap Oluştur</button>
-      <p style="font-size:12px;color:#64748b;margin-top:8px">Hesabınız yönetici onayından sonra açılır.</p>
+      <p style="font-size:14px;color:#64748b;margin-top:8px">Hesabınız yönetici onayından sonra açılır.</p>
     </div>
   </div>
 </div>
@@ -197,7 +197,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="vSev">
   <div class="card"><div class="grid">
     <div class="full">
-      <label style="color:#2563eb;font-size:12px">1. Fotoğraf ekle (yeni kayıtta en az 1, en fazla 6 · ✖ ile kaldırılır)</label>
+      <label style="color:#2563eb;font-size:14px">1. Fotoğraf ekle (yeni kayıtta en az 1, en fazla 6 · ✖ ile kaldırılır)</label>
       <div class="photo">
         <button type="button" id="camO">📸 CANLI KAMERAYI AÇ</button>
         <label for="gal">🖼️ Galeri</label>
@@ -205,8 +205,6 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
       </div>
       <div id="fGrid"></div><div id="fSay"></div>
     </div>
-    <div><label style="color:#0284c7">Ağırlık (kg)</label><input type="number" id="kg" inputmode="decimal" min="0" step="any" placeholder="Örn: 20" class="fast"></div>
-    <div><label style="color:#0284c7">Paket / Adet</label><input type="number" id="pk" inputmode="numeric" min="0" step="1" value="1" class="fast"></div>
     <div class="full sevkonly">
       <label style="color:#0f766e">📍 Teslimat adresi ve harita</label>
       <div style="position:relative;margin-bottom:6px">
@@ -220,7 +218,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
       <textarea id="ad" rows="2" placeholder="Açık teslimat adresi"></textarea>
       <button type="button" class="btn b6 sm" style="margin-top:6px" id="adrSave">💾 Bu adresi adres defterine kaydet</button>
     </div>
-    <div class="full"><details><summary style="font-size:11px;font-weight:700;color:#64748b;cursor:pointer">➕ Opsiyonel: Müşteri / Ürün adı</summary>
+    <div class="full"><details><summary style="font-size:13px;font-weight:700;color:#64748b;cursor:pointer">➕ Opsiyonel: Müşteri / Ürün adı</summary>
       <div class="grid" style="margin-top:8px">
         <div><label id="lMu">Müşteri</label><input id="mu" placeholder="Örn: Güneli Fırın"></div>
         <div><label>Ürün / Ebat</label><textarea id="ur" rows="2" placeholder="Örn: Kulplu Poşet 32x40"></textarea></div>
@@ -233,7 +231,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <label class="chip" style="margin-top:8px"><input type="checkbox" id="skc">KDV ekle</label>
     <div id="skw" class="hide" style="margin-top:6px"><div style="display:flex;gap:6px"><input id="skr" type="number" inputmode="decimal" min="0" max="100" step="any" placeholder="KDV %"><select id="skm"><option value="haric">Fiyat KDV hariç</option><option value="dahil">Fiyat KDV dahil</option></select></div><div id="skg" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div></div>
     <div class="full">
-      <button class="btn b1" id="bSave" style="padding:15px;font-size:16px">+ STOĞA EKLENENİ KAYDET</button>
+      <button class="btn b1" id="bSave" style="padding:15px;font-size:19px">+ STOĞA EKLENENİ KAYDET</button>
       <button class="btn b6 hide" id="bCancel">Düzenlemeyi iptal et</button>
     </div>
   </div></div>
@@ -242,8 +240,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
     <label>🔍 Arama ve filtre</label>
     <input id="q" placeholder="Müşteri, ürün, adres veya not ara..." style="margin-bottom:8px">
     <div style="display:flex;gap:6px">
-      <div style="flex:1"><label style="font-size:9px">Başlangıç</label><input type="date" id="d1" style="padding:6px;font-size:12px"></div>
-      <div style="flex:1"><label style="font-size:9px">Bitiş</label><input type="date" id="d2" style="padding:6px;font-size:12px"></div>
+      <div style="flex:1"><label style="font-size:11px">Başlangıç</label><input type="date" id="d1" style="padding:6px;font-size:14px"></div>
+      <div style="flex:1"><label style="font-size:11px">Bitiş</label><input type="date" id="d2" style="padding:6px;font-size:14px"></div>
     </div>
   </div>
 
@@ -257,7 +255,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <button class="btn b6 hide" id="bMore">Daha eski kayıtları yükle</button>
   </div>
   <div id="vAdr" class="hide">
-    <div class="grid" style="grid-template-columns:1fr;margin-bottom:10px"><div class="hl" style="padding:6px"><small>KAYITLI SEVK ADRESİ</small><b id="aSay2" style="font-size:18px">0</b></div></div>
+    <div class="grid" style="grid-template-columns:1fr;margin-bottom:10px"><div class="hl" style="padding:6px"><small>KAYITLI SEVK ADRESİ</small><b id="aSay2" style="font-size:22px">0</b></div></div>
     <div class="filter">
       <input id="aq" placeholder="🔍 Adres ara (firma, kişi, telefon, adres...)" style="margin-bottom:8px">
       <select id="asf"><option value="">Tüm iller / ilçeler</option></select>
@@ -272,8 +270,8 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
       <label>🔍 Dosyalarda ara</label>
       <input id="dq" placeholder="Müşteri, ürün, adres, not, kişi ara..." style="margin-bottom:8px">
       <div style="display:flex;gap:6px;margin-bottom:8px">
-        <div style="flex:1"><label style="font-size:9px">Başlangıç</label><input type="date" id="dd1" style="padding:6px;font-size:12px"></div>
-        <div style="flex:1"><label style="font-size:9px">Bitiş</label><input type="date" id="dd2" style="padding:6px;font-size:12px"></div>
+        <div style="flex:1"><label style="font-size:11px">Başlangıç</label><input type="date" id="dd1" style="padding:6px;font-size:14px"></div>
+        <div style="flex:1"><label style="font-size:11px">Bitiş</label><input type="date" id="dd2" style="padding:6px;font-size:14px"></div>
       </div>
       <select id="dtp"><option value="">Tüm türler</option><option value="irsaliye">📄 İmzalı irsaliye</option><option value="diger">📝 Diğer</option><option value="iade">↩️ İade</option></select>
     </div>
@@ -285,16 +283,16 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
   <div id="pIs" class="hide">
     <button class="btn b2 big" style="margin:0 0 10px" id="iAdd">＋ Yeni iş emri aç</button>
-    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v24 (adım 4: operatör ekranı)</div>
+    <div style="font-size:12px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v24 (adım 4: operatör ekranı)</div>
     <input id="iq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="iTabs"></div>
     <div id="iList"></div>
   </div>
   <div id="pRap" class="hide rp">
     <div class="item" style="margin-bottom:10px">
-      <label style="font-size:12px;font-weight:700">Dönem</label>
+      <label style="font-size:14px;font-weight:700">Dönem</label>
       <select id="rpS"><option value="ay">Bu ay</option><option value="gecen">Geçen ay</option><option value="3">Son 3 ay</option><option value="6">Son 6 ay</option><option value="yil">Bu yıl</option><option value="ozel">Özel tarih aralığı…</option></select>
-      <div class="grid hide" id="rpC" style="margin-top:6px"><div><label style="font-size:11px">Başlangıç</label><input id="rpA" type="date"></div><div><label style="font-size:11px">Bitiş</label><input id="rpB" type="date"></div></div>
+      <div class="grid hide" id="rpC" style="margin-top:6px"><div><label style="font-size:13px">Başlangıç</label><input id="rpA" type="date"></div><div><label style="font-size:13px">Bitiş</label><input id="rpB" type="date"></div></div>
       <div class="err" id="rpE"></div>
       <div style="display:flex;gap:8px"><button class="btn b3" id="rpOk" type="button" style="margin-bottom:0">📊 Raporu getir</button><button class="btn b6 hide" id="rpCsv" type="button" style="margin-bottom:0;width:auto;padding:0 14px">⬇️ Excel</button></div>
     </div>
@@ -338,13 +336,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <button class="btn b6" id="copAc">🗑️ Çöp kutusu (silinenler)</button>
   <button class="btn b6" id="denAc">📜 Denetim kaydı</button>
   <button class="btn b6" id="fgBtn">🖼️ Eski fotoğrafları hafiflet</button>
-  <div id="bakimDurum" style="font-size:12px;margin-top:6px;color:#475569"></div>
+  <div id="bakimDurum" style="font-size:14px;margin-top:6px;color:#475569"></div>
   <h3 style="margin:14px 0 6px">💾 Yedekleme</h3>
-  <div id="bkSon" style="font-size:12px;margin-bottom:6px"></div>
-  <label style="display:flex;gap:6px;align-items:center;font-size:12px;margin-bottom:4px"><input type="checkbox" id="bkFoto" checked style="width:auto"> Fotoğrafları da dahil et (JSON; dosya büyük olabilir)</label>
+  <div id="bkSon" style="font-size:14px;margin-bottom:6px"></div>
+  <label style="display:flex;gap:6px;align-items:center;font-size:14px;margin-bottom:4px"><input type="checkbox" id="bkFoto" checked style="width:auto"> Fotoğrafları da dahil et (JSON; dosya büyük olabilir)</label>
   <button class="btn b3" id="bkJson">⬇️ Tüm veriyi JSON olarak indir</button>
   <button class="btn b7" id="bkXlsx">⬇️ Tüm veriyi Excel olarak indir</button>
-  <div id="bkDurum" style="font-size:12px;margin-top:6px;color:#475569"></div>
+  <div id="bkDurum" style="font-size:14px;margin-top:6px;color:#475569"></div>
   <small style="display:block;margin-top:6px;color:#64748b">JSON dosyası Firebase Konsolu > Realtime Database > ⋮ > JSON'u içe aktar ile geri yüklenebilir. Excel dosyasında fotoğraflar yer almaz. Giriş hesapları (şifreler) yedeğe dahil değildir.</small>
   <button class="btn b6" id="dClose">Kapat</button>
 </dialog>
@@ -365,7 +363,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="sfEskiW"><label for="sfEski">Mevcut şifre</label><input type="password" id="sfEski" autocomplete="current-password"></div>
   <label for="sfYeni" style="margin-top:8px">Yeni şifre</label><input type="password" id="sfYeni" autocomplete="new-password">
   <label for="sfYeni2" style="margin-top:8px">Yeni şifre (tekrar)</label><input type="password" id="sfYeni2" autocomplete="new-password">
-  <div id="sfE" style="color:#e71d36;font-size:12px;min-height:16px;margin-top:4px"></div>
+  <div id="sfE" style="color:#e71d36;font-size:14px;min-height:16px;margin-top:4px"></div>
   <button class="btn b3" id="sfOk">Kaydet</button>
   <button class="btn b6" id="sfIptal">İptal</button>
 </dialog>
@@ -377,13 +375,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <label style="margin-top:12px">Takip edilecek birimler (birden fazla seçebilirsiniz)</label>
   <div id="ub" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
   <div id="kur"></div>
-  <p class="mut" style="font-size:11px;margin:0 0 4px">Mevcut miktar ve kritik seviye (altına düşünce uyarır) isteğe bağlıdır.</p>
+  <p class="mut" style="font-size:13px;margin:0 0 4px">Mevcut miktar ve kritik seviye (altına düşünce uyarır) isteğe bağlıdır.</p>
   <label for="ste" style="margin-top:8px">Tedarikçi (isteğe bağlı)</label><input id="ste" list="dlt" placeholder="Önceden girdikleriniz burada çıkar" autocomplete="off"><datalist id="dlt"></datalist>
   <label for="sno" style="margin-top:8px">Not (isteğe bağlı)</label><input id="sno">
   <label style="margin-top:8px">Fotoğraflar (isteğe bağlı, birden fazla eklenebilir)</label>
   <div style="display:flex;gap:6px"><button type="button" class="btn b4" style="margin:0" id="kGalB">🖼️ Galeriden ekle</button><button type="button" class="btn b7" style="margin:0" id="kCamB">📷 Fotoğraf çek</button></div>
   <input id="kGal" type="file" accept="image/*" multiple class="hide"><input id="kCam" type="file" accept="image/*" capture="environment" class="hide">
-  <div id="kGrid" class="kgrid"></div><div id="kSay" class="mut" style="font-size:11px;margin-top:4px"></div>
+  <div id="kGrid" class="kgrid"></div><div id="kSay" class="mut" style="font-size:13px;margin-top:4px"></div>
   <div class="err" id="kE" style="margin-top:8px"></div>
   <div style="display:flex;gap:8px"><button class="btn b6" id="kNo">Vazgeç</button><button class="btn b1" id="kOk">Kaydet</button></div>
 </dialog>
@@ -396,14 +394,14 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <label for="aAd" style="margin-top:8px">Açık adres</label><textarea id="aAd" rows="3" placeholder="Mahalle, cadde, no, kat..."></textarea>
   <label for="aHu" style="margin-top:8px">Harita linki (isteğe bağlı)</label>
   <div style="display:flex;gap:6px"><input id="aHu" placeholder="Google Maps bağlantısı (https://...)"><button type="button" class="btn b7" style="margin:0;width:auto;white-space:nowrap" id="aHs">🗺️ Haritada Seç</button></div>
-  <p class="mut" style="font-size:11px;margin:4px 0 0">Haritada yeri açıp Paylaş › Bağlantıyı kopyala ile linki buraya yapıştırın.</p>
+  <p class="mut" style="font-size:13px;margin:4px 0 0">Haritada yeri açıp Paylaş › Bağlantıyı kopyala ile linki buraya yapıştırın.</p>
   <label for="aNt" style="margin-top:8px">Not (isteğe bağlı)</label><input id="aNt" placeholder="Örn: teslimat 08:00-17:00, arka kapı">
   <div class="err" id="aE" style="margin-top:8px"></div>
   <div style="display:flex;gap:8px"><button class="btn b6" id="aX">Vazgeç</button><button class="btn b1" id="aOk">Kaydet</button></div>
 </dialog>
 <dialog id="dTop">
   <h3 style="margin-bottom:4px">📋 Toplu adres ekle</h3>
-  <p class="mut" style="font-size:12px;margin:0 0 8px">Firma adını yazın, <b>linki aynı satıra ya da hemen altındaki satıra</b> koyun. Her firma için bu şekilde devam edin.</p>
+  <p class="mut" style="font-size:14px;margin:0 0 8px">Firma adını yazın, <b>linki aynı satıra ya da hemen altındaki satıra</b> koyun. Her firma için bu şekilde devam edin.</p>
   <textarea id="tpT" rows="9" placeholder="HMT GROSS MARKET&#10;https://maps.app.goo.gl/abc123&#10;Çınar Market https://maps.app.goo.gl/xyz789"></textarea>
   <div class="err" id="tpE" style="margin-top:6px"></div>
   <div style="display:flex;gap:8px"><button class="btn b6" id="tpX">Vazgeç</button><button class="btn b1" id="tpOk">Ekle</button></div>
@@ -425,7 +423,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <label style="margin-top:12px">Sipariş edilecek kalemler</label>
   <div id="oRows"></div>
   <button type="button" class="btn b6" style="margin:0 0 6px" id="oRowAdd">＋ Kalem ekle</button>
-  <p class="mut" style="font-size:11px;margin:0 0 4px">Kalem listede yoksa önce Kalemler sekmesinden ekleyin (mevcut miktarı 0 bırakabilirsiniz).</p>
+  <p class="mut" style="font-size:13px;margin:0 0 4px">Kalem listede yoksa önce Kalemler sekmesinden ekleyin (mevcut miktarı 0 bırakabilirsiniz).</p>
   <div id="ofi" class="hide" style="margin:4px 0 8px"><label style="color:#854d0e">💰 Fiyat ve KDV (sadece yöneticiler görür)</label>
     <label class="chip"><input type="checkbox" id="okc">KDV ekle</label>
     <div id="okw" class="hide" style="margin-top:6px"><div style="display:flex;gap:6px"><input id="okr" type="number" inputmode="decimal" min="0" max="100" step="any" placeholder="KDV %"><select id="okm"><option value="haric">Fiyat KDV hariç</option><option value="dahil">Fiyat KDV dahil</option></select></div><div id="okg" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div>
@@ -436,7 +434,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 </dialog>
 <dialog id="dTas">
   <h3 style="margin-bottom:4px">Azalanlardan sipariş</h3>
-  <p class="mut" style="font-size:11px;margin-bottom:8px">Kritik seviyenin altındaki kalemler. Miktarlar kritik seviyenin 2 katına tamamlayacak şekilde önerildi, değiştirebilirsiniz. Zaten siparişte olanlar işaretsiz gelir.</p>
+  <p class="mut" style="font-size:13px;margin-bottom:8px">Kritik seviyenin altındaki kalemler. Miktarlar kritik seviyenin 2 katına tamamlayacak şekilde önerildi, değiştirebilirsiniz. Zaten siparişte olanlar işaretsiz gelir.</p>
   <label for="tsf">Tedarikçiye göre</label><select id="tsf"></select>
   <div id="tRows" style="margin-top:8px"></div>
   <div class="err" id="tsE" style="margin-top:8px"></div>
@@ -444,7 +442,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 </dialog>
 <dialog id="dTes">
   <h3 id="teT" style="margin-bottom:4px">Teslim al</h3>
-  <p class="mut" style="font-size:11px;margin-bottom:8px">Gelen miktarı kontrol edin. Eksik veya fazla geldiyse değiştirin; 0 yazılan kalem stoğa eklenmez.</p>
+  <p class="mut" style="font-size:13px;margin-bottom:8px">Gelen miktarı kontrol edin. Eksik veya fazla geldiyse değiştirin; 0 yazılan kalem stoğa eklenmez.</p>
   <div id="teRows"></div>
   <label class="chip" style="margin-top:4px"><input type="checkbox" id="teKapat">Eksik kalanı bekleme, siparişi kapat</label>
   <div class="err" id="teE" style="margin-top:8px"></div>
@@ -465,10 +463,10 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 </dialog>
 <dialog id="dTur">
   <h3 id="turH" style="margin-bottom:4px">✓ Teslim Edildi</h3>
-  <p class="mut" style="font-size:12px;margin-bottom:10px">Hangi fotoğrafı ekleyeceksiniz?</p>
+  <p class="mut" style="font-size:14px;margin-bottom:10px">Hangi fotoğrafı ekleyeceksiniz?</p>
   <div id="turBtns" style="display:grid;gap:8px">
-    <button type="button" class="btn b4" style="margin:0;padding:16px;font-size:15px" data-t="irsaliye">📄 İmzalı irsaliye</button>
-    <button type="button" class="btn b6" style="margin:0;padding:16px;font-size:15px" data-t="diger">📝 Diğer</button>
+    <button type="button" class="btn b4" style="margin:0;padding:16px;font-size:18px" data-t="irsaliye">📄 İmzalı irsaliye</button>
+    <button type="button" class="btn b6" style="margin:0;padding:16px;font-size:18px" data-t="diger">📝 Diğer</button>
   </div>
   <div id="turNotW" class="hide" style="margin-top:10px"><label for="turNot">Ne olduğunu yazın</label><input id="turNot" maxlength="100" placeholder="Örn: Hasarlı teslim, müşteri yoktu, eksik mal..."></div>
   <div class="err" id="turE" style="margin-top:6px"></div>
@@ -477,16 +475,16 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 <dialog id="iqDlg" style="width:min(340px,94vw)">
   <h3 style="margin-bottom:4px">📱 İş emri QR kodu</h3>
   <div id="iqS" class="qrBox" style="width:min(260px,70vw);aspect-ratio:1/1;margin:8px auto"></div>
-  <div id="iqN" style="text-align:center;font-weight:900;font-size:20px"></div>
-  <p class="mut" style="font-size:11px;text-align:center;margin:4px 0 0">Okutulunca bu iş emri açılır.</p>
+  <div id="iqN" style="text-align:center;font-weight:900;font-size:24px"></div>
+  <p class="mut" style="font-size:13px;text-align:center;margin:4px 0 0">Okutulunca bu iş emri açılır.</p>
   <div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn b6" id="iqX">Kapat</button><button type="button" class="btn b3" id="iqP">⬇️ PNG indir</button></div>
 </dialog>
 <dialog id="iDlg">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><h3 id="iT">Yeni iş emri</h3><button type="button" class="btn b7" id="iGet" style="width:auto;margin:0;padding:7px 14px;font-size:13px">📋 Getir</button></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><h3 id="iT">Yeni iş emri</h3><button type="button" class="btn b7" id="iGet" style="width:auto;margin:0;padding:7px 14px;font-size:16px">📋 Getir</button></div>
   <div class="grid"><input id="iNo" placeholder="Seri no (MG-0945)"><input id="iTr" type="date"></div>
   <div id="iQrW" style="display:none;align-items:center;gap:10px;margin-top:8px;padding:8px;border:1.5px dashed #cbd5e1;border-radius:8px">
     <div id="iQrS" class="qrBox" style="width:84px;height:84px;flex:0 0 auto"></div>
-    <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:800">📱 QR kod otomatik oluşturuldu</div><div class="mut" style="font-size:11px;margin:2px 0 6px">Seri no değişince QR de güncellenir. Kayıttan sonra etikette ve iş takip formunda yer alır.</div><button type="button" class="btn b6 sm" id="iQrBtn" style="width:auto;margin:0">🔍 Büyüt / PNG indir</button></div>
+    <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800">📱 QR kod otomatik oluşturuldu</div><div class="mut" style="font-size:13px;margin:2px 0 6px">Seri no değişince QR de güncellenir. Kayıttan sonra etikette ve iş takip formunda yer alır.</div><button type="button" class="btn b6 sm" id="iQrBtn" style="width:auto;margin:0">🔍 Büyüt / PNG indir</button></div>
   </div>
   <input id="iMu" placeholder="Müşteri" style="margin-top:6px">
   <input id="iAdi" placeholder="İşin adı (isteğe bağlı)" style="margin-top:6px">
@@ -510,16 +508,16 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div id="bdL"></div>
   <button class="btn b3" id="bdAll" style="width:100%;margin:8px 0">📲 Hepsini özet olarak WhatsApp'a gönder</button>
   <div style="border-top:1px solid #e2e8f0;padding-top:8px">
-    <label style="font-size:11px">WhatsApp numarası (boş bırakırsanız kişiyi/grubu WhatsApp'ta seçersiniz)</label>
+    <label style="font-size:13px">WhatsApp numarası (boş bırakırsanız kişiyi/grubu WhatsApp'ta seçersiniz)</label>
     <input id="bdTel" type="tel" inputmode="tel" placeholder="05xx xxx xx xx">
-    <label style="display:flex;gap:8px;align-items:center;font-size:12px;margin-top:6px"><input id="bdOner" type="checkbox" style="width:auto;margin:0"> İşlem sonrası WhatsApp önerisi göster</label>
-    <div class="mut" style="font-size:10px;margin-top:4px">Bu ayarlar sadece bu cihazda saklanır.</div>
+    <label style="display:flex;gap:8px;align-items:center;font-size:14px;margin-top:6px"><input id="bdOner" type="checkbox" style="width:auto;margin:0"> İşlem sonrası WhatsApp önerisi göster</label>
+    <div class="mut" style="font-size:12px;margin-top:4px">Bu ayarlar sadece bu cihazda saklanır.</div>
   </div>
   <button class="btn b6" id="bdNo" style="width:100%;margin-top:8px">Kapat</button>
 </dialog>
 <dialog id="dWo">
   <h3 id="woT" style="margin-bottom:6px">WhatsApp</h3>
-  <p class="mut" style="font-size:11px;margin-bottom:6px">Mesajı düzenleyebilirsiniz. Gönder'e basınca WhatsApp açılır.</p>
+  <p class="mut" style="font-size:13px;margin-bottom:6px">Mesajı düzenleyebilirsiniz. Gönder'e basınca WhatsApp açılır.</p>
   <textarea id="woM" rows="7" style="width:100%;font:inherit;padding:8px;border:1.5px solid #cbd5e1;border-radius:8px"></textarea>
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="woGec">Geç</button><button class="btn b3" id="woGonder">📲 WhatsApp'ta gönder</button></div>
 </dialog>
@@ -530,7 +528,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 </dialog>
 <dialog id="dDepo">
   <h3 id="dpT" style="margin-bottom:4px">Depoya giriş</h3>
-  <p class="mut" style="font-size:11px;margin-bottom:8px">Her sipariş sütunu için depoya giren kg ve paket / koli sayısını yazın. Boş bıraktığınız sütun kaydedilmez.</p>
+  <p class="mut" style="font-size:13px;margin-bottom:8px">Her sipariş sütunu için depoya giren kg ve paket / koli sayısını yazın. Boş bıraktığınız sütun kaydedilmez.</p>
   <div id="dpRows"></div>
   <div class="err" id="dpE" style="margin-top:6px"></div>
   <div style="display:flex;gap:8px"><button class="btn b6" id="dpNo">Vazgeç</button><button class="btn b3" id="dpOk">Kaydet → BİTEN</button></div>
@@ -542,27 +540,27 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 </dialog>
 <dialog id="qrTara" style="width:min(460px,95vw)">
   <h3 style="margin-bottom:6px">📷 QR okut</h3>
-  <p class="mut" style="font-size:11px;margin-bottom:8px">Etiketteki QR kodu kameraya gösterin. El tipi okuyucu kullanıyorsanız aşağıdaki kutu seçiliyken okutun.</p>
+  <p class="mut" style="font-size:13px;margin-bottom:8px">Etiketteki QR kodu kameraya gösterin. El tipi okuyucu kullanıyorsanız aşağıdaki kutu seçiliyken okutun.</p>
   <video id="qtV" playsinline muted style="width:100%;border-radius:10px;background:#000;max-height:46vh;object-fit:cover"></video>
-  <div class="err" id="qtE" style="margin-top:6px;font-size:12px"></div>
-  <label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-top:8px">Seri no yazın veya okuyucu ile okutun</label>
+  <div class="err" id="qtE" style="margin-top:6px;font-size:14px"></div>
+  <label style="font-size:13px;font-weight:700;color:#64748b;display:block;margin-top:8px">Seri no yazın veya okuyucu ile okutun</label>
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
 <style>
 .rp .rg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .rp .rc{background:#fff;border:2px solid #e2e8f0;border-radius:12px;padding:10px}
-.rp .rc b{display:block;font-size:19px;line-height:1.2}.rp .rc span{font-size:11px;color:#64748b;font-weight:700}
-.rp h4{margin:14px 0 6px;font-size:14px}
-.rp .rt{width:100%;border-collapse:collapse;font-size:12px}
+.rp .rc b{display:block;font-size:23px;line-height:1.2}.rp .rc span{font-size:13px;color:#64748b;font-weight:700}
+.rp h4{margin:14px 0 6px;font-size:17px}
+.rp .rt{width:100%;border-collapse:collapse;font-size:14px}
 .rp .rt th{text-align:right;color:#64748b;font-weight:800;padding:5px 6px;border-bottom:2px solid #e2e8f0;white-space:nowrap}
 .rp .rt td{text-align:right;padding:6px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
 .rp .rt th:first-child,.rp .rt td:first-child{text-align:left;white-space:normal;min-width:110px}
 .rp .rt tr.tp td{font-weight:800;border-top:2px solid #cbd5e1}
 .rp .rw{overflow-x:auto}
 .rp .rb{height:6px;background:#e2e8f0;border-radius:3px;margin-top:3px}.rp .rb i{display:block;height:100%;background:#2563eb;border-radius:3px}
-.rp .rn{font-size:11px;color:#64748b;margin-top:4px}
-.rp .rwarn{background:#fffbe3;border:1px solid #ffe58f;border-radius:8px;padding:8px;font-size:12px;color:#856404;margin-top:6px}
+.rp .rn{font-size:13px;color:#64748b;margin-top:4px}
+.rp .rwarn{background:#fffbe3;border:1px solid #ffe58f;border-radius:8px;padding:8px;font-size:14px;color:#856404;margin-top:6px}
 </style>
 <script>
 /* ===================== RAPORLAR ===================== */
@@ -657,7 +655,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   var tl=function(n){return fmt(n)+" ₺"};
   function ciz(){
     var R=cur,T=R.T,adm=R.adm,o="";
-    o+='<div class="mut" style="font-size:12px;margin-bottom:6px">📅 '+esc(trDate(R.f))+' – '+esc(trDate(R.t))+'</div><div class="rg">'
+    o+='<div class="mut" style="font-size:14px;margin-bottom:6px">📅 '+esc(trDate(R.f))+' – '+esc(trDate(R.t))+'</div><div class="rg">'
       +'<div class="rc"><span>Depoya giren (üretilen) kg</span><b>'+esc(fmt(T.de))+'</b></div>'
       +'<div class="rc"><span>Ekstruder film kg</span><b>'+esc(fmt(T.ek))+'</b></div>'
       +'<div class="rc"><span>Sevk edilen kg</span><b>'+esc(fmt(T.sk))+'</b></div>'
@@ -782,7 +780,7 @@ function errText(e){const m={"auth/email-already-in-use":"Bu kullanıcı adı za
   if(/INVALID_LOGIN_CREDENTIALS|INVALID_PASSWORD|EMAIL_NOT_FOUND/.test(ms))return "Kullanıcı adı veya şifre hatalı (ya da bu kullanıcı kayıtlı değil).";return m[e.code]||m[ms.split(":")[0]]||ms}
 
 if(CFG.apiKey.startsWith("BURAYA")){
-  document.body.innerHTML='<div style="padding:24px;font-size:16px"><b>Ayar eksik.</b><br><br>Dosyanın içindeki <code>CFG</code> bölümüne Firebase apiKey ve appId değerlerini yazın.</div>';
+  document.body.innerHTML='<div style="padding:24px;font-size:19px"><b>Ayar eksik.</b><br><br>Dosyanın içindeki <code>CFG</code> bölümüne Firebase apiKey ve appId değerlerini yazın.</div>';
   throw new Error("Firebase ayarı eksik");
 }
 window.__st={sdk:typeof firebase!=="undefined",init:0,auth:0,t0:Date.now()};
@@ -1064,7 +1062,7 @@ function irsListe(u){
 function irsHtml(u){
   const L=irsListe(u),id=esc(u.id),sevk=mod==="sevk",
     zt=t=>t?esc(new Date(t).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})):"";
-  let h=L.map(x=>`<div style="display:flex;gap:6px;align-items:stretch"><button type="button" class="dosya" style="flex:1;width:auto;min-width:0" data-a="irs" data-id="${id}" data-k="${esc(x.k||"")}"><img class="th" src="${x.f}" alt=""><div class="dm"><div>${turEtiket({irsTur:x.tur,irsNot:x.not})}</div><div class="dd">${zt(x.tarih)}${x.ceken?" · "+esc(x.ceken):""}</div></div><span class="dz">🔍</span></button>${sevk?`<button type="button" class="btn b5" style="width:46px;margin:8px 0 0;padding:0;font-size:16px" data-a="irsdel" data-id="${id}" data-k="${esc(x.k||"")}" aria-label="Fotoğrafı kaldır">🗑️</button>`:""}</div>`).join("");
+  let h=L.map(x=>`<div style="display:flex;gap:6px;align-items:stretch"><button type="button" class="dosya" style="flex:1;width:auto;min-width:0" data-a="irs" data-id="${id}" data-k="${esc(x.k||"")}"><img class="th" src="${x.f}" alt=""><div class="dm"><div>${turEtiket({irsTur:x.tur,irsNot:x.not})}</div><div class="dd">${zt(x.tarih)}${x.ceken?" · "+esc(x.ceken):""}</div></div><span class="dz">🔍</span></button>${sevk?`<button type="button" class="btn b5" style="width:46px;margin:8px 0 0;padding:0;font-size:19px" data-a="irsdel" data-id="${id}" data-k="${esc(x.k||"")}" aria-label="Fotoğrafı kaldır">🗑️</button>`:""}</div>`).join("");
   if(sevk&&u.durum==="sevk_edildi"&&L.length<IRSMAX)h+=`<button type="button" class="btn b4" style="margin-top:8px" data-a="irsadd" data-id="${id}">➕ Fotoğraf ekle (${L.length}/${IRSMAX})</button>`;
   return h;
 }
@@ -1084,18 +1082,18 @@ async function irsSil(u,k){
 /* ---------- Kayıt ---------- */
 function formTemizle(){
   editId="";fotos=[];
-  ["kg","mu","ur","no","ad","hu","sfi"].forEach(i=>$(i).value="");$("sfe").value="kg";kdvSet("sevk",null);$("pk").value="1";$("tr").valueAsDate=new Date();$("du").value="hazir";
+  ["mu","ur","no","ad","hu","sfi"].forEach(i=>$(i).value="");$("sfe").value="kg";kdvSet("sevk",null);$("tr").valueAsDate=new Date();$("du").value="hazir";
   fotoCiz();$("bSave").textContent=M().kayit;$("bCancel").classList.add("hide");
 }
 $("bCancel").onclick=formTemizle;
 $("bSave").onclick=async()=>{
-  const kg=parseFloat($("kg").value)||0,pk=parseInt($("pk").value)||0;
   if(!editId&&!fotos.length){toast("Önce en az bir fotoğraf ekleyin.");return}
-  if(kg<=0&&pk<=0){toast("Kilo veya paket sayısını girin.");return}
   if(isAdmin()&&kdvGet("sevk")===null){toast("KDV oranı 0 ile 100 arasında olmalı.");return}
   let adres=$("ad").value.trim(),hu=$("hu").value.trim(),url=safeUrl(hu);
   if(hu&&!url&&!adres)adres=hu;
-  const d={musteri:$("mu").value.trim()||"Etikete Bakınız",urun:$("ur").value.trim()||"Etikete Bakınız",kg,paket:pk,tarih:$("tr").value,durum:$("du").value,not:$("no").value.trim(),adres,haritaUrl:url};
+  const d={musteri:$("mu").value.trim()||"Etikete Bakınız",urun:$("ur").value.trim()||"Etikete Bakınız",tarih:$("tr").value,durum:$("du").value,not:$("no").value.trim(),adres,haritaUrl:url};
+  /* Kg / paket sadece iş emrinde «Depoya girişi kaydet» ile girilir; burada yeni kayıtta 0, düzenlemede mevcut değer korunur */
+  if(!editId){d.kg=0;d.paket=0}
   const b=$("bSave");b.disabled=true;
   try{
     {const fl=await fotoHazirla(fotos);d.foto=fl[0]||null;d.fotolar=fl.length>1?fl.slice(1):null}
@@ -1110,7 +1108,7 @@ $("bSave").onclick=async()=>{
 function duzenle(u){
   editId=u.id;
   $("mu").value=u.musteri==="Etikete Bakınız"?"":u.musteri||"";$("ur").value=u.urun==="Etikete Bakınız"?"":u.urun||"";
-  $("kg").value=u.kg;$("pk").value=u.paket;$("tr").value=u.tarih;$("du").value=u.durum==="sevk_edildi"?"sevk_edilecek":u.durum;
+  $("tr").value=u.tarih;$("du").value=u.durum==="sevk_edildi"?"sevk_edilecek":u.durum;
   $("no").value=u.not||"";$("ad").value=u.adres||"";$("hu").value=u.haritaUrl||"";{const f=(fyat.sevk||{})[u.id];$("sfi").value=f?f.tutar:"";$("sfe").value=f?f.esas:"kg";kdvSet("sevk",f)}
   fotos=fotoListe(u);fotoCiz();
   $("bSave").textContent="💾 Değişiklikleri Kaydet";$("bCancel").classList.remove("hide");window.scrollTo({top:0,behavior:"smooth"});
@@ -1147,13 +1145,13 @@ function kart(u){
   const nx=(geri?bt(geri[0],geri[1],geri[2],!both):"")+(ileri?bt(ileri[0],ileri[1],ileri[2],!both):"");
   const eb=`<button class="btn b6" ${canDel?"":'style="grid-column:span 2" '}data-a="edit" data-id="${id}">✏️ Düzenle</button>`;
   const db2=canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:"";
-  const onb=(u.durum==="sevk_edildi"&&mod==="sevk"&&isAdmin())?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:15px" data-a="onay" data-id="${id}">✅ ONAYLA (Dosyalara taşı)</button>`:"";
+  const onb=(u.durum==="sevk_edildi"&&mod==="sevk"&&isAdmin())?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:18px" data-a="onay" data-id="${id}">✅ ONAYLA (Dosyalara taşı)</button>`:"";
   const K2=Array.isArray(u.kalem)&&u.kalem.length>1?u.kalem:null;
-  const mid=K2?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün</small><b>${esc(u.urunAd||u.urun)}</b></div></div>`+K2.map(k=>`<div style="margin:12px 0 4px;font-weight:800;font-size:13px;color:#334155">${esc(k.ad)}</div><div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(k.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(k.paket))} Adet</b></div></div>`).join(""):`  <div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(u.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(u.paket))} Adet</b></div></div>
+  const mid=K2?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün</small><b>${esc(u.urunAd||u.urun)}</b></div></div>`+K2.map(k=>`<div style="margin:12px 0 4px;font-weight:800;font-size:16px;color:#334155">${esc(k.ad)}</div><div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(k.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(k.paket))} Adet</b></div></div>`).join(""):`  <div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(u.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(u.paket))} Adet</b></div></div>
   ${m||p?`<div class="grid" style="margin-top:8px">${m?`<div class="info full"><small>Müşteri</small><b>${esc(u.musteri)}</b></div>`:""}${p?ebatBlok(u.urun):""}</div>`:""}
 `;
   return `<div class="item ${c[0]}">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700;color:#64748b">Tarih: ${esc(trDate(u.tarih))}</span><span class="badge ${c[1]}">${c[2]}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:14px;font-weight:700;color:#64748b">Tarih: ${esc(trDate(u.tarih))}</span><span class="badge ${c[1]}">${c[2]}</span></div>
   ${fotoListe(u).map(s=>`<img loading="lazy" src="${s}" alt="Etiket">`).join("")}
   ${mid}
   ${u.adres?`<div class="addr">📍 <b>Teslimat adresi:</b> ${esc(u.adres)}</div>`:""}
@@ -1224,8 +1222,8 @@ const izEtkin=(k0,k)=>{const v=k0.izin?k0.izin[k]:undefined;return typeof v==="b
 const izKayit={},izAcik=new Set();
 function izOzet(det,k0){const n=Object.keys(k0.izin||{}).length,sp=det&&det.querySelector("[data-izs]");if(sp){sp.textContent=n?"· "+n+" özel ayar":"· rol şablonu";sp.style.color=n?"#b45309":"#64748b"}}
 function izHtml(id,k){const n=k.izin?Object.keys(k.izin).length:0,e=esc(id),a=esc(k.ad||"");
-  return `<details data-izd="${e}" ${izAcik.has(id)?"open":""} style="padding:6px 0 8px;border-bottom:1px solid #e2e8f0"><summary style="font-size:12px;font-weight:700;cursor:pointer">🔐 Kişiye özel izinler <span data-izs style="color:${n?"#b45309":"#64748b"}">${n?"· "+n+" özel ayar":"· rol şablonu"}</span></summary>`
-  +IZ_GRUP.map(([t,L])=>`<div style="margin-top:6px;font-size:11px;font-weight:700;color:#64748b">${t}</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">${L.map(([key,ad])=>`<label class="chip" style="padding:4px 9px;font-size:12px"><input type="checkbox" data-iz="${key}" data-uz="${e}" data-ad="${a}"${izEtkin(k,key)?" checked":""}> ${ad}</label>`).join("")}</div>`).join("")
+  return `<details data-izd="${e}" ${izAcik.has(id)?"open":""} style="padding:6px 0 8px;border-bottom:1px solid #e2e8f0"><summary style="font-size:14px;font-weight:700;cursor:pointer">🔐 Kişiye özel izinler <span data-izs style="color:${n?"#b45309":"#64748b"}">${n?"· "+n+" özel ayar":"· rol şablonu"}</span></summary>`
+  +IZ_GRUP.map(([t,L])=>`<div style="margin-top:6px;font-size:13px;font-weight:700;color:#64748b">${t}</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">${L.map(([key,ad])=>`<label class="chip" style="padding:4px 9px;font-size:14px"><input type="checkbox" data-iz="${key}" data-uz="${e}" data-ad="${a}"${izEtkin(k,key)?" checked":""}> ${ad}</label>`).join("")}</div>`).join("")
   +`<button class="btn sm b6" style="margin-top:8px" data-izreset data-uz="${e}" data-ad="${a}">↩️ Rol şablonuna dön</button></details>`}
 async function kullanicilar(){
   try{
@@ -1233,7 +1231,7 @@ async function kullanicilar(){
     Object.keys(izKayit).forEach(x=>delete izKayit[x]);Object.keys(v).forEach(x=>{izKayit[x]=v[x]});
     $("ulist").innerHTML=Object.keys(v).map(id=>{const k=v[id],self=id===user.uid,da=`data-u="${esc(id)}" data-ad="${esc(k.ad||"")}"`;
       const opts=(ROLLER.includes(k.rol)?ROLLER:[k.rol].concat(ROLLER)).filter(Boolean).map(r=>`<option${r===k.rol?" selected":""}>${esc(r)}</option>`).join("");
-      return `<div class="uw"><div class="urow"><div><b>${esc(k.ad)}</b> <span style="color:#64748b">@${esc(k.kullanici)}</span><br><small>${k.onay?"Onaylı":"⏳ Onay bekliyor — rolü kontrol edip onaylayın"}${k.yonetici?" · Yönetici":""}</small><br>${self?`<small>${esc(k.rol||"")}</small>`:`<select ${da} data-f="rol" style="margin-top:4px;font-size:12px;padding:4px">${opts}</select>`}</div>
+      return `<div class="uw"><div class="urow"><div><b>${esc(k.ad)}</b> <span style="color:#64748b">@${esc(k.kullanici)}</span><br><small>${k.onay?"Onaylı":"⏳ Onay bekliyor — rolü kontrol edip onaylayın"}${k.yonetici?" · Yönetici":""}</small><br>${self?`<small>${esc(k.rol||"")}</small>`:`<select ${da} data-f="rol" style="margin-top:4px;font-size:14px;padding:4px">${opts}</select>`}</div>
       <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">${self?"<small>Siz</small>":
       `<button class="btn sm ${k.onay?"b5":"b3"}" ${da} data-f="onay" data-v="${!k.onay}">${k.onay?"Engelle":"Onayla"}</button>
        <button class="btn sm b6" ${da} data-f="yonetici" data-v="${!k.yonetici}">${k.yonetici?"Yöneticiliği al":"Yönetici yap"}</button>
@@ -1567,8 +1565,8 @@ function kkart(k){
     ${ph?`<img class="th" loading="lazy" src="${ph}" alt="">`:""}
     <div style="flex:1;min-width:0">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(k.ad)}</b><span class="badge ${c[1]}">${c[2]}</span></div>
-      <div class="sub" style="font-size:13px">${chips||"-"}${bek.length?' <span title="Siparişte">🧾</span>':""}</div>
-      ${meta?`<div class="sub" style="font-size:11px">${meta}</div>`:""}
+      <div class="sub" style="font-size:16px">${chips||"-"}${bek.length?' <span title="Siparişte">🧾</span>':""}</div>
+      ${meta?`<div class="sub" style="font-size:13px">${meta}</div>`:""}
     </div><span class="chev">${open?"▲":"▼"}</span>
   </div>
   <div class="dt${open?"":" hide"}">
@@ -1726,7 +1724,7 @@ function tkart(t){
   const tels=[t.tel,t.tel2].filter(Boolean).map(x=>`<a href="tel:${esc(String(x).replace(/[^\d+]/g,""))}">📞 ${esc(x)}</a>`).join(" · ");
   return `<div class="item c hazir-border">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(t.firma)}</b>${acik?`<span class="badge badge-sevk">${acik} SİPARİŞTE</span>`:""}</div>
-  ${t.yetkili||tels?`<div class="sub" style="font-size:13px">${t.yetkili?"👤 "+esc(t.yetkili)+" ":""}${tels}</div>`:""}
+  ${t.yetkili||tels?`<div class="sub" style="font-size:16px">${t.yetkili?"👤 "+esc(t.yetkili)+" ":""}${tels}</div>`:""}
   ${t.mail?`<div class="sub"><a href="mailto:${esc(t.mail)}">✉️ ${esc(t.mail)}</a></div>`:""}
   ${t.adres?`<div class="sub">📍 ${esc(t.adres)}</div>`:""}
   ${t.not?`<div class="sub">📌 ${esc(t.not)}</div>`:""}
@@ -1792,7 +1790,7 @@ function oKatHtml(all,w){
       it.R.sort((a,b)=>(b.o.eklenmeTarihi||0)-(a.o.eklenmeTarihi||0));
       const son=it.R.find(r=>r.p!=null);
       return `<div class="item c hazir-border" style="padding:8px 10px">
-        <div style="display:flex;justify-content:space-between;gap:6px;align-items:center"><b class="nm">${esc(it.ad)}${it.eb?" · "+esc(it.eb):""}</b>${adm&&son?`<span class="sub" style="margin:0;font-size:11px;flex:none">Son: <b>${esc(para(son.p))}</b> / ${esc((UL[son.x.birim]||son.x.birim).toLowerCase())}</span>`:""}</div>
+        <div style="display:flex;justify-content:space-between;gap:6px;align-items:center"><b class="nm">${esc(it.ad)}${it.eb?" · "+esc(it.eb):""}</b>${adm&&son?`<span class="sub" style="margin:0;font-size:13px;flex:none">Son: <b>${esc(para(son.p))}</b> / ${esc((UL[son.x.birim]||son.x.birim).toLowerCase())}</span>`:""}</div>
         ${it.R.map(oSatirHtml).join("")}</div>`}).join("")}).join("")
 }
 function oSatirHtml(r){
@@ -1801,16 +1799,16 @@ function oSatirHtml(r){
     id=esc(o.id);let fy="";
   if(p!=null){const v=kdvHesap({tutar:+p,kdv:pf.kdv,kdvDahil:pf.kdvDahil},q);
     fy=`<div class="sub" style="color:#854d0e">💰 <b>${esc(para(p))}</b> / ${esc(u.toLowerCase())}${pf.kdv!=null?" · KDV %"+esc(fmt(pf.kdv))+(pf.kdvDahil?" dahil":" hariç"):""} → ${topTxt(v)}</div>`}
-  return `<div style="padding:6px 0;border-top:1px solid #f1f5f9;font-size:12.5px">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span><b>${esc(tarih(o.eklenmeTarihi))}</b> · ${qt}</span><span class="badge ${ok?"badge-hazir":"badge-sevk"}" style="font-size:9px;padding:3px 6px">${ok?"STOKTA":"SİPARİŞTE"}</span></div>
+  return `<div style="padding:6px 0;border-top:1px solid #f1f5f9;font-size:15px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span><b>${esc(tarih(o.eklenmeTarihi))}</b> · ${qt}</span><span class="badge ${ok?"badge-hazir":"badge-sevk"}" style="font-size:11px;padding:3px 6px">${ok?"STOKTA":"SİPARİŞTE"}</span></div>
     <div class="sub">🏢 ${esc(o.firma||"-")}${ok&&o.teslimTarihi?" · teslim "+esc(tarih(o.teslimTarihi)):""}${o.not?" · 📌 "+esc(o.not):""}</div>${fy}
     ${ok?"":`<div class="acts s" style="margin-top:5px"><button class="btn b3 sm" style="flex:3" data-a="in" data-id="${id}">✅ Geldi — Stokta</button><button class="btn b6 sm i" data-a="edit" data-id="${id}">✏️</button></div>`}</div>`}
 function okart(o){
   const id=esc(o.id),ok=o.durum==="geldi",canDel=isAdmin()||(o.ekleyenUid&&o.ekleyenUid===user.uid),t=sTed.find(x=>x.id===o.tedId),L=satirlar(o),
         kismi=!ok&&L.some(x=>+x.gelen>0),pf=isAdmin()?(fyat.siparis||{})[o.id]:null,top=isAdmin()?sipTop(o):null;
   return `<div class="item c ${ok?"hazir-border":"sevk-border"}">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(o.firma||"-")}</b><span class="sub" style="margin:0;font-size:11px;flex:none">${esc(tarih(o.eklenmeTarihi))}</span><span class="badge ${ok?"badge-hazir":"badge-sevk"}">${ok?"STOKTA":kismi?"KISMİ GELDİ":"SİPARİŞTE"}</span></div>
-  <div style="font-size:12.5px;color:#0f172a;margin-top:3px;line-height:1.45">${L.map((x,i)=>"• "+esc(satirTxt(x,ok))+(pf&&pf.f&&pf.f[i]!=null?" × "+esc(para(pf.f[i])):"")).join("<br>")}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(o.firma||"-")}</b><span class="sub" style="margin:0;font-size:13px;flex:none">${esc(tarih(o.eklenmeTarihi))}</span><span class="badge ${ok?"badge-hazir":"badge-sevk"}">${ok?"STOKTA":kismi?"KISMİ GELDİ":"SİPARİŞTE"}</span></div>
+  <div style="font-size:15px;color:#0f172a;margin-top:3px;line-height:1.45">${L.map((x,i)=>"• "+esc(satirTxt(x,ok))+(pf&&pf.f&&pf.f[i]!=null?" × "+esc(para(pf.f[i])):"")).join("<br>")}</div>
   ${top?`<div class="addr" style="background:#fefce8;border-color:#fde68a;color:#854d0e">💰 ${topTxt(top)}</div>`:""}
   ${o.not?`<div class="sub">📌 ${esc(o.not)}</div>`:""}
   ${!ok&&t&&t.tel?`<div class="sub">${t.yetkili?"👤 "+esc(t.yetkili)+" ":""}<a href="tel:${esc(String(t.tel).replace(/[^\d+]/g,""))}">📞 ${esc(t.tel)}</a></div>`:""}
@@ -1830,7 +1828,7 @@ function teslimAl(o){
   tesO=o;const L=satirlar(o);
   $("teT").textContent=(o.firma||"Sipariş")+" — teslim al";$("teE").textContent="";$("teKapat").checked=false;
   $("teRows").innerHTML=L.map((x,i)=>{const u=esc(UL[x.birim]||x.birim);
-    return `<div class="urow2" style="grid-template-columns:1fr 92px;margin-bottom:8px"><div><b style="font-size:13px">${esc(x.ad||"")}${x.ebat?" · "+esc(x.ebat):""}</b><div class="sub" style="font-size:11px">Sipariş ${esc(fmt(x.miktar))} ${u}${+x.gelen>0?" · daha önce gelen "+esc(fmt(x.gelen)):""}</div></div><div><input type="number" data-i="${i}" inputmode="decimal" min="0" step="any" value="${esc(kalanQ(x))}" style="padding:8px"><div class="sub" style="text-align:center;font-size:10px">${u} gelen</div></div></div>`}).join("");
+    return `<div class="urow2" style="grid-template-columns:1fr 92px;margin-bottom:8px"><div><b style="font-size:16px">${esc(x.ad||"")}${x.ebat?" · "+esc(x.ebat):""}</b><div class="sub" style="font-size:13px">Sipariş ${esc(fmt(x.miktar))} ${u}${+x.gelen>0?" · daha önce gelen "+esc(fmt(x.gelen)):""}</div></div><div><input type="number" data-i="${i}" inputmode="decimal" min="0" step="any" value="${esc(kalanQ(x))}" style="padding:8px"><div class="sub" style="text-align:center;font-size:12px">${u} gelen</div></div></div>`}).join("");
   $("dTes").showModal()}
 $("teNo").onclick=()=>$("dTes").close();
 $("teOk").onclick=async()=>{
@@ -1885,7 +1883,7 @@ function oFyGec(r){const box=r.querySelector(".ph");if(!box)return;
   const kid=r.querySelector('[data-f="k"]').value,u=r.querySelector('[data-f="u"]').value;
   if(!kid||!u){box.innerHTML="";return}
   const H=fyGecmis(kid,u,oEdit?oEdit.id:"").slice(0,4),ul=(UL[u]||u).toLowerCase();
-  box.innerHTML=H.length?`<div class="mut" style="font-size:10px;font-weight:800;margin:6px 0 3px">GEÇMİŞ ALIŞLAR (dokun: fiyatı kullan)</div>`+H.map(h=>`<div data-p="${esc(h.p)}" style="display:flex;justify-content:space-between;gap:6px;background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:5px 8px;margin-bottom:3px;font-size:12px;color:#854d0e;cursor:pointer"><span>${esc(tarih(h.t))} · ${esc(fmt(h.q))} ${esc(ul)}${h.firma?" · "+esc(h.firma):""}</span><b>${esc(para(h.p))}${h.kdv!=null?'<small style="font-weight:600"> +KDV %'+esc(fmt(h.kdv))+"</small>":""}</b></div>`).join(""):`<div class="mut" style="font-size:11px;margin-top:6px">Bu kalemi daha önce fiyatlı sipariş etmediniz.</div>`}
+  box.innerHTML=H.length?`<div class="mut" style="font-size:12px;font-weight:800;margin:6px 0 3px">GEÇMİŞ ALIŞLAR (dokun: fiyatı kullan)</div>`+H.map(h=>`<div data-p="${esc(h.p)}" style="display:flex;justify-content:space-between;gap:6px;background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:5px 8px;margin-bottom:3px;font-size:14px;color:#854d0e;cursor:pointer"><span>${esc(tarih(h.t))} · ${esc(fmt(h.q))} ${esc(ul)}${h.firma?" · "+esc(h.firma):""}</span><b>${esc(para(h.p))}${h.kdv!=null?'<small style="font-weight:600"> +KDV %'+esc(fmt(h.kdv))+"</small>":""}</b></div>`).join(""):`<div class="mut" style="font-size:13px;margin-top:6px">Bu kalemi daha önce fiyatlı sipariş etmediniz.</div>`}
 $("oRows").onchange=e=>{const t=e.target,r=t.closest(".orow");if(!r)return;if(t.dataset.f==="k")r.querySelector('[data-f="u"]').innerHTML=uOpts(t.value);if(t.dataset.f==="k"||t.dataset.f==="u")oFyGec(r)};
 $("oRows").onclick=e=>{const ph=e.target.closest("[data-p]");if(ph){const r=ph.closest(".orow");r.querySelector('[data-f="p"]').value=ph.dataset.p;oTopla();return}
   if(!e.target.dataset.x)return;const r=e.target.closest(".orow");if($("oRows").children.length>1)r.remove();else{r.querySelector('[data-f="k"]').value="";r.querySelector('[data-f="u"]').innerHTML=uOpts("");r.querySelector('[data-f="q"]').value="";oFyGec(r)}};
@@ -1957,8 +1955,8 @@ function tasDraw(){
   const f=$("tsf").value,R=A.filter(a=>f==="*"||gv((a.k.tedarikci||"").trim())===f);
   $("tRows").innerHTML=R.length?R.map(a=>`<div class="tas-r" data-k="${esc(a.k.id)}" data-u="${a.u}" style="display:grid;grid-template-columns:26px 1fr 84px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #e2e8f0">
     <input type="checkbox" data-c${a.bek?"":" checked"} style="width:20px;height:20px;padding:0">
-    <div><b style="font-size:13px">${esc(a.k.ad)}${a.k.ebat?" · "+esc(a.k.ebat):""}</b><div class="sub" style="font-size:11px">Mevcut ${esc(fmt(a.mik))} ${esc(UL[a.u])}${a.min>0?" · kritik "+esc(fmt(a.min)):""}${a.bek?" · 🧾 siparişte":""}</div></div>
-    <div><input type="number" data-q inputmode="decimal" min="0" step="any" value="${esc(a.sug)}" placeholder="Miktar" style="padding:8px"><div class="sub" style="text-align:center;font-size:10px">${esc(UL[a.u])}</div></div></div>`).join(""):'<div class="empty">Azalan veya biten kalem yok.</div>';
+    <div><b style="font-size:16px">${esc(a.k.ad)}${a.k.ebat?" · "+esc(a.k.ebat):""}</b><div class="sub" style="font-size:13px">Mevcut ${esc(fmt(a.mik))} ${esc(UL[a.u])}${a.min>0?" · kritik "+esc(fmt(a.min)):""}${a.bek?" · 🧾 siparişte":""}</div></div>
+    <div><input type="number" data-q inputmode="decimal" min="0" step="any" value="${esc(a.sug)}" placeholder="Miktar" style="padding:8px"><div class="sub" style="text-align:center;font-size:12px">${esc(UL[a.u])}</div></div></div>`).join(""):'<div class="empty">Azalan veya biten kalem yok.</div>';
 }
 function tasAc(){$("tsE").textContent="";$("tsf").innerHTML="";tasDraw();$("dTas").showModal()}
 $("tsf").onchange=()=>tasDraw();
@@ -2006,8 +2004,8 @@ function akart(a){
         tels=[a.tel,a.tel2].filter(Boolean).map(x=>`<a href="tel:${esc(String(x).replace(/[^\d+]/g,""))}">📞 ${esc(x)}</a>`).join(" · ");
   return `<div class="item c tamam-border">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(a.ad)}</b>${a.sehir?`<span class="badge" style="background:#64748b">${esc(a.sehir)}</span>`:""}</div>
-  ${a.yetkili||tels?`<div class="sub" style="font-size:13px">${a.yetkili?"👤 "+esc(a.yetkili)+" ":""}${tels}</div>`:""}
-  ${a.adres?`<div class="sub" style="font-size:12.5px;color:#334155">📍 ${esc(a.adres)}</div>`:""}
+  ${a.yetkili||tels?`<div class="sub" style="font-size:16px">${a.yetkili?"👤 "+esc(a.yetkili)+" ":""}${tels}</div>`:""}
+  ${a.adres?`<div class="sub" style="font-size:15px;color:#334155">📍 ${esc(a.adres)}</div>`:""}
   ${a.not?`<div class="sub">📌 ${esc(a.not)}</div>`:""}
   <div class="acts s"><button class="btn b1" data-a="sevk" data-id="${id}">🚚 Sevkiyat oluştur</button><button class="btn b7" data-a="map" data-id="${id}">🗺️ Harita</button>
   <button class="btn b6 i" data-a="edit" data-id="${id}">✏️</button>${canDel?`<button class="btn b5 i" data-a="del" data-id="${id}">🗑️</button>`:""}</div></div>`;
@@ -2027,7 +2025,7 @@ function adrAra(){
   const box=$("adrRes");if(box.classList.contains("hide"))return;
   const w=trn($("adrQ").value).trim().split(/\s+/).filter(Boolean),
     R=sAdr.filter(a=>{const h=trn([a.ad,a.yetkili,a.tel,a.tel2,a.sehir,a.adres,a.not].join(" "));return w.every(t=>h.includes(t))}).sort(byTr("ad"));
-  box.innerHTML=R.length?R.map(a=>`<div data-id="${esc(a.id)}" style="padding:9px 11px;border-bottom:1px solid #e2e8f0;cursor:pointer"><b style="font-size:13px">${esc(a.ad)}</b>${a.sehir?` <span class="mut" style="font-size:11px">· ${esc(a.sehir)}</span>`:""}${a.adres?`<div class="sub" style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.adres)}</div>`:""}</div>`).join(""):`<div style="padding:12px;text-align:center;color:#94a3b8;font-weight:700">${sAdr.length?"Aramaya uygun adres yok":"Kayıtlı adres yok"}</div>`}
+  box.innerHTML=R.length?R.map(a=>`<div data-id="${esc(a.id)}" style="padding:9px 11px;border-bottom:1px solid #e2e8f0;cursor:pointer"><b style="font-size:16px">${esc(a.ad)}</b>${a.sehir?` <span class="mut" style="font-size:13px">· ${esc(a.sehir)}</span>`:""}${a.adres?`<div class="sub" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.adres)}</div>`:""}</div>`).join(""):`<div style="padding:12px;text-align:center;color:#94a3b8;font-weight:700">${sAdr.length?"Aramaya uygun adres yok":"Kayıtlı adres yok"}</div>`}
 function adrAc(){$("adrRes").classList.remove("hide");adrAra()}
 $("adrQ").addEventListener("focus",adrAc);$("adrQ").addEventListener("input",adrAc);
 $("adrRes").addEventListener("mousedown",e=>e.preventDefault());
@@ -2241,19 +2239,19 @@ function isListele(){
   const st=fbDurum("iq"),AG=AS.filter(([k])=>asamaGor(k)),EG=isE.filter(e=>asamaGor(e.asama));
   if(!asamaGor(iTab)&&AG.length)iTab=AG[0][0];
   if(yRol()&&yRol().goster&&!isAdmin())$("mt").textContent=yRol().goster.map(k=>ASL[k]).join(" + ");
-  $("iTabs").innerHTML=AG.map(([k,l])=>{const n=isE.filter(e=>e.asama===k&&!e.aktarildi).length;return `<button data-t="${k}" style="font-size:10px" class="${k===iTab?"on":""}">${l}${k!=="bitti"&&n?" ("+n+")":""}</button>`}).join("");
+  $("iTabs").innerHTML=AG.map(([k,l])=>{const n=isE.filter(e=>e.asama===k&&!e.aktarildi).length;return `<button data-t="${k}" style="font-size:12px" class="${k===iTab?"on":""}">${l}${k!=="bitti"&&n?" ("+n+")":""}</button>`}).join("");
   /* Arama/filtre açıkken sekmeye bakılmaz: tüm aşamalarda ve aktarılmışlar dahil aranır */
   const L=st.aktif?EG.filter(e=>fbEsles(st,[e.no,e.musteri,e.stok,e.isAdi,e.fx,e.formul,e.urunAdi,e.renk,e.notU,e.notB,e.ekleyen,ASL[e.asama]],e.spTarih||e.eklenmeTarihi)):EG.filter(e=>e.asama===iTab&&!e.aktarildi);
   fbSay("iq",L.length,EG.length,"iş emri");
-  $("iList").innerHTML=(st.aktif?'<div class="mut" style="font-size:11px;margin:0 0 6px">🔎 Arama/filtre açık: tüm aşamalarda gösteriliyor</div>':"")+(L.length?L.map(isKart).join(""):'<div class="empty">'+(st.aktif?"Aramaya uygun iş emri yok.":"Bu aşamada iş emri yok.")+'</div>');
+  $("iList").innerHTML=(st.aktif?'<div class="mut" style="font-size:13px;margin:0 0 6px">🔎 Arama/filtre açık: tüm aşamalarda gösteriliyor</div>':"")+(L.length?L.map(isKart).join(""):'<div class="empty">'+(st.aktif?"Aramaya uygun iş emri yok.":"Bu aşamada iş emri yok.")+'</div>');
 }
 function isKart(e){
   const id=esc(e.id),o=asOrd(e),i=o.indexOf(e.asama),nx=o[i+1],canDel=isAdmin()||(islemYap("isSil")&&e.ekleyenUid&&e.ekleyenUid===user.uid);
   const C=icols(e).map(c=>`<div class="info" style="margin-top:4px"><b>${esc(fmt(c.kg))} kg</b> · ${esc(c.en||"-")} · ${esc(c.mikron||"-")}µ · ${esc(c.korona||"-")}${c.boy?" · boy "+esc(c.boy):""}</div>`).join("");
   const lg=Object.entries(e.log||{}).map(([k,v])=>`<div class="who">${esc(ASL[k]||k)}: ${v.kg!=null?esc(fmt(v.kg))+" kg":""}${v.paket?" · "+esc(fmt(v.paket))+" adet":""} — ${esc(v.kim||"")} ${esc(tarih(v.zaman))}${k==="depo"&&Array.isArray(v.kalem)?"<br>"+v.kalem.map((x,i)=>{const c=icols(e)[i]||{};return esc([i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - ")+": "+fmt(x&&x.kg)+" kg · "+fmt(x&&x.paket)+" paket")}).join("<br>"):""}</div>`).join("");
   return `<div class="item sevk-border">
-  <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:16px">${esc(e.no)}</b><span class="badge badge-sevk">${esc(ASL[e.asama]||e.asama)}</span></div>
-  <div class="sub" style="font-size:13px;color:#0f172a;font-weight:700">${esc(e.musteri)}${e.isAdi?" · "+esc(e.isAdi):""}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:19px">${esc(e.no)}</b><span class="badge badge-sevk">${esc(ASL[e.asama]||e.asama)}</span></div>
+  <div class="sub" style="font-size:16px;color:#0f172a;font-weight:700">${esc(e.musteri)}${e.isAdi?" · "+esc(e.isAdi):""}</div>
   <div class="sub">${esc(e.stok||"")}${e.formul?" · "+esc(e.formul):""}</div>
   <div class="sub">${e.spTarih?"Sipariş: "+esc(trDate(e.spTarih)):""}${e.fx?" · "+esc(e.fx):""}${e.baskiVar?" · 🖨️ baskılı":""}</div>
   ${C}
@@ -2261,9 +2259,9 @@ function isKart(e){
   ${e.notU?`<div class="note">📌 <b>Üretim:</b> ${notHtml(e.notU)}</div>`:""}
   ${e.baskiVar||e.notB?`<div class="addr">🖨️ ${esc(e.urunAdi||"")} ${e.renk?"· "+esc(e.renk):""}${e.notB?"<br>"+notHtml(e.notB):""}</div>`:""}
   ${lg}
-  <div class="acts">${e.asama==="etiket"&&asamaYap("etiket")?`<button class="btn b7" style="grid-column:span 2;padding:14px;font-size:15px" data-a="etik" data-id="${id}">🏷️ Etiket hazırla</button>`:""}${nx&&asamaYap(e.asama)?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:15px" data-a="ileri" data-id="${id}">${e.asama==="depo"?"📦 Depoya girişi kaydet → BİTEN":"✓ Bitti → "+esc(ASL[nx])}</button>`:""}
+  <div class="acts">${e.asama==="etiket"&&asamaYap("etiket")?`<button class="btn b7" style="grid-column:span 2;padding:14px;font-size:18px" data-a="etik" data-id="${id}">🏷️ Etiket hazırla</button>`:""}${nx&&asamaYap(e.asama)?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:18px" data-a="ileri" data-id="${id}">${e.asama==="depo"?"📦 Depoya girişi kaydet → BİTEN":"✓ Bitti → "+esc(ASL[nx])}</button>`:""}
   ${i>0&&islemYap("geriAl")?`<button class="btn b6" data-a="geri" data-id="${id}">↩️ Geri al</button>`:""}<button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button>${e.asama!=="etiket"&&asamaYap("etiket")?`<button class="btn b7" data-a="etik" data-id="${id}">🏷️ Etiket</button>`:""}${islemYap("isDuzenle")?`<button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>`:""}<button class="btn b6" data-a="gecmis" data-id="${id}">🕘 Geçmiş</button><button class="btn b6" data-a="qr" data-id="${id}">📱 QR</button>${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div>
-  ${e.asama==="bitti"&&e.bekleAktar&&!e.aktarildi&&modGor("sevk")?`<button class="btn b4" style="width:100%;margin-top:8px;padding:14px;font-size:15px" data-a="aktar" data-id="${id}">📦 Hazır ürünlere aktar</button>`:""}${e.aktarildi?`<div class="note" style="margin-top:8px">✅ Hazır ürünlere aktarıldı</div>`:""}</div>`;
+  ${e.asama==="bitti"&&e.bekleAktar&&!e.aktarildi&&modGor("sevk")?`<button class="btn b4" style="width:100%;margin-top:8px;padding:14px;font-size:18px" data-a="aktar" data-id="${id}">📦 Hazır ürünlere aktar</button>`:""}${e.aktarildi?`<div class="note" style="margin-top:8px">✅ Hazır ürünlere aktarıldı</div>`:""}</div>`;
 }
 const isAksiyon=async ev=>{
   const b=ev.target.closest("button[data-a]");if(!b)return;const e=isBulId(b.dataset.id);if(!e)return;
@@ -2350,16 +2348,16 @@ function qrOzet(e){
   else if(e.asama==="bitti"&&e.bekleAktar&&!e.aktarildi){m="✅ <b>Depoya girdi.</b> Sevkiyata hazır ürünlere aktarılması bekleniyor."}
   else if(e.asama==="bitti"||e.aktarildi){
     if(u){const L={hazir:"Sevke hazır",sevk_edilecek:"Sevk edilecekler listesinde",sevk_edildi:"Sevk edildi"+(u.teslimEden?" ("+esc(u.teslimEden)+")":"")}[u.durum]||esc(u.durum);
-      m="🚚 <b>"+L+".</b> "+fmt(u.kg)+" kg · "+fmt(u.paket)+" paket"+(modGor("sevk")?`<button class="btn b7" style="margin-top:8px;padding:12px;font-size:14px" type="button" data-qr="sevk">🚚 Sevkiyatta göster</button>`:"")}
+      m="🚚 <b>"+L+".</b> "+fmt(u.kg)+" kg · "+fmt(u.paket)+" paket"+(modGor("sevk")?`<button class="btn b7" style="margin-top:8px;padding:12px;font-size:17px" type="button" data-qr="sevk">🚚 Sevkiyatta göster</button>`:"")}
     else{t="warn";m="⚠️ Hazır ürünler listesinde bu iş emrine ait kayıt görünmüyor (sevk edilip dosyalanmış olabilir)."}}
   else{t="warn";m="⚠️ <b>Bu iş emri henüz «"+esc(ad_)+"» aşamasında.</b> Depoya giriş / sevk için hazır değil. Yanlış etiket ya da erken gelen ürün olabilir, kontrol edin."}
   const col=t==="ok"?"background:#ecfdf5;border:1.5px solid #6ee7b7;color:#065f46":"background:#fef2f2;border:1.5px solid #fca5a5;color:#991b1b";
   const c=icols(e),top=c.reduce((a,x)=>a+(+x.kg||0),0);
   return `<div style="border:2px solid #0f172a;border-radius:10px;padding:10px;margin-bottom:8px">
-    <div style="font-size:24px;font-weight:900;letter-spacing:.5px">${esc(e.no)}</div>
-    <div style="font-size:16px;font-weight:800;margin-top:2px">${esc(e.musteri||"-")}${e.isAdi?" · "+esc(e.isAdi):""}</div>
-    <div class="sub" style="font-size:13px;color:#0f172a">${esc(e.stok||"")}${top?" · sipariş "+esc(fmt(top))+" kg":""}</div></div>
-    <div style="${col};border-radius:10px;padding:10px;margin-bottom:8px;font-size:13px">${m}</div>`}
+    <div style="font-size:29px;font-weight:900;letter-spacing:.5px">${esc(e.no)}</div>
+    <div style="font-size:19px;font-weight:800;margin-top:2px">${esc(e.musteri||"-")}${e.isAdi?" · "+esc(e.isAdi):""}</div>
+    <div class="sub" style="font-size:16px;color:#0f172a">${esc(e.stok||"")}${top?" · sipariş "+esc(fmt(top))+" kg":""}</div></div>
+    <div style="${col};border-radius:10px;padding:10px;margin-bottom:8px;font-size:16px">${m}</div>`}
 function qrCiz(){const e=qrCache[qrAcikId];if(!e)return;$("qrBody").innerHTML=qrOzet(e)+isKart(e)}
 $("qrBody").onclick=ev=>{
   const q=ev.target.closest("button[data-qr]");
@@ -2408,13 +2406,13 @@ async function hrkAc(e){
   $("hkL").innerHTML=L.length?L.map(x=>{
     const gec=x.kimden||x.kime?`<div class="sub">${x.kimden?esc(ASL[x.kimden]||x.kimden):""}${x.kimden&&x.kime?" → ":""}${x.kime?esc(ASL[x.kime]||x.kime):""}</div>`:"";
     const ek=[x.kg!=null?fmt(x.kg)+" kg":"",x.paket?fmt(x.paket)+" paket":"",x.adet?x.adet+" etiket":""].filter(Boolean).join(" · ");
-    return `<div class="item" style="padding:8px 10px;margin-bottom:6px"><b style="font-size:13px">${esc(HT[x.tur]||x.tur)}</b>${gec}${ek?`<div class="sub">${esc(ek)}</div>`:""}<div class="who">${esc(x.kim||"—")} · ${x.zaman?esc(new Date(x.zaman).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})):"tarih yok"}${x.eski?" · <i>eski kayıt</i>":""}</div></div>`}).join(""):'<p class="mut">Henüz hareket yok.</p>';
+    return `<div class="item" style="padding:8px 10px;margin-bottom:6px"><b style="font-size:16px">${esc(HT[x.tur]||x.tur)}</b>${gec}${ek?`<div class="sub">${esc(ek)}</div>`:""}<div class="who">${esc(x.kim||"—")} · ${x.zaman?esc(new Date(x.zaman).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})):"tarih yok"}${x.eski?" · <i>eski kayıt</i>":""}</div></div>`}).join(""):'<p class="mut">Henüz hareket yok.</p>';
 }
 $("hkNo").onclick=()=>$("hkDlg").close();
 var depoE=null;
 function depoAc(e){
   depoE=e;const C=icols(e);$("dpT").textContent=e.no+" — depoya giriş";$("dpE").textContent="";
-  $("dpRows").innerHTML=(C.length?C:[{}]).map((c,i)=>`<div style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px"><b style="font-size:13px">${esc([i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - "))}${c.kg?" · sipariş "+esc(fmt(c.kg))+" kg":""}</b><div class="grid" style="margin-top:6px"><input data-i="${i}" data-f="kg" type="number" inputmode="decimal" min="0" step="any" placeholder="Kg"><input data-i="${i}" data-f="paket" type="number" inputmode="numeric" min="0" step="1" placeholder="Paket / koli"></div></div>`).join("");
+  $("dpRows").innerHTML=(C.length?C:[{}]).map((c,i)=>`<div style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px"><b style="font-size:16px">${esc([i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - "))}${c.kg?" · sipariş "+esc(fmt(c.kg))+" kg":""}</b><div class="grid" style="margin-top:6px"><input data-i="${i}" data-f="kg" type="number" inputmode="decimal" min="0" step="any" placeholder="Kg"><input data-i="${i}" data-f="paket" type="number" inputmode="numeric" min="0" step="1" placeholder="Paket / koli"></div></div>`).join("");
   $("dDepo").showModal();
 }
 $("dpNo").onclick=()=>$("dDepo").close();
@@ -2529,7 +2527,7 @@ function iAc(e){
    if(v.fx&&v.fx!=="X-PEŞİN"&&v.fx!=="F-PEŞİN"){const o=document.createElement("option");o.value=o.textContent=v.fx;o.dataset.ek="1";sx.appendChild(o)}
    sx.value=v.fx||"X-PEŞİN";
    $("iKd").checked=v.fiyat!=null?!v.kdvDahil:sx.value==="F-PEŞİN"}
-  $("iCols").innerHTML=[0,1,2].map(n=>{const c=C[n]||{};return `<div style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:6px"><b style="font-size:12px">${n+1}. ebat</b><div class="grid" style="margin-top:4px">`+[["kg","Kg"],["en","En (42*14*14)"],["mikron","Mikron"],["korona","Korona (bomlu/bomsuz)"],["boy","Boy / kazan (cm)"]].map(([f,p])=>`<input data-c="${n}" data-f="${f}" list="dl_${f}" placeholder="${p}"${f==="kg"?' type="number" inputmode="decimal" min="0" step="any"':""} value="${esc(c[f]??"")}">`).join("")+`</div></div>`}).join("");
+  $("iCols").innerHTML=[0,1,2].map(n=>{const c=C[n]||{};return `<div style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:6px"><b style="font-size:14px">${n+1}. ebat</b><div class="grid" style="margin-top:4px">`+[["kg","Kg"],["en","En (42*14*14)"],["mikron","Mikron"],["korona","Korona (bomlu/bomsuz)"],["boy","Boy / kazan (cm)"]].map(([f,p])=>`<input data-c="${n}" data-f="${f}" list="dl_${f}" placeholder="${p}"${f==="kg"?' type="number" inputmode="decimal" min="0" step="any"':""} value="${esc(c[f]??"")}">`).join("")+`</div></div>`}).join("");
   iQrGuncelle();$("iDlg").showModal();
 }
 $("iAdd").onclick=()=>{if(!canIsAc())return toast("Yeni iş emrini sadece muhasebe, depo görevlisi ve yönetici açabilir.");iAc(null)};
@@ -2618,7 +2616,7 @@ async function bAc(){
   if(!sKalem.length&&!bStok){bStok=true;try{const s=await db.ref("stokKalem").once("value"),v=s.val()||{};sKalem=Object.keys(v).map(k=>Object.assign({id:k},v[k]))}catch(e){}}
   const O=bOlaylar().sort((a,b)=>b.ts-a.ts),S=sKalem.filter(k=>dur(k)!=="ok").sort((a,b)=>(a.ad||"").localeCompare(b.ad||"","tr"));
   bGor={O,S};let h="";
-  h+=O.length?`<div class="shd">YENİ GELİŞMELER (${O.length})</div>`+O.map((x,i)=>`<div class="item" style="padding:8px 10px;margin-bottom:6px"><b style="font-size:13px">${esc(x.ik+" "+x.b)}</b><div class="sub">${esc(x.d)}</div><div class="who">${esc(bZaman(x.ts))}</div><button class="btn b3 sm" data-w="${i}" style="width:auto;margin-top:4px">📲 WhatsApp</button></div>`).join(""):'<p class="mut" style="margin:4px 0">Son açışınızdan beri yeni bir gelişme yok.</p>';
+  h+=O.length?`<div class="shd">YENİ GELİŞMELER (${O.length})</div>`+O.map((x,i)=>`<div class="item" style="padding:8px 10px;margin-bottom:6px"><b style="font-size:16px">${esc(x.ik+" "+x.b)}</b><div class="sub">${esc(x.d)}</div><div class="who">${esc(bZaman(x.ts))}</div><button class="btn b3 sm" data-w="${i}" style="width:auto;margin-top:4px">📲 WhatsApp</button></div>`).join(""):'<p class="mut" style="margin:4px 0">Son açışınızdan beri yeni bir gelişme yok.</p>';
   h+=S.length?`<div class="shd" style="margin-top:10px">⚠️ STOK DURUMU (${S.length})</div><div class="item" style="padding:8px 10px;margin-bottom:6px">`+S.map(k=>`<div class="sub"><b>${esc(k.ad||"-")}</b>${k.ebat?" · "+esc(k.ebat):""}: ${esc(mevTxt(k))} — ${dur(k)==="no"?"TÜKENDİ":"azalıyor"}</div>`).join("")+`<button class="btn b3 sm" data-w="stok" style="width:auto;margin-top:6px">📲 Stok listesini WhatsApp'a gönder</button></div>`:"";
   $("bdL").innerHTML=h;
   bYaz("bildSon",Math.max.apply(null,[Date.now()].concat(O.map(x=>x.ts))));bRozet();
@@ -2646,9 +2644,9 @@ formTemizle();modUyg();
 #fvBox.on{display:flex}
 #fvBox img{max-width:100%;max-height:78vh;object-fit:contain;border-radius:6px;background:#000}
 #fvBox .fvb{display:flex;gap:10px;margin-top:14px}
-#fvBox .fvb a,#fvBox .fvb button{padding:13px 22px;border-radius:10px;border:0;font-size:15px;font-weight:800;color:#fff;text-decoration:none;cursor:pointer}
+#fvBox .fvb a,#fvBox .fvb button{padding:13px 22px;border-radius:10px;border:0;font-size:18px;font-weight:800;color:#fff;text-decoration:none;cursor:pointer}
 #fvDl{background:#16a34a}#fvCl{background:#64748b}
-#fvBox small{color:#cbd5e1;margin-top:10px;font-size:11px;text-align:center}
+#fvBox small{color:#cbd5e1;margin-top:10px;font-size:13px;text-align:center}
 .item img:not(.th){cursor:zoom-in}
 </style>
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
@@ -2680,7 +2678,7 @@ try{
       g.addEventListener("click",tikla);
       var bt=document.createElement("button");
       bt.type="button";bt.textContent="🔍 Büyüt / İndir";
-      bt.style.cssText="display:block;width:100%;padding:11px;margin:0 0 8px;border:0;border-radius:8px;background:#0f172a;color:#fff;font-size:14px;font-weight:800;cursor:pointer";
+      bt.style.cssText="display:block;width:100%;padding:11px;margin:0 0 8px;border:0;border-radius:8px;background:#0f172a;color:#fff;font-size:17px;font-weight:800;cursor:pointer";
       bt.__src=g;
       bt.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(this.__src.src)ac(this.__src.src)});
       g.insertAdjacentElement("afterend",bt);
@@ -2775,7 +2773,7 @@ try{
 #lbDlg .lbrow{border:1.5px solid #cbd5e1;border-radius:10px;padding:10px;margin:10px 0}
 #lbDlg .g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 #lbDlg .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-#lbDlg label.s{font-size:11px;color:#64748b;font-weight:700;display:block;margin-top:6px}
+#lbDlg label.s{font-size:13px;color:#64748b;font-weight:700;display:block;margin-top:6px}
 #lbDlg .chips{display:flex;gap:6px;margin-top:4px}
 #lbDlg .chips button{flex:1;padding:6px;border:1.5px solid #cbd5e1;background:#fff;border-radius:6px;font-weight:800;cursor:pointer}
 .lbPW{background:#e2e8f0;border-radius:8px;padding:8px;margin:8px 0;overflow:hidden}
@@ -2800,7 +2798,7 @@ try{
 .lb .qt{flex:1;min-width:0;display:flex;flex-direction:column}
 .lb .qt .lbc{flex:1}
 .lb .qt .lbc.qn{flex:1.5;border-top:.7mm solid #000}
-#lbDlg .qrWarn{display:none;font-size:11px;font-weight:700;margin:-2px 0 6px}
+#lbDlg .qrWarn{display:none;font-size:13px;font-weight:700;margin:-2px 0 6px}
 #lprn{display:none}
 #lprn.meas{display:block;position:absolute;left:-10000px;top:0}
 @media print{
@@ -2813,14 +2811,14 @@ try{
 </style>
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
-  <p style="font-size:11px;color:#64748b;margin-bottom:6px">Her sipariş sütunu için ayrı etiket. Bilgiler iş emrinden dolduruldu, değiştirebilirsiniz. Yazıcı olarak Godex'i seçin.</p>
+  <p style="font-size:13px;color:#64748b;margin-bottom:6px">Her sipariş sütunu için ayrı etiket. Bilgiler iş emrinden dolduruldu, değiştirebilirsiniz. Yazıcı olarak Godex'i seçin.</p>
   <div class="g3">
     <div><label class="s">Tasarım</label><select id="lbMag"><option value="1">Markalı (logo + adres)</option><option value="0">Sade (logosuz)</option></select></div>
     <div><label class="s">Etiket eni (mm)</label><input id="lbW" type="number" inputmode="decimal" min="20" max="300" step="any"></div>
     <div><label class="s">Etiket boyu (mm)</label><input id="lbH" type="number" inputmode="decimal" min="20" max="300" step="any"></div>
   </div>
   <div class="g2"><div><label class="s">QR kod (iş emri no)</label><select id="lbQr"><option value="1">Etikette QR olsun</option><option value="0">QR olmasın</option></select></div></div>
-  <div id="lbOrt" class="mut" style="font-size:11px;margin:6px 0 2px"></div>
+  <div id="lbOrt" class="mut" style="font-size:13px;margin:6px 0 2px"></div>
   <button class="btn b6 sm hide" id="lbOrtBtn" type="button" style="width:auto;margin:0 0 4px">📌 Bu ölçüyü ortak ayar yap</button>
   <div id="lbRows"></div>
   <div class="err" id="lbE"></div>
@@ -2828,8 +2826,8 @@ try{
 </dialog>
 <dialog id="lbWarn">
   <h3 style="margin-bottom:8px">⚠️ Etiket yapılmadı</h3>
-  <p id="lbWT" style="font-size:14px;margin-bottom:12px"></p>
-  <button class="btn b7" id="lbWY" type="button" style="padding:14px;font-size:15px">🏷️ Etiket yap</button>
+  <p id="lbWT" style="font-size:17px;margin-bottom:12px"></p>
+  <button class="btn b7" id="lbWY" type="button" style="padding:14px;font-size:18px">🏷️ Etiket yap</button>
   <button class="btn b2" id="lbWS" type="button">Etiketsiz devam et → Ekstruder</button>
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
@@ -3808,9 +3806,9 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
       var h="";
       for(var i=0;i<n;i++){
         var d=defs(e,i),x=C[i]||{},lab=[i+1+". sütun",x.en,x.boy].filter(function(v){return v!==undefined&&v!==null&&String(v).trim()!==""}).join(" · ");
-        h+='<div class="lbrow" data-i="'+i+'" data-y="'+(d.yapildi?1:0)+'"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:13px">'+X(lab)+(x.kg?' · sipariş '+X(N(x.kg))+' kg':'')+'</b><span class="ok" style="font-size:11px;font-weight:800;color:#16a34a">'+(d.yapildi?"✅ hazırlandı":"")+'</span></div>'+
+        h+='<div class="lbrow" data-i="'+i+'" data-y="'+(d.yapildi?1:0)+'"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:16px">'+X(lab)+(x.kg?' · sipariş '+X(N(x.kg))+' kg':'')+'</b><span class="ok" style="font-size:13px;font-weight:800;color:#16a34a">'+(d.yapildi?"✅ hazırlandı":"")+'</span></div>'+
         '<div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;margin-top:8px"><select data-t><option value="">📋 Şablonlar…</option></select><button type="button" class="btn b6 sm" data-sk style="width:auto;margin:0">💾 Kaydet</button><button type="button" class="btn b6 sm" data-ss style="width:auto;margin:0">🗑</button></div>'+
-        '<details class="lbHg" style="display:none;margin-top:6px"><summary style="font-size:12px;font-weight:800;cursor:pointer">🕘 Önceki baskılar</summary><div class="lbHl"></div></details>'+
+        '<details class="lbHg" style="display:none;margin-top:6px"><summary style="font-size:14px;font-weight:800;cursor:pointer">🕘 Önceki baskılar</summary><div class="lbHl"></div></details>'+
         '<label class="s">İşin adı</label><input data-f="isAdi" maxlength="60" value="'+X(d.isAdi)+'">'+
         '<label class="s">Ürün</label><input data-f="urun" maxlength="60" value="'+X(d.urun)+'">'+
         '<label class="s">Ebat</label><input data-f="ebat" maxlength="40" value="'+X(d.ebat)+'">'+
@@ -3881,7 +3879,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
   function gecmisListe(){
     g("lbRows").querySelectorAll(".lbrow").forEach(function(r){var i=+r.dataset.i,L=hist.filter(function(h){return h.i===i}),box=r.querySelector(".lbHg");
       box.style.display=L.length?"block":"none";box.querySelector("summary").textContent="🕘 Önceki baskılar ("+L.length+")";
-      box.querySelector(".lbHl").innerHTML=L.map(function(h){return'<div style="display:flex;justify-content:space-between;gap:6px;align-items:center;padding:5px 0;border-top:1px dashed #cbd5e1;font-size:12px"><span><span style="color:#64748b">'+X(new Date(+h.zaman||0).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}))+' · '+X(h.kim||"")+'</span><br><b>'+X([h.urun,h.ebat,h.kg>0?h.kg+" kg":""].filter(Boolean).join(" · "))+'</b></span><button type="button" class="btn b6 sm" data-hu="'+hist.indexOf(h)+'" style="width:auto;margin:0;flex:none">↺ Kullan</button></div>'}).join("")})}
+      box.querySelector(".lbHl").innerHTML=L.map(function(h){return'<div style="display:flex;justify-content:space-between;gap:6px;align-items:center;padding:5px 0;border-top:1px dashed #cbd5e1;font-size:14px"><span><span style="color:#64748b">'+X(new Date(+h.zaman||0).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}))+' · '+X(h.kim||"")+'</span><br><b>'+X([h.urun,h.ebat,h.kg>0?h.kg+" kg":""].filter(Boolean).join(" · "))+'</b></span><button type="button" class="btn b6 sm" data-hu="'+hist.indexOf(h)+'" style="width:auto;margin:0;flex:none">↺ Kullan</button></div>'}).join("")})}
   /* Henüz basılmamış sütunlarda, ebadı şablonla aynıysa şablonu otomatik uygula */
   function sablonUygula(){g("lbRows").querySelectorAll('.lbrow[data-y="0"]').forEach(function(r){if(r.dataset.touched)return;
     var eb=trn(r.querySelector('[data-f="ebat"]').value);if(!eb)return;
@@ -3941,10 +3939,10 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
 </script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
-  <p style="font-size:11px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
+  <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
   <input id="gQ" placeholder="Müşteri, işin adı, ürün, ebat, seri no ara..." autocomplete="off">
-  <div class="grid" style="margin-top:6px"><div><label style="font-size:11px">Başlangıç</label><input id="gD1" type="date"></div><div><label style="font-size:11px">Bitiş</label><input id="gD2" type="date"></div></div>
-  <div id="gSum" style="font-size:12px;font-weight:700;color:#64748b;margin:8px 0 4px"></div>
+  <div class="grid" style="margin-top:6px"><div><label style="font-size:13px">Başlangıç</label><input id="gD1" type="date"></div><div><label style="font-size:13px">Bitiş</label><input id="gD2" type="date"></div></div>
+  <div id="gSum" style="font-size:14px;font-weight:700;color:#64748b;margin:8px 0 4px"></div>
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
@@ -3964,7 +3962,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     try{g("gtL").innerHTML=L.length?L.slice(0,60).map(function(e){
       var C="";
       try{C=icols(e).map(function(c){c=c&&typeof c==="object"?c:{};return[T(c.en),T(c.boy)].filter(Boolean).join(" x ")+(T(c.mikron)?" · "+T(c.mikron)+"µ":"")+(+c.kg>0?" · "+fmt(c.kg)+" kg":"")}).join(" | ")}catch(x){C=""}
-      return '<button type="button" class="item" data-id="'+esc(T(e.id))+'" style="display:block;width:100%;text-align:left;margin:6px 0;cursor:pointer;border:1.5px solid #cbd5e1;background:#fff;color:#0f172a"><b style="font-size:14px">'+esc(T(e.musteri)||"-")+(T(e.isAdi)?" — "+esc(T(e.isAdi)):"")+'</b><div style="font-size:12px;color:#475569;margin-top:2px">'+esc(T(e.no))+" · "+esc(T(e.stok))+'</div><div style="font-size:12px;color:#0369a1;font-weight:700;margin-top:2px">'+esc(C)+'</div></button>'}).join(""):'<div class="empty">Tamamlanmış iş emri bulunamadı.</div>';}catch(x){g("gtL").innerHTML='<div class="empty">Liste hatası: '+esc(x&&x.message)+'</div>'}
+      return '<button type="button" class="item" data-id="'+esc(T(e.id))+'" style="display:block;width:100%;text-align:left;margin:6px 0;cursor:pointer;border:1.5px solid #cbd5e1;background:#fff;color:#0f172a"><b style="font-size:17px">'+esc(T(e.musteri)||"-")+(T(e.isAdi)?" — "+esc(T(e.isAdi)):"")+'</b><div style="font-size:14px;color:#475569;margin-top:2px">'+esc(T(e.no))+" · "+esc(T(e.stok))+'</div><div style="font-size:14px;color:#0369a1;font-weight:700;margin-top:2px">'+esc(C)+'</div></button>'}).join(""):'<div class="empty">Tamamlanmış iş emri bulunamadı.</div>';}catch(x){g("gtL").innerHTML='<div class="empty">Liste hatası: '+esc(x&&x.message)+'</div>'}
   }
   g("iGet").onclick=function(){g("gQ").value="";g("gD1").value="";g("gD2").value="";liste();g("gDlg").showModal()};
   ["gQ","gD1","gD2"].forEach(function(i){g(i).addEventListener("input",liste);g(i).addEventListener("change",liste)});
