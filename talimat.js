@@ -46,7 +46,7 @@
   $("talTA").onclick=function(){sek="bit";ciz()};
   window.talBaslat=function(){
     window.talDurdur();
-    if(!rec||!rec.onay||!modGor("sevk"))return;
+    if(!rec||!rec.onay||!tahGor())return; /* sevkiyat yetkisi veya "tah" izni (Muhasebe) */
     ref=db.ref("sevkTalimat").orderByChild("zaman").limitToLast(50);
     ref.on("value",function(s){var v=s.val()||{};L=Object.keys(v).map(function(k){return Object.assign({id:k},v[k])});ciz()},
       function(e){toast("Talimatlar okunamadı: "+errText(e)+" (Firebase kuralını güncellediniz mi?)")});
@@ -61,7 +61,7 @@
     try{
       if(b.dataset.a==="harita"){haritaAc(safeUrl(x.haritaUrl||""),x.adres||x.adresAd||"")}
       else if(b.dataset.a==="yap"){
-        var u={};u["sevkTalimat/"+id+"/durum"]="yapildi";u["sevkTalimat/"+id+"/yapan"]=String((rec&&rec.ad)||"?").slice(0,100);u["sevkTalimat/"+id+"/yapanUid"]=user.uid;u["sevkTalimat/"+id+"/yapilmaZaman"]=Date.now();
+        var u={};u["sevkTalimat/"+id+"/durum"]="yapildi";u["sevkTalimat/"+id+"/yapan"]=String((rec&&rec.ad)||"?").slice(0,100);u["sevkTalimat/"+id+"/yapanUid"]=user.uid;u["sevkTalimat/"+id+"/yapilmaZaman"]=firebase.database.ServerValue.TIMESTAMP; /* sunucu saati */
         await db.ref().update(u);toast("✓ Talimat yapıldı olarak işaretlendi");
       }else if(b.dataset.a==="geri"){
         var g={};g["sevkTalimat/"+id+"/durum"]="bekliyor";g["sevkTalimat/"+id+"/yapan"]=null;g["sevkTalimat/"+id+"/yapanUid"]=null;g["sevkTalimat/"+id+"/yapilmaZaman"]=null;
@@ -116,8 +116,9 @@
     if(!m){$("talE").textContent="Talimat metnini yazın.";return}
     var b=$("talOk");b.disabled=true;
     try{
-      var o={metin:m.slice(0,500),hedefUid:"*",hedefAd:"Tümü",atayanUid:user.uid,atayan:String((rec&&rec.ad)||"?").slice(0,100),zaman:Date.now(),durum:"bekliyor"};
-      if(TF.length)o.fotolar=TF.slice(0,FM);
+      var o={metin:m.slice(0,500),hedefUid:"*",hedefAd:"Tümü",atayanUid:user.uid,atayan:String((rec&&rec.ad)||"?").slice(0,100),zaman:firebase.database.ServerValue.TIMESTAMP,durum:"bekliyor"}; /* sunucu saati: telefon saati yanlış olsa da doğru güne düşer */
+      /* liste için küçük önizleme kayıtta, tam boy fotoğraf fotoTam'da (Sevkiyat ile aynı yöntem) */
+      if(TF.length)o.fotolar=await fotoHazirla(TF.slice(0,FM));
       var hu=$("talHu").value.trim(),url=safeUrl(hu),adr=$("talAd").value.trim();
       if(hu&&!url&&!adr)adr=hu;
       if(adr)o.adres=adr.slice(0,500);

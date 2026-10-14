@@ -16,7 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=46">
+<link rel="stylesheet" href="style.css?v=47">
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -75,6 +75,7 @@
     <button class="menuBtn" style="background:#c82333" data-go="is"><span class="ic">📋</span><div>İŞ EMİRLERİ<small>Ekstruder, baskı, kesim, depo takibi</small></div></button>
     <button class="menuBtn" style="background:#ff9f1c" data-go="sevk"><span class="ic">🚚</span><div>SEVKİYAT<small>Hazır ürünler, sevk listesi, adresler</small></div></button>
     <button class="menuBtn" style="background:#2563eb" data-go="stok"><span class="ic">📦</span><div>STOK<small>Stok, sipariş, tedarikçi, hareketler</small></div></button>
+    <button class="menuBtn hide" style="background:#0f766e" data-go="tah"><span class="ic">💰</span><div>TAHSİLAT<small>Tahsilat talepleri, alınan ödemeler, talimatlar</small></div></button>
     <button class="menuBtn" style="background:#7c3aed" data-go="rap"><span class="ic">📊</span><div>RAPORLAR<small>Üretim, müşteri sevki, malzeme tüketimi, maliyet</small></div></button>
     <button class="menuBtn" style="background:#475569" id="mQr" type="button"><span class="ic">📷</span><div>QR OKUT<small>Etiketteki QR ile iş emrini aç</small></div></button>
     <div id="menuYok" class="hide" style="background:#fff3cd;color:#664d03;border-radius:10px;padding:12px;font-size:14px;margin:10px 0">Hesabınıza henüz bir bölüm tanımlanmamış. Lütfen yöneticiye başvurun.</div>
@@ -411,6 +412,7 @@
     </div>
     <label for="tahMak" style="margin-top:8px">Makbuz no (isteğe bağlı)</label>
     <input id="tahMak" maxlength="30" placeholder="Örn: 001818" autocomplete="off">
+    <div id="tahFW">
     <label style="margin-top:8px">Makbuz / çek fotoğrafı (en fazla 6 · ✖ ile kaldırılır)</label>
     <div style="display:flex;gap:6px;margin-bottom:4px">
       <label for="tahCam" class="btn b7" style="margin:0;flex:1;text-align:center;cursor:pointer">📸 Kamera</label>
@@ -419,6 +421,7 @@
     <input type="file" id="tahCam" accept="image/*" capture="environment" class="hide">
     <input type="file" id="tahGal" accept="image/*" multiple class="hide">
     <div id="tahFG" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px"></div><div id="tahFS" style="font-size:13px;color:#64748b;margin-top:4px"></div>
+    </div>
   </div>
   <label for="tahNot" style="margin-top:8px">Not</label>
   <textarea id="tahNot" rows="2" maxlength="300"></textarea>
@@ -532,17 +535,17 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="raporlar.js?v=46"></script>
+<script src="raporlar.js?v=47"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=46"></script>
+<script src="app.js?v=47"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=46"></script>
-<script src="saat.js?v=46"></script>
+<script src="foto-onizleme.js?v=47"></script>
+<script src="saat.js?v=47"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=46"></script>
+<script src="diyalog.js?v=47"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -567,8 +570,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=46"></script>
-<script src="etiket.js?v=46"></script>
+<script src="qr.js?v=47"></script>
+<script src="etiket.js?v=47"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -578,9 +581,9 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="talimat.js?v=46"></script>
-<script src="tahsilat.js?v=46"></script>
-<script src="arama.js?v=46"></script>
-<script src="sw-kayit.js?v=46"></script>
+<script src="talimat.js?v=47"></script>
+<script src="tahsilat.js?v=47"></script>
+<script src="arama.js?v=47"></script>
+<script src="sw-kayit.js?v=47"></script>
 </body>
 </html>

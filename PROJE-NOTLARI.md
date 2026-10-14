@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v46**
-Son güncelleme: 2026-10-14 (v46: Talimatlar bekleyenler/tamamlananlar)
+**GÜNCEL SÜRÜM: v47**
+Son güncelleme: 2026-10-15 (v47: tahsilat/talimat küçük resim, düzenle + çöp kutusu, sunucu saati, Muhasebe)
 
 ---
 
@@ -140,7 +140,7 @@ Satır içi `<script>` yazma; kodu `.js` dosyasına koy.
 | `isEmirleri/{id}` | İş emirleri (aşama akışı Bölüm 7) |
 | `isHareket/{id}/{h}` | İş emri hareket kayıtları (yalnız eklenir) |
 | `sevkTalimat/{id}` | Sevkiyat talimatları: `metin`, `hedefUid` (`*`=tüm sorumlular), `hedefAd`, `atayan`, `atayanUid`, `zaman`, `durum` (`bekliyor`/`yapildi`), `yapan`, `yapanUid`, `yapilmaZaman`, `fotolar` (en fazla 6 küçültülmüş jpeg), `adres`, `haritaUrl`, `adresAd` (isteğe bağlı) |
-| `tahsilatlar/{id}` | Tahsilat kayıtları: `cari`, `durum` (`bekliyor`/`alindi`), `not`, `talepUid`, `talepEden`, `zaman`, `talepTur` (`talep`/`dogrudan`); alınınca: `nakit`, `cek` (₺, yalnız >0 olanlar yazılır), `makbuzNo`, `alan`, `alanUid`, `alinmaZaman`, `alanNot`, `fotolar` (en fazla 6 küçültülmüş jpeg). `zaman` üzerinde indeks var, uygulama son 300 kaydı okur |
+| `tahsilatlar/{id}` | Tahsilat kayıtları: `cari`, `durum` (`bekliyor`/`alindi`), `not`, `talepUid`, `talepEden`, `zaman`, `talepTur` (`talep`/`dogrudan`); alınınca: `nakit`, `cek` (₺, yalnız >0 olanlar yazılır), `makbuzNo`, `alan`, `alanUid`, `alinmaZaman`, `alanNot`, `fotolar` (en fazla 6 küçültülmüş jpeg). `zaman` üzerinde indeks var, uygulama son 300 kaydı okur. v47: `fotolar` önizleme+`#fotoTam` anahtarı olabilir; düzeltmede `duzenleyen`, `duzenleyenUid`, `duzenlemeZaman`, `duzenlemeNot` |
 | `etiketGecmis/{id}/{h}`, `etiketSablon/{m}/{k}` | Etiket basım geçmişi ve şablonlar |
 | `ayarlar/etiket` | Etiket ayarı (`w`, `h`, `mag`) |
 | `cop/{id}` | Çöp kutusu: silinenlerin yedeği (yönetici geri yükler) |
@@ -162,16 +162,16 @@ açamaz (rules engeller).
 
 **İzin anahtarları** (`kullanicilar/{uid}/izin/...`, true = rolden bağımsız ver, false = rol
 varsayılanını kapat, yoksa rol varsayılanı geçerli):
-`sevk`, `stok`, `is`, `rap`, `a_etiket`, `a_ekstruder`, `a_baski`, `a_kesim`, `a_depo`,
+`sevk`, `stok`, `is`, `rap`, `tah`, `a_etiket`, `a_ekstruder`, `a_baski`, `a_kesim`, `a_depo`,
 `isAc`, `isDuzenle`, `geriAl`, `isSil`, `fiyat`.
-(Tahsilat ve Talimatlar ayrı izin istemez: Sevkiyat bölümünün sekmeleridir, `sevk` yetkisi olan görür. Muhasebe'ye vermek için `sevk` izni açılmalı.)
+(**`tah` = Tahsilat & talimat (v47).** Tahsilat ve Talimatlar Sevkiyat içinde sekmedir; `sevk` yetkisi olan görür. `tah` izni olan ama `sevk`'i olmayan kişi (varsayılan: **Muhasebe**) ana menüde ayrı 💰 TAHSİLAT düğmesi görür; içinde yalnız TAHSİLAT ve TALİMATLAR sekmeleri vardır. Muhasebe tahsilat talebi açabilir, tahsil edildi diyebilir; talimatları yalnız okur. Kodda `tahGor()=modGor("sevk")||modGor("tah")`.)
 
 **Rol varsayılanları tek yerde:** `app.js` içindeki `YETKI` tablosu ("YETKİ TABLOSU" yorumu).
 Özet:
 - Depo Görevlisi: iş emirleri + stok + sevkiyat; etiket/depo aşaması; iş açar/düzenler.
 - Sevkiyat Sorumlusu: sadece sevkiyat; kayıt formunu kullanamaz, başkasının kaydını yazamaz.
 - Ekstruder / Matbaa / Kesim Operatörü, Bobinoz Ustası: sadece kendi aşamasını görür ve ilerletir.
-- Muhasebe: iş emirleri + stok + raporlar; etiket aşaması; iş açar/düzenler; fiyat görür.
+- Muhasebe: iş emirleri + stok + raporlar + tahsilat/talimat (`tah`); etiket aşaması; iş açar/düzenler; fiyat görür.
 - Silme: kendi eklediğini silebilir (iş emri için `isSil` izni gerekir); yönetici hepsini.
 - Yönetici-only: `kullanicilar` listesi, `fiyatlar`, `cop`, `denetim`, `dosyalar` yazma.
 - `rules.json` bu yetkileri ayrıca sunucuda zorlar; sadece arayüzde gizlemek yetmez.
@@ -199,7 +199,11 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
   - **✓ Tahsil ettim:** sahadaki kişi bekleyen talepte (veya talep olmadan "✓ Tahsil ettim" düğmesiyle) nakit ve/veya çek tutarı (en az biri), makbuz no, makbuz/çek fotoğrafı (en fazla 6), not girer. Kayıt `alindi` olur, ✓ ALINANLAR'a geçer.
   - ✓ ALINANLAR: dönem seçilir (Bugün / Son 7 gün / Bu ay / Hepsi), üstte nakit + çek + toplam gösterilir. Arama kutusu firma, makbuz no, not, kişi içinde arar.
   - Tutar yazımı: `110.059` = 110059, `11.500,50` = 11500,5 (Türkçe biçim).
-  - Silme: kaydı açan veya yönetici. Geri al (alındıyı tekrar bekliyora çevirir, tutar/foto silinir): tahsil eden veya yönetici. Silinen kayıt çöp kutusuna gitmez (talimat gibi doğrudan silinir).
+  - Silme: kaydı açan veya yönetici. **v47: silinen kayıt `cop`'a taşınır (başlıkta firma + tutar) ve `denetim`'e yazılır**; yönetici Çöp kutusundan geri yükler. Talimat silme hâlâ doğrudan silmedir.
+  - Geri al (alındıyı tekrar bekliyora çevirir): tahsil eden veya yönetici. v47: eski hali (tutar + fotoğraf) `cop`'a ve `denetim`'e (`tahsilat-geri`) yazılır.
+  - **✏ Düzenle (v47):** alınmış kaydın nakit/çek/makbuz no/notu düzeltilir (fotoğraf düzenlenmez). Yetki: tahsil eden veya yönetici (rules aynısını zorlar). Kayda `duzenleyen`, `duzenleyenUid`, `duzenlemeZaman`, `duzenlemeNot` ("Nakit 1.000 ₺ → 1.500 ₺") yazılır, kartta turuncu "✎ Düzeltildi" satırı çıkar; ayrıca `denetim`'e `tahsilat-duzenle` satırı düşer (tam geçmiş orada).
+  - **Saatler sunucudan (v47):** `zaman`, `alinmaZaman`, `yapilmaZaman` artık `ServerValue.TIMESTAMP`; rules `newData.val() === now` ister (yönetici hariç: çöp kutusundan geri yükleme eski saati yazabilsin). "Bugün/Son 7 gün" süzgeci de `.info/serverTimeOffset` ile sunucu saatine göre hesaplanır.
+  - **Fotoğraflar (v47):** `fotoHazirla` ile kayıtta küçük önizleme (+`#fotoTam anahtarı`), tam boy `fotoTam`'da; büyütünce yüklenir. Talimat da aynı. Eski kayıtlardaki büyük fotoğraflar için **Yönetici > Fotoğraf hafifletme** artık `tahsilatlar` ve `sevkTalimat`'ı da tarar (JSON yedek alıp bir kez çalıştırın).
   - Rules: `tahsilatlar` okuma/yazma = sevkiyat yetkisi (yönetici | `sevk` izni | rol Depo/Sevkiyat). Alım alanlarını yalnız ilk dolduran veya yönetici değiştirebilir. Yedeğe (`BK_DUGUM`) dahil.
 - **Stok modülü:** KALEMLER (giriş/çıkış, geçmiş, yazdır), SİPARİŞLER (kategoriye göre / liste),
   TEDARİKÇİLER.
@@ -233,6 +237,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-14: v44 — Tahsilat bölümü eklendi (WhatsApp "MAG TAHSİLAT" grubunun karşılığı). Dosyalar: tahsilat.js (yeni), index.html, app.js, sw.js, rules.json, kontrol.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ (yeni yol `tahsilatlar`).
 - 2026-10-14: v45 — Tahsilat ve Talimatlar Sevkiyat içinde sekme oldu (ayrı `tah` bölümü/izni kaldırıldı); Dosyalar sevkiyattan iş emirlerine taşındı. Dosyalar: index.html, app.js, talimat.js, tahsilat.js, sw.js, rules.json, kontrol.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ (`tahsilatlar` yetkisi sevk'e bağlandı, `tah` izni kalktı).
 - 2026-10-14: v46 — Talimatlar sekmesine bekleyenler/tamamlananlar alt sekmeleri eklendi. Dosyalar: index.html, talimat.js, sw.js, PROJE-NOTLARI.md, README.md. Rules değişmedi.
+- 2026-10-15: v47 — (1) Tahsilat/talimat fotoğrafları küçük önizleme + fotoTam; hafifletme aracı tahsilat+talimat'ı da tarar. (2) Tahsilat silme → çöp kutusu + denetim; geri al → çöp kutusu + denetim; ✏ Düzenle eklendi. (3) Kayıt saatleri sunucudan. (5) Yeni `tah` izni, Muhasebe varsayılanı, menüde 💰 TAHSİLAT düğmesi. Dosyalar: app.js, index.html, tahsilat.js, talimat.js, rules.json, kontrol.js, sw.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ.
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
@@ -250,6 +255,8 @@ Satır numaraları kayar; bu başlıkları ara:
 - Sürüm numarası her kod değişikliğinde artar (`node kontrol.js --artir`).
 
 **Açık konular / bilinmeyenler:**
+- **v47 rules, Kural Simülatörü ile SINANMADI** (Claude Firebase'e erişemez). Yayınlamadan önce: Muhasebe hesabıyla tahsilat talebi açma + tahsil etme + düzenleme; Sevkiyat Sorumlusu ile tahsil etme; yönetici ile silme + çöp kutusundan geri yükleme.
+- `rules.json` sadeleştirilmiş boyutu ~76 KB (v46: ~67 KB). Firebase "çok büyük" hatası verirse söyleyin; tahsilat alan kurallarını sadeleştiririz.
 - `rules.json` zip'te var ama **gerçek kurallar Firebase Konsolu'ndadır**; ikisi farklı olabilir.
   Şüphe olursa kullanıcıdan Firebase'deki güncel metni yapıştırmasını iste ve karşılaştır.
 - `index.js` ve `package.json` depo kökünde duruyor (Cloud Functions için normalde `functions/`
