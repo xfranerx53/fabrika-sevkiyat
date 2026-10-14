@@ -2556,7 +2556,7 @@ function isForm(e,fy){
   <div class="tt">ÜRETİM İŞ TAKİP FORMU</div>
   <table class="px top"><colgroup><col style="width:20%"><col style="width:42%"><col style="width:16%"><col style="width:22%"></colgroup>
   <tr><th>MÜŞTERİ :</th><td class="v">${U(e.musteri)}</td><th>SP.<br>TARİHİ:</th><td class="v">${esc(trDate(e.spTarih))}</td></tr>
-  <tr><th>İŞİN ADI :</th><td class="v">${U(e.isAdi)}</td><th>F/X :</th><td class="v">${U(e.fx)}</td></tr>
+  <tr><th>İŞİN ADI :</th><td class="v">${U(e.isAdi)}</td>${fy?`<th>F/X :</th><td class="v">${U(e.fx)}</td>`:`<th></th><td class="v"></td>`}</tr>
   ${fyT?`<tr><th rowspan="2">STOK ADI :</th><td class="v" rowspan="2">${U(e.stok)}</td><th>FİYAT :</th><td class="v">${fyT}</td></tr><tr><th>KLİŞE :</th><td class="v">-</td></tr>`:`<tr><th>STOK ADI :</th><td class="v">${U(e.stok)}</td><th>SP.<br>NO:</th><td class="v">-</td></tr>`}
   </table>
   <table class="px"><colgroup><col style="width:20%">${'<col style="width:21%"><col style="width:6%">'.repeat(3)}</colgroup>
