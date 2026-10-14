@@ -284,7 +284,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
   <div id="pIs" class="hide">
     <button class="btn b2 big" style="margin:0 0 10px" id="iAdd">＋ Yeni iş emri aç</button>
-    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v17 (iş emrinde otomatik QR)</div>
+    <div style="font-size:10px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v18 (büyük QR 30mm + net tarama)</div>
     <input id="iq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="iTabs"></div>
     <div id="iList"></div>
@@ -2309,11 +2309,12 @@ async function qrTaraAc(){
     $("qtE").textContent="Bu tarayıcı uygulama içinden QR okutmayı desteklemiyor. Telefonun kendi kamerasıyla etiketi okutun (bağlantı doğrudan açılır) ya da seri no yazın.";$("qtM").focus();return}
   try{
     qrS.det=new BarcodeDetector({formats:["qr_code"]});
-    qrS.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+    qrS.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},audio:false});
+    try{const tr=qrS.stream.getVideoTracks()[0],cp=tr.getCapabilities?tr.getCapabilities():{};if(cp.focusMode&&cp.focusMode.includes("continuous"))await tr.applyConstraints({advanced:[{focusMode:"continuous"}]})}catch(e){}
     const v=$("qtV");v.srcObject=qrS.stream;await v.play();
     qrS.timer=setInterval(async()=>{if(qrS.busy)return;qrS.busy=true;
       try{const r=await qrS.det.detect(v);if(r.length&&r[0].rawValue){const t=r[0].rawValue;qrTaraDur();d.close();if(navigator.vibrate)navigator.vibrate(60);qrIsle(t)}}catch(e){}
-      qrS.busy=false},300);
+      qrS.busy=false},150);
   }catch(err){$("qtV").classList.add("hide");$("qtE").textContent="Kamera açılamadı ("+(err&&err.name==="NotAllowedError"?"izin verilmedi":"kullanılamıyor")+"). Seri no yazarak açabilirsiniz.";$("qtM").focus()}}
 $("qrTara").addEventListener("close",qrTaraDur);
 $("qtX").onclick=()=>$("qrTara").close();
@@ -2636,7 +2637,7 @@ try{
 .qrBox{background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden}
 .qrBox svg{display:block;width:100%;height:100%}
 #prn .snw{display:flex;align-items:flex-end;gap:calc(2.5mm*var(--z))}
-#prn .pq{flex:0 0 auto;width:calc(15mm*var(--z));height:calc(15mm*var(--z));-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#prn .pq{flex:0 0 auto;width:30mm;height:30mm;margin-bottom:1mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #prn .pq svg{display:block;width:100%;height:100%}
 #prn{display:none;--z:1}
 #prn.meas{display:block;position:absolute;left:-10000px;top:0;width:285mm}
@@ -3756,7 +3757,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     var pw=c.w*96/25.4,ph=c.h*96/25.4,s=Math.min(1,(W.clientWidth-16)/pw);
     P.style.transform="scale("+s+")";P.style.width=pw+"px";P.style.height=ph+"px";W.style.height=(ph*s+16)+"px";
     var qc=P.querySelector(".qrc"),qw=r.querySelector(".qrWarn");
-    if(qw){var mm=qc?qc.offsetHeight*25.4/96:99;qw.style.display=qc&&mm<16?"block":"none";if(qc&&mm<16)qw.textContent="⚠️ QR çok küçük kalıyor (≈"+Math.round(mm)+" mm). Okunmayabilir: etiket boyunu büyütün veya QR'ı kapatın."}
+    if(qw){var mm=qc?qc.offsetHeight*25.4/96:99;/* en az ~22 mm (test: 15 mm okunmuyor) */qw.style.display=qc&&mm<22?"block":"none";if(qc&&mm<22)qw.textContent="⚠️ QR çok küçük kalıyor (≈"+Math.round(mm)+" mm). Okunmayabilir: etiket boyunu büyütün veya QR'ı kapatın."}
   }
   function prevAll(){g("lbRows").querySelectorAll(".lbrow").forEach(prevRow)}
   g("lbDlg").addEventListener("input",function(ev){var r=ev.target.closest(".lbrow");clearTimeout(prevAll.h);prevAll.h=setTimeout(function(){r&&!ev.target.closest("#lbMag,#lbW,#lbH")?prevRow(r):prevAll()},120)});
