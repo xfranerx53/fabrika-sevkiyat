@@ -9,13 +9,13 @@ const hashler = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)]
   .map(m => "'sha256-" + crypto.createHash("sha256").update(m[1], "utf8").digest("base64") + "'");
 const csp = [
   "default-src 'self'",
-  "script-src 'self' https://www.gstatic.com https://cdnjs.cloudflare.com https://apis.google.com https://www.google.com/recaptcha/ " + hashler.join(" "),
+  "script-src 'self' 'unsafe-eval' https://*.gstatic.com https://cdnjs.cloudflare.com https://*.google.com https://*.googleapis.com https://*.firebaseapp.com " + hashler.join(" "),
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "media-src 'self' blob: data:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app https://*.cloudfunctions.net https://www.google.com https://www.gstatic.com",
-  "frame-src https://*.firebaseapp.com https://www.google.com https://apis.google.com",
+  "connect-src 'self' https: wss:",
+  "frame-src https:",
   "worker-src 'self'", "manifest-src 'self'", "object-src 'none'", "base-uri 'self'", "form-action 'self'"
 ].join("; ");
 const etiket = '<meta http-equiv="Content-Security-Policy" content="' + csp + '">';
