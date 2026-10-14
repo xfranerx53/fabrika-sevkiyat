@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' https://*.gstatic.com https://cdnjs.cloudflare.com https://*.google.com https://*.googleapis.com https://*.firebaseapp.com 'sha256-FMMfM4a1bF0Db++M7xAeXxjDj2L/Zhk58jUL7c+jBw4=' 'sha256-YVWkC+pRwGfS7jf3l2NFW6+9YVOSqhi/Lwgbu8WZ1l0=' 'sha256-BiiuNOb2OwOKIDQX9/nivqDZvOr+yPvspcHbwjS9AeM=' 'sha256-k0Mwen57CKJwE9D1lfQrYwM3TLv2uMZh2V/XN4et4ls=' 'sha256-xngTDU/BiJgruaHnWm+Ju8oI5fS2bpnB+VkHmRWYjGY=' 'sha256-92IoMf8N1kc74+W3Xa1xc0lMcG2lmiY80ymEQ8r7k7k=' 'sha256-Kz9BDj5sDXCeO1w2/wQnrrXcE7yJxItNHxzyX+IgkYg=' 'sha256-fzCBmtKOdOCCapTPRp9uyQ2uZk65voCs3xmkrMPH6WY=' 'sha256-s9Y14DiRVa/dddOU+0W3Uzb53SAwl8MlRV2J7Rd/1iM='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: data:; font-src 'self' data:; connect-src 'self' https: wss:; frame-src https:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' https://*.gstatic.com https://cdnjs.cloudflare.com https://*.google.com https://*.googleapis.com https://*.firebaseapp.com 'sha256-FMMfM4a1bF0Db++M7xAeXxjDj2L/Zhk58jUL7c+jBw4=' 'sha256-2UE+K1hn35l9Sic4rRwkZb9DCj0qS//EtyX9t6sYj0k=' 'sha256-BiiuNOb2OwOKIDQX9/nivqDZvOr+yPvspcHbwjS9AeM=' 'sha256-k0Mwen57CKJwE9D1lfQrYwM3TLv2uMZh2V/XN4et4ls=' 'sha256-xngTDU/BiJgruaHnWm+Ju8oI5fS2bpnB+VkHmRWYjGY=' 'sha256-92IoMf8N1kc74+W3Xa1xc0lMcG2lmiY80ymEQ8r7k7k=' 'sha256-Kz9BDj5sDXCeO1w2/wQnrrXcE7yJxItNHxzyX+IgkYg=' 'sha256-fzCBmtKOdOCCapTPRp9uyQ2uZk65voCs3xmkrMPH6WY=' 'sha256-s9Y14DiRVa/dddOU+0W3Uzb53SAwl8MlRV2J7Rd/1iM='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: data:; font-src 'self' data:; connect-src 'self' https: wss:; frame-src https:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#c82333">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1183,14 +1183,20 @@ function kart(u){
   ${irsHtml(u)}
   <div class="acts">${onb}${mod==="sevk"&&u.durum==="sevk_edilecek"&&sevForm()?`<button class="btn b6" style="grid-column:span 2" data-a="arac" data-id="${id}">🚚 Araç / sorumlu değiştir</button>`:""}${u.isEmriNo&&u.durum==="hazir"&&mod==="sevk"&&sevForm()?`<button class="btn b2" style="grid-column:span 2" data-a="isgeri" data-id="${id}">↩️ İş emrine geri al (Biten)</button>`:""}${nx}${eb}${db2}</div></div>`;
 }
+let aracTab="isuzu";
+$("liste").addEventListener("click",e=>{const b=e.target.closest("button[data-arac]");if(!b)return;aracTab=b.dataset.arac;listele()});
 function listele(){
   if(!started)return;
   const L=filtreli();
   $("sumT").textContent=`${L.length} kayıt · ${fmt(L.reduce((s,u)=>s+(+u.kg||0),0))} kg · ${fmt(L.reduce((s,u)=>s+(+u.paket||0),0))} adet`;
   if(mod==="sevk"&&tab==="sevk_edilecek"){
-    const bl=(t,A)=>`<div style="margin:14px 0 8px;padding:10px 12px;border-radius:10px;background:#0f766e;color:#fff;font-weight:800;font-size:16px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span>🚚 ${esc(t)}</span><span style="font-size:13px;font-weight:700">${A.length} kayıt · ${esc(fmt(A.reduce((x,u)=>x+(+u.kg||0),0)))} kg</span></div>`+(A.length?A.map(kart).join(""):'<div class="empty">Bu araca atanmış kayıt yok.</div>');
-    const dg=L.filter(u=>!ARACLAR[u.arac]);
-    $("liste").innerHTML=bl(ARACLAR.isuzu,L.filter(u=>u.arac==="isuzu"))+bl(ARACLAR.ford,L.filter(u=>u.arac==="ford"))+(dg.length?bl("Araç atanmamış",dg):"");
+    const dg=L.filter(u=>!ARACLAR[u.arac]),K=[["isuzu","🚛 ISUZU KAMYON","34 DFV 172",L.filter(u=>u.arac==="isuzu")],["ford","🚐 FORD MİNİBÜS","34 EOM 772",L.filter(u=>u.arac==="ford")]];
+    if(dg.length)K.push(["yok","❔ ARAÇSIZ","atanmamış",dg]);
+    if(!K.some(x=>x[0]===aracTab))aracTab="isuzu";
+    const sec=K.find(x=>x[0]===aracTab),A=sec[3];
+    $("liste").innerHTML=`<div style="display:grid;grid-template-columns:repeat(${K.length},1fr);gap:6px;margin:10px 0">`+K.map(x=>`<button type="button" class="btn ${x[0]===aracTab?"b2":"b6"}" style="margin:0;padding:10px 4px;font-size:14px;line-height:1.25" data-arac="${x[0]}">${x[1]}<br><small>${x[2]} · ${x[3].length} kayıt</small></button>`).join("")+`</div>`
+      +`<div style="margin:0 0 8px;font-weight:700;color:#0f766e;font-size:14px">${A.length} kayıt · ${esc(fmt(A.reduce((x,u)=>x+(+u.kg||0),0)))} kg</div>`
+      +(A.length?A.map(kart).join(""):'<div class="empty">Bu araca atanmış kayıt yok.</div>');
     return;
   }
   $("liste").innerHTML=L.length?L.map(kart).join(""):'<div class="empty">Kayıt bulunamadı.</div>';
