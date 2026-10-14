@@ -16,7 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=41">
+<link rel="stylesheet" href="style.css?v=42">
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -381,12 +381,18 @@
   <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="aracX">Vazgeç</button><button type="button" class="btn b3" id="aracOk">✓ Sevk listesine al</button></div>
 </dialog>
 <dialog id="dTal">
-  <h3 style="margin-bottom:4px">📋 Yeni Talimat</h3>
-  <p class="mut" style="font-size:14px;margin-bottom:10px">Sevkiyat sorumlusuna yapacağı işi yazın. Örn: A fabrikasından masura alınacak.</p>
-  <label for="talHedef">Kime</label><select id="talHedef"><option value="*">Tüm sevkiyat sorumluları</option></select>
-  <label for="talMetin" style="margin-top:8px">Talimat</label><textarea id="talMetin" rows="3" maxlength="500" placeholder="Örn: A fabrikasından masura alınacak"></textarea>
+  <h3 style="margin-bottom:10px">📋 Yeni Talimat</h3>
+  <label for="talMetin">Talimat</label><textarea id="talMetin" rows="3" maxlength="500" placeholder="Örn: A fabrikasından masura alınacak"></textarea>
+  <label style="margin-top:8px">Fotoğraf (en fazla 6 · ✖ ile kaldırılır)</label>
+  <div style="display:flex;gap:6px;margin-bottom:4px">
+    <label for="talCam" class="btn b7" style="margin:0;flex:1;text-align:center;cursor:pointer">📸 Kamera</label>
+    <label for="talGal" class="btn b6" style="margin:0;flex:1;text-align:center;cursor:pointer">🖼️ Galeri</label>
+  </div>
+  <input type="file" id="talCam" accept="image/*" capture="environment" class="hide">
+  <input type="file" id="talGal" accept="image/*" multiple class="hide">
+  <div id="talFG" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px"></div><div id="talFS" style="font-size:13px;color:#64748b;margin-top:4px"></div>
   <div class="err" id="talE" style="margin-top:6px"></div>
-  <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="talX">Vazgeç</button><button type="button" class="btn b3" id="talOk">✓ Talimatı ver</button></div>
+  <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="talX">Vazgeç</button><button type="button" class="btn b3" id="talOk">✓ Kaydet</button></div>
 </dialog>
 <dialog id="dTur">
   <h3 id="turH" style="margin-bottom:4px">✓ Teslim Edildi</h3>
@@ -474,17 +480,17 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="raporlar.js?v=41"></script>
+<script src="raporlar.js?v=42"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=41"></script>
+<script src="app.js?v=42"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=41"></script>
-<script src="saat.js?v=41"></script>
+<script src="foto-onizleme.js?v=42"></script>
+<script src="saat.js?v=42"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=41"></script>
+<script src="diyalog.js?v=42"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -509,8 +515,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=41"></script>
-<script src="etiket.js?v=41"></script>
+<script src="qr.js?v=42"></script>
+<script src="etiket.js?v=42"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -520,8 +526,8 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="talimat.js?v=41"></script>
-<script src="arama.js?v=41"></script>
-<script src="sw-kayit.js?v=41"></script>
+<script src="talimat.js?v=42"></script>
+<script src="arama.js?v=42"></script>
+<script src="sw-kayit.js?v=42"></script>
 </body>
 </html>

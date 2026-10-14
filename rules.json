@@ -239,6 +239,11 @@
           ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Sevkiyat Sorumlusu' && (root.child('sevkTalimat').child($id).child('hedefUid').val() === '*' || root.child('sevkTalimat').child($id).child('hedefUid').val() === auth.uid))",
           ".validate": "newData.isNumber()"
         },
+        "fotolar": {
+          "$i": {
+            ".validate": "$i.matches(/^[0-5]$/) && newData.isString() && newData.val().length < 300000 && newData.val().matches(/^data:image\\/jpeg;base64,[A-Za-z0-9+\\/=]+$/)"
+          }
+        },
         "$other": {
           ".validate": "false"
         }
