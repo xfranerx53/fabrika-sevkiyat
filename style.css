@@ -191,6 +191,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .lb .qt{flex:1;min-width:0;display:flex;flex-direction:column}
 .lb .qt .lbc{flex:1}
 .lb .qt .lbc.qa{border:0}
+.lb.sm3{padding:0;flex-direction:row}
+.lb.sm3 .ls{flex:0 0 33.3333%;width:33.3333%;padding:1.2mm;display:flex;min-width:0}
+.lb.sm3 .lbx{flex:1;border-width:.5mm}
+.lb.sm3 .lbr+.lbr{border-top-width:.4mm}
+.lb.sm3 .lbc{padding:0 .5mm}
+.lb.sm3 .lbq.sq{flex:0 0 auto;border-bottom:.4mm solid #000;justify-content:center;width:100%}
+.lb.sm3 .lbq.sq .qrc{height:auto;width:100%;border-right:0;padding:.3mm}
 .lb .qt .lbc.qn{flex:1.5;border-top:.7mm solid #000}
 #lbDlg .qrWarn{display:none;font-size:13px;font-weight:700;margin:-2px 0 6px}
 #lprn{display:none}
