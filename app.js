@@ -1653,10 +1653,9 @@ const isAksiyon=async ev=>{
     else if(a==="ileri"&&i>=0&&i<o.length-1){
       if(!asamaYap(e.asama)){toast("Bu aşamayı ilerletme yetkiniz yok.");return}
       if(e.asama==="etiket"){etiketIleri(e);return}else if(e.asama==="depo"){depoAc(e);return}else{
-        const s=prompt("Bu aşamada çıkan kg (boş bırakılabilir):","");if(s===null)return;
-        const kg=parseFloat(s.replace(",","."));
-        const up={};up["isEmirleri/"+e.id+"/asama"]=o[i+1];up["isEmirleri/"+e.id+"/log/"+e.asama]={kg:isNaN(kg)?null:kg,kim:ad(),zaman:TS};
-        hrkEk(up,e.id,{tur:"ileri",kimden:e.asama,kime:o[i+1],kg:isNaN(kg)?null:kg});await db.ref().update(up);
+        if(!confirm("Onaylıyor musunuz?"))return;
+        const up={};up["isEmirleri/"+e.id+"/asama"]=o[i+1];up["isEmirleri/"+e.id+"/log/"+e.asama]={kg:null,kim:ad(),zaman:TS};
+        hrkEk(up,e.id,{tur:"ileri",kimden:e.asama,kime:o[i+1],kg:null});await db.ref().update(up);
       }
     }
   }catch(err){toast(errText(err))}
