@@ -197,7 +197,10 @@ $("bK").onclick=async()=>{
   }catch(e){$("eK").style.color="";$("eK").textContent="2/2 Hesap açıldı ama kayıt veritabanına yazılamadı: "+errText(e);$("wE").textContent="Kayıt veritabanına yazılamadı: "+errText(e);$("wR").classList.remove("hide")}
   kayitDevam=false;$("bK").disabled=false;
 };
-$("bAd").onclick=()=>{const n=prompt("Yeni ad soyad:",rec&&rec.ad);if(n&&n.trim())db.ref("kullanicilar/"+user.uid+"/ad").set(n.trim()).catch(e=>toast(errText(e)))};
+$("bAd").onclick=()=>{$("adYeni").value=(rec&&rec.ad)||"";$("dAd").showModal();$("adYeni").focus();$("adYeni").select()};
+$("adNo").onclick=()=>$("dAd").close();
+const adKaydet=()=>{const n=$("adYeni").value.trim();if(!n){$("dAd").close();return}db.ref("kullanicilar/"+user.uid+"/ad").set(n).then(()=>$("dAd").close()).catch(e=>toast(errText(e)))};
+$("adOk").onclick=adKaydet;$("adYeni").addEventListener("keydown",e=>{if(e.key==="Enter")adKaydet()});
 
 /* ---------- Veri ---------- */
 function yukle(){

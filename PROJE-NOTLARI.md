@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v49**
-Son güncelleme: 2026-10-15 (v49: yeni ÜRETİM bölümü)
+**GÜNCEL SÜRÜM: v50**
+Son güncelleme: 2026-10-15 (v50: üst çubuk pencereleri boş alana tıklayınca kapanır)
 
 ---
 
@@ -241,6 +241,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
 - 2026-10-15: v48 — "Etiket hazırla" penceresi (#lbDlg) "Yeni iş emri" gibi geniş ve büyük yazılı açılır; sütun etiketleri yan yana dizilir (dar ekranda alt alta). İş emri kartındaki "🏷️ Etiket hazırla" düğmesi "Yeni iş emri aç" ile aynı boyda (`big`). Sadece style.css + app.js. Firebase kuralı: değişmedi.
 - 2026-10-15: v49 — Yeni **ÜRETİM** bölümü (`uretim`, menüde 🏭). Ekstruder, Baskı, Kesim, Depo, Biten aşamaları İş emirleri'nden buraya taşındı; **İş emirleri'nde sadece Etiket aşaması + Dosyalar** kaldı (arama açıkken İş emirleri tüm aşamaları tarar). Aynı `isEmirleri` verisi ve aynı kart/düğmeler kullanılır (`isListele` panele göre çizer: `iList/iTabs/iq` = İş emirleri, `uList/uTabs/uq` = Üretim; `URA` = üretim aşamaları). Yeni izin anahtarı `uretim` (app.js YETKI/IZ_GRUP + rules.json validate). Rol şablonları: Ekstruder/Matbaa/Kesim/Bobinoz operatörleri artık `mod:["uretim"]`, `ana:"uretim"`; Depo Görevlisi ve Muhasebe `is`+`uretim`. rules.json: `isEmirleri`/`isHareket` okuma/yazma `is` yanına `uretim` de kabul eder. QR okutulunca iş emri `is` yetkisi varsa İş emirleri, yoksa Üretim bölümünde açılır. **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).**
+- 2026-10-15: v50 — Yönetici (`dAdm`), 🔔 Bildirimler (`dBild`), 🔑 Şifre (`dSf`) pencereleri ve yeni İsim penceresi (`dAd`, eski `prompt()` yerine) arka plandaki boş alana dokununca kapanır (diyalog.js). Firebase kuralı: değişmedi.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
