@@ -1833,7 +1833,7 @@ function isForm(e,fy){
   <div class="hdr"><div class="lg">${logo}mag ambalaj</div><div class="snw"><div class="sn"><small>SERİ NO:</small><b>${esc(e.no||"")}</b></div>${e.no?`<div class="pq">${isQrSvg(e.no,1)}</div>`:""}</div></div>
   <div class="tt">ÜRETİM İŞ TAKİP FORMU</div>
   <table class="px top"><colgroup><col style="width:20%"><col style="width:42%"><col style="width:16%"><col style="width:22%"></colgroup>
-  <tr><th>MÜŞTERİ :</th><td class="v">${U(e.musteri)}</td><th>SP.<br>TARİHİ:</th><td class="v">${esc(trDate(e.spTarih))}</td></tr>
+  <tr><th>MÜŞTERİ :</th><td class="v">${U(e.musteri)}</td><th>SP.<br>TARİHİ:</th><td class="v" style="white-space:nowrap">${esc(trDate(e.spTarih))}</td></tr>
   <tr><th>İŞİN ADI :</th><td class="v">${U(e.isAdi)}</td>${fy?`<th>F/X :</th><td class="v">${U(e.fx)}</td>`:`<th></th><td class="v"></td>`}</tr>
   ${fyT?`<tr><th rowspan="2">STOK ADI :</th><td class="v" rowspan="2">${U(e.stok)}</td><th>FİYAT :</th><td class="v">${fyT}</td></tr><tr><th>KLİŞE :</th><td class="v">-</td></tr>`:`<tr><th>STOK ADI :</th><td class="v">${U(e.stok)}</td><th>SP.<br>NO:</th><td class="v">-</td></tr>`}
   </table>
@@ -1850,7 +1850,6 @@ function isForm(e,fy){
   <tr><th>BASKI RENGİ :</th>${k3((c,i)=>i===0?U(e.renk):"-")}</tr>
   <tr><th>NOT :</th><td class="v n" colspan="6" style="height:calc(14mm*var(--z))">${notP(e.notB)}</td></tr>
   </table>
-  <table class="pt pc ps"><tr><th>Aşama</th><th>Tarih</th><th>Operatör</th><th>Biten Ürün</th></tr>${st.map(x=>satir(x[0],x[1])).join("")}</table>
   </div>`;
 }
 function isYazdir(e){
@@ -1859,8 +1858,14 @@ function isYazdir(e){
   /* Sayfaya sığan en büyük yazı boyutunu bul (ekranda ölç, sonra yazdır) */
   P.classList.add("meas");
   const f=P.querySelector(".pf:last-child"),hedef=198*96/25.4;
-  let z=1.25;P.style.setProperty("--z",z);
-  while(f.offsetHeight>hedef&&z>0.6){z=Math.round((z-0.01)*100)/100;P.style.setProperty("--z",z)}
+  /* Yazı en büyükten küçülterek: hem yükseklik hem genişlik sayfaya sığana kadar (QR sabit 22 mm) */
+  const tasar=()=>f.offsetHeight>hedef||[...f.querySelectorAll("td,.hdr")].some(x=>x.scrollWidth>x.clientWidth+1);
+  let z=3;P.style.setProperty("--z",z);
+  while(tasar()&&z>0.5){z=Math.round((z-0.02)*100)/100;P.style.setProperty("--z",z)}
+  /* Kalan dikey boşluğu tablo satırlarına eşit dağıt: form sayfayı tam doldursun */
+  const bos=hedef-f.offsetHeight,tr=[...P.querySelectorAll(".pf .px tr")];
+  if(bos>4&&tr.length){const ek=bos/tr.length;P.querySelectorAll(".pf").forEach(pf=>{const r=[...pf.querySelectorAll(".px tr")];r.forEach(x=>x.style.height=(x.offsetHeight+ek)+"px")});
+    if(f.offsetHeight>hedef)tr.forEach(x=>x.style.height="")}
   P.classList.remove("meas");
   const t=document.title;document.title=(e.no||"is-emri")+" - iş takip formu";
   window.onafterprint=()=>{document.title=t;P.innerHTML=""};

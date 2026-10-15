@@ -146,13 +146,14 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #prn .pd th:last-child,#prn .pd td:last-child{border-right:0}
 #prn .pd th:first-child{width:34%;text-align:left}
 #prn .hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:calc(1mm*var(--z))}
-#prn .lg{display:flex;align-items:center;gap:calc(2mm*var(--z));font-style:italic;font-weight:900;font-size:calc(29pt*var(--z)*var(--fk));letter-spacing:-1px;line-height:1}
-#prn .lg svg{width:calc(17mm*var(--z));height:calc(9mm*var(--z))}
-#prn .sn{text-align:right;line-height:1.1}#prn .sn small{display:block;font-size:calc(11pt*var(--z)*var(--fk))}#prn .sn b{font-size:calc(22pt*var(--z)*var(--fk));font-weight:900}
+#prn .lg{display:flex;align-items:center;gap:calc(2mm*min(var(--z),0.62));font-style:italic;font-weight:900;font-size:calc(29pt*min(var(--z),0.62)*var(--fk));letter-spacing:-1px;line-height:1}
+#prn .lg svg{width:calc(17mm*min(var(--z),0.62));height:calc(9mm*min(var(--z),0.62))}
+#prn .lg,#prn .sn b{white-space:nowrap}
+#prn .sn{text-align:right;line-height:1.1}#prn .sn small{display:block;font-size:calc(11pt*min(var(--z),0.62)*var(--fk))}#prn .sn b{font-size:calc(22pt*min(var(--z),0.62)*var(--fk));font-weight:900}
 #prn .tt{text-align:center;font-weight:900;font-size:calc(17pt*var(--z)*var(--fk));border:1.5px solid #000;border-bottom:0;padding:calc(1mm*var(--z))}
 #prn .px{width:100%;border-collapse:collapse;table-layout:fixed}
 #prn .px th,#prn .px td{border:1.5px solid #000;padding:calc(1.2mm*var(--z)) calc(1.5mm*var(--z));font-size:calc(11.5pt*var(--z)*var(--fk));font-weight:800;vertical-align:middle;word-break:break-word;background:#fff}
-#prn .px th{text-align:left;line-height:1.1;white-space:nowrap;font-size:calc(10.5pt*var(--z)*var(--fk))}
+#prn .px th{text-align:left;line-height:1.1;white-space:normal;font-size:calc(10.5pt*var(--z)*var(--fk))}
 #prn .px td.v{text-align:center;font-size:calc(14pt*var(--z)*var(--fk))}
 #prn .px td.u{font-size:calc(10pt*var(--z)*var(--fk));font-weight:700;text-align:left;padding-left:calc(.8mm*var(--z))}
 #prn .px td.n{font-size:calc(11pt*var(--z)*var(--fk));height:calc(11mm*var(--z))}
