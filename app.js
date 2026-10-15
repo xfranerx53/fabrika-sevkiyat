@@ -1692,7 +1692,17 @@ async function qrIsle(txt){
     }catch(err){toast("Arama hatası: "+errText(err));return}
   }
   if(!e){toast("İş emri bulunamadı: "+no);return}
+  qrAsamayaGit(e);
   qrAc(e)}
+/* QR okutunca: iş emrinin son kaldığı aşamanın listesine git (ekstruder, baskı, kesim, depo, etiket...) */
+function qrAsamayaGit(e){
+  try{
+    const a=e.asama;
+    if(a==="etiket"&&modGor("is")&&asamaGor("etiket")){modSec("is");iTab="etiket"}
+    else if(URA.includes(a)&&a!=="bitti"&&modGor("uretim")&&asamaGor(a)){modSec("uretim");uTab=a}
+    else if(a==="bitti"&&modGor("uretim")&&asamaGor("bitti")){modSec("uretim");uTab="bitti"}
+    if(panel==="is"||panel==="uretim")isListele()}
+  catch(er){}}
 function qrAc(e){
   qrDurdur();qrAcikId=e.id;qrCache[e.id]=e;
   qrRef=db.ref("isEmirleri/"+e.id);
@@ -1703,6 +1713,7 @@ function qrDurdur(){if(qrRef){qrRef.off();qrRef=null}}
 $("qrDlg").addEventListener("close",()=>{qrDurdur();qrAcikId=null});
 function qrOzet(e){
   const o=asOrd(e),ad_=ASL[e.asama]||e.asama;let t="ok",m="";
+  const konum='<div style="background:#0f172a;color:#fff;border-radius:10px;padding:10px;margin-bottom:8px;font-size:18px;font-weight:800">📍 Şu an: '+esc(ad_)+'</div>';
   const u=urunler.find(x=>x.isEmriId===e.id);
   if(e.asama==="depo"){m="📦 <b>Depoya giriş bekliyor.</b> Aşağıdaki «Depoya girişi kaydet» ile kg ve paket sayısını girin."}
   else if(e.asama==="bitti"&&e.bekleAktar&&!e.aktarildi){m="✅ <b>Depoya girdi.</b> Sevkiyata hazır ürünlere aktarılması bekleniyor."}
@@ -1713,7 +1724,7 @@ function qrOzet(e){
   else{t="warn";m="⚠️ <b>Bu iş emri henüz «"+esc(ad_)+"» aşamasında.</b> Depoya giriş / sevk için hazır değil. Yanlış etiket ya da erken gelen ürün olabilir, kontrol edin."}
   const col=t==="ok"?"background:#ecfdf5;border:1.5px solid #6ee7b7;color:#065f46":"background:#fef2f2;border:1.5px solid #fca5a5;color:#991b1b";
   const c=icols(e),top=c.reduce((a,x)=>a+(+x.kg||0),0);
-  return `<div style="border:2px solid #0f172a;border-radius:10px;padding:10px;margin-bottom:8px">
+  return konum+`<div style="border:2px solid #0f172a;border-radius:10px;padding:10px;margin-bottom:8px">
     <div style="font-size:29px;font-weight:900;letter-spacing:.5px">${esc(e.no)}</div>
     <div style="font-size:19px;font-weight:800;margin-top:2px">${esc(e.musteri||"-")}${e.isAdi?" · "+esc(e.isAdi):""}</div>
     <div class="sub" style="font-size:16px;color:#0f172a">${esc(e.stok||"")}${top?" · sipariş "+esc(fmt(top))+" kg":""}</div></div>
@@ -1866,7 +1877,7 @@ function isYazdir(e){
   P.innerHTML=`<div class="prow">${h}<div class="pcut"></div>${isForm(e,islemYap("fiyat"))}</div>`;
   /* Sayfaya sığan en büyük yazı boyutunu bul (ekranda ölç, sonra yazdır) */
   P.classList.add("meas");
-  const f=P.querySelector(".pf:last-child"),hedef=198*96/25.4;
+  const f=P.querySelector(".pf:last-child"),hedef=193*96/25.4;
   /* Yazı en büyükten küçülterek: hem yükseklik hem genişlik sayfaya sığana kadar (QR sabit 16 mm) */
   const tasar=()=>f.offsetHeight>hedef||[...f.querySelectorAll("td,.hdr")].some(x=>x.scrollWidth>x.clientWidth+1);
   let z=3;P.style.setProperty("--z",z);

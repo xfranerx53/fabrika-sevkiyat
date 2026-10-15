@@ -115,17 +115,17 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .qrBox{background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden}
 .qrBox svg{display:block;width:100%;height:100%}
 #prn .snw{display:flex;align-items:flex-end;gap:calc(2.5mm*var(--z))}
-#prn .pq{flex:0 0 auto;width:16mm;height:16mm;margin-bottom:1mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#prn .pq{flex:0 0 auto;width:16mm;height:16mm;margin-top:1mm;margin-bottom:1mm;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #prn .pq svg{display:block;width:100%;height:100%}
 #prn{display:none;--z:1;--fk:1.35}
 #prn.meas{display:block;position:absolute;left:-10000px;top:0;width:285mm}
 @media print{
-  @page{size:A4 landscape;margin:6mm}
+  @page{size:A4 landscape;margin:11mm 6mm 6mm 6mm}
   html,body{background:#fff!important;margin:0!important;padding:0!important}
   body>*:not(#prn){display:none!important}
   #prn{display:block!important}
 }
-#prn .prow{display:flex;width:285mm;height:196mm;color:#000;font-family:Arial,Helvetica,sans-serif;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-text-stroke:.25px #000}
+#prn .prow{display:flex;width:285mm;height:191mm;color:#000;font-family:Arial,Helvetica,sans-serif;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-text-stroke:.25px #000}
 #prn .pf{flex:1 1 0;width:0;min-width:0;align-self:flex-start;padding:0 calc(3mm*var(--z));box-sizing:border-box;font-size:calc(13pt*var(--z)*var(--fk))}
 #prn .pcut{flex:0 0 0;border-left:1.5px dashed #777;align-self:stretch}
 #prn .ph{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #000;padding-bottom:calc(2mm*var(--z));margin-bottom:calc(2.5mm*var(--z))}
