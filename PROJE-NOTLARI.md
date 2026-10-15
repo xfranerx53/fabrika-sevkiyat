@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v48**
-Son güncelleme: 2026-10-15 (v48: Etiket hazırla penceresi büyük/geniş, düğme büyük)
+**GÜNCEL SÜRÜM: v49**
+Son güncelleme: 2026-10-15 (v49: yeni ÜRETİM bölümü)
 
 ---
 
@@ -240,6 +240,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-15: v47 — (1) Tahsilat/talimat fotoğrafları küçük önizleme + fotoTam; hafifletme aracı tahsilat+talimat'ı da tarar. (2) Tahsilat silme → çöp kutusu + denetim; geri al → çöp kutusu + denetim; ✏ Düzenle eklendi. (3) Kayıt saatleri sunucudan. (5) Yeni `tah` izni, Muhasebe varsayılanı, menüde 💰 TAHSİLAT düğmesi. Dosyalar: app.js, index.html, tahsilat.js, talimat.js, rules.json, kontrol.js, sw.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ.
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
 - 2026-10-15: v48 — "Etiket hazırla" penceresi (#lbDlg) "Yeni iş emri" gibi geniş ve büyük yazılı açılır; sütun etiketleri yan yana dizilir (dar ekranda alt alta). İş emri kartındaki "🏷️ Etiket hazırla" düğmesi "Yeni iş emri aç" ile aynı boyda (`big`). Sadece style.css + app.js. Firebase kuralı: değişmedi.
+- 2026-10-15: v49 — Yeni **ÜRETİM** bölümü (`uretim`, menüde 🏭). Ekstruder, Baskı, Kesim, Depo, Biten aşamaları İş emirleri'nden buraya taşındı; **İş emirleri'nde sadece Etiket aşaması + Dosyalar** kaldı (arama açıkken İş emirleri tüm aşamaları tarar). Aynı `isEmirleri` verisi ve aynı kart/düğmeler kullanılır (`isListele` panele göre çizer: `iList/iTabs/iq` = İş emirleri, `uList/uTabs/uq` = Üretim; `URA` = üretim aşamaları). Yeni izin anahtarı `uretim` (app.js YETKI/IZ_GRUP + rules.json validate). Rol şablonları: Ekstruder/Matbaa/Kesim/Bobinoz operatörleri artık `mod:["uretim"]`, `ana:"uretim"`; Depo Görevlisi ve Muhasebe `is`+`uretim`. rules.json: `isEmirleri`/`isHareket` okuma/yazma `is` yanına `uretim` de kabul eder. QR okutulunca iş emri `is` yetkisi varsa İş emirleri, yoksa Üretim bölümünde açılır. **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).**
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 

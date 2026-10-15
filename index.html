@@ -16,7 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=48">
+<link rel="stylesheet" href="style.css?v=49">
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -72,7 +72,8 @@
   <div class="menuWrap">
     <h2>MAG AMBALAJ</h2>
     <p>Hoş geldiniz, <b id="menuAd"></b><br>Girmek istediğiniz bölümü seçin</p>
-    <button class="menuBtn" style="background:#c82333" data-go="is"><span class="ic">📋</span><div>İŞ EMİRLERİ<small>Ekstruder, baskı, kesim, depo takibi</small></div></button>
+    <button class="menuBtn" style="background:#c82333" data-go="is"><span class="ic">📋</span><div>İŞ EMİRLERİ<small>Yeni iş emri, etiket hazırlama</small></div></button>
+    <button class="menuBtn" style="background:#b45309" data-go="uretim"><span class="ic">🏭</span><div>ÜRETİM<small>Ekstruder, baskı, kesim, depo, biten</small></div></button>
     <button class="menuBtn" style="background:#ff9f1c" data-go="sevk"><span class="ic">🚚</span><div>SEVKİYAT<small>Hazır ürünler, sevk listesi, adresler</small></div></button>
     <button class="menuBtn" style="background:#2563eb" data-go="stok"><span class="ic">📦</span><div>STOK<small>Stok, sipariş, tedarikçi, hareketler</small></div></button>
     <button class="menuBtn hide" style="background:#0f766e" data-go="tah"><span class="ic">💰</span><div>TAHSİLAT<small>Tahsilat talepleri, alınan ödemeler, talimatlar</small></div></button>
@@ -217,6 +218,11 @@
     <div id="dList"></div>
     <button class="btn b6 hide" id="dMore">Daha eski dosyaları yükle</button>
   </div>
+  </div>
+  <div id="pUr" class="hide">
+    <input id="uq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
+    <div class="tabs stabs" id="uTabs"></div>
+    <div id="uList"></div>
   </div>
   <div id="pRap" class="hide rp">
     <div class="item" style="margin-bottom:10px">
@@ -547,17 +553,17 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="raporlar.js?v=48"></script>
+<script src="raporlar.js?v=49"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=48"></script>
+<script src="app.js?v=49"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=48"></script>
-<script src="saat.js?v=48"></script>
+<script src="foto-onizleme.js?v=49"></script>
+<script src="saat.js?v=49"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=48"></script>
+<script src="diyalog.js?v=49"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -584,8 +590,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=48"></script>
-<script src="etiket.js?v=48"></script>
+<script src="qr.js?v=49"></script>
+<script src="etiket.js?v=49"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -595,9 +601,9 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="talimat.js?v=48"></script>
-<script src="tahsilat.js?v=48"></script>
-<script src="arama.js?v=48"></script>
-<script src="sw-kayit.js?v=48"></script>
+<script src="talimat.js?v=49"></script>
+<script src="tahsilat.js?v=49"></script>
+<script src="arama.js?v=49"></script>
+<script src="sw-kayit.js?v=49"></script>
 </body>
 </html>
