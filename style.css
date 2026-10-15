@@ -191,7 +191,18 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .lb .qt{flex:1;min-width:0;display:flex;flex-direction:column}
 .lb .qt .lbc{flex:1}
 .lb .qt .lbc.qa{border:0}
+.lb.lbo{padding:0;display:block}
 .lb.sm3{padding:0;flex-direction:row}
+.lb.sm3 .ls.lso{padding:0;position:relative;overflow:hidden;display:block}
+.lb.sm3 .lsr{position:absolute;left:0;top:0;width:50mm;height:30mm;padding:1.2mm;box-sizing:border-box;display:flex;transform-origin:0 0;transform:translateX(30mm) rotate(90deg)}
+.lb.sm3 .lbx.lh{flex-direction:column}
+.lb.sm3 .lhb{flex:1;display:flex;min-height:0;border-top:.4mm solid #000}
+.lb.sm3 .lhb .lbq.sq{flex:0 0 auto;height:100%;width:auto;aspect-ratio:1/1;border-bottom:0;border-right:.4mm solid #000}
+.lb.sm3 .lhb .lbq.sq .qrc{height:100%;width:100%;padding:.3mm}
+.lb.sm3 .lbx,.lb.sm3 .lbr,.lb.sm3 .lhb{min-width:0}
+.lb.sm3 .ls{overflow:hidden}
+.lb.sm3 .lbx.lh>.lbr{flex:0 0 5.2mm}
+.lb.sm3 .lhr{flex:1;min-width:0;display:flex;flex-direction:column}
 .lb.sm3 .ls{flex:0 0 33.3333%;width:33.3333%;padding:1.2mm;display:flex;min-width:0}
 .lb.sm3 .lbx{flex:1;border-width:.5mm}
 .lb.sm3 .lbr+.lbr{border-top-width:.4mm}
@@ -207,5 +218,5 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   body.lblp>*:not(#lprn){display:none!important}
   body.lblp>#lprn{display:block!important;position:static!important}
   body.lblp .lb{break-after:page;page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  body.lblp .lb:last-child{break-after:auto;page-break-after:auto}
+  body.lblp .lb:last-child,body.lblp .lb.lbi{break-after:auto;page-break-after:auto}
 }
