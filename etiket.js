@@ -26,13 +26,14 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     var q=new window.QRLib(-1,0);q.addData(t);q.make();var n=q.getModuleCount(),m=2,d="";
     for(var r=0;r<n;r++){var c=0;while(c<n){if(q.isDark(r,c)){var s=c;while(c<n&&q.isDark(r,c))c++;d+="M"+(s+m)+" "+(r+m)+"h"+(c-s)+"v1h-"+(c-s)+"z"}else c++}}
     var z=n+2*m;return qrMemo[t]='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+z+' '+z+'" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid meet"><rect width="'+z+'" height="'+z+'" fill="#fff"/><path d="'+d+'" fill="#000"/></svg>'}
-  function qrRow(c){if(!c.qr||!cur||!cur.no)return"";
-    return'<div class="lbq"><div class="qrc">'+qrSvg(qrUrl(cur.no))+'</div><div class="qt"><div class="lbc" data-g="q"><span>İŞ EMRİ NO</span></div><div class="lbc qn"><span>'+X(cur.no)+'</span></div></div></div>'}
+  function qrRow(c,o){if(!c.qr||!cur||!cur.no)return"";
+    return'<div class="lbq"><div class="qrc">'+qrSvg(qrUrl(cur.no))+'</div><div class="qt"><div class="lbc qa"><span>'+X(T(o.isAdi))+'</span></div></div></div>'}
   function lblHtml(o,c){
     var kg=o.kg>0?N(o.kg)+" KG":"";
     var h='<div class="lb" style="width:'+c.w+'mm;height:'+(c.h-0.3)+'mm">';
     if(c.mag)h+='<div class="lbh"><div class="lbc blk"><img src="'+LG_A+'" alt=""></div><div class="lbhm"><div class="lbc" data-g="h"><span>MAG AMBALAJ</span></div><div class="lbc" data-g="h"><span>A.Ş.</span></div></div><div class="lbc blk"><img src="'+LG_B+'" alt=""></div></div>';
-    h+='<div class="lbx">'+qrRow(c)+row(o.isAdi,"")+row(o.urun,"ÜRÜN")+row(o.ebat,"EBAT")+row(kg,"KG")+'</div>';
+    var qrOn=!!(c.qr&&cur&&cur.no);
+    h+='<div class="lbx">'+qrRow(c,o)+(qrOn?"":row(o.isAdi,""))+row(o.urun,"ÜRÜN")+row(o.ebat,"EBAT")+row(kg,"KG")+'</div>';
     if(c.mag)h+='<div class="lbf"><div class="lbc" data-g="f"><span>Cumhuriyet Mahallesi Meclis Caddesi No:62 Silivri/İSTANBUL</span></div><div class="lbc" data-g="f"><span>info@magambalaj.com</span></div><div class="lbc" data-g="f"><span>www.magambalaj.com</span></div></div>';
     return h+'</div>';
   }

@@ -190,6 +190,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .lb .qrc svg{display:block;width:100%;height:100%}
 .lb .qt{flex:1;min-width:0;display:flex;flex-direction:column}
 .lb .qt .lbc{flex:1}
+.lb .qt .lbc.qa{border:0}
 .lb .qt .lbc.qn{flex:1.5;border-top:.7mm solid #000}
 #lbDlg .qrWarn{display:none;font-size:13px;font-weight:700;margin:-2px 0 6px}
 #lprn{display:none}
