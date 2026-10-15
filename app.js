@@ -1827,7 +1827,7 @@ function isForm(e,fy){
   const cr=C.map((c,i)=>`<tr><td>${i+1}</td><td><b>${esc(fmt(c.kg))}</b></td><td>${esc(c.en||"")}</td><td>${esc(c.mikron||"")}</td><td>${esc(c.korona||"")}</td><td>${esc(c.boy||"")}</td></tr>`).join("");
   const U=v=>esc(v||"-"),X=i=>C[i]||null,k3=(fn,cl)=>[0,1,2].map(i=>`<td colspan="2" class="v">${fn(X(i),i)}</td>`).join(""),
     pair=(f,u)=>[0,1,2].map(i=>{const c=X(i),v=c&&c[f]?(f==="kg"?fmt(c.kg):c[f]):"";return `<td class="v">${v?esc(v):"-"}</td><td class="u">${u}</td>`}).join(""),
-    fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ₺ <small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:"",
+    fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ${PB[e.paraBirimi]||"₺"} <small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:"",
     logo='<svg viewBox="0 0 60 30"><ellipse cx="30" cy="15" rx="28" ry="12" fill="none" stroke="#000" stroke-width="3"/><path d="M10 11L24 24L30 13L36 24L50 11" fill="none" stroke="#000" stroke-width="3.5"/></svg>';
   return `<div class="pf">
   <div class="hdr"><div class="lg">${logo}mag ambalaj</div><div class="snw"><div class="sn"><small>SERİ NO:</small><b>${esc(e.no||"")}</b></div>${e.no?`<div class="pq">${isQrSvg(e.no,1)}</div>`:""}</div></div>
@@ -1872,18 +1872,19 @@ function isYazdir(e){
   setTimeout(()=>window.print(),150);
 }
 const canIsAc=()=>!!rec&&(rec.yonetici===true||islemYap("isAc")); /* adım 1: tablodan okunur, sonuç eskisiyle aynı */
+const PB={TRY:"₺",USD:"$",EUR:"€"};
 function iAc(e){
   iEdit=e||null;const v=e||{},C=e?icols(e):[];$("iT").textContent=e?"İş emrini düzenle":"Yeni iş emri";$("iGet").style.display=e?"none":"";$("iE").textContent="";
   [["iNo","no"],["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"],["iBU","urunAdi"],["iRenk","renk"]].forEach(([i,f])=>$(i).value=v[f]||"");
   notSet("iNtU",v.notU);notSet("iNtB",v.notB);
   if(!e)$("iNo").value=iNext();iDL();
   $("iTr").value=v.spTarih||bugun();$("iBv").checked=!!v.baskiVar;
-  $("iFyW").classList.toggle("hide",!islemYap("fiyat"));$("iFy").value=v.fiyat!=null?String(v.fiyat).replace(".",","):"";
+  $("iFyW").classList.toggle("hide",!islemYap("fiyat"));$("iFyL").textContent=islemYap("fiyat")?"FİYAT :":"";$("iPb").value=PB[v.paraBirimi]?v.paraBirimi:"TRY";$("iFy").value=v.fiyat!=null?String(v.fiyat).replace(".",","):"";
   {const sx=$("iFx");[...sx.options].forEach(o=>{if(o.dataset.ek)o.remove()});
    if(v.fx&&v.fx!=="X-PEŞİN"&&v.fx!=="F-PEŞİN"){const o=document.createElement("option");o.value=o.textContent=v.fx;o.dataset.ek="1";sx.appendChild(o)}
    sx.value=v.fx||"X-PEŞİN";
    $("iKd").checked=v.fiyat!=null?!v.kdvDahil:sx.value==="F-PEŞİN"}
-  $("iCols").innerHTML=[0,1,2].map(n=>{const c=C[n]||{};return `<div style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:6px"><b style="font-size:14px">${n+1}. ebat</b><div class="grid" style="margin-top:4px">`+[["kg","Kg"],["en","En (42*14*14)"],["mikron","Mikron"],["korona","Korona (bomlu/bomsuz)"],["boy","Boy / kazan (cm)"]].map(([f,p])=>`<input data-c="${n}" data-f="${f}" list="dl_${f}" placeholder="${p}"${f==="kg"?' type="number" inputmode="decimal" min="0" step="any"':""} value="${esc(c[f]??"")}">`).join("")+`</div></div>`}).join("");
+  document.querySelectorAll("#iCols [data-c]").forEach(i=>{const c=C[+i.dataset.c]||{};i.value=c[i.dataset.f]??""});
   iQrGuncelle();$("iDlg").showModal();
 }
 $("iAdd").onclick=()=>{if(!canIsAc())return toast("Yeni iş emrini sadece muhasebe, depo görevlisi ve yönetici açabilir.");iAc(null)};
@@ -1897,7 +1898,7 @@ $("iOk").onclick=async()=>{
   if(!S.length)return err("En az bir ebat için kg veya en girin.");
   if((!iEdit||iEdit.no!==no)&&isE.some(x=>x.no===no))return err("Bu seri no zaten kayıtlı.");
   const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:notGet("iNtU"),baskiVar:$("iBv").checked,urunAdi:g("iBU"),renk:g("iRenk"),notB:notGet("iNtB"),siparis:S};
-  if(islemYap("fiyat")){const fy=parseFloat(g("iFy").replace(",","."));d.fiyat=fy>0?fy:null;d.kdvDahil=!$("iKd").checked}
+  if(islemYap("fiyat")){const fy=parseFloat(g("iFy").replace(",","."));d.fiyat=fy>0?fy:null;d.kdvDahil=!$("iKd").checked;d.paraBirimi=$("iPb").value}
   $("iOk").disabled=true;let woMsg=null;
   try{
     if(iEdit){d.duzenleyen=ad();if(!d.baskiVar&&iEdit.asama==="baski")d.asama="kesim";

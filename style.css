@@ -220,3 +220,25 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   body.lblp .lb{break-after:page;page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body.lblp .lb:last-child,body.lblp .lb.lbi{break-after:auto;page-break-after:auto}
 }
+
+/* ===== Yeni iş emri: baskı formu düzeninde, geniş ===== */
+#iDlg{width:min(940px,98vw);max-height:96vh;padding:14px}
+#iDlg .isn{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+#iDlg .isn label{margin:0;white-space:nowrap;font-size:15px;color:#0f172a}
+#iDlg .isn input{font-size:22px;font-weight:900;max-width:260px}
+#iDlg .itt{text-align:center;font-weight:900;font-size:20px;border:2px solid #0f172a;border-bottom:0;padding:6px;margin-top:8px;background:#f1f5f9}
+#iDlg .ifm{width:100%;border-collapse:collapse;table-layout:fixed;margin:0}
+#iDlg .ifm+.ifm{margin-top:-2px}
+#iDlg .ifm th,#iDlg .ifm td{border:2px solid #0f172a;padding:3px;vertical-align:middle}
+#iDlg .ifm th{background:#f1f5f9;text-align:left;font-size:13px;font-weight:900;padding:4px 6px;color:#0f172a;line-height:1.15}
+#iDlg .ifm th.ihd{text-align:center;font-size:16px}
+#iDlg .ifm th.ihd .chip{margin-left:8px;font-size:13px;padding:3px 9px}
+#iDlg .ifm input,#iDlg .ifm select{border:0;border-radius:0;background:transparent;padding:8px 6px;font-weight:800;text-align:center;font-size:17px}
+#iDlg .ifm input:focus,#iDlg .ifm select:focus{background:#eff6ff;outline:2px solid #2563eb;outline-offset:-2px}
+#iDlg .ifm select{text-align-last:center}
+#iDlg .ifm input[type=checkbox]{width:auto;padding:0}
+#iDlg .ifx{display:grid;grid-template-columns:1fr 92px;gap:2px}
+#iDlg .ifm td>div[data-ph]{padding:2px}
+#iDlg .ifm td>div[data-ph] input{text-align:left;font-weight:700;border:1px solid #cbd5e1;border-radius:6px}
+#iDlg .ifm td>div[data-ph] .nadd{width:auto}
+@media(max-width:560px){#iDlg{padding:8px}#iDlg .ifx{grid-template-columns:1fr}#iDlg .ifm input[type=date]{font-size:13px;padding:8px 0}#iDlg .ifm select{font-size:14px}#iDlg .ifm input::placeholder{font-size:13px}#iDlg .ifm th{font-size:11px;padding:3px}#iDlg .ifm input,#iDlg .ifm select{font-size:16px;padding:8px 2px}}
