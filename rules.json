@@ -599,6 +599,12 @@
         "zaman": {
           ".validate": "newData.isNumber()"
         },
+        "kw": {
+          ".validate": "newData.isNumber() && newData.val() >= 10 && newData.val() <= 150"
+        },
+        "kh": {
+          ".validate": "newData.isNumber() && newData.val() >= 10 && newData.val() <= 300"
+        },
         "$other": {
           ".validate": "false"
         }

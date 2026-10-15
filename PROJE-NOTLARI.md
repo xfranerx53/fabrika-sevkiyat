@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v51**
-Son güncelleme: 2026-10-15 (v51: Bobinoz Ustası rolü kaldırıldı, operatörler Üretim'de tüm aşamaları görür)
+**GÜNCEL SÜRÜM: v52**
+Son güncelleme: 2026-10-15 (v52: küçük etiket ölçüsü değiştirilebilir, büyük/küçük için "Ölçüyü kaydet")
 
 ---
 
@@ -243,6 +243,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-15: v49 — Yeni **ÜRETİM** bölümü (`uretim`, menüde 🏭). Ekstruder, Baskı, Kesim, Depo, Biten aşamaları İş emirleri'nden buraya taşındı; **İş emirleri'nde sadece Etiket aşaması + Dosyalar** kaldı (arama açıkken İş emirleri tüm aşamaları tarar). Aynı `isEmirleri` verisi ve aynı kart/düğmeler kullanılır (`isListele` panele göre çizer: `iList/iTabs/iq` = İş emirleri, `uList/uTabs/uq` = Üretim; `URA` = üretim aşamaları). Yeni izin anahtarı `uretim` (app.js YETKI/IZ_GRUP + rules.json validate). Rol şablonları: Ekstruder/Matbaa/Kesim/Bobinoz operatörleri artık `mod:["uretim"]`, `ana:"uretim"`; Depo Görevlisi ve Muhasebe `is`+`uretim`. rules.json: `isEmirleri`/`isHareket` okuma/yazma `is` yanına `uretim` de kabul eder. QR okutulunca iş emri `is` yetkisi varsa İş emirleri, yoksa Üretim bölümünde açılır. **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).**
 - 2026-10-15: v50 — Yönetici (`dAdm`), 🔔 Bildirimler (`dBild`), 🔑 Şifre (`dSf`) pencereleri ve yeni İsim penceresi (`dAd`, eski `prompt()` yerine) arka plandaki boş alana dokununca kapanır (diyalog.js). Firebase kuralı: değişmedi.
 - 2026-10-15: v51 — (1) **Bobinoz Ustası rolü kaldırıldı** (Ekstruder Operatörü ile aynı): app.js YETKI, kayıt listesi (index.html), rules.json rol doğrulaması ve kesim yazma kuralları. (2) Operatör rollerinden `goster` kaldırıldı: Ekstruder/Matbaa/Kesim operatörleri Üretim'de tüm aşama sekmelerini görür, **sadece kendi aşamasını ilerletir** (`a_*` izni + rules aynı). Üretim açılışında operatörün kendi aşaması seçili gelir. Sevkiyat Sorumlusu Üretim'i göremez (değişmedi). **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).** Eski Bobinoz Ustası hesabı varsa Yönetici > rolü Ekstruder Operatörü yapın.
+- 2026-10-15: v52 — Etiket hazırla: (1) **Küçük etiketin eni/boyu artık değiştirilebilir** (ölçü TEK etiketin eni × boyu, varsayılan 30×50; sayfa = 3×en; yatay yazımdaki döndürme CSS değişkenleri `--cw/--ch` ile ölçüye uyar). Büyük/küçük arasında geçince her birinin yazılan ölçüsü korunur. (2) **"💾 Ölçüyü kaydet" düğmesi hem büyük hem küçük için** her zaman görünür; `ayarlar/etiket` altına yazar (büyük: `w,h,mag`; küçük: `kw,kh`), bir sonraki yazımda kullanılır (eski "ortak ölçü" düğmesinin yerine geçti; kayıt varsa cihaz ayarını ezer). rules.json: `ayarlar/etiket` altına `kw`,`kh` eklendi. **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).**
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 

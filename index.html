@@ -16,7 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=51">
+<link rel="stylesheet" href="style.css?v=52">
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -559,31 +559,32 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="raporlar.js?v=51"></script>
+<script src="raporlar.js?v=52"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=51"></script>
+<script src="app.js?v=52"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=51"></script>
-<script src="saat.js?v=51"></script>
+<script src="foto-onizleme.js?v=52"></script>
+<script src="saat.js?v=52"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=51"></script>
+<script src="diyalog.js?v=52"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Her sipariş sütunu için ayrı etiket. Bilgiler iş emrinden dolduruldu, değiştirebilirsiniz. Yazıcı olarak Godex'i seçin.</p>
-  <div><label class="s">Etiket tipi</label><select id="lbSm"><option value="0">Büyük etiket</option><option value="1">Küçük etiket (3×5 cm, yan yana 3'lü)</option></select></div>
+  <div><label class="s">Etiket tipi</label><select id="lbSm"><option value="0">Büyük etiket</option><option value="1">Küçük etiket (yan yana 3'lü)</option></select></div>
   <div><label class="s">Yazım yönü</label><select id="lbRot"><option value="0">Dikey (normal)</option><option value="1">Yatay (90° döndürülmüş yazım)</option></select></div>
   <div class="g3">
     <div><label class="s">Tasarım</label><select id="lbMag"><option value="1">Markalı (logo + adres)</option><option value="0">Sade (logosuz)</option></select></div>
-    <div><label class="s">Etiket eni (mm)</label><input id="lbW" type="number" inputmode="decimal" min="20" max="300" step="any"></div>
-    <div><label class="s">Etiket boyu (mm)</label><input id="lbH" type="number" inputmode="decimal" min="20" max="300" step="any"></div>
+    <div><label class="s">Etiket eni (mm)</label><input id="lbW" type="number" inputmode="decimal" min="10" max="300" step="any"></div>
+    <div><label class="s">Etiket boyu (mm)</label><input id="lbH" type="number" inputmode="decimal" min="10" max="300" step="any"></div>
   </div>
   <div class="g2"><div><label class="s">QR kod (iş emri no)</label><select id="lbQr"><option value="1">Etikette QR olsun</option><option value="0">QR olmasın</option></select></div></div>
   <div id="lbOrt" class="mut" style="font-size:13px;margin:6px 0 2px"></div>
-  <button class="btn b6 sm hide" id="lbOrtBtn" type="button" style="width:auto;margin:0 0 4px">📌 Bu ölçüyü ortak ayar yap</button>
+  <div id="lbSmNot" class="mut hide" style="font-size:13px;margin:2px 0">Küçük etikette ölçü TEK bir etiketin eni × boyudur (örn. 30 × 50). Sayfa 3 etiket yan yana basılır.</div>
+  <button class="btn b3" id="lbOrtBtn" type="button" style="width:auto;margin:6px 0 4px;padding:12px 18px;font-size:16px">💾 Ölçüyü kaydet</button>
   <div id="lbRows"></div>
   <div class="err" id="lbE"></div>
   <div style="display:flex;gap:8px"><button class="btn b6" id="lbNo" type="button">Kapat</button><button class="btn b3" id="lbAll" type="button">🖨️ Hepsini bas</button></div>
@@ -596,8 +597,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=51"></script>
-<script src="etiket.js?v=51"></script>
+<script src="qr.js?v=52"></script>
+<script src="etiket.js?v=52"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -607,9 +608,9 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="talimat.js?v=51"></script>
-<script src="tahsilat.js?v=51"></script>
-<script src="arama.js?v=51"></script>
-<script src="sw-kayit.js?v=51"></script>
+<script src="talimat.js?v=52"></script>
+<script src="tahsilat.js?v=52"></script>
+<script src="arama.js?v=52"></script>
+<script src="sw-kayit.js?v=52"></script>
 </body>
 </html>

@@ -199,7 +199,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .lb.lbo{padding:0;display:block}
 .lb.sm3{padding:0;flex-direction:row}
 .lb.sm3 .ls.lso{padding:0;position:relative;overflow:hidden;display:block}
-.lb.sm3 .lsr{position:absolute;left:0;top:0;width:50mm;height:30mm;padding:1.2mm;box-sizing:border-box;display:flex;transform-origin:0 0;transform:translateX(30mm) rotate(90deg)}
+.lb.sm3 .lsr{position:absolute;left:0;top:0;width:var(--ch,50mm);height:var(--cw,30mm);padding:1.2mm;box-sizing:border-box;display:flex;transform-origin:0 0;transform:translateX(var(--cw,30mm)) rotate(90deg)}
 .lb.sm3 .lbx.lh{flex-direction:column}
 .lb.sm3 .lhb{flex:1;display:flex;min-height:0;border-top:.4mm solid #000}
 .lb.sm3 .lhb .lbq.sq{flex:0 0 auto;height:100%;width:auto;aspect-ratio:1/1;border-bottom:0;border-right:.4mm solid #000}
