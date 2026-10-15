@@ -7,7 +7,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     eRef.on("value",function(sn){shared=sn.val()||null;if(g("lbDlg").open)ortGuncelle()},function(){})};
   window.etAyarDurdur=function(){if(eRef){eRef.off();eRef=null}shared=null};
   var SZK="lblSmSz";
-  function cfgGet(){var d={w:100,h:100,mag:1,qr:1,kw:30,kh:50};try{var s=JSON.parse(localStorage.getItem(CK)||"{}");if(s.w>0)d.w=s.w;if(s.h>0)d.h=s.h;if(s.mag===0||s.mag===1)d.mag=s.mag;if(s.qr===0||s.qr===1)d.qr=s.qr}catch(e){}
+  function cfgGet(){var d={w:100,h:80,mag:1,qr:1,kw:30,kh:50};try{var s=JSON.parse(localStorage.getItem(CK)||"{}");if(s.w>0)d.w=s.w;if(s.h>0)d.h=s.h;if(s.mag===0||s.mag===1)d.mag=s.mag;if(s.qr===0||s.qr===1)d.qr=s.qr}catch(e){}
     try{var z=JSON.parse(localStorage.getItem(SZK)||"{}");if(z.kw>=10)d.kw=z.kw;if(z.kh>=10)d.kh=z.kh}catch(e){}
     if(shared&&shared.w>=20&&shared.h>=20){d.w=shared.w;d.h=shared.h;d.mag=shared.mag===0?0:1}
     if(shared&&shared.kw>=10&&shared.kh>=10){d.kw=shared.kw;d.kh=shared.kh}return d}
@@ -96,8 +96,11 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     if(lastSm!==null&&lastSm!==sm)mem[lastSm]=[g("lbW").value,g("lbH").value];
     var c=cfgGet(),m=mem[sm];
     if(m){g("lbW").value=m[0];g("lbH").value=m[1]}else if(sm){g("lbW").value=c.kw;g("lbH").value=c.kh}else{g("lbW").value=c.w;g("lbH").value=c.h}
-    lastSm=sm;g("lbMag").disabled=!!sm;var nt=g("lbSmNot");if(nt)nt.classList.toggle("hide",!sm)}
-  g("lbSm").addEventListener("change",function(){smUi();prevAll();ortGuncelle()});
+    lastSm=sm;g("lbMag").disabled=!!sm;var nt=g("lbSmNot");if(nt)nt.classList.toggle("hide",!sm);pgBilgi()}
+  /* Yazıcıya giden sayfa: EN = rulo genişliği yönü, BOY = yazıcıdan çıkış (besleme) yönü. Küçükte 3 etiket yan yana: sayfa = 3×en × boy */
+  function pgBilgi(){var t=g("lbPg");if(!t)return;var c=cfgRead();
+    t.textContent=c.sm?"🖨️ Yazıcıya giden sayfa: "+N(c.w)+" × "+N(c.h)+" mm  (3 etiket yan yana, her biri "+N(c.kw)+" × "+N(c.h)+" mm)":"🖨️ Yazıcıya giden sayfa: "+N(c.w)+" × "+N(c.h)+" mm  (tek etiket)"}
+  g("lbSm").addEventListener("change",function(){smUi();prevAll();ortGuncelle();pgBilgi()});
   window.etiketAc=function(e){
     try{
       temizle();cur=e;var c=cfgGet(),n=nCol(e),C=cols(e);
@@ -194,7 +197,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     t.textContent="💾 Kayıtlı ölçü — "+kb+" · "+ks+(o&&o.kim?" (kaydeden: "+o.kim+")":"");
     b.textContent=sm?"💾 Küçük etiket ölçüsünü kaydet":"💾 Büyük etiket ölçüsünü kaydet";b.classList.remove("hide")}
   ["input","change"].forEach(function(t){g("lbDlg").addEventListener(t,function(ev){
-    if(ev.target.closest("#lbMag,#lbW,#lbH"))ortGuncelle();
+    if(ev.target.closest("#lbMag,#lbW,#lbH"))ortGuncelle();if(ev.target.closest("#lbW,#lbH"))pgBilgi();
     var r=ev.target.closest(".lbrow");if(r&&t==="input"&&ev.target.closest("[data-f]"))r.dataset.touched="1";
     if(t==="change"&&ev.target.matches("[data-t]")&&r){var m=tpl[ev.target.value];if(m){setRow(r,m);r.dataset.touched="1"}}})});
   g("lbOrtBtn").onclick=function(){var c=cfgRead(),base=cfgGet(),sm=!!c.sm,up={kim:ad(),zaman:firebase.database.ServerValue.TIMESTAMP};

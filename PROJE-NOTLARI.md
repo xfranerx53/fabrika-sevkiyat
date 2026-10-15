@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v52**
-Son güncelleme: 2026-10-15 (v52: küçük etiket ölçüsü değiştirilebilir, büyük/küçük için "Ölçüyü kaydet")
+**GÜNCEL SÜRÜM: v53**
+Son güncelleme: 2026-10-15 (v53: etiket çalışma şekli netleştirildi, büyük varsayılan 100×80, "Yazıcıya giden sayfa" satırı)
 
 ---
 
@@ -244,6 +244,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-15: v50 — Yönetici (`dAdm`), 🔔 Bildirimler (`dBild`), 🔑 Şifre (`dSf`) pencereleri ve yeni İsim penceresi (`dAd`, eski `prompt()` yerine) arka plandaki boş alana dokununca kapanır (diyalog.js). Firebase kuralı: değişmedi.
 - 2026-10-15: v51 — (1) **Bobinoz Ustası rolü kaldırıldı** (Ekstruder Operatörü ile aynı): app.js YETKI, kayıt listesi (index.html), rules.json rol doğrulaması ve kesim yazma kuralları. (2) Operatör rollerinden `goster` kaldırıldı: Ekstruder/Matbaa/Kesim operatörleri Üretim'de tüm aşama sekmelerini görür, **sadece kendi aşamasını ilerletir** (`a_*` izni + rules aynı). Üretim açılışında operatörün kendi aşaması seçili gelir. Sevkiyat Sorumlusu Üretim'i göremez (değişmedi). **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).** Eski Bobinoz Ustası hesabı varsa Yönetici > rolü Ekstruder Operatörü yapın.
 - 2026-10-15: v52 — Etiket hazırla: (1) **Küçük etiketin eni/boyu artık değiştirilebilir** (ölçü TEK etiketin eni × boyu, varsayılan 30×50; sayfa = 3×en; yatay yazımdaki döndürme CSS değişkenleri `--cw/--ch` ile ölçüye uyar). Büyük/küçük arasında geçince her birinin yazılan ölçüsü korunur. (2) **"💾 Ölçüyü kaydet" düğmesi hem büyük hem küçük için** her zaman görünür; `ayarlar/etiket` altına yazar (büyük: `w,h,mag`; küçük: `kw,kh`), bir sonraki yazımda kullanılır (eski "ortak ölçü" düğmesinin yerine geçti; kayıt varsa cihaz ayarını ezer). rules.json: `ayarlar/etiket` altına `kw`,`kh` eklendi. **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).**
+- 2026-10-15: v53 — Etiket çalışma şekli (fiziksel): **EN = rulo genişliği yönü, BOY = yazıcıdan çıkış/besleme yönü.** Büyük etiket 100 (en) × 80 (boy) mm, tek etiket. Küçük etiket 30 (en) × 50 (boy) mm, rulo üzerinde **3 tane yan yana**, sayfa = 3×en × boy = 90×50 mm. Ölçüler yine değiştirilebilir. Büyük etiket varsayılan boyu 100'den **80**'e çekildi (cfgGet). Etiket penceresine "🖨️ Yazıcıya giden sayfa: … mm" satırı ve en/boy açıklaması eklendi (yazıcı sürücüsündeki kâğıt boyu bununla aynı olmalı). Değişen: etiket.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
