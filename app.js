@@ -1608,17 +1608,12 @@ function isListele(){
 }
 function isKart(e){
   const id=esc(e.id),o=asOrd(e),i=o.indexOf(e.asama),nx=o[i+1],canDel=isAdmin()||(islemYap("isSil")&&e.ekleyenUid&&e.ekleyenUid===user.uid);
-  const C=icols(e).map(c=>`<div class="info" style="margin-top:4px"><b>${esc(fmt(c.kg))} kg</b> · ${esc(c.en||"-")} · ${esc(c.mikron||"-")}µ · ${esc(c.korona||"-")}${c.boy?" · boy "+esc(c.boy):""}</div>`).join("");
   const lg=Object.entries(e.log||{}).map(([k,v])=>`<div class="who">${esc(ASL[k]||k)}: ${v.kg!=null?esc(fmt(v.kg))+" kg":""}${v.paket?" · "+esc(fmt(v.paket))+" adet":""} — ${esc(v.kim||"")} ${esc(tarih(v.zaman))}${k==="depo"&&Array.isArray(v.kalem)?"<br>"+v.kalem.map((x,i)=>{const c=icols(e)[i]||{};return esc([i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - ")+": "+fmt(x&&x.kg)+" kg · "+fmt(x&&x.paket)+" paket")}).join("<br>"):""}</div>`).join("");
+  let frm="";try{frm=`<div class="isf">${isForm(e,islemYap("fiyat"))}</div>`}catch(er){frm=""}
   return `<div class="item sevk-border">
   <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:19px">${esc(e.no)}</b><span class="badge badge-sevk">${esc(ASL[e.asama]||e.asama)}</span></div>
-  <div class="sub" style="font-size:16px;color:#0f172a;font-weight:700">${esc(e.musteri)}${e.isAdi?" · "+esc(e.isAdi):""}</div>
-  <div class="sub">${esc(e.stok||"")}${e.formul?" · "+esc(e.formul):""}</div>
-  <div class="sub">${e.spTarih?"Sipariş: "+esc(trDate(e.spTarih)):""}${e.fx?" · "+esc(e.fx):""}${e.baskiVar?" · 🖨️ baskılı":""}</div>
-  ${C}
+  ${frm}
   ${e.asama==="etiket"?`<div class="note" style="margin-top:6px">🏷️ ${e.etiketYapildi?"Etiket hazır ✅":"Etiket henüz yapılmadı — Ekstruder'e geçmeden önce etiket hazırlayın"}</div>`:(e.etiketsiz?`<div class="who">⚠️ Etiketsiz devam edildi</div>`:"")}
-  ${e.notU?`<div class="note">📌 <b>Üretim:</b> ${notHtml(e.notU)}</div>`:""}
-  ${e.baskiVar||e.notB?`<div class="addr">🖨️ ${esc(e.urunAdi||"")} ${e.renk?"· "+esc(e.renk):""}${e.notB?"<br>"+notHtml(e.notB):""}</div>`:""}
   ${lg}
   <div class="acts">${e.asama==="etiket"&&asamaYap("etiket")?`<button class="btn b7 big" style="grid-column:span 2" data-a="etik" data-id="${id}">🏷️ Etiket hazırla</button>`:""}${nx&&asamaYap(e.asama)?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:18px" data-a="ileri" data-id="${id}">${e.asama==="depo"?"📦 Depoya girişi kaydet → BİTEN":"✓ Bitti → "+esc(ASL[nx])}</button>`:""}
   ${i>0&&islemYap("geriAl")?`<button class="btn b6" data-a="geri" data-id="${id}">↩️ Geri al</button>`:""}${opRol()?"":`<button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button>`}${e.asama!=="etiket"&&asamaYap("etiket")?`<button class="btn b7" data-a="etik" data-id="${id}">🏷️ Etiket</button>`:""}${islemYap("isDuzenle")?`<button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>`:""}${opRol()?"":`<button class="btn b6" data-a="gecmis" data-id="${id}">🕘 Geçmiş</button><button class="btn b6" data-a="qr" data-id="${id}">📱 QR</button>`}${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div>

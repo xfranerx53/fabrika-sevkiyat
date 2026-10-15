@@ -114,9 +114,9 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .item img:not(.th){cursor:zoom-in}
 .qrBox{background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden}
 .qrBox svg{display:block;width:100%;height:100%}
-#prn .snw{display:flex;align-items:flex-end;gap:calc(2.5mm*var(--z))}
-#prn .pq{flex:0 0 auto;width:16mm;height:16mm;margin-top:1mm;margin-bottom:1mm;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-#prn .pq svg{display:block;width:100%;height:100%}
+:is(#prn,.isf) .snw{display:flex;align-items:flex-end;gap:calc(2.5mm*var(--z))}
+:is(#prn,.isf) .pq{flex:0 0 auto;width:16mm;height:16mm;margin-top:1mm;margin-bottom:1mm;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+:is(#prn,.isf) .pq svg{display:block;width:100%;height:100%}
 #prn{display:none;--z:1;--fk:1.35}
 #prn.meas{display:block;position:absolute;left:-10000px;top:0;width:285mm}
 @media print{
@@ -145,21 +145,21 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #prn .pd tr:first-child th{border-top:0;height:calc(8mm*var(--z))}
 #prn .pd th:last-child,#prn .pd td:last-child{border-right:0}
 #prn .pd th:first-child{width:34%;text-align:left}
-#prn .hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:calc(1mm*var(--z))}
-#prn .lg{display:flex;align-items:center;gap:calc(2mm*min(var(--z),0.62));font-style:italic;font-weight:900;font-size:calc(29pt*min(var(--z),0.62)*var(--fk));letter-spacing:-1px;line-height:1}
-#prn .lg svg{width:calc(17mm*min(var(--z),0.62));height:calc(9mm*min(var(--z),0.62))}
-#prn .lg,#prn .sn b{white-space:nowrap}
-#prn .sn{text-align:right;line-height:1.1}#prn .sn small{display:block;font-size:calc(11pt*min(var(--z),0.62)*var(--fk))}#prn .sn b{font-size:calc(22pt*min(var(--z),0.62)*var(--fk));font-weight:900}
-#prn .tt{text-align:center;font-weight:900;font-size:calc(17pt*var(--z)*var(--fk));border:.6mm solid #000;border-bottom:0;padding:calc(1mm*var(--z))}
-#prn .px{width:100%;border-collapse:collapse;table-layout:fixed}
-#prn .px th,#prn .px td{border:.6mm solid #000;padding:calc(1.2mm*var(--z)) calc(1.5mm*var(--z));font-size:calc(11.5pt*var(--z)*var(--fk));font-weight:800;vertical-align:middle;word-break:break-word;background:#fff}
-#prn .px th{text-align:left;line-height:1.1;white-space:normal;font-size:calc(10.5pt*var(--z)*var(--fk))}
-#prn .px td.v{text-align:center;font-size:calc(14pt*var(--z)*var(--fk))}
-#prn .px td.u{font-size:calc(10pt*var(--z)*var(--fk));font-weight:700;text-align:left;padding-left:calc(.8mm*var(--z))}
-#prn .px td.n{font-size:calc(11pt*var(--z)*var(--fk));height:calc(11mm*var(--z))}
-#prn .px th.hd{text-align:center;font-size:calc(14pt*var(--z)*var(--fk))}
-#prn .px.top tr:first-child th,#prn .px.top tr:first-child td{height:calc(10mm*var(--z))}
-#prn .px small{font-size:.62em;font-weight:700}
+:is(#prn,.isf) .hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:calc(1mm*var(--z))}
+:is(#prn,.isf) .lg{display:flex;align-items:center;gap:calc(2mm*min(var(--z),0.62));font-style:italic;font-weight:900;font-size:calc(29pt*min(var(--z),0.62)*var(--fk));letter-spacing:-1px;line-height:1}
+:is(#prn,.isf) .lg svg{width:calc(17mm*min(var(--z),0.62));height:calc(9mm*min(var(--z),0.62))}
+:is(#prn,.isf) .lg,:is(#prn,.isf) .sn b{white-space:nowrap}
+:is(#prn,.isf) .sn{text-align:right;line-height:1.1}:is(#prn,.isf) .sn small{display:block;font-size:calc(11pt*min(var(--z),0.62)*var(--fk))}:is(#prn,.isf) .sn b{font-size:calc(22pt*min(var(--z),0.62)*var(--fk));font-weight:900}
+:is(#prn,.isf) .tt{text-align:center;font-weight:900;font-size:calc(17pt*var(--z)*var(--fk));border:.6mm solid #000;border-bottom:0;padding:calc(1mm*var(--z))}
+:is(#prn,.isf) .px{width:100%;border-collapse:collapse;table-layout:fixed}
+:is(#prn,.isf) .px th,:is(#prn,.isf) .px td{border:.6mm solid #000;padding:calc(1.2mm*var(--z)) calc(1.5mm*var(--z));font-size:calc(11.5pt*var(--z)*var(--fk));font-weight:800;vertical-align:middle;word-break:break-word;background:#fff}
+:is(#prn,.isf) .px th{text-align:left;line-height:1.1;white-space:normal;font-size:calc(10.5pt*var(--z)*var(--fk))}
+:is(#prn,.isf) .px td.v{text-align:center;font-size:calc(14pt*var(--z)*var(--fk))}
+:is(#prn,.isf) .px td.u{font-size:calc(10pt*var(--z)*var(--fk));font-weight:700;text-align:left;padding-left:calc(.8mm*var(--z))}
+:is(#prn,.isf) .px td.n{font-size:calc(11pt*var(--z)*var(--fk));height:calc(11mm*var(--z))}
+:is(#prn,.isf) .px th.hd{text-align:center;font-size:calc(14pt*var(--z)*var(--fk))}
+:is(#prn,.isf) .px.top tr:first-child th,:is(#prn,.isf) .px.top tr:first-child td{height:calc(10mm*var(--z))}
+:is(#prn,.isf) .px small{font-size:.62em;font-weight:700}
 #prn .ps{margin-top:calc(2.5mm*var(--z))}
 #lbDlg{width:min(1440px,calc(100vw - 40px));max-height:calc(100vh - 28px);margin:auto;padding:14px 16px}
 #lbDlg #lbT{font-size:22px;font-weight:900}
@@ -275,3 +275,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #iDlg .ifm th.ihd{font-size:14px;padding:2px}
 #iDlg .isn input{padding:5px 10px;font-size:19px}
 #iDlg h3{font-size:18px;margin:0}
+
+/* Üretim/iş emri kartında yazdırılan form birebir görünür */
+.isf{--z:.66;--fk:1.35;margin:8px 0;overflow-x:auto;color:#000;font-family:Arial,Helvetica,sans-serif;font-weight:700;-webkit-text-stroke:.25px #000;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:6px}
+.isf .pf{min-width:480px;max-width:640px;margin:0 auto;box-sizing:border-box;font-size:calc(13pt*var(--z)*var(--fk))}
