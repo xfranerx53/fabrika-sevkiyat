@@ -122,6 +122,8 @@ const asamaYap=a=>yAcik()||(iz("a_"+a)!==undefined?iz("a_"+a):!!(yRol()&&yRol().
 const islemYap=k=>yAcik()||(iz(k)!==undefined?iz(k):!!(yRol()&&yRol()[k]));                /* isDuzenle, geriAl, isSil, fiyat */
 const asamaGor=a=>yAcik()||iz("a_"+a)===true||(yRol()?(!yRol().goster||yRol().goster.includes(a)):false); /* iş emirlerinde bu aşamayı görebilir mi */
 /* Sevkiyat Sorumlusu: kayıt ekleme/düzenleme formunu (kamera, adres, not, ürün adı...) kullanamaz */
+/* Ekstruder/Matbaa/Kesim operatörleri: iş emri kartında Yazdır, Geçmiş, QR butonlarını görmez (yönetici hariç) */
+const opRol=()=>!isAdmin()&&!!rec&&["Ekstruder Operatörü","Matbaa Operatörü","Kesim Operatörü"].includes(rec.rol);
 const sevForm=()=>yAcik()||!(rec&&rec.rol==="Sevkiyat Sorumlusu");
 const anaBolum=()=>(YETKI_UYGULA&&!isAdmin()&&yRol()&&yRol().ana)||null;
 /* kayıt ekranındaki rol listesi de aynı tablodan dolar */
@@ -1619,7 +1621,7 @@ function isKart(e){
   ${e.baskiVar||e.notB?`<div class="addr">🖨️ ${esc(e.urunAdi||"")} ${e.renk?"· "+esc(e.renk):""}${e.notB?"<br>"+notHtml(e.notB):""}</div>`:""}
   ${lg}
   <div class="acts">${e.asama==="etiket"&&asamaYap("etiket")?`<button class="btn b7 big" style="grid-column:span 2" data-a="etik" data-id="${id}">🏷️ Etiket hazırla</button>`:""}${nx&&asamaYap(e.asama)?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:18px" data-a="ileri" data-id="${id}">${e.asama==="depo"?"📦 Depoya girişi kaydet → BİTEN":"✓ Bitti → "+esc(ASL[nx])}</button>`:""}
-  ${i>0&&islemYap("geriAl")?`<button class="btn b6" data-a="geri" data-id="${id}">↩️ Geri al</button>`:""}<button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button>${e.asama!=="etiket"&&asamaYap("etiket")?`<button class="btn b7" data-a="etik" data-id="${id}">🏷️ Etiket</button>`:""}${islemYap("isDuzenle")?`<button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>`:""}<button class="btn b6" data-a="gecmis" data-id="${id}">🕘 Geçmiş</button><button class="btn b6" data-a="qr" data-id="${id}">📱 QR</button>${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div>
+  ${i>0&&islemYap("geriAl")?`<button class="btn b6" data-a="geri" data-id="${id}">↩️ Geri al</button>`:""}${opRol()?"":`<button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button>`}${e.asama!=="etiket"&&asamaYap("etiket")?`<button class="btn b7" data-a="etik" data-id="${id}">🏷️ Etiket</button>`:""}${islemYap("isDuzenle")?`<button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>`:""}${opRol()?"":`<button class="btn b6" data-a="gecmis" data-id="${id}">🕘 Geçmiş</button><button class="btn b6" data-a="qr" data-id="${id}">📱 QR</button>`}${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div>
   ${e.asama==="bitti"&&e.bekleAktar&&!e.aktarildi&&modGor("sevk")?`<button class="btn b4" style="width:100%;margin-top:8px;padding:14px;font-size:18px" data-a="aktar" data-id="${id}">📦 Hazır ürünlere aktar</button>`:""}${e.aktarildi?`<div class="note" style="margin-top:8px">✅ Hazır ürünlere aktarıldı</div>`:""}</div>`;
 }
 const isAksiyon=async ev=>{

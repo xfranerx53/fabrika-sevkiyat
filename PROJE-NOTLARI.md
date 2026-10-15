@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v54**
+**GÜNCEL SÜRÜM: v55**
 Son güncelleme: 2026-10-15 (v53: etiket çalışma şekli netleştirildi, büyük varsayılan 100×80, "Yazıcıya giden sayfa" satırı)
 
 ---
@@ -246,6 +246,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-15: v52 — Etiket hazırla: (1) **Küçük etiketin eni/boyu artık değiştirilebilir** (ölçü TEK etiketin eni × boyu, varsayılan 30×50; sayfa = 3×en; yatay yazımdaki döndürme CSS değişkenleri `--cw/--ch` ile ölçüye uyar). Büyük/küçük arasında geçince her birinin yazılan ölçüsü korunur. (2) **"💾 Ölçüyü kaydet" düğmesi hem büyük hem küçük için** her zaman görünür; `ayarlar/etiket` altına yazar (büyük: `w,h,mag`; küçük: `kw,kh`), bir sonraki yazımda kullanılır (eski "ortak ölçü" düğmesinin yerine geçti; kayıt varsa cihaz ayarını ezer). rules.json: `ayarlar/etiket` altına `kw`,`kh` eklendi. **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).**
 - 2026-10-15: v53 — Etiket çalışma şekli (fiziksel): **EN = rulo genişliği yönü, BOY = yazıcıdan çıkış/besleme yönü.** Büyük etiket 100 (en) × 80 (boy) mm, tek etiket. Küçük etiket 30 (en) × 50 (boy) mm, rulo üzerinde **3 tane yan yana**, sayfa = 3×en × boy = 90×50 mm. Ölçüler yine değiştirilebilir. Büyük etiket varsayılan boyu 100'den **80**'e çekildi (cfgGet). Etiket penceresine "🖨️ Yazıcıya giden sayfa: … mm" satırı ve en/boy açıklaması eklendi (yazıcı sürücüsündeki kâğıt boyu bununla aynı olmalı). Değişen: etiket.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
 - 2026-10-15: v54 — Ekstruder/Baskı/Kesim aşamasında "Bitti" (ileri) basılınca "Bu aşamada çıkan kg (boş bırakılabilir)" sorusu kaldırıldı; yerine "Onaylıyor musunuz?" onayı geldi. Log/geçmişe kg artık null yazılır. Dosyalar: app.js, index.html, sw.js, PROJE-NOTLARI.md. Rules DEĞİŞMEDİ.
+- 2026-10-15: v55 — Ekstruder/Matbaa/Kesim operatörü rollerinde iş emri kartındaki Yazdır, Geçmiş, QR butonları gizlendi (`opRol()`; yönetici ve diğer roller görmeye devam eder). Dosyalar: app.js, index.html, sw.js, PROJE-NOTLARI.md. Rules DEĞİŞMEDİ.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
