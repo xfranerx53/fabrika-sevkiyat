@@ -161,8 +161,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #prn .px.top tr:first-child th,#prn .px.top tr:first-child td{height:calc(10mm*var(--z))}
 #prn .px small{font-size:.62em;font-weight:700}
 #prn .ps{margin-top:calc(2.5mm*var(--z))}
-#lbDlg{width:min(520px,95vw)}
-#lbDlg .lbrow{border:1.5px solid #cbd5e1;border-radius:10px;padding:10px;margin:10px 0}
+#lbDlg{width:min(1440px,calc(100vw - 40px));max-height:calc(100vh - 28px);margin:auto;padding:14px 16px}
+#lbDlg #lbT{font-size:22px;font-weight:900}
+#lbDlg #lbRows{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:12px;align-items:start}
+#lbDlg input,#lbDlg select{font-size:17px}
+#lbDlg>div:last-child .btn{padding:16px;font-size:18px}
+@media(max-width:560px){#lbDlg{width:96vw;padding:10px}#lbDlg #lbRows{grid-template-columns:1fr}}
+#lbDlg .lbrow{border:1.5px solid #cbd5e1;border-radius:10px;padding:10px;margin:0}
 #lbDlg .g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 #lbDlg .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
 #lbDlg label.s{font-size:13px;color:#64748b;font-weight:700;display:block;margin-top:6px}

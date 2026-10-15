@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v47**
-Son güncelleme: 2026-10-15 (v47: tahsilat/talimat küçük resim, düzenle + çöp kutusu, sunucu saati, Muhasebe)
+**GÜNCEL SÜRÜM: v48**
+Son güncelleme: 2026-10-15 (v48: Etiket hazırla penceresi büyük/geniş, düğme büyük)
 
 ---
 
@@ -239,6 +239,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-14: v46 — Talimatlar sekmesine bekleyenler/tamamlananlar alt sekmeleri eklendi. Dosyalar: index.html, talimat.js, sw.js, PROJE-NOTLARI.md, README.md. Rules değişmedi.
 - 2026-10-15: v47 — (1) Tahsilat/talimat fotoğrafları küçük önizleme + fotoTam; hafifletme aracı tahsilat+talimat'ı da tarar. (2) Tahsilat silme → çöp kutusu + denetim; geri al → çöp kutusu + denetim; ✏ Düzenle eklendi. (3) Kayıt saatleri sunucudan. (5) Yeni `tah` izni, Muhasebe varsayılanı, menüde 💰 TAHSİLAT düğmesi. Dosyalar: app.js, index.html, tahsilat.js, talimat.js, rules.json, kontrol.js, sw.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ.
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
+- 2026-10-15: v48 — "Etiket hazırla" penceresi (#lbDlg) "Yeni iş emri" gibi geniş ve büyük yazılı açılır; sütun etiketleri yan yana dizilir (dar ekranda alt alta). İş emri kartındaki "🏷️ Etiket hazırla" düğmesi "Yeni iş emri aç" ile aynı boyda (`big`). Sadece style.css + app.js. Firebase kuralı: değişmedi.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
