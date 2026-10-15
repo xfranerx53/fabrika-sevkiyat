@@ -243,17 +243,30 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #iDlg .ifm td>div[data-ph] .nadd{width:auto}
 @media(max-width:560px){#iDlg{padding:8px}#iDlg .ifx{grid-template-columns:1fr}#iDlg .ifm input[type=date]{font-size:13px;padding:8px 0}#iDlg .ifm select{font-size:14px}#iDlg .ifm input::placeholder{font-size:13px}#iDlg .ifm th{font-size:11px;padding:3px}#iDlg .ifm input,#iDlg .ifm select{font-size:16px;padding:8px 2px}}
 
-#iDlg .ifc{display:block}
-#iDlg .itt{margin-top:0}
-#iDlg .ifr #iQrW{margin:0 0 8px!important}
-@media(min-width:1000px){
-  #iDlg .ifc{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-  #iDlg .ifr #iQrW{padding:6px!important}
-  #iDlg .ifr #iQrS{width:70px!important;height:70px!important}
-}
+#iDlg .isr{display:flex;align-items:center;gap:14px;margin-bottom:8px;flex-wrap:wrap}
+#iDlg .isr .isn{margin:0}
+#iDlg #iQrW{margin:0!important;padding:5px 10px!important;flex:1;min-width:280px}
+#iDlg #iQrS{width:58px!important;height:58px!important}
+#iDlg #iQrW .mut{display:none}
+#iDlg .ifx{grid-template-columns:1fr 100px auto;align-items:center}
+@media(max-width:560px){#iDlg .ifx{grid-template-columns:1fr}}
 @media(max-height:860px){
-  #iDlg .ifm input,#iDlg .ifm select{padding:5px 6px;font-size:16px}
-  #iDlg .ifm th{padding:3px 6px}
-  #iDlg .isn input{padding:6px 10px;font-size:19px}
-  #iDlg .btn{padding:10px}
+  #iDlg .ifm input,#iDlg .ifm select{padding:4px 6px;font-size:16px}
+  #iDlg .ifm th{padding:2px 6px}
+  #iDlg .isn input{padding:5px 10px;font-size:18px}
+  #iDlg .btn{padding:9px}
+  #iDlg .itt{padding:3px;font-size:17px}
 }
+
+/* not satırları: "Madde ekle" aynı satırın sağında, tek not = tek satır */
+#iDlg .ifm td>div[data-ph]{display:grid;grid-template-columns:1fr auto;gap:3px 4px;align-items:center}
+#iDlg .ifm td>div[data-ph]>div{grid-column:1}
+#iDlg .ifm td>div[data-ph]>.nadd{grid-column:2;grid-row:1;margin:0!important;padding:6px 10px!important;white-space:nowrap}
+#iDlg .ifm td>div[data-ph] input{padding:5px 8px;font-size:16px}
+#iDlg .ifm td>div[data-ph]>div>button{padding:0 10px}
+#iDlg .ifm th{font-size:12px}
+#iDlg .ifm input,#iDlg .ifm select{padding:5px 6px}
+#iDlg .itt{padding:3px;font-size:17px}
+#iDlg .ifm th.ihd{font-size:14px;padding:2px}
+#iDlg .isn input{padding:5px 10px;font-size:19px}
+#iDlg h3{font-size:18px;margin:0}
