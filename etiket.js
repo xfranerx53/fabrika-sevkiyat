@@ -32,7 +32,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     var kg=o.kg>0?N(o.kg)+" KG":"";
     var h='<div class="lb" style="width:'+c.w+'mm;height:'+(c.h-0.3)+'mm">';
     if(c.mag)h+='<div class="lbh"><div class="lbc blk"><img src="'+LG_A+'" alt=""></div><div class="lbhm"><div class="lbc" data-g="h"><span>MAG AMBALAJ</span></div><div class="lbc" data-g="h"><span>A.Ş.</span></div></div><div class="lbc blk"><img src="'+LG_B+'" alt=""></div></div>';
-    h+='<div class="lbx">'+row(o.isAdi,"")+row(o.urun,"ÜRÜN")+row(o.ebat,"EBAT")+row(kg,"KG")+qrRow(c)+'</div>';
+    h+='<div class="lbx">'+qrRow(c)+row(o.isAdi,"")+row(o.urun,"ÜRÜN")+row(o.ebat,"EBAT")+row(kg,"KG")+'</div>';
     if(c.mag)h+='<div class="lbf"><div class="lbc" data-g="f"><span>Cumhuriyet Mahallesi Meclis Caddesi No:62 Silivri/İSTANBUL</span></div><div class="lbc" data-g="f"><span>info@magambalaj.com</span></div><div class="lbc" data-g="f"><span>www.magambalaj.com</span></div></div>';
     return h+'</div>';
   }
@@ -40,7 +40,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     root.querySelectorAll(".lbc").forEach(function(c){
       var s=c.firstElementChild;if(!s||s.tagName==="IMG")return;
       var av=c.clientWidth-parseFloat(getComputedStyle(c).paddingLeft)*2;
-      var sz=Math.max(6,Math.floor(c.clientHeight*(c.dataset.g==="f"?0.85:0.7)));
+      var sz=Math.max(6,Math.floor(c.clientHeight*(c.dataset.g==="f"?0.85:(c.dataset.g==="q"||c.classList.contains("qn")?0.7:0.82))));
       s.style.fontSize=sz+"px";var w=s.offsetWidth;
       if(w>av&&w>0){sz=Math.max(5,Math.floor(sz*av/w));s.style.fontSize=sz+"px";var n=0;while(s.offsetWidth>av&&sz>5&&n++<40){sz--;s.style.fontSize=sz+"px"}}
     });

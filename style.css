@@ -175,15 +175,16 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .lb .lbhm{flex:1;display:flex;flex-direction:column;min-width:0}
 .lb .lbx{flex:1;border:.9mm solid #000;display:flex;flex-direction:column;min-height:0}
 .lb .lbr{flex:1;display:flex;border-top:.7mm solid #000;min-height:0}
-.lb .lbr:first-child{border-top:0}
+.lb .lbr{border-top:0}
+.lb .lbr+.lbr{border-top:.7mm solid #000}
 .lb .lbc{display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap;padding:0 1.5mm;min-width:0;flex:1}
 .lb .lbc span{display:inline-block;line-height:1}
-.lb .lbk{flex:0 0 27%;border-right:.7mm solid #000}
+.lb .lbk{flex:0 0 22%;border-right:.7mm solid #000}
 .lb .blk{flex:0 0 28%;background:#000;padding:0}
 .lb .blk img{width:100%;height:100%;object-fit:fill;display:block}
 .lb .lbf{flex:0 0 12%;display:flex;flex-direction:column;margin-top:1.5mm}
 .lb .lbf .lbc{font-weight:700;padding:0}
-.lb .lbq{flex:0 0 40%;display:flex;border-top:.7mm solid #000;min-height:0}
+.lb .lbq{flex:0 0 38%;display:flex;border-bottom:.7mm solid #000;min-height:0}
 .lb .qrc{flex:0 0 auto;height:100%;aspect-ratio:1/1;padding:.6mm;border-right:.7mm solid #000;background:#fff}
 .lb .qrc svg{display:block;width:100%;height:100%}
 .lb .qt{flex:1;min-width:0;display:flex;flex-direction:column}
