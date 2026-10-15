@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v58**
+**GÜNCEL SÜRÜM: v59**
 Son güncelleme: 2026-10-15 (v53: etiket çalışma şekli netleştirildi, büyük varsayılan 100×80, "Yazıcıya giden sayfa" satırı)
 
 ---
@@ -250,6 +250,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-15: v56 — İş takip formu yazdırma: (1) QR 22 mm → 16 mm küçültüldü. (2) Tablo çizgileri piksel (1.5px) yerine mm cinsine çevrildi (.6mm; iç tablo .5mm), yazıcıda/ölçeklemede incelip silik çıkmasın diye; yazıya hafif kontur (-webkit-text-stroke .25px) ve print-color-adjust:exact eklendi. Dosyalar: style.css, app.js (yorum), index.html, sw.js, PROJE-NOTLARI.md. Rules DEĞİŞMEDİ.
 - 2026-10-15: v57 — (1) Form yazdırma: QR sayfanın en üstüne dayanıp yazıcıda kesiliyordu; @page üst kenar boşluğu 6mm→11mm, .prow yüksekliği 196→191mm, ölçüm hedefi 198→193mm, QR'a üstten 1mm boşluk + beyaz zemin. (2) QR okutunca iş emri son kaldığı aşamanın listesine gidiyor (`qrAsamayaGit`: etiket→İş Emirleri/Etiket sekmesi; ekstruder/baskı/kesim/depo/biten→Üretim bölümü ilgili sekme) ve açılan pencerede «📍 Şu an: AŞAMA» şeridi görünüyor. Yetkisi olmayan aşamada eski davranış (pencere). Dosyalar: app.js, style.css, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
 - 2026-10-15: v58 — İş emri kartı (Üretim sekmeleri, İş Emirleri, QR penceresi) artık yazdırılan «Üretim İş Takip Formu»nu birebir gösteriyor (`isForm` kartın içine `.isf` kutusunda basılır; fiyat/F-X satırı yazdırmadaki gibi yetkiye bağlı). Eski özet satırları (müşteri, ölçü, not vb.) kartan kaldırıldı; aşama rozeti, etiket durumu, geçmiş satırları ve tüm butonlar aynı. style.css'te form kuralları `:is(#prn,.isf)` ile hem yazdırmada hem ekranda geçerli. Dosyalar: app.js, style.css, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
+- 2026-10-15: v59 — İş emri formunda F/X seçeneğine «-» (belirsiz/yok) eklendi (X-PEŞİN, F-PEŞİN, -). «-» seçilince KDV kutusu işaretsiz kalır; formda ve yazdırmada «-» görünür. Dosyalar: index.html, app.js, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 

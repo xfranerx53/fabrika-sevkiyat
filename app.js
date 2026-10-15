@@ -1896,7 +1896,7 @@ function iAc(e){
   $("iTr").value=v.spTarih||bugun();$("iBv").checked=!!v.baskiVar;
   $("iFyW").classList.toggle("hide",!islemYap("fiyat"));$("iFyL").textContent=islemYap("fiyat")?"FİYAT :":"";$("iPb").value=PB[v.paraBirimi]?v.paraBirimi:"TRY";$("iFy").value=v.fiyat!=null?String(v.fiyat).replace(".",","):"";
   {const sx=$("iFx");[...sx.options].forEach(o=>{if(o.dataset.ek)o.remove()});
-   if(v.fx&&v.fx!=="X-PEŞİN"&&v.fx!=="F-PEŞİN"){const o=document.createElement("option");o.value=o.textContent=v.fx;o.dataset.ek="1";sx.appendChild(o)}
+   if(v.fx&&v.fx!=="X-PEŞİN"&&v.fx!=="F-PEŞİN"&&v.fx!=="-"){const o=document.createElement("option");o.value=o.textContent=v.fx;o.dataset.ek="1";sx.appendChild(o)}
    sx.value=v.fx||"X-PEŞİN";
    $("iKd").checked=v.fiyat!=null?!v.kdvDahil:sx.value==="F-PEŞİN"}
   document.querySelectorAll("#iCols [data-c]").forEach(i=>{const c=C[+i.dataset.c]||{};i.value=c[i.dataset.f]??""});
