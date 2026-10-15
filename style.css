@@ -222,7 +222,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 }
 
 /* ===== Yeni iş emri: baskı formu düzeninde, geniş ===== */
-#iDlg{width:min(940px,98vw);max-height:96vh;padding:14px}
+#iDlg{width:min(1440px,calc(100vw - 40px));max-height:calc(100vh - 28px);margin:auto;padding:12px 14px}
 #iDlg .isn{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 #iDlg .isn label{margin:0;white-space:nowrap;font-size:15px;color:#0f172a}
 #iDlg .isn input{font-size:22px;font-weight:900;max-width:260px}
@@ -242,3 +242,18 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #iDlg .ifm td>div[data-ph] input{text-align:left;font-weight:700;border:1px solid #cbd5e1;border-radius:6px}
 #iDlg .ifm td>div[data-ph] .nadd{width:auto}
 @media(max-width:560px){#iDlg{padding:8px}#iDlg .ifx{grid-template-columns:1fr}#iDlg .ifm input[type=date]{font-size:13px;padding:8px 0}#iDlg .ifm select{font-size:14px}#iDlg .ifm input::placeholder{font-size:13px}#iDlg .ifm th{font-size:11px;padding:3px}#iDlg .ifm input,#iDlg .ifm select{font-size:16px;padding:8px 2px}}
+
+#iDlg .ifc{display:block}
+#iDlg .itt{margin-top:0}
+#iDlg .ifr #iQrW{margin:0 0 8px!important}
+@media(min-width:1000px){
+  #iDlg .ifc{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+  #iDlg .ifr #iQrW{padding:6px!important}
+  #iDlg .ifr #iQrS{width:70px!important;height:70px!important}
+}
+@media(max-height:860px){
+  #iDlg .ifm input,#iDlg .ifm select{padding:5px 6px;font-size:16px}
+  #iDlg .ifm th{padding:3px 6px}
+  #iDlg .isn input{padding:6px 10px;font-size:19px}
+  #iDlg .btn{padding:10px}
+}

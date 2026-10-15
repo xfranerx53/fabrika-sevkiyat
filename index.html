@@ -16,7 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=54">
+<link rel="stylesheet" href="style.css?v=55">
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -198,7 +198,7 @@
     <div class="tabs stabs hide" id="isMT"><button data-im="list" class="on" type="button">📋 İŞ EMİRLERİ</button><button data-im="dos" type="button">📁 DOSYALAR</button></div>
     <div id="iAna">
     <button class="btn b2 big" style="margin:0 0 10px" id="iAdd">＋ Yeni iş emri aç</button>
-    <div style="font-size:12px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v31 (iş emri formu baskı düzeninde, USD/EUR)</div>
+    <div style="font-size:12px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v32 (iş emri formu geniş, iki sütun)</div>
     <input id="iq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="iTabs"></div>
     <div id="iList"></div>
@@ -470,17 +470,14 @@
 <dialog id="iDlg">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><h3 id="iT">Yeni iş emri</h3><button type="button" class="btn b7" id="iGet" style="width:auto;margin:0;padding:7px 14px;font-size:16px">📋 Getir</button></div>
   <div class="isn"><label for="iNo">SERİ NO :</label><input id="iNo" placeholder="Seri no (MG-0945)"></div>
-  <div id="iQrW" style="display:none;align-items:center;gap:10px;margin-top:8px;padding:8px;border:1.5px dashed #cbd5e1;border-radius:8px">
-    <div id="iQrS" class="qrBox" style="width:84px;height:84px;flex:0 0 auto"></div>
-    <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800">📱 QR kod otomatik oluşturuldu</div><div class="mut" style="font-size:13px;margin:2px 0 6px">Seri no değişince QR de güncellenir. Kayıttan sonra etikette ve iş takip formunda yer alır.</div><button type="button" class="btn b6 sm" id="iQrBtn" style="width:auto;margin:0">🔍 Büyüt / PNG indir</button></div>
-  </div>
+  <div id="iCols" class="ifc">
+  <div class="ifl">
   <div class="itt">ÜRETİM İŞ TAKİP FORMU</div>
-  <div id="iCols">
   <table class="ifm">
    <colgroup><col style="width:21%"><col style="width:35%"><col style="width:18%"><col style="width:26%"></colgroup>
    <tr><th>MÜŞTERİ :</th><td><input id="iMu" placeholder="Müşteri"></td><th>SP. TARİHİ :</th><td><input id="iTr" type="date"></td></tr>
    <tr><th>İŞİN ADI :</th><td><input id="iAdi" placeholder="İşin adı (MTB)"></td><th>F/X :</th><td><select id="iFx"><option value="X-PEŞİN">X-PEŞİN</option><option value="F-PEŞİN">F-PEŞİN</option></select></td></tr>
-   <tr><th>STOK ADI :</th><td><input id="iSt" placeholder="OR.LDPE BASKILI TORBA"></td><th id="iFyL"></th><td id="iFyT"><div id="iFyW" class="hide"><div class="ifx"><input id="iFy" inputmode="decimal" placeholder="Birim fiyat"><select id="iPb"><option value="TRY">₺ TL</option><option value="USD">$ USD</option><option value="EUR">€ EUR</option></select></div><label class="chip" style="margin-top:4px"><input type="checkbox" id="iKd">+KDV</label></div></td></tr>
+   <tr><th>STOK ADI :</th><td><input id="iSt" placeholder="OR.LDPE BASKILI TORBA"></td><th id="iFyL"></th><td id="iFyT"><div id="iFyW" class="hide"><div class="ifx"><input id="iFy" inputmode="decimal" placeholder="Fiyat"><select id="iPb"><option value="TRY">₺ TL</option><option value="USD">$ USD</option><option value="EUR">€ EUR</option></select></div><label class="chip" style="margin-top:4px"><input type="checkbox" id="iKd">+KDV</label></div></td></tr>
   </table>
   <table class="ifm">
    <colgroup><col style="width:21%"><col style="width:26.3%"><col style="width:26.3%"><col style="width:26.4%"></colgroup>
@@ -490,12 +487,22 @@
    <tr><th>MİKRON :</th><td><input data-c="0" data-f="mikron" list="dl_mikron" placeholder="µ"></td><td><input data-c="1" data-f="mikron" list="dl_mikron" placeholder="µ"></td><td><input data-c="2" data-f="mikron" list="dl_mikron" placeholder="µ"></td></tr>
    <tr><th>KORONA :</th><td><input data-c="0" data-f="korona" list="dl_korona" placeholder="Bomlu / bomsuz"></td><td><input data-c="1" data-f="korona" list="dl_korona" placeholder="Bomlu / bomsuz"></td><td><input data-c="2" data-f="korona" list="dl_korona" placeholder="Bomlu / bomsuz"></td></tr>
    <tr><th>NOT :</th><td colspan="3"><div id="iNtU" data-ph="Üretim notu (Kg geçmesin, mikrona dikkat...)"></div></td></tr>
+  </table>
+  </div>
+  <div class="ifr">
+  <div id="iQrW" style="display:none;align-items:center;gap:10px;margin-top:8px;padding:8px;border:1.5px dashed #cbd5e1;border-radius:8px">
+    <div id="iQrS" class="qrBox" style="width:84px;height:84px;flex:0 0 auto"></div>
+    <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800">📱 QR kod otomatik oluşturuldu</div><div class="mut" style="font-size:13px;margin:2px 0 6px">Seri no değişince QR de güncellenir. Kayıttan sonra etikette ve iş takip formunda yer alır.</div><button type="button" class="btn b6 sm" id="iQrBtn" style="width:auto;margin:0">🔍 Büyüt / PNG indir</button></div>
+  </div>
+  <table class="ifm">
+   <colgroup><col style="width:21%"><col style="width:26.3%"><col style="width:26.3%"><col style="width:26.4%"></colgroup>
    <tr><th class="ihd" colspan="4">BASKI - KESİM İŞ TAKİP FORMU <label class="chip"><input type="checkbox" id="iBv">Baskılı iş (matbaaya gider)</label></th></tr>
    <tr><th>ÜRÜN ADI :</th><td colspan="3"><input id="iBU" placeholder="ATLET"></td></tr>
    <tr><th>BOY / KAZAN :</th><td><input data-c="0" data-f="boy" list="dl_boy" placeholder="Boy (cm)"></td><td><input data-c="1" data-f="boy" list="dl_boy" placeholder="Boy (cm)"></td><td><input data-c="2" data-f="boy" list="dl_boy" placeholder="Boy (cm)"></td></tr>
    <tr><th>BASKI RENGİ :</th><td colspan="3"><input id="iRenk" placeholder="Baskı rengi / klişe"></td></tr>
    <tr><th>NOT :</th><td colspan="3"><div id="iNtB" data-ph="Baskı-kesim notu (H.T., 25 kg'lık torbalanacak...)"></div></td></tr>
   </table>
+  </div>
   </div>
   <div id="iDL"></div>
   <div class="err" id="iE" style="margin-top:8px"></div>
@@ -545,17 +552,17 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="raporlar.js?v=54"></script>
+<script src="raporlar.js?v=55"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=54"></script>
+<script src="app.js?v=55"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=54"></script>
-<script src="saat.js?v=54"></script>
+<script src="foto-onizleme.js?v=55"></script>
+<script src="saat.js?v=55"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=54"></script>
+<script src="diyalog.js?v=55"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -582,8 +589,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=54"></script>
-<script src="etiket.js?v=54"></script>
+<script src="qr.js?v=55"></script>
+<script src="etiket.js?v=55"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -593,9 +600,9 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="talimat.js?v=54"></script>
-<script src="tahsilat.js?v=54"></script>
-<script src="arama.js?v=54"></script>
-<script src="sw-kayit.js?v=54"></script>
+<script src="talimat.js?v=55"></script>
+<script src="tahsilat.js?v=55"></script>
+<script src="arama.js?v=55"></script>
+<script src="sw-kayit.js?v=55"></script>
 </body>
 </html>
