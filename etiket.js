@@ -56,7 +56,9 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
   function defs(e,i){
     var c=cols(e)[i]||{},sv=(e.etiket&&e.etiket["k"+i])||null;
     if(sv)return{isAdi:sv.isAdi||"",urun:sv.urun||"",ebat:sv.ebat||"",kg:sv.kg>0?sv.kg:20,adet:1,yapildi:true};
-    var en=String(c.en||"").trim(),boy=String(c.boy||"").trim(),kg=20;
+    /* Etikette "kapalı" / "cm" yazılmaz: 30CM KAPALI -> 30 (yazdırma formu etkilenmez) */
+    var tmz=function(v){return String(v||"").replace(/KAPALI|KAPAL[Iİı]|\bCM\b|(\d)\s*CM/gi,"$1").replace(/\s+/g," ").trim()};
+    var en=tmz(c.en),boy=tmz(c.boy),kg=20;
     return{isAdi:T(e.isAdi)||T(e.musteri),urun:T(e.urunAdi)||T(e.stok).replace(/^(OR\.?|ORJ\.?)\s*/,"").replace(/^(LDPE|HDPE|LLDPE|PP)\s*/,""),
       ebat:en&&boy?en+" X "+boy:(en||boy),kg:kg,adet:1,yapildi:false};
   }
