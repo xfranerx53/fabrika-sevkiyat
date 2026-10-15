@@ -106,10 +106,9 @@ const YETKI_UYGULA=true;
 const YETKI={
   "Depo Görevlisi":     {mod:["is","uretim","stok","sevk"],asama:["etiket","depo"],          isAc:true, isDuzenle:true, geriAl:false,isSil:false,fiyat:false},
   "Sevkiyat Sorumlusu": {mod:["sevk"],            asama:[],                         isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
-  "Ekstruder Operatörü":{mod:["uretim"],              asama:["ekstruder"],ana:"uretim",goster:["ekstruder"],     isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
-  "Matbaa Operatörü":   {mod:["uretim"],              asama:["baski"],    ana:"uretim",goster:["baski"],     isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
-  "Kesim Operatörü":    {mod:["uretim"],              asama:["kesim"],    ana:"uretim",goster:["kesim"],     isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
-  "Bobinoz Ustası":     {mod:["uretim"],              asama:["kesim"],    ana:"uretim",goster:["kesim"],     isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
+  "Ekstruder Operatörü":{mod:["uretim"],              asama:["ekstruder"],ana:"uretim",     isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
+  "Matbaa Operatörü":   {mod:["uretim"],              asama:["baski"],    ana:"uretim",     isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
+  "Kesim Operatörü":    {mod:["uretim"],              asama:["kesim"],    ana:"uretim",     isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
   "Muhasebe":           {mod:["is","uretim","stok","rap","tah"], asama:["etiket"],                 isAc:true, isDuzenle:true, geriAl:false,isSil:false,fiyat:true}
 };
 const yRol=()=>(rec&&YETKI[rec.rol])||null;
@@ -868,7 +867,7 @@ function modSec(m){
   document.querySelectorAll("#mods button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
   $("pSevk").classList.toggle("hide",m!=="sevk"&&m!=="tah");$("pStok").classList.toggle("hide",m!=="stok");$("pIs").classList.toggle("hide",m!=="is");$("pUr").classList.toggle("hide",m!=="uretim");$("pRap").classList.toggle("hide",m!=="rap");
   $("mt").textContent=m==="sevk"?"SEVKİYAT":m==="tah"?"TAHSİLAT":m==="is"?"İŞ EMİRLERİ":m==="uretim"?"ÜRETİM":m==="rap"?"RAPORLAR":"STOK";if(m==="rap"&&window.rapAc)window.rapAc();
-  if(m==="stok")stokYukle();else stokKapat();if(m==="is"||m==="uretim"){isYukle();if(m==="is")isMTSet("list")}else isKapat();$("iAdd").classList.toggle("hide",!canIsAc())}
+  if(m==="stok")stokYukle();else stokKapat();if(m==="is"||m==="uretim"){isYukle();if(m==="is")isMTSet("list");else if(!isAdmin()&&yRol()){const o=yRol().asama.find(k=>URA.includes(k));if(o)uTab=o}}else isKapat();$("iAdd").classList.toggle("hide",!canIsAc())}
 $("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===panel)return;modSec(m)};
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{menuOk=true;modSec(b.dataset.go);show("vApp");window.scrollTo(0,0)});
 $("bMenu").onclick=()=>{menuOk=false;show("vMenu");window.scrollTo(0,0)};

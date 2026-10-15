@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v50**
-Son güncelleme: 2026-10-15 (v50: üst çubuk pencereleri boş alana tıklayınca kapanır)
+**GÜNCEL SÜRÜM: v51**
+Son güncelleme: 2026-10-15 (v51: Bobinoz Ustası rolü kaldırıldı, operatörler Üretim'de tüm aşamaları görür)
 
 ---
 
@@ -154,7 +154,7 @@ akışlarına eklenmesi gerekip gerekmediğini düşün.
 ## 6. Roller ve izinler
 
 **Roller:** Depo Görevlisi, Sevkiyat Sorumlusu, Ekstruder Operatörü, Matbaa Operatörü,
-Kesim Operatörü, Bobinoz Ustası, Muhasebe. Ayrıca `yonetici=true` olan **yönetici**.
+Kesim Operatörü, Muhasebe. (Bobinoz Ustası rolü v51'de kaldırıldı: Ekstruder Operatörü ile aynı.) Ayrıca `yonetici=true` olan **yönetici**.
 
 **Onay:** Yeni kayıt olan kullanıcı `onay=false` başlar; yönetici onaylayana kadar hiçbir şey
 göremez/yapamaz. Kullanıcı kendi kaydında `onay`, `yonetici`, `izin` alanlarını kendi kendine
@@ -170,7 +170,7 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
 Özet:
 - Depo Görevlisi: iş emirleri + stok + sevkiyat; etiket/depo aşaması; iş açar/düzenler.
 - Sevkiyat Sorumlusu: sadece sevkiyat; kayıt formunu kullanamaz, başkasının kaydını yazamaz.
-- Ekstruder / Matbaa / Kesim Operatörü, Bobinoz Ustası: sadece kendi aşamasını görür ve ilerletir.
+- Ekstruder / Matbaa / Kesim Operatörü: Üretim bölümünde TÜM aşamaları görür (birbirlerini izleyebilir) ama sadece kendi aşamasını ilerletir (v51).
 - Muhasebe: iş emirleri + stok + raporlar + tahsilat/talimat (`tah`); etiket aşaması; iş açar/düzenler; fiyat görür.
 - Silme: kendi eklediğini silebilir (iş emri için `isSil` izni gerekir); yönetici hepsini.
 - Yönetici-only: `kullanicilar` listesi, `fiyatlar`, `cop`, `denetim`, `dosyalar` yazma.
@@ -242,6 +242,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-15: v48 — "Etiket hazırla" penceresi (#lbDlg) "Yeni iş emri" gibi geniş ve büyük yazılı açılır; sütun etiketleri yan yana dizilir (dar ekranda alt alta). İş emri kartındaki "🏷️ Etiket hazırla" düğmesi "Yeni iş emri aç" ile aynı boyda (`big`). Sadece style.css + app.js. Firebase kuralı: değişmedi.
 - 2026-10-15: v49 — Yeni **ÜRETİM** bölümü (`uretim`, menüde 🏭). Ekstruder, Baskı, Kesim, Depo, Biten aşamaları İş emirleri'nden buraya taşındı; **İş emirleri'nde sadece Etiket aşaması + Dosyalar** kaldı (arama açıkken İş emirleri tüm aşamaları tarar). Aynı `isEmirleri` verisi ve aynı kart/düğmeler kullanılır (`isListele` panele göre çizer: `iList/iTabs/iq` = İş emirleri, `uList/uTabs/uq` = Üretim; `URA` = üretim aşamaları). Yeni izin anahtarı `uretim` (app.js YETKI/IZ_GRUP + rules.json validate). Rol şablonları: Ekstruder/Matbaa/Kesim/Bobinoz operatörleri artık `mod:["uretim"]`, `ana:"uretim"`; Depo Görevlisi ve Muhasebe `is`+`uretim`. rules.json: `isEmirleri`/`isHareket` okuma/yazma `is` yanına `uretim` de kabul eder. QR okutulunca iş emri `is` yetkisi varsa İş emirleri, yoksa Üretim bölümünde açılır. **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).**
 - 2026-10-15: v50 — Yönetici (`dAdm`), 🔔 Bildirimler (`dBild`), 🔑 Şifre (`dSf`) pencereleri ve yeni İsim penceresi (`dAd`, eski `prompt()` yerine) arka plandaki boş alana dokununca kapanır (diyalog.js). Firebase kuralı: değişmedi.
+- 2026-10-15: v51 — (1) **Bobinoz Ustası rolü kaldırıldı** (Ekstruder Operatörü ile aynı): app.js YETKI, kayıt listesi (index.html), rules.json rol doğrulaması ve kesim yazma kuralları. (2) Operatör rollerinden `goster` kaldırıldı: Ekstruder/Matbaa/Kesim operatörleri Üretim'de tüm aşama sekmelerini görür, **sadece kendi aşamasını ilerletir** (`a_*` izni + rules aynı). Üretim açılışında operatörün kendi aşaması seçili gelir. Sevkiyat Sorumlusu Üretim'i göremez (değişmedi). **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).** Eski Bobinoz Ustası hesabı varsa Yönetici > rolü Ekstruder Operatörü yapın.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
