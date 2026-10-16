@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v62**
+**GÜNCEL SÜRÜM: v63**
 Son güncelleme: 2026-10-15 (v53: etiket çalışma şekli netleştirildi, büyük varsayılan 100×80, "Yazıcıya giden sayfa" satırı)
 
 ---
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v62)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v63)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -254,14 +254,12 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-15: v60 — Kartlardaki form telefonda taşıyordu (yana kaydırma gerekiyordu). Form artık sabit 560px genişlikte çizilip `isfSigdir()` ile kutu genişliğine göre küçültülüyor/ölçekleniyor (isListele, qrCiz, qrAc ve ekran yeniden boyutlanınca çalışır). Dosyalar: app.js, style.css, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
 - 2026-10-16: v61 — (1) İş emri QR penceresi (iqDlg) Kapat düğmesi çalışmıyordu: fbKur("iq") arama kutusu için aynı kimlikli iqX/iqN öğeleri üretiyordu (kimlik çakışması). Penceredeki öğeler qkS/qkN/qkP/qkX olarak yeniden adlandırıldı. iqDlg ve qrDlg'de pencere dışına (boşluğa) basınca kapanma eklendi. (2) Yeni iş emri kaydedilince çıkan «WhatsApp ile paylaş önerisi» penceresi kaldırıldı (waOner çağrısı silindi; işlev ve bildirim ayarları duruyor). Dosyalar: index.html, app.js, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. NOT: fbKur(q) q+"N"/q+"X" kimliklerini üretir; yeni öğelerde bu önekleri kullanma.
 - 2026-10-16: v62 — İş emri listesi 300 kayıt sınırı düzeltildi: son 300 (`iLimit`) kayıt + bitmemiş (etiket/ekstruder/baski/kesim/depo) TÜM iş emirleri ayrı sorgularla (`orderByChild("asama").equalTo`) yüklenip `isBirles()` ile birleştirilir; eski ama hâlâ üretimde olan iş kaybolmaz. Biten sekmesinde/aramada «Daha eski iş emirlerini yükle» düğmesi (+300). **rules.json değişti:** `isEmirleri/.indexOn` = ['eklenmeTarihi','asama'] (kural yayınlanmazsa uygulama yine çalışır ama aşama sorguları tüm veriyi indirir). Dosyalar: app.js, rules.json, index.html, sw.js, PROJE-NOTLARI.md.
+- 2026-10-16: v63 — 5 özellik: (1) **Üretim raporları** (yeni `israpor.js`, pencere `dIR`, düğmeler `irAc1/irAc2`; yönetici veya Raporlar izni): «Biten işler» (dönem: bu/geçen hafta, bu/geçen ay, özel tarih; `asama=bitti` sorgusu + bitiş = log.depo.zaman; Excel) ve «Aşama süreleri» (isHareket'ten aşama/operatör bazlı iş sayısı, ort./toplam süre, kg/saat; Excel'de Özet+Detay). Süre = aşamada geçen toplam zaman (bekleme dahil). Eski işlerde `olustur` hareketi yoksa ilk aşama süresi hesaplanamaz. (2) **Hata önleme:** ileri/geri işlemlerinde sunucudaki güncel aşama kontrol edilir (başkası değiştirdiyse işlem yapılmaz), çift basma kilidi (`isKilit`), onay metinleri «MG-xxx: EKSTRUDER → KESİM geçirilsin mi?», geri almada onay eklendi; etiketten ekstruder'e geçişte onay (etiket.js). (3) **Termin:** iş emrinde `termin` alanı (form `iTermin`); kartta rozet (gecikti/bugün/kalan), listelerde kırmızı «N geciken iş» uyarısı ve geciken işler üstte (`terminGun`, `terminRozet`). `termin` yalnızca değiştiyse yazılır. (4) **Aşama bildirimi:** iş sizin aşamanıza gelince anında ekran mesajı + titreşim (`bAsamaUyar`), zil listesinde «📥 MG-xxx aşamanıza geldi»; etiket aşaması tamamlanınca `log/etiket` yazılır (`etLog`, başarısız olursa sessiz). (5) rules.json: `isEmirleri/$id/termin` ve `isEmirleri/$id/log/etiket` kuralları eklendi. Dosyalar: app.js, etiket.js, israpor.js (YENİ), index.html, sw.js, rules.json, PROJE-NOTLARI.md. **Cihazda ve Firebase'de sınanmadı.**
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
 **Yapılacaklar (kullanıcı isteklerini buraya yaz, bitenleri günlüğe taşı):**
-- **[İSTENDİ, YAPILMADI] Biten iş emirleri için haftalık/aylık rapor + Excel:** tarih aralığı seç → o aralıkta biten (asama=bitti; bitiş zamanı isHareket'ten) iş emirlerini listele/Excel indir. Kullanıcıya sorulan açık soru: «Biten» = üretimdeki Biten sekmesi mi, Dosyalar'daki onaylı sevkiyatlar mı? (cevap gelmedi). Yedekleme (Yönetici > 💾 Yedekleme) şu an sadece TÜM veriyi JSON/Excel verir, tarih aralığı yok.
-- **[ÖNERİLDİ] Termin (teslim) tarihi alanı** iş emrinde yok; eklenirse geciken işler üstte gösterilebilir.
-- **[ÖNERİLDİ] Aşamada bekleme süresi raporu** (isHareket zaman damgalarından: ekstruderde/baskıda kaç saat kaldı).
-- **[ÖNERİLDİ] Aşama değişince ilgili bölüme bildirim.**
+- v63'te eklenenler (rapor, termin, bildirim, hata önleme) cihazda denenmeli; kullanıcı geri bildirimine göre düzeltilecek. Olası ek: termine göre filtre, raporda operatör filtresi, geciken işi zilde gösterme.
 - **[KULLANICIYA SÖYLENDİ] Firebase otomatik günlük yedeği (Realtime Database > Backups, Blaze planı) açılmalı;** açık mı bilinmiyor. Kullanıcıdan adım adım isterse anlat.
 - **[TEMİZLİK] GitHub deposunda `fabrika-v44-degisen-dosyalar.zip` ve `fabrika-v45-degisen-dosyalar.zip` gereksiz;** kullanıcı silebilir (siteyi etkilemez).
 - Tahsilat için olası eklemeler (kullanıcı istemedi, yapılmadı): Excel'e aktarma, çek vadesi/banka alanı, firmaya göre toplam/cari özeti, bekleyen talep için bildirim, WhatsApp'a özet gönderme. Ayrıca WhatsApp grubundaki eski kayıtlar uygulamaya aktarılmadı (sadece bundan sonrası).

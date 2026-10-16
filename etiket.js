@@ -220,8 +220,10 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
 
   /* ---- ETİKET → EKSTRUDER geçişi ---- */
   var wE=null;
+  /* Etiket aşaması tamamlandı kaydı (bildirim için); kural henüz yayınlanmadıysa sessizce atlanır */
+  function etLog(id){try{db.ref("isEmirleri/"+id+"/log/etiket").set({kg:null,kim:ad(),zaman:firebase.database.ServerValue.TIMESTAMP}).catch(function(){})}catch(x){}}
   window.etiketIleri=function(e){
-    if(e.etiketYapildi){var u1={};u1["isEmirleri/"+e.id+"/asama"]="ekstruder";hrkEk(u1,e.id,{tur:"ileri",kimden:"etiket",kime:"ekstruder"});db.ref().update(u1).catch(function(er){toast(errText(er))});return}
+    if(e.etiketYapildi){if(!confirm(e.no+" ("+(e.musteri||"-")+")\nETİKET → EKSTRUDER aşamasına geçirilsin mi?"))return;var u1={};u1["isEmirleri/"+e.id+"/asama"]="ekstruder";hrkEk(u1,e.id,{tur:"ileri",kimden:"etiket",kime:"ekstruder"});db.ref().update(u1).then(function(){etLog(e.id)}).catch(function(er){toast(errText(er))});return}
     wE=e;var C=cols(e),sv=e.etiket||{},eks=[];
     for(var i=0;i<nCol(e);i++)if(!sv["k"+i]){var x=C[i]||{};eks.push([i+1+".",x.en,x.boy].filter(function(v){return v!==undefined&&v!==null&&String(v).trim()!==""}).join(" "))}
     g("lbWT").textContent="Bu iş emri için etiket yapılmadı"+(eks.length?" ("+eks.join(", ")+" sütun)":"")+". Etiket yapmadan Ekstruder'e geçmek istiyor musunuz?";
@@ -239,6 +241,6 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
   g("lbWS").onclick=function(){
     g("lbWarn").close();if(!wE)return;
     var u2={};u2["isEmirleri/"+wE.id+"/asama"]="ekstruder";u2["isEmirleri/"+wE.id+"/etiketsiz"]=true;hrkEk(u2,wE.id,{tur:"etiketsiz",kimden:"etiket",kime:"ekstruder"});
-    db.ref().update(u2).catch(function(er){toast(errText(er))});
+    db.ref().update(u2).then(function(){etLog(wE.id)}).catch(function(er){toast(errText(er))});
   };
 })();

@@ -16,7 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=62">
+<link rel="stylesheet" href="style.css?v=63">
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -200,6 +200,7 @@
     <div id="iAna">
     <button class="btn b2 big" style="margin:0 0 10px" id="iAdd">＋ Yeni iş emri aç</button>
     <div style="font-size:12px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v33 (iş emri tek form, aşağı inmeden)</div>
+    <button class="btn b6 hide" id="irAc1" type="button" style="margin:0 0 8px">📊 Üretim raporları (biten işler · aşama süreleri)</button>
     <input id="iq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="iTabs"></div>
     <div id="iList"></div>
@@ -220,6 +221,7 @@
   </div>
   </div>
   <div id="pUr" class="hide">
+    <button class="btn b6 hide" id="irAc2" type="button" style="margin:0 0 8px">📊 Üretim raporları (biten işler · aşama süreleri)</button>
     <input id="uq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="uTabs"></div>
     <div id="uList"></div>
@@ -472,6 +474,16 @@
   <div class="err" id="turE" style="margin-top:6px"></div>
   <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="turX">Vazgeç</button><button type="button" class="btn b3 hide" id="turOk">📸 Kamerayı aç</button></div>
 </dialog>
+<dialog id="dIR" style="width:min(760px,96vw)">
+  <h3 style="margin-bottom:6px">📊 Üretim raporları</h3>
+  <div class="tabs stabs" id="irT"><button type="button" data-r="biten" class="on">✅ BİTEN İŞLER</button><button type="button" data-r="sure">⏱️ AŞAMA SÜRELERİ</button></div>
+  <label for="irS">Dönem</label>
+  <select id="irS"><option value="hafta">Bu hafta</option><option value="gecenhafta">Geçen hafta</option><option value="ay">Bu ay</option><option value="gecenay">Geçen ay</option><option value="ozel">Tarih aralığı seç…</option></select>
+  <div id="irO" style="display:none;gap:8px"><div style="flex:1"><label for="irD1">Başlangıç</label><input type="date" id="irD1"></div><div style="flex:1"><label for="irD2">Bitiş</label><input type="date" id="irD2"></div></div>
+  <div id="irSon" style="font-size:14px;margin:8px 0;color:#475569"></div>
+  <div id="irL" style="overflow-x:auto;max-height:50vh;overflow-y:auto"></div>
+  <div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn b6" id="irX">Kapat</button><button type="button" class="btn b3" id="irXl">⬇️ Excel indir</button></div>
+</dialog>
 <dialog id="iqDlg" style="width:min(340px,94vw)">
   <h3 style="margin-bottom:4px">📱 İş emri QR kodu</h3>
   <div id="qkS" class="qrBox" style="width:min(260px,70vw);aspect-ratio:1/1;margin:8px auto"></div>
@@ -490,6 +502,7 @@
   <table class="ifm">
    <colgroup><col style="width:21%"><col style="width:35%"><col style="width:18%"><col style="width:26%"></colgroup>
    <tr><th>MÜŞTERİ :</th><td><input id="iMu" placeholder="Müşteri"></td><th>SP. TARİHİ :</th><td><input id="iTr" type="date"></td></tr>
+   <tr><th>TERMİN :</th><td colspan="3"><input id="iTermin" type="date"> <small style="color:#64748b">teslim tarihi (isteğe bağlı) — geçince iş "geciken" olarak üstte uyarılır</small></td></tr>
    <tr><th>İŞİN ADI :</th><td><input id="iAdi" placeholder="İşin adı (MTB)"></td><th>F/X :</th><td><select id="iFx"><option value="X-PEŞİN">X-PEŞİN</option><option value="F-PEŞİN">F-PEŞİN</option><option value="-">-</option></select></td></tr>
    <tr><th>STOK ADI :</th><td><input id="iSt" placeholder="OR.LDPE BASKILI TORBA"></td><th id="iFyL"></th><td id="iFyT"><div id="iFyW" class="hide"><div class="ifx"><input id="iFy" inputmode="decimal" placeholder="Fiyat"><select id="iPb"><option value="TRY">₺ TL</option><option value="USD">$ USD</option><option value="EUR">€ EUR</option></select><label class="chip"><input type="checkbox" id="iKd">+KDV</label></div></div></td></tr>
   </table>
@@ -559,17 +572,17 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="raporlar.js?v=62"></script>
+<script src="raporlar.js?v=63"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=62"></script>
+<script src="app.js?v=63"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=62"></script>
-<script src="saat.js?v=62"></script>
+<script src="foto-onizleme.js?v=63"></script>
+<script src="saat.js?v=63"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=62"></script>
+<script src="diyalog.js?v=63"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -599,8 +612,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=62"></script>
-<script src="etiket.js?v=62"></script>
+<script src="qr.js?v=63"></script>
+<script src="etiket.js?v=63"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -610,9 +623,10 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="talimat.js?v=62"></script>
-<script src="tahsilat.js?v=62"></script>
-<script src="arama.js?v=62"></script>
-<script src="sw-kayit.js?v=62"></script>
+<script src="talimat.js?v=63"></script>
+<script src="tahsilat.js?v=63"></script>
+<script src="arama.js?v=63"></script>
+<script src="israpor.js?v=63"></script>
+<script src="sw-kayit.js?v=63"></script>
 </body>
 </html>

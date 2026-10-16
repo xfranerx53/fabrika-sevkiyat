@@ -1585,7 +1585,7 @@ const HT={olustur:"🆕 Oluşturdu",ileri:"✅ İlerletti",geri:"↩️ Geri ald
 function hrkObj(o){return Object.assign({kim:ad(),uid:user.uid,zaman:firebase.database.ServerValue.TIMESTAMP},o)}
 function hrkEk(up,id,o){up["isHareket/"+id+"/"+db.ref("isHareket/"+id).push().key]=hrkObj(o);return up}
 function hrkYaz(id,o){return db.ref("isHareket/"+id).push().set(hrkObj(o))}
-var iLimit=300,iSon={},iAkt={},iAktRef=[];
+var isKilit=new Set(),iLimit=300,iSon={},iAkt={},iAktRef=[];
 function isKapat(){if(iRef){iRef.off();iRef=null}iAktRef.forEach(r=>r.off());iAktRef=[];iAkt={}}
 /* Son iLimit kayıt + üretimdeki (bitmemiş) TÜM iş emirleri birleştirilir: eski ama hâlâ üretimde olan iş listeden kaybolmaz */
 function isBirles(){const m={};Object.keys(iAkt).forEach(s=>Object.assign(m,iAkt[s]));Object.assign(m,iSon);
@@ -1610,7 +1610,11 @@ function isListele(){
   const EA=st.aktif&&!u?isE.filter(e=>asamaGor(e.asama)):EG;
   const L=st.aktif?EA.filter(e=>fbEsles(st,[e.no,e.musteri,e.stok,e.isAdi,e.fx,e.formul,e.urunAdi,e.renk,e.notU,e.notB,e.ekleyen,ASL[e.asama]],e.spTarih||e.eklenmeTarihi)):EG.filter(e=>e.asama===T&&!e.aktarildi);
   fbSay(q,L.length,EA.length,"iş emri");
-  $(u?"uList":"iList").innerHTML=(st.aktif?'<div class="mut" style="font-size:13px;margin:0 0 6px">🔎 Arama/filtre açık: '+(u?"tüm üretim aşamalarında":"tüm aşamalarda")+' gösteriliyor</div>':"")+(L.length?L.map(isKart).join(""):'<div class="empty">'+(st.aktif?"Aramaya uygun iş emri yok.":"Bu aşamada iş emri yok.")+'</div>');
+  const rk=x=>{const g=terminGun(x);return g!==null&&g>0?g:-1};L.sort((x,y)=>rk(y)-rk(x));
+  const GE=isE.filter(x=>ST.includes(x.asama)&&asamaGor(x.asama)&&rk(x)>0).sort((x,y)=>rk(y)-rk(x));
+  const gb=GE.length?'<div class="note" style="background:#fee2e2;border-color:#e71d36;color:#991b1b;margin:0 0 8px"><b>⏰ '+GE.length+' geciken iş</b>'+GE.slice(0,6).map(x=>'<div style="font-size:14px">'+esc(x.no)+' · '+esc(x.musteri||"-")+' · <b>'+rk(x)+' gün</b> · '+esc(ASL[x.asama]||x.asama)+'</div>').join("")+(GE.length>6?'<div style="font-size:13px">… ve '+(GE.length-6)+' tane daha</div>':"")+'</div>':"";
+  $(u?"uList":"iList").innerHTML=gb+(st.aktif?'<div class="mut" style="font-size:13px;margin:0 0 6px">🔎 Arama/filtre açık: '+(u?"tüm üretim aşamalarında":"tüm aşamalarda")+' gösteriliyor</div>':"")+(L.length?L.map(isKart).join(""):'<div class="empty">'+(st.aktif?"Aramaya uygun iş emri yok.":"Bu aşamada iş emri yok.")+'</div>');
+  if(window.irGoster)irGoster();
   if(Object.keys(iSon).length>=iLimit&&(st.aktif||T==="bitti")){const bt=document.createElement("button");bt.className="btn b6";bt.id="iEski";bt.textContent="⬇️ Daha eski iş emirlerini yükle (şu an son "+iLimit+")";bt.onclick=()=>{iLimit+=300;toast("Daha eski kayıtlar yükleniyor…");isYukle()};$(u?"uList":"iList").appendChild(bt)}
 isfSigdir()}
 /* Karttaki form kutusunu genişliğe sığdır (telefonda yana kaydırma gerekmesin) */
@@ -1618,12 +1622,21 @@ function isfSigdir(){
   document.querySelectorAll(".isf").forEach(b=>{const f=b.firstElementChild;if(!f)return;const w=b.clientWidth;if(w<=0)return;
     const s=Math.min(w/560,1.15);f.style.transform="scale("+s+")";f.style.marginLeft=Math.max(0,(w-560*s)/2)+"px";b.style.height=Math.ceil(f.offsetHeight*s)+2+"px"})}
 window.addEventListener("resize",isfSigdir);
+/* Termin: >0 gecikti, 0 bugün, <0 kalan gün; bitmiş/aktarılmış işte null */
+const terminGun=e=>{if(!e||!e.termin||e.asama==="bitti"||e.aktarildi)return null;return Math.round((Date.parse(bugun()+"T12:00:00+03:00")-Date.parse(e.termin+"T12:00:00+03:00"))/864e5)};
+function terminRozet(e){const g=terminGun(e);if(!e.termin)return"";const t=trDate(e.termin);
+  if(g===null)return'<div class="who">📅 Termin: '+t+'</div>';
+  if(g>0)return'<div class="note" style="background:#fee2e2;border-color:#e71d36;color:#991b1b;font-weight:800;margin-top:6px">⏰ TERMİN GEÇTİ: '+t+' ('+g+' gün gecikti)</div>';
+  if(g===0)return'<div class="note" style="font-weight:800;margin-top:6px">⚠️ Termin BUGÜN: '+t+'</div>';
+  if(g>=-2)return'<div class="note" style="margin-top:6px">📅 Termin '+t+' ('+(-g)+' gün kaldı)</div>';
+  return'<div class="who">📅 Termin: '+t+'</div>'}
 function isKart(e){
   const id=esc(e.id),o=asOrd(e),i=o.indexOf(e.asama),nx=o[i+1],canDel=isAdmin()||(islemYap("isSil")&&e.ekleyenUid&&e.ekleyenUid===user.uid);
   const lg=Object.entries(e.log||{}).map(([k,v])=>`<div class="who">${esc(ASL[k]||k)}: ${v.kg!=null?esc(fmt(v.kg))+" kg":""}${v.paket?" · "+esc(fmt(v.paket))+" adet":""} — ${esc(v.kim||"")} ${esc(tarih(v.zaman))}${k==="depo"&&Array.isArray(v.kalem)?"<br>"+v.kalem.map((x,i)=>{const c=icols(e)[i]||{};return esc([i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - ")+": "+fmt(x&&x.kg)+" kg · "+fmt(x&&x.paket)+" paket")}).join("<br>"):""}</div>`).join("");
   let frm="";try{frm=`<div class="isf">${isForm(e,islemYap("fiyat"))}</div>`}catch(er){frm=""}
   return `<div class="item sevk-border">
   <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:19px">${esc(e.no)}</b><span class="badge badge-sevk">${esc(ASL[e.asama]||e.asama)}</span></div>
+  ${terminRozet(e)}
   ${frm}
   ${e.asama==="etiket"?`<div class="note" style="margin-top:6px">🏷️ ${e.etiketYapildi?"Etiket hazır ✅":"Etiket henüz yapılmadı — Ekstruder'e geçmeden önce etiket hazırlayın"}</div>`:(e.etiketsiz?`<div class="who">⚠️ Etiketsiz devam edildi</div>`:"")}
   ${lg}
@@ -1634,6 +1647,11 @@ function isKart(e){
 const isAksiyon=async ev=>{
   const b=ev.target.closest("button[data-a]");if(!b)return;const e=isBulId(b.dataset.id);if(!e)return;
   const a=b.dataset.a,o=asOrd(e),i=o.indexOf(e.asama),TS=firebase.database.ServerValue.TIMESTAMP;
+  const gec=a==="ileri"||a==="geri";
+  /* Çift basma / başkası zaten ilerletmiş mi: işlemden önce sunucudaki güncel aşamayı kontrol et */
+  if(gec){if(isKilit.has(e.id))return;isKilit.add(e.id);
+    try{const s=await db.ref("isEmirleri/"+e.id+"/asama").once("value"),g=s.val();
+      if(g!==e.asama){isKilit.delete(e.id);toast("⚠️ "+e.no+" artık "+(ASL[g]||g||"?")+" aşamasında (başka biri değiştirmiş). İşlem yapılmadı.");return}}catch(er){}}
   try{
     if(a==="yaz")isYazdir(e);
     else if(a==="qr")iqAc(e.no);
@@ -1657,17 +1675,18 @@ const isAksiyon=async ev=>{
     }
     else if(a==="edit"){if(!islemYap("isDuzenle")){toast("İş emrini düzenleme yetkiniz yok.");return}iAc(e)}
     else if(a==="gecmis")hrkAc(e);
-    else if(a==="geri"&&i>0){if(!islemYap("geriAl")){toast("Geri alma yetkiniz yok.");return}const up={};up["isEmirleri/"+e.id+"/asama"]=o[i-1];hrkEk(up,e.id,{tur:"geri",kimden:e.asama,kime:o[i-1]});await db.ref().update(up)}
+    else if(a==="geri"&&i>0){if(!islemYap("geriAl")){toast("Geri alma yetkiniz yok.");return}if(!confirm(e.no+" ("+(e.musteri||"-")+")\n"+(ASL[e.asama]||e.asama)+" → "+(ASL[o[i-1]]||o[i-1])+"\nGERİ alınsın mı?"))return;const up={};up["isEmirleri/"+e.id+"/asama"]=o[i-1];hrkEk(up,e.id,{tur:"geri",kimden:e.asama,kime:o[i-1]});await db.ref().update(up)}
     else if(a==="del"){if(!(isAdmin()||(islemYap("isSil")&&e.ekleyenUid===user.uid))){toast("Silme yetkiniz yok.");return}if(confirm(e.no+" silinsin mi?"))await silCop("isEmirleri",e.id,e.no||"İş emri",isAdmin()?["isHareket/"+e.id,"etiketGecmis/"+e.id]:[])}
     else if(a==="ileri"&&i>=0&&i<o.length-1){
       if(!asamaYap(e.asama)){toast("Bu aşamayı ilerletme yetkiniz yok.");return}
       if(e.asama==="etiket"){etiketIleri(e);return}else if(e.asama==="depo"){depoAc(e);return}else{
-        if(!confirm("Onaylıyor musunuz?"))return;
+        if(!confirm(e.no+" ("+(e.musteri||"-")+")\n"+(ASL[e.asama]||e.asama)+" → "+(ASL[o[i+1]]||o[i+1])+"\nBu aşama tamamlandı, bir sonrakine geçirilsin mi?"))return;
         const up={};up["isEmirleri/"+e.id+"/asama"]=o[i+1];up["isEmirleri/"+e.id+"/log/"+e.asama]={kg:null,kim:ad(),zaman:TS};
         hrkEk(up,e.id,{tur:"ileri",kimden:e.asama,kime:o[i+1],kg:null});await db.ref().update(up);
       }
     }
   }catch(err){toast(errText(err))}
+  finally{if(gec)isKilit.delete(e.id)}
 };
 $("iList").onclick=isAksiyon;$("uList").onclick=isAksiyon;
 /* ===================== QR: etiketteki iş emri QR'ı → iş emrini aç ===================== */
@@ -1905,7 +1924,7 @@ function iAc(e){
   [["iNo","no"],["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"],["iBU","urunAdi"],["iRenk","renk"]].forEach(([i,f])=>$(i).value=v[f]||"");
   notSet("iNtU",v.notU);notSet("iNtB",v.notB);
   if(!e)$("iNo").value=iNext();iDL();
-  $("iTr").value=v.spTarih||bugun();$("iBv").checked=!!v.baskiVar;
+  $("iTr").value=v.spTarih||bugun();$("iTermin").value=v.termin||"";$("iBv").checked=!!v.baskiVar;
   $("iFyW").classList.toggle("hide",!islemYap("fiyat"));$("iFyL").textContent=islemYap("fiyat")?"FİYAT :":"";$("iPb").value=PB[v.paraBirimi]?v.paraBirimi:"TRY";$("iFy").value=v.fiyat!=null?String(v.fiyat).replace(".",","):"";
   {const sx=$("iFx");[...sx.options].forEach(o=>{if(o.dataset.ek)o.remove()});
    if(v.fx&&v.fx!=="X-PEŞİN"&&v.fx!=="F-PEŞİN"&&v.fx!=="-"){const o=document.createElement("option");o.value=o.textContent=v.fx;o.dataset.ek="1";sx.appendChild(o)}
@@ -1925,6 +1944,7 @@ $("iOk").onclick=async()=>{
   if(!S.length)return err("En az bir ebat için kg veya en girin.");
   if((!iEdit||iEdit.no!==no)&&isE.some(x=>x.no===no))return err("Bu seri no zaten kayıtlı.");
   const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:notGet("iNtU"),baskiVar:$("iBv").checked,urunAdi:g("iBU"),renk:g("iRenk"),notB:notGet("iNtB"),siparis:S};
+  {const tm=g("iTermin");if(iEdit?tm!==(iEdit.termin||""):tm)d.termin=tm} /* termin yalnızca değiştiyse yazılır (eski kurallarla uyum) */
   if(islemYap("fiyat")){const fy=parseFloat(g("iFy").replace(",","."));d.fiyat=fy>0?fy:null;d.kdvDahil=!$("iKd").checked;d.paraBirimi=$("iPb").value}
   $("iOk").disabled=true;let woMsg=null;
   try{
@@ -1977,17 +1997,25 @@ function waTel(t){let d=String(t||"").replace(/\D/g,"");if(d.startsWith("00"))d=
 const waUrl=m=>"https://wa.me/"+waTel(bAyar().tel)+"?text="+encodeURIComponent(m);
 const mevTxt=k=>{const n=norm(k);return UN.filter(([u])=>u in n.mik).map(([u,l])=>fmt(n.mik[u])+" "+l).join(" + ")};
 function stokWa(L){return "⚠️ *Stok uyarısı*\n"+L.map(k=>"• "+(k.ad||"-")+(k.ebat?" ("+k.ebat+")":"")+": "+mevTxt(k)+" — "+(dur(k)==="no"?"TÜKENDİ":"azalıyor")).join("\n")}
-function bildDurdur(){if(window.etAyarDurdur)window.etAyarDurdur();if(window.talDurdur)window.talDurdur();if(window.tahDurdur)window.tahDurdur();if(bRef){bRef.off();bRef=null}if(bTm){clearInterval(bTm);bTm=null}bIs=[];bStok=false;bRozet()}
+/* Başkası bir işi benim aşamama getirince anında uyar (ekranda mesaj + titreşim) */
+var bAsm=null;
+function bAsamaUyar(){try{
+  const ilk=bAsm===null;if(ilk)bAsm={};const yeni=[];
+  bIs.forEach(e=>{const onc=bAsm[e.id];bAsm[e.id]=e.asama;
+    if(ilk||onc===undefined||onc===e.asama||isAdmin()||e.asama==="bitti"||!asamaGor(e.asama))return;
+    const o=asOrd(e);if(o.indexOf(e.asama)>o.indexOf(onc))yeni.push(e.no+" → "+(ASL[e.asama]||e.asama))});
+  if(yeni.length){toast("📥 Aşamanıza geldi: "+yeni.join(", "));try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(x){}}}catch(x){}}
+function bildDurdur(){bAsm=null;if(window.etAyarDurdur)window.etAyarDurdur();if(window.talDurdur)window.talDurdur();if(window.tahDurdur)window.tahDurdur();if(bRef){bRef.off();bRef=null}if(bTm){clearInterval(bTm);bTm=null}bIs=[];bStok=false;bRozet()}
 function bildBaslat(){bildDurdur();if(window.etAyarBaslat)window.etAyarBaslat();if(window.talBaslat)window.talBaslat();if(window.tahBaslat)window.tahBaslat();if(!bAyar().son)bYaz("bildSon",Date.now());
   bRef=db.ref("isEmirleri").orderByChild("eklenmeTarihi").limitToLast(30);
-  bRef.on("value",s=>{const v=s.val()||{};bIs=Object.keys(v).map(k=>Object.assign({id:k},v[k]));bRozet()},()=>{});
+  bRef.on("value",s=>{const v=s.val()||{};bIs=Object.keys(v).map(k=>Object.assign({id:k},v[k]));bRozet();bAsamaUyar()},()=>{});
   bTm=setInterval(bRozet,20000)}
 function bOlaylar(){
   const son=bAyar().son,me=user&&user.uid,adm=ad(),O=[],kgS=e=>{const t=icols(e).reduce((a,c)=>a+(+c.kg||0),0);return t?"\nMiktar: "+fmt(t)+" kg":""};
   bIs.forEach(e=>{
     if(+e.eklenmeTarihi>son&&e.ekleyenUid!==me)O.push({ts:+e.eklenmeTarihi,ik:"🆕",b:"Yeni iş emri "+e.no,d:[e.musteri,e.isAdi].filter(Boolean).join(" · ")+(e.ekleyen?" — "+e.ekleyen:""),wa:"🆕 *Yeni iş emri "+e.no+"*\nMüşteri: "+(e.musteri||"-")+(e.isAdi?"\nİş: "+e.isAdi:"")+kgS(e)});
-    Object.entries(e.log||{}).forEach(([k,v])=>{if(!v||!(+v.zaman>son)||v.kim===adm)return;const dp=k==="depo";
-      O.push({ts:+v.zaman,ik:dp?"✅":"➡️",b:dp?e.no+" üretimi bitti":e.no+": "+(ASL[k]||k)+" tamamlandı",d:(e.musteri||"")+(v.kim?" — "+v.kim:""),
+    Object.entries(e.log||{}).forEach(([k,v])=>{if(!v||!(+v.zaman>son)||v.kim===adm)return;const dp=k==="depo",o_=asOrd(e),nx=o_[o_.indexOf(k)+1],ben=!isAdmin()&&!!nx&&nx!=="bitti"&&asamaGor(nx);
+      O.push({ts:+v.zaman,ik:ben?"📥":(dp?"✅":"➡️"),b:ben?e.no+" aşamanıza geldi: "+(ASL[nx]||nx):(dp?e.no+" üretimi bitti":e.no+": "+(ASL[k]||k)+" tamamlandı"),d:(e.musteri||"")+(v.kim?" — "+v.kim:""),
         wa:(dp?"✅ *"+e.no+" üretimi bitti — depoya girdi*":"➡️ *"+e.no+"*: "+(ASL[k]||k)+" tamamlandı")+"\nMüşteri: "+(e.musteri||"-")+(v.kg!=null?"\nKg: "+fmt(v.kg):"")+(dp&&v.paket?" · "+fmt(v.paket)+" paket":"")})})});
   urunler.forEach(u=>{if(u.durum==="hazir"&&+u.eklenmeTarihi>son&&u.ekleyenUid!==me){const ur=String(u.urun||"").split("\n")[0];
     O.push({ts:+u.eklenmeTarihi,ik:"📦",b:"Hazır ürün eklendi",d:[u.musteri,ur].filter(Boolean).join(" · ")+" — "+fmt(u.kg)+" kg"+(u.ekleyen?" — "+u.ekleyen:""),
