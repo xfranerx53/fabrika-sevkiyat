@@ -1,7 +1,7 @@
 var LG_A="data:image/png;base64,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",LG_B="data:image/png;base64,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";
 (function(){
   var g=function(id){return document.getElementById(id)};
-  var CK="lblCfg",SK="lblSm",RK="lblRot",cur=null,shared=null,eRef=null,tpl={},tplKey="",hist=[],tok=0;
+  var serbest=false,CK="lblCfg",SK="lblSm",RK="lblRot",cur=null,shared=null,eRef=null,tpl={},tplKey="",hist=[],tok=0;
   /* Ortak etiket ölçüsü: ayarlar/etiket (herkes için aynı) */
   window.etAyarBaslat=function(){window.etAyarDurdur();eRef=db.ref("ayarlar/etiket");
     eRef.on("value",function(sn){shared=sn.val()||null;if(g("lbDlg").open)ortGuncelle()},function(){})};
@@ -101,14 +101,9 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
   function pgBilgi(){var t=g("lbPg");if(!t)return;var c=cfgRead();
     t.textContent=c.sm?"🖨️ Yazıcıya giden sayfa: "+N(c.w)+" × "+N(c.h)+" mm  (3 etiket yan yana, her biri "+N(c.kw)+" × "+N(c.h)+" mm)":"🖨️ Yazıcıya giden sayfa: "+N(c.w)+" × "+N(c.h)+" mm  (tek etiket)"}
   g("lbSm").addEventListener("change",function(){smUi();prevAll();ortGuncelle();pgBilgi()});
-  window.etiketAc=function(e){
-    try{
-      temizle();cur=e;var c=cfgGet(),n=nCol(e),C=cols(e);
-      g("lbT").textContent="🏷️ Etiket hazırla — "+(e.no||"");g("lbE").textContent="";
-      g("lbW").value=c.w;g("lbH").value=c.h;g("lbMag").value=String(c.mag);g("lbQr").value=String(c.qr);g("lbSm").value=String(smGet());g("lbRot").value=String(rotGet());lastSm=null;mem={};smUi();
-      var h="";
-      for(var i=0;i<n;i++){
-        var d=defs(e,i),x=C[i]||{},lab=[i+1+". sütun",x.en,x.boy].filter(function(v){return v!==undefined&&v!==null&&String(v).trim()!==""}).join(" · ");
+  function rowHtml(e,i,C){var h="";
+
+        var d=defs(e,i),x=C[i]||{},lab=e.id==="__serbest"?"Etiket "+(i+1):[i+1+". sütun",x.en,x.boy].filter(function(v){return v!==undefined&&v!==null&&String(v).trim()!==""}).join(" · ");
         h+='<div class="lbrow" data-i="'+i+'" data-y="'+(d.yapildi?1:0)+'"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:16px">'+X(lab)+(x.kg?' · sipariş '+X(N(x.kg))+' kg':'')+'</b><span class="ok" style="font-size:13px;font-weight:800;color:#16a34a">'+(d.yapildi?"✅ hazırlandı":"")+'</span></div>'+
         '<div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;margin-top:8px"><select data-t><option value="">📋 Şablonlar…</option></select><button type="button" class="btn b6 sm" data-sk style="width:auto;margin:0">💾 Kaydet</button><button type="button" class="btn b6 sm" data-ss style="width:auto;margin:0">🗑</button></div>'+
         '<details class="lbHg" style="display:none;margin-top:6px"><summary style="font-size:14px;font-weight:800;cursor:pointer">🕘 Önceki baskılar</summary><div class="lbHl"></div></details>'+
@@ -119,10 +114,23 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
         '<div class="chips"><button type="button" data-kg="15">15</button><button type="button" data-kg="20">20</button><button type="button" data-kg="25">25</button><button type="button" data-kg="30">30</button></div>'+
         '<div class="lbPW"><div class="lbPv"></div></div><div class="qrWarn err"></div>'+
         '<button class="btn b3 lbOne" type="button" style="margin-top:0">🖨️ Bu etiketi bas</button></div>';
-      }
+      
+      return h}
+  window.etiketAc=function(e){
+    try{
+      temizle();cur=e;serbest=e.id==="__serbest";var c=cfgGet(),n=nCol(e),C=cols(e);
+      g("lbT").textContent=serbest?"🏷️ Yeni etiket (iş emrinden bağımsız)":"🏷️ Etiket hazırla — "+(e.no||"");g("lbPlus").classList.toggle("hide",!serbest);g("lbHint").textContent=serbest?"Boş etiket: işin adı, ürün, ebat ve kg değerini kendiniz yazın. İş emrine kaydedilmez, sadece yazdırılır.":"Her sipariş sütunu için ayrı etiket. Bilgiler iş emrinden dolduruldu, değiştirebilirsiniz. Yazıcı olarak Godex'i seçin.";g("lbE").textContent="";
+      g("lbW").value=c.w;g("lbH").value=c.h;g("lbMag").value=String(c.mag);g("lbQr").value=String(c.qr);g("lbSm").value=String(smGet());g("lbRot").value=String(rotGet());lastSm=null;mem={};smUi();
+      var h="";
+      for(var i=0;i<n;i++)h+=rowHtml(e,i,C);
       g("lbRows").innerHTML=h;g("lbDlg").showModal();prevAll();ortGuncelle();ekYukle(e);
     }catch(err){console.error("etiket:",err)}
   };
+  /* Bağımsız (iş emrine bağlı olmayan) yeni etiket */
+  window.etiketSerbest=function(){window.etiketAc({id:"__serbest",no:"",musteri:"",isAdi:"",siparis:{s0:{}}})};
+  g("lbPlus").onclick=function(){if(!serbest||!cur)return;var n=nCol(cur);cur.siparis["s"+n]={};
+    g("lbRows").insertAdjacentHTML("beforeend",rowHtml(cur,n,cols(cur)));prevAll();
+    var son=g("lbRows").lastElementChild;if(son)son.scrollIntoView({block:"nearest"})};
   function readRow(r){var v=function(f){return r.querySelector('[data-f="'+f+'"]').value};
     return{isAdi:v("isAdi").trim(),urun:v("urun").trim(),ebat:v("ebat").trim(),kg:parseFloat(String(v("kg")).replace(",","."))||0,adet:1}}
   function prevRow(r){
@@ -155,6 +163,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     var P=g("lprn"),out="";P.className="meas";
     L.forEach(function(x){P.innerHTML=lblHtml(x,c);fit(P);out+=P.innerHTML});
     P.innerHTML=out;P.className="";
+    if(!serbest){
     var e=live(),up={},sv=(e&&e.etiket)||{},n=nCol(e),done=0;
     L.forEach(function(x){up["etiket/k"+x.i]={isAdi:x.isAdi,urun:x.urun,ebat:x.ebat,kg:x.kg,adet:x.adet,tasarim:c.sm?"kucuk":(c.mag?"markali":"sade"),kim:ad(),zaman:firebase.database.ServerValue.TIMESTAMP}});
     for(var i=0;i<n;i++)if(sv["k"+i]||L.some(function(x){return x.i===i}))done++;
@@ -162,6 +171,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     db.ref("isEmirleri/"+cur.id).update(up).catch(function(er){toast(errText(er))});
     hrkYaz(cur.id,{tur:"etiket",adet:L.length}).catch(function(){});
     L.forEach(function(x){db.ref("etiketGecmis/"+cur.id).push().set({i:x.i,isAdi:x.isAdi,urun:x.urun,ebat:x.ebat,kg:x.kg,tasarim:c.sm?"kucuk":(c.mag?"markali":"sade"),w:c.w,h:c.h,kim:ad(),uid:user.uid,zaman:firebase.database.ServerValue.TIMESTAMP}).catch(function(){})});
+    }
     rows.forEach(function(r,i){if(L.some(function(x){return x.i===i}))r.querySelector(".ok").textContent="✅ hazırlandı"});
     var st=document.createElement("style");st.id="lbPage";st.textContent="@media print{@page{size:"+c.w+"mm "+c.h+"mm;margin:0}}";document.body.appendChild(st);
     document.body.classList.add("lblp");g("lbDlg").close();
@@ -188,7 +198,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     var eb=trn(r.querySelector('[data-f="ebat"]').value);if(!eb)return;
     var m=Object.keys(tpl).map(function(k){return tpl[k]}).filter(function(t){return trn(t.ebat)===eb}).sort(function(a,b){return(b.zaman||0)-(a.zaman||0)})[0];
     if(m){setRow(r,{isAdi:m.isAdi||null,urun:m.urun,ebat:m.ebat,kg:m.kg});r.querySelector(".ok").textContent="📋 şablondan"}})}
-  function ekYukle(e){var my=++tok;tpl={};hist=[];tplKey=slug(e.musteri||"genel");sablonListe();gecmisListe();
+  function ekYukle(e){var my=++tok;if(e.id==="__serbest"){tpl={};hist=[];tplKey="genel";sablonListe();gecmisListe();return}tpl={};hist=[];tplKey=slug(e.musteri||"genel");sablonListe();gecmisListe();
     db.ref("etiketSablon/"+tplKey).once("value").then(function(sn){if(my!==tok)return;tpl=sn.val()||{};sablonListe();sablonUygula()}).catch(function(){});
     db.ref("etiketGecmis/"+e.id).once("value").then(function(sn){if(my!==tok)return;var v=sn.val()||{};
       hist=Object.keys(v).map(function(k){return v[k]}).sort(function(a,b){return(b.zaman||0)-(a.zaman||0)}).slice(0,60);gecmisListe()}).catch(function(){})}
@@ -209,7 +219,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
     if(b.hasAttribute("data-hu")){var h=hist[+b.dataset.hu];if(h){setRow(r,h);r.dataset.touched="1";r.querySelector(".ok").textContent="↺ geçmişten"}}
     else if(b.hasAttribute("data-sk")){var o=readRow(r);
       if(!o.urun&&!o.ebat)return toast("Ürün veya ebat yazın.");
-      if(!cur||!String(cur.musteri||"").trim())return toast("Bu iş emrinde müşteri adı yok.");
+      if(serbest)return toast("Bağımsız etiketlerde şablon kaydedilmez.");if(!cur||!String(cur.musteri||"").trim())return toast("Bu iş emrinde müşteri adı yok.");
       var key=slug(o.urun+"|"+o.ebat),rec={musteri:cur.musteri,isAdi:o.isAdi,urun:o.urun,ebat:o.ebat,kg:o.kg,ekleyen:ad(),ekleyenUid:user.uid,zaman:firebase.database.ServerValue.TIMESTAMP};
       if(tpl[key]&&tpl[key].ekleyenUid){rec.ekleyenUid=tpl[key].ekleyenUid;rec.ekleyen=tpl[key].ekleyen||rec.ekleyen} /* adım 2: kayıt sahibi değişmez */
       db.ref("etiketSablon/"+tplKey+"/"+key).set(rec).then(function(){tpl[key]=Object.assign({},rec,{zaman:Date.now()});sablonListe();r.querySelector("[data-t]").value=key;toast("📋 Şablon kaydedildi")}).catch(function(er){toast(errText(er))})}

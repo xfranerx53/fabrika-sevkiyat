@@ -1615,6 +1615,7 @@ function isListele(){
   const gb=GE.length?'<div class="note" style="background:#fee2e2;border-color:#e71d36;color:#991b1b;margin:0 0 8px"><b>⏰ '+GE.length+' geciken iş</b>'+GE.slice(0,6).map(x=>'<div style="font-size:14px">'+esc(x.no)+' · '+esc(x.musteri||"-")+' · <b>'+rk(x)+' gün</b> · '+esc(ASL[x.asama]||x.asama)+'</div>').join("")+(GE.length>6?'<div style="font-size:13px">… ve '+(GE.length-6)+' tane daha</div>':"")+'</div>':"";
   $(u?"uList":"iList").innerHTML=gb+(st.aktif?'<div class="mut" style="font-size:13px;margin:0 0 6px">🔎 Arama/filtre açık: '+(u?"tüm üretim aşamalarında":"tüm aşamalarda")+' gösteriliyor</div>':"")+(L.length?L.map(isKart).join(""):'<div class="empty">'+(st.aktif?"Aramaya uygun iş emri yok.":"Bu aşamada iş emri yok.")+'</div>');
   if(window.irGoster)irGoster();
+  {const eb=$("etNew");if(eb)eb.classList.toggle("hide",!(asamaYap("etiket")||isAdmin()))}
   if(Object.keys(iSon).length>=iLimit&&(st.aktif||T==="bitti")){const bt=document.createElement("button");bt.className="btn b6";bt.id="iEski";bt.textContent="⬇️ Daha eski iş emirlerini yükle (şu an son "+iLimit+")";bt.onclick=()=>{iLimit+=300;toast("Daha eski kayıtlar yükleniyor…");isYukle()};$(u?"uList":"iList").appendChild(bt)}
 isfSigdir()}
 /* Karttaki form kutusunu genişliğe sığdır (telefonda yana kaydırma gerekmesin) */
@@ -1688,6 +1689,7 @@ const isAksiyon=async ev=>{
   }catch(err){toast(errText(err))}
   finally{if(gec)isKilit.delete(e.id)}
 };
+$("etNew").onclick=()=>{if(!(asamaYap("etiket")||isAdmin())){toast("Etiket hazırlama yetkiniz yok.");return}if(window.etiketSerbest)etiketSerbest()};
 $("iList").onclick=isAksiyon;$("uList").onclick=isAksiyon;
 /* ===================== QR: etiketteki iş emri QR'ı → iş emrini aç ===================== */
 var qrCache={},qrAcikId=null,qrRef=null,qrBekle=(function(){
