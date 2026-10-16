@@ -276,6 +276,6 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #iDlg .isn input{padding:5px 10px;font-size:19px}
 #iDlg h3{font-size:18px;margin:0}
 
-/* Üretim/iş emri kartında yazdırılan form birebir görünür */
-.isf{--z:.66;--fk:1.35;margin:8px 0;overflow-x:auto;color:#000;font-family:Arial,Helvetica,sans-serif;font-weight:700;-webkit-text-stroke:.25px #000;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:6px}
-.isf .pf{min-width:480px;max-width:640px;margin:0 auto;box-sizing:border-box;font-size:calc(13pt*var(--z)*var(--fk))}
+/* Üretim/iş emri kartında yazdırılan form birebir görünür; sabit 560px tasarlanıp kutuya sığacak şekilde küçültülür (isfSigdir) */
+.isf{--z:.66;--fk:1.35;margin:8px 0;overflow:hidden;box-sizing:border-box;position:relative;color:#000;font-family:Arial,Helvetica,sans-serif;font-weight:700;-webkit-text-stroke:.25px #000;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:0}
+.isf .pf{width:560px;min-width:0;max-width:none;margin:0;box-sizing:border-box;transform-origin:top left;font-size:calc(13pt*var(--z)*var(--fk));padding:2mm}

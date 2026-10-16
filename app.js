@@ -1605,7 +1605,12 @@ function isListele(){
   const L=st.aktif?EA.filter(e=>fbEsles(st,[e.no,e.musteri,e.stok,e.isAdi,e.fx,e.formul,e.urunAdi,e.renk,e.notU,e.notB,e.ekleyen,ASL[e.asama]],e.spTarih||e.eklenmeTarihi)):EG.filter(e=>e.asama===T&&!e.aktarildi);
   fbSay(q,L.length,EA.length,"iş emri");
   $(u?"uList":"iList").innerHTML=(st.aktif?'<div class="mut" style="font-size:13px;margin:0 0 6px">🔎 Arama/filtre açık: '+(u?"tüm üretim aşamalarında":"tüm aşamalarda")+' gösteriliyor</div>':"")+(L.length?L.map(isKart).join(""):'<div class="empty">'+(st.aktif?"Aramaya uygun iş emri yok.":"Bu aşamada iş emri yok.")+'</div>');
-}
+isfSigdir()}
+/* Karttaki form kutusunu genişliğe sığdır (telefonda yana kaydırma gerekmesin) */
+function isfSigdir(){
+  document.querySelectorAll(".isf").forEach(b=>{const f=b.firstElementChild;if(!f)return;const w=b.clientWidth;if(w<=0)return;
+    const s=Math.min(w/560,1.15);f.style.transform="scale("+s+")";f.style.marginLeft=Math.max(0,(w-560*s)/2)+"px";b.style.height=Math.ceil(f.offsetHeight*s)+2+"px"})}
+window.addEventListener("resize",isfSigdir);
 function isKart(e){
   const id=esc(e.id),o=asOrd(e),i=o.indexOf(e.asama),nx=o[i+1],canDel=isAdmin()||(islemYap("isSil")&&e.ekleyenUid&&e.ekleyenUid===user.uid);
   const lg=Object.entries(e.log||{}).map(([k,v])=>`<div class="who">${esc(ASL[k]||k)}: ${v.kg!=null?esc(fmt(v.kg))+" kg":""}${v.paket?" · "+esc(fmt(v.paket))+" adet":""} — ${esc(v.kim||"")} ${esc(tarih(v.zaman))}${k==="depo"&&Array.isArray(v.kalem)?"<br>"+v.kalem.map((x,i)=>{const c=icols(e)[i]||{};return esc([i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - ")+": "+fmt(x&&x.kg)+" kg · "+fmt(x&&x.paket)+" paket")}).join("<br>"):""}</div>`).join("");
@@ -1703,7 +1708,7 @@ function qrAc(e){
   qrRef=db.ref("isEmirleri/"+e.id);
   qrRef.on("value",s=>{const v=s.val();if(!v){qrCache[e.id]=null;delete qrCache[e.id];$("qrBody").innerHTML='<div class="empty">Bu iş emri silinmiş.</div>';return}
     qrCache[e.id]=Object.assign({id:e.id},v);qrCiz()},er=>toast("İş emri okunamadı: "+errText(er)));
-  qrCiz();const d=$("qrDlg");if(!d.open)d.showModal()}
+  qrCiz();const d=$("qrDlg");if(!d.open)d.showModal();isfSigdir()}
 function qrDurdur(){if(qrRef){qrRef.off();qrRef=null}}
 $("qrDlg").addEventListener("close",()=>{qrDurdur();qrAcikId=null});
 function qrOzet(e){
@@ -1724,7 +1729,7 @@ function qrOzet(e){
     <div style="font-size:19px;font-weight:800;margin-top:2px">${esc(e.musteri||"-")}${e.isAdi?" · "+esc(e.isAdi):""}</div>
     <div class="sub" style="font-size:16px;color:#0f172a">${esc(e.stok||"")}${top?" · sipariş "+esc(fmt(top))+" kg":""}</div></div>
     <div style="${col};border-radius:10px;padding:10px;margin-bottom:8px;font-size:16px">${m}</div>`}
-function qrCiz(){const e=qrCache[qrAcikId];if(!e)return;$("qrBody").innerHTML=qrOzet(e)+isKart(e)}
+function qrCiz(){const e=qrCache[qrAcikId];if(!e)return;$("qrBody").innerHTML=qrOzet(e)+isKart(e);isfSigdir()}
 $("qrBody").onclick=ev=>{
   const q=ev.target.closest("button[data-qr]");
   if(q){const e=qrCache[qrAcikId];if(!e)return;
