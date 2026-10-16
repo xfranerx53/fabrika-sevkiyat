@@ -1927,7 +1927,7 @@ $("iOk").onclick=async()=>{
     else{Object.assign(d,{asama:"etiket",ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP});
       const nk=db.ref("isEmirleri").push().key,up={};up["isEmirleri/"+nk]=d;hrkEk(up,nk,{tur:"olustur",kime:"etiket"});await db.ref().update(up);
       woMsg=["🆕 Yeni iş emri "+no,"🆕 *Yeni iş emri "+no+"*\nMüşteri: "+d.musteri+(d.isAdi?"\nİş: "+d.isAdi:"")+(d.stok?"\nStok: "+d.stok:"")+"\nMiktar: "+fmt(S.reduce((a,c)=>a+c.kg,0))+" kg"+(d.baskiVar?"\n🖨️ Baskılı":"")]}
-    $("iDlg").close();toast("İş emri kaydedildi");if(woMsg)waOner(woMsg[0],woMsg[1]);
+    $("iDlg").close();toast("İş emri kaydedildi");
   }catch(e){err(errText(e))}
   $("iOk").disabled=false;
 };
@@ -1952,12 +1952,14 @@ function iQrGuncelle(){
   try{$("iQrS").innerHTML=isQrSvg(no);w.style.display="flex"}catch(e){w.style.display="none"}}
 var iqNo="";
 function iqAc(no){no=isQrNo(no);if(!no)return toast("Önce seri no yazın.");
-  try{$("iqS").innerHTML=isQrSvg(no)}catch(e){return toast("QR oluşturulamadı.")}
-  iqNo=no;$("iqN").textContent=no;$("iqDlg").showModal()}
+  try{$("qkS").innerHTML=isQrSvg(no)}catch(e){return toast("QR oluşturulamadı.")}
+  iqNo=no;$("qkN").textContent=no;$("iqDlg").showModal()}
 $("iNo").addEventListener("input",iQrGuncelle);
 $("iQrBtn").onclick=()=>iqAc($("iNo").value);
-$("iqP").onclick=()=>isQrPng(iqNo);
-$("iqX").onclick=()=>$("iqDlg").close();
+$("qkP").onclick=()=>isQrPng(iqNo);
+$("qkX").onclick=()=>$("iqDlg").close();
+/* boş yere (pencere dışına) basınca kapat */
+["iqDlg","qrDlg"].forEach(id=>{const d=$(id);d.addEventListener("click",ev=>{if(ev.target!==d)return;const r=d.getBoundingClientRect();if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom)d.close()})});
 
 /* ================= BİLDİRİMLER + WHATSAPP ================= */
 var bRef=null,bIs=[],bGor={O:[],S:[]},bStok=false,bTm=null;

@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v60**
+**GÜNCEL SÜRÜM: v61**
 Son güncelleme: 2026-10-15 (v53: etiket çalışma şekli netleştirildi, büyük varsayılan 100×80, "Yazıcıya giden sayfa" satırı)
 
 ---
@@ -252,6 +252,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-15: v58 — İş emri kartı (Üretim sekmeleri, İş Emirleri, QR penceresi) artık yazdırılan «Üretim İş Takip Formu»nu birebir gösteriyor (`isForm` kartın içine `.isf` kutusunda basılır; fiyat/F-X satırı yazdırmadaki gibi yetkiye bağlı). Eski özet satırları (müşteri, ölçü, not vb.) kartan kaldırıldı; aşama rozeti, etiket durumu, geçmiş satırları ve tüm butonlar aynı. style.css'te form kuralları `:is(#prn,.isf)` ile hem yazdırmada hem ekranda geçerli. Dosyalar: app.js, style.css, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
 - 2026-10-15: v59 — İş emri formunda F/X seçeneğine «-» (belirsiz/yok) eklendi (X-PEŞİN, F-PEŞİN, -). «-» seçilince KDV kutusu işaretsiz kalır; formda ve yazdırmada «-» görünür. Dosyalar: index.html, app.js, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
 - 2026-10-15: v60 — Kartlardaki form telefonda taşıyordu (yana kaydırma gerekiyordu). Form artık sabit 560px genişlikte çizilip `isfSigdir()` ile kutu genişliğine göre küçültülüyor/ölçekleniyor (isListele, qrCiz, qrAc ve ekran yeniden boyutlanınca çalışır). Dosyalar: app.js, style.css, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
+- 2026-10-16: v61 — (1) İş emri QR penceresi (iqDlg) Kapat düğmesi çalışmıyordu: fbKur("iq") arama kutusu için aynı kimlikli iqX/iqN öğeleri üretiyordu (kimlik çakışması). Penceredeki öğeler qkS/qkN/qkP/qkX olarak yeniden adlandırıldı. iqDlg ve qrDlg'de pencere dışına (boşluğa) basınca kapanma eklendi. (2) Yeni iş emri kaydedilince çıkan «WhatsApp ile paylaş önerisi» penceresi kaldırıldı (waOner çağrısı silindi; işlev ve bildirim ayarları duruyor). Dosyalar: index.html, app.js, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. NOT: fbKur(q) q+"N"/q+"X" kimliklerini üretir; yeni öğelerde bu önekleri kullanma.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
