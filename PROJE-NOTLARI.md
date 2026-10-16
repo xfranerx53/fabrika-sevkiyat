@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v61**
+**GÜNCEL SÜRÜM: v62**
 Son güncelleme: 2026-10-15 (v53: etiket çalışma şekli netleştirildi, büyük varsayılan 100×80, "Yazıcıya giden sayfa" satırı)
 
 ---
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v46)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v62)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -253,10 +253,17 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-15: v59 — İş emri formunda F/X seçeneğine «-» (belirsiz/yok) eklendi (X-PEŞİN, F-PEŞİN, -). «-» seçilince KDV kutusu işaretsiz kalır; formda ve yazdırmada «-» görünür. Dosyalar: index.html, app.js, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
 - 2026-10-15: v60 — Kartlardaki form telefonda taşıyordu (yana kaydırma gerekiyordu). Form artık sabit 560px genişlikte çizilip `isfSigdir()` ile kutu genişliğine göre küçültülüyor/ölçekleniyor (isListele, qrCiz, qrAc ve ekran yeniden boyutlanınca çalışır). Dosyalar: app.js, style.css, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
 - 2026-10-16: v61 — (1) İş emri QR penceresi (iqDlg) Kapat düğmesi çalışmıyordu: fbKur("iq") arama kutusu için aynı kimlikli iqX/iqN öğeleri üretiyordu (kimlik çakışması). Penceredeki öğeler qkS/qkN/qkP/qkX olarak yeniden adlandırıldı. iqDlg ve qrDlg'de pencere dışına (boşluğa) basınca kapanma eklendi. (2) Yeni iş emri kaydedilince çıkan «WhatsApp ile paylaş önerisi» penceresi kaldırıldı (waOner çağrısı silindi; işlev ve bildirim ayarları duruyor). Dosyalar: index.html, app.js, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. NOT: fbKur(q) q+"N"/q+"X" kimliklerini üretir; yeni öğelerde bu önekleri kullanma.
+- 2026-10-16: v62 — İş emri listesi 300 kayıt sınırı düzeltildi: son 300 (`iLimit`) kayıt + bitmemiş (etiket/ekstruder/baski/kesim/depo) TÜM iş emirleri ayrı sorgularla (`orderByChild("asama").equalTo`) yüklenip `isBirles()` ile birleştirilir; eski ama hâlâ üretimde olan iş kaybolmaz. Biten sekmesinde/aramada «Daha eski iş emirlerini yükle» düğmesi (+300). **rules.json değişti:** `isEmirleri/.indexOn` = ['eklenmeTarihi','asama'] (kural yayınlanmazsa uygulama yine çalışır ama aşama sorguları tüm veriyi indirir). Dosyalar: app.js, rules.json, index.html, sw.js, PROJE-NOTLARI.md.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
 **Yapılacaklar (kullanıcı isteklerini buraya yaz, bitenleri günlüğe taşı):**
+- **[İSTENDİ, YAPILMADI] Biten iş emirleri için haftalık/aylık rapor + Excel:** tarih aralığı seç → o aralıkta biten (asama=bitti; bitiş zamanı isHareket'ten) iş emirlerini listele/Excel indir. Kullanıcıya sorulan açık soru: «Biten» = üretimdeki Biten sekmesi mi, Dosyalar'daki onaylı sevkiyatlar mı? (cevap gelmedi). Yedekleme (Yönetici > 💾 Yedekleme) şu an sadece TÜM veriyi JSON/Excel verir, tarih aralığı yok.
+- **[ÖNERİLDİ] Termin (teslim) tarihi alanı** iş emrinde yok; eklenirse geciken işler üstte gösterilebilir.
+- **[ÖNERİLDİ] Aşamada bekleme süresi raporu** (isHareket zaman damgalarından: ekstruderde/baskıda kaç saat kaldı).
+- **[ÖNERİLDİ] Aşama değişince ilgili bölüme bildirim.**
+- **[KULLANICIYA SÖYLENDİ] Firebase otomatik günlük yedeği (Realtime Database > Backups, Blaze planı) açılmalı;** açık mı bilinmiyor. Kullanıcıdan adım adım isterse anlat.
+- **[TEMİZLİK] GitHub deposunda `fabrika-v44-degisen-dosyalar.zip` ve `fabrika-v45-degisen-dosyalar.zip` gereksiz;** kullanıcı silebilir (siteyi etkilemez).
 - Tahsilat için olası eklemeler (kullanıcı istemedi, yapılmadı): Excel'e aktarma, çek vadesi/banka alanı, firmaya göre toplam/cari özeti, bekleyen talep için bildirim, WhatsApp'a özet gönderme. Ayrıca WhatsApp grubundaki eski kayıtlar uygulamaya aktarılmadı (sadece bundan sonrası).
 - Talimatlar için olası ek: zil bildirimi / WhatsApp önerisi, talimata fotoğraf veya not ekleme (kullanıcı istemedi, yapılmadı).
 
@@ -269,6 +276,9 @@ Satır numaraları kayar; bu başlıkları ara:
 - Sürüm numarası her kod değişikliğinde artar (`node kontrol.js --artir`).
 
 **Açık konular / bilinmeyenler:**
+- **Veritabanı adresi:** `https://sevkiyat-fc22b-default-rtdb.firebaseio.com/` (Firebase projesi `sevkiyat-fc22b`; app.js içindeki CFG'de de yazar). Claude bu adrese erişemez; kuralları/yedeği kullanıcı Firebase Konsolu'ndan yönetir.
+- **Cihazda sınanmadı:** v57–v62 ekran değişiklikleri (yazdırma üst boşluğu, QR yönlendirme, kartta form + ölçekleme, F/X «-», QR penceresi kapatma, 300 kayıt düzeltmesi) Claude tarafından gerçek cihazda denenmedi; kullanıcı geri bildirimi bekleniyor.
+- **Kimlik çakışması dersi:** `fbKur(q)` arama kutusu için `q+"N"`, `q+"X"`, `q+"D1"`, `q+"D2"` kimliklerini üretir; yeni öğelere bu önekleri verme (v61'de iqX çakışması düzeltildi).
 - **v47 rules, Kural Simülatörü ile SINANMADI** (Claude Firebase'e erişemez). Yayınlamadan önce: Muhasebe hesabıyla tahsilat talebi açma + tahsil etme + düzenleme; Sevkiyat Sorumlusu ile tahsil etme; yönetici ile silme + çöp kutusundan geri yükleme.
 - `rules.json` sadeleştirilmiş boyutu ~76 KB (v46: ~67 KB). Firebase "çok büyük" hatası verirse söyleyin; tahsilat alan kurallarını sadeleştiririz.
 - `rules.json` zip'te var ama **gerçek kurallar Firebase Konsolu'ndadır**; ikisi farklı olabilir.

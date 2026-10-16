@@ -1585,10 +1585,16 @@ const HT={olustur:"🆕 Oluşturdu",ileri:"✅ İlerletti",geri:"↩️ Geri ald
 function hrkObj(o){return Object.assign({kim:ad(),uid:user.uid,zaman:firebase.database.ServerValue.TIMESTAMP},o)}
 function hrkEk(up,id,o){up["isHareket/"+id+"/"+db.ref("isHareket/"+id).push().key]=hrkObj(o);return up}
 function hrkYaz(id,o){return db.ref("isHareket/"+id).push().set(hrkObj(o))}
-function isKapat(){if(iRef){iRef.off();iRef=null}}
-function isYukle(){isKapat();iRef=db.ref("isEmirleri").orderByChild("eklenmeTarihi").limitToLast(300);
-  iRef.on("value",s=>{const v=s.val()||{};isE=Object.keys(v).map(k=>Object.assign({id:k},v[k])).sort((a,b)=>(b.eklenmeTarihi||0)-(a.eklenmeTarihi||0));isListele()},
-  e=>toast("İş emirleri okunamadı: "+errText(e)+" (Firebase kurallarını güncellediniz mi?)"))}
+var iLimit=300,iSon={},iAkt={},iAktRef=[];
+function isKapat(){if(iRef){iRef.off();iRef=null}iAktRef.forEach(r=>r.off());iAktRef=[];iAkt={}}
+/* Son iLimit kayıt + üretimdeki (bitmemiş) TÜM iş emirleri birleştirilir: eski ama hâlâ üretimde olan iş listeden kaybolmaz */
+function isBirles(){const m={};Object.keys(iAkt).forEach(s=>Object.assign(m,iAkt[s]));Object.assign(m,iSon);
+  isE=Object.keys(m).map(k=>Object.assign({id:k},m[k])).sort((a,b)=>(b.eklenmeTarihi||0)-(a.eklenmeTarihi||0));isListele()}
+function isYukle(){isKapat();iRef=db.ref("isEmirleri").orderByChild("eklenmeTarihi").limitToLast(iLimit);
+  iRef.on("value",s=>{iSon=s.val()||{};isBirles()},
+  e=>toast("İş emirleri okunamadı: "+errText(e)+" (Firebase kurallarını güncellediniz mi?)"));
+  iAktRef=["etiket","ekstruder","baski","kesim","depo"].map(st=>{const r=db.ref("isEmirleri").orderByChild("asama").equalTo(st);
+    r.on("value",s=>{iAkt[st]=s.val()||{};isBirles()},()=>{});return r})}
 fbKur("iq",{fn:()=>isListele(),etiket:"sipariş tarihi"});
 fbKur("uq",{fn:()=>isListele(),etiket:"sipariş tarihi"});
 $("iTabs").onclick=e=>{const b=e.target.closest("button[data-t]");if(b){iTab=b.dataset.t;isListele()}};
@@ -1605,6 +1611,7 @@ function isListele(){
   const L=st.aktif?EA.filter(e=>fbEsles(st,[e.no,e.musteri,e.stok,e.isAdi,e.fx,e.formul,e.urunAdi,e.renk,e.notU,e.notB,e.ekleyen,ASL[e.asama]],e.spTarih||e.eklenmeTarihi)):EG.filter(e=>e.asama===T&&!e.aktarildi);
   fbSay(q,L.length,EA.length,"iş emri");
   $(u?"uList":"iList").innerHTML=(st.aktif?'<div class="mut" style="font-size:13px;margin:0 0 6px">🔎 Arama/filtre açık: '+(u?"tüm üretim aşamalarında":"tüm aşamalarda")+' gösteriliyor</div>':"")+(L.length?L.map(isKart).join(""):'<div class="empty">'+(st.aktif?"Aramaya uygun iş emri yok.":"Bu aşamada iş emri yok.")+'</div>');
+  if(Object.keys(iSon).length>=iLimit&&(st.aktif||T==="bitti")){const bt=document.createElement("button");bt.className="btn b6";bt.id="iEski";bt.textContent="⬇️ Daha eski iş emirlerini yükle (şu an son "+iLimit+")";bt.onclick=()=>{iLimit+=300;toast("Daha eski kayıtlar yükleniyor…");isYukle()};$(u?"uList":"iList").appendChild(bt)}
 isfSigdir()}
 /* Karttaki form kutusunu genişliğe sığdır (telefonda yana kaydırma gerekmesin) */
 function isfSigdir(){
