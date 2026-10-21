@@ -139,7 +139,7 @@
     g("okKaydet").onclick=async function(){
       var k=g("okKey").value.trim(),m=g("okModel").value.trim(),E=g("okE");
       if(!k&&!(ayar&&ayar.anahtar))return E.textContent="Anahtarı yapıştırın.";
-      if(k&&!/^[\w-]{20,120}$/.test(k))return E.textContent="Anahtar biçimi geçersiz görünüyor (boşluk/harf hatası olabilir).";
+      if(k&&!/^[\w.-]{20,120}$/.test(k))return E.textContent="Anahtar biçimi geçersiz görünüyor (boşluk/harf hatası olabilir).";
       if(m&&!/^[\w.-]{3,60}$/.test(m))return E.textContent="Model adı geçersiz.";
       g("okKaydet").disabled=true;
       try{var yeni={anahtar:k||ayar.anahtar};if(m)yeni.model=m;
