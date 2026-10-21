@@ -1876,7 +1876,7 @@ function isForm(e,fy){
   const U=v=>esc(v||"-"),X=i=>C[i]||null,k3=(fn,cl)=>[0,1,2].map(i=>`<td colspan="2" class="v">${fn(X(i),i)}</td>`).join(""),
     pair=(f,u)=>[0,1,2].map(i=>{const c=X(i),v=c&&c[f]?(f==="kg"?fmt(c.kg):c[f]):"";return `<td class="v">${v?esc(v):"-"}</td><td class="u">${u}</td>`}).join(""),
     fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ${PB[e.paraBirimi]||"₺"} <small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:"",
-    logo='<svg viewBox="0 0 60 30"><ellipse cx="30" cy="15" rx="28" ry="12" fill="none" stroke="#000" stroke-width="3"/><path d="M10 11L24 24L30 13L36 24L50 11" fill="none" stroke="#000" stroke-width="3.5"/></svg>';
+    logo='<svg viewBox="0 0 60 30"><ellipse cx="30" cy="15" rx="28" ry="12" fill="none" stroke="#000" stroke-width="3"/><path d="M10 19L24 6L30 17L36 6L50 19" fill="none" stroke="#000" stroke-width="3.5"/></svg>';
   return `<div class="pf">
   <div class="hdr"><div class="lg">${logo}mag ambalaj</div><div class="snw"><div class="sn"><small>SERİ NO:</small><b>${esc(e.no||"")}</b></div>${e.no?`<div class="pq">${isQrSvg(e.no,1)}</div>`:""}</div></div>
   <div class="tt">ÜRETİM İŞ TAKİP FORMU</div>
