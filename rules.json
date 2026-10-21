@@ -585,6 +585,20 @@
         }
       }
     },
+    "okumaAyar": {
+      ".read": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || root.child('kullanicilar/' + auth.uid).child('izin').child('isAc').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('isAc').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Depo Görevlisi' || root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Muhasebe'))))",
+      ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true)",
+      ".validate": "newData.hasChild('anahtar')",
+      "anahtar": {
+        ".validate": "newData.isString() && newData.val().length >= 20 && newData.val().length <= 120"
+      },
+      "model": {
+        ".validate": "newData.isString() && newData.val().length <= 60"
+      },
+      "$other": {
+        ".validate": "false"
+      }
+    },
     "ayarlar": {
       ".read": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('is').val() === true || root.child('kullanicilar/' + auth.uid).child('izin').child('uretim').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('is').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() != null && root.child('kullanicilar/' + auth.uid).child('rol').val() !== 'Sevkiyat Sorumlusu')) || (root.child('kullanicilar/' + auth.uid).child('izin').child('uretim').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() != null && root.child('kullanicilar/' + auth.uid).child('rol').val() !== 'Sevkiyat Sorumlusu'))) || (root.child('kullanicilar/' + auth.uid).child('izin').child('rap').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('rap').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Muhasebe')))))",
       "etiket": {

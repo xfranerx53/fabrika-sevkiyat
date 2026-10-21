@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v64**
-Son güncelleme: 2026-10-15 (v53: etiket çalışma şekli netleştirildi, büyük varsayılan 100×80, "Yazıcıya giden sayfa" satırı)
+**GÜNCEL SÜRÜM: v65**
+Son güncelleme: 2026-10-21 (v65: Mikro formu fotoğrafından iş emri doldurma)
 
 ---
 
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v64)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v65)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -91,6 +91,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 | `qr.js` | QR kod üretimi (kütüphane) | GitHub |
 | `talimat.js` | Sevkiyat talimatları (Bölüm 7): yönetici/Depo Görevlisi sevkiyat sorumlusuna iş verir, o "Yaptım" der | GitHub |
 | `tahsilat.js` | Tahsilat bölümü (Bölüm 7): WhatsApp "MAG TAHSİLAT" grubunun yerine geçer. Ofis talep açar, sahadaki kişi "Tahsil ettim" der | GitHub |
+| `fotookut.js` | Yeni iş emrinde «📷 Mikro formunun fotoğrafından doldur»: fotoğrafı Google Gemini (ücretsiz API anahtarı) ile okuyup alanları doldurur (v65) | GitHub |
 | `arama.js`, `saat.js`, `diyalog.js`, `foto-onizleme.js`, `sw-kayit.js` | Küçük yardımcılar | GitHub |
 | `sw.js` | Çevrimdışı önbellek. `CACHE='fabrika-vNN'` ve `V='?v=NN'` | GitHub |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `favicon-32.png` | Telefona kurulum ve ikonlar | GitHub |
@@ -141,13 +142,14 @@ Satır içi `<script>` yazma; kodu `.js` dosyasına koy.
 | `isHareket/{id}/{h}` | İş emri hareket kayıtları (yalnız eklenir) |
 | `sevkTalimat/{id}` | Sevkiyat talimatları: `metin`, `hedefUid` (`*`=tüm sorumlular), `hedefAd`, `atayan`, `atayanUid`, `zaman`, `durum` (`bekliyor`/`yapildi`), `yapan`, `yapanUid`, `yapilmaZaman`, `fotolar` (en fazla 6 küçültülmüş jpeg), `adres`, `haritaUrl`, `adresAd` (isteğe bağlı) |
 | `tahsilatlar/{id}` | Tahsilat kayıtları: `cari`, `durum` (`bekliyor`/`alindi`), `not`, `talepUid`, `talepEden`, `zaman`, `talepTur` (`talep`/`dogrudan`); alınınca: `nakit`, `cek` (₺, yalnız >0 olanlar yazılır), `makbuzNo`, `alan`, `alanUid`, `alinmaZaman`, `alanNot`, `fotolar` (en fazla 6 küçültülmüş jpeg). `zaman` üzerinde indeks var, uygulama son 300 kaydı okur. v47: `fotolar` önizleme+`#fotoTam` anahtarı olabilir; düzeltmede `duzenleyen`, `duzenleyenUid`, `duzenlemeZaman`, `duzenlemeNot` |
+| `okumaAyar` | Fotoğraftan okuma ayarı: `anahtar` (Gemini API anahtarı), `model` (isteğe bağlı). Okuma: yönetici + iş açma yetkisi olanlar; yazma: yalnız yönetici. **Yedeğe (`BK_DUGUM`) KOYMA** (anahtar yedek dosyasına sızmasın) |
 | `etiketGecmis/{id}/{h}`, `etiketSablon/{m}/{k}` | Etiket basım geçmişi ve şablonlar |
 | `ayarlar/etiket` | Etiket ayarı (`w`, `h`, `mag`) |
 | `cop/{id}` | Çöp kutusu: silinenlerin yedeği (yönetici geri yükler) |
 | `denetim/{id}` | Denetim günlüğü (kim ne yaptı), sadece yönetici okur |
 
 Fotoğraflar `data:image/jpeg;base64,...` metni olarak tutulur (300.000 karakter sınırı).
-`rules.json` içinde 21 ana yol vardır ve yukarıdaki listeyle aynıdır.
+`rules.json` içinde 22 ana yol vardır ve yukarıdaki listeyle aynıdır.
 Yeni bir yol eklenirse: rules'a ekle; yedekleme (`bkIndir`/`bkCalistir`) ve silme/çöp (`silCop`)
 akışlarına eklenmesi gerekip gerekmediğini düşün.
 
@@ -238,6 +240,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-14: v45 — Tahsilat ve Talimatlar Sevkiyat içinde sekme oldu (ayrı `tah` bölümü/izni kaldırıldı); Dosyalar sevkiyattan iş emirlerine taşındı. Dosyalar: index.html, app.js, talimat.js, tahsilat.js, sw.js, rules.json, kontrol.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ (`tahsilatlar` yetkisi sevk'e bağlandı, `tah` izni kalktı).
 - 2026-10-14: v46 — Talimatlar sekmesine bekleyenler/tamamlananlar alt sekmeleri eklendi. Dosyalar: index.html, talimat.js, sw.js, PROJE-NOTLARI.md, README.md. Rules değişmedi.
 - 2026-10-15: v47 — (1) Tahsilat/talimat fotoğrafları küçük önizleme + fotoTam; hafifletme aracı tahsilat+talimat'ı da tarar. (2) Tahsilat silme → çöp kutusu + denetim; geri al → çöp kutusu + denetim; ✏ Düzenle eklendi. (3) Kayıt saatleri sunucudan. (5) Yeni `tah` izni, Muhasebe varsayılanı, menüde 💰 TAHSİLAT düğmesi. Dosyalar: app.js, index.html, tahsilat.js, talimat.js, rules.json, kontrol.js, sw.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ.
+- 2026-10-21: v65 — **Fotoğraftan iş emri doldurma.** Yeni iş emri penceresinde «📷 Mikro formunun fotoğrafından doldur» düğmesi: fotoğraf 1600 px'e küçültülüp tarayıcıdan doğrudan Google Gemini API'ye (`gemini-flash-latest`, yedek `gemini-2.5-flash`; ücretsiz anahtar) gönderilir; dönen JSON seri no, müşteri, işin adı, stok adı, SP tarihi, F/X, formül, 3 sütun (kg/en/mikron/korona/boy), üretim ve baskı notları, ürün adı, baskı rengi alanlarına yazılır; baskılı iş kutusu stokta «BASKILI» geçiyorsa veya baskı rengi varsa işaretlenir. Kullanıcı kontrol edip Kaydet der (seri no zaten kayıtlıysa uyarı). Elle atılmış çarpı (X) yok sayılır. Sütun notları tek NOT listesine madde madde birleştirilir (hangi sütuna ait olduğu tutulmaz). Anahtarı yalnız yönetici 🔑 düğmesiyle girer (`okumaAyar`). Fotoğraf kaydedilmez. CSP değişmedi (connect-src zaten https:). Dosyalar: fotookut.js (YENİ), index.html, sw.js, rules.json, PROJE-NOTLARI.md. **Firebase kuralı: DEĞİŞTİ (yeni yol `okumaAyar`).** Cihazda ve Gemini ile SINANMADI.
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
 - 2026-10-15: v48 — "Etiket hazırla" penceresi (#lbDlg) "Yeni iş emri" gibi geniş ve büyük yazılı açılır; sütun etiketleri yan yana dizilir (dar ekranda alt alta). İş emri kartındaki "🏷️ Etiket hazırla" düğmesi "Yeni iş emri aç" ile aynı boyda (`big`). Sadece style.css + app.js. Firebase kuralı: değişmedi.
 - 2026-10-15: v49 — Yeni **ÜRETİM** bölümü (`uretim`, menüde 🏭). Ekstruder, Baskı, Kesim, Depo, Biten aşamaları İş emirleri'nden buraya taşındı; **İş emirleri'nde sadece Etiket aşaması + Dosyalar** kaldı (arama açıkken İş emirleri tüm aşamaları tarar). Aynı `isEmirleri` verisi ve aynı kart/düğmeler kullanılır (`isListele` panele göre çizer: `iList/iTabs/iq` = İş emirleri, `uList/uTabs/uq` = Üretim; `URA` = üretim aşamaları). Yeni izin anahtarı `uretim` (app.js YETKI/IZ_GRUP + rules.json validate). Rol şablonları: Ekstruder/Matbaa/Kesim/Bobinoz operatörleri artık `mod:["uretim"]`, `ana:"uretim"`; Depo Görevlisi ve Muhasebe `is`+`uretim`. rules.json: `isEmirleri`/`isHareket` okuma/yazma `is` yanına `uretim` de kabul eder. QR okutulunca iş emri `is` yetkisi varsa İş emirleri, yoksa Üretim bölümünde açılır. **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).**
@@ -275,6 +278,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - Sürüm numarası her kod değişikliğinde artar (`node kontrol.js --artir`).
 
 **Açık konular / bilinmeyenler:**
+- **v65 fotoğraftan okuma sınanmadı:** Gemini'nin tarayıcıdan (CORS) çağrılması, model adı, Türkiye'den ücretsiz kullanım ve okuma doğruluğu gerçek cihazda denenmeli. Ücretsiz kullanımda Google gönderilen içeriği ürün geliştirmede kullanabilir (müşteri adları form üzerinde var). Mikro'dan ileride otomatik aktarım (Excel içe aktarma / SQL köprüsü) ayrı konu, kullanıcı şimdilik fotoğrafı seçti.
 - **Veritabanı adresi:** `https://sevkiyat-fc22b-default-rtdb.firebaseio.com/` (Firebase projesi `sevkiyat-fc22b`; app.js içindeki CFG'de de yazar). Claude bu adrese erişemez; kuralları/yedeği kullanıcı Firebase Konsolu'ndan yönetir.
 - **Cihazda sınanmadı:** v57–v62 ekran değişiklikleri (yazdırma üst boşluğu, QR yönlendirme, kartta form + ölçekleme, F/X «-», QR penceresi kapatma, 300 kayıt düzeltmesi) Claude tarafından gerçek cihazda denenmedi; kullanıcı geri bildirimi bekleniyor.
 - **Kimlik çakışması dersi:** `fbKur(q)` arama kutusu için `q+"N"`, `q+"X"`, `q+"D1"`, `q+"D2"` kimliklerini üretir; yeni öğelere bu önekleri verme (v61'de iqX çakışması düzeltildi).

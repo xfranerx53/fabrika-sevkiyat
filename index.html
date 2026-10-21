@@ -16,7 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=64">
+<link rel="stylesheet" href="style.css?v=65">
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -492,8 +492,20 @@
   <p class="mut" style="font-size:13px;text-align:center;margin:4px 0 0">Okutulunca bu iş emri açılır.</p>
   <div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn b6" id="qkX">Kapat</button><button type="button" class="btn b3" id="qkP">⬇️ PNG indir</button></div>
 </dialog>
+<dialog id="dOkAyar">
+  <h3 style="margin-bottom:6px">🔑 Fotoğraftan okuma anahtarı</h3>
+  <p class="mut" style="font-size:13px;margin-bottom:6px">Google AI Studio'dan (aistudio.google.com/apikey) ücretsiz alınan Gemini API anahtarı. Sadece yönetici girer; yeni iş emri açabilenler okuma için kullanır.</p>
+  <label for="okKey" style="font-size:13px">API anahtarı (boş bırakırsanız mevcut kalır)</label>
+  <input id="okKey" type="password" autocomplete="off" placeholder="AIza...">
+  <label for="okModel" style="font-size:13px">Model (boş = otomatik)</label>
+  <input id="okModel" placeholder="gemini-flash-latest">
+  <div class="err" id="okE" style="margin-top:6px"></div>
+  <div style="display:flex;gap:8px;margin-top:8px"><button type="button" class="btn b6" id="okVazgec">Vazgeç</button><button type="button" class="btn b1" id="okKaydet">Kaydet</button></div>
+</dialog>
 <dialog id="iDlg">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><h3 id="iT">Yeni iş emri</h3><button type="button" class="btn b7" id="iGet" style="width:auto;margin:0;padding:7px 14px;font-size:16px">📋 Getir</button></div>
+  <div id="iFotoW" style="display:flex;gap:8px;margin-bottom:6px"><button type="button" class="btn b3" id="iFoto" style="flex:1;margin:0;font-size:17px">📷 Mikro formunun fotoğrafından doldur</button><button type="button" class="btn b6" id="iFotoAyar" aria-label="Okuma anahtarı" style="width:auto;margin:0;display:none">🔑</button><input type="file" id="iFotoDosya" accept="image/*" style="display:none"></div>
+  <div id="iFotoD" style="font-size:14px;margin-bottom:6px;color:#475569"></div>
   <div class="isr"><div class="isn"><label for="iNo">SERİ NO :</label><input id="iNo" placeholder="Seri no (MG-0945)"></div><div id="iQrW" style="display:none;align-items:center;gap:10px;margin-top:8px;padding:8px;border:1.5px dashed #cbd5e1;border-radius:8px">
     <div id="iQrS" class="qrBox" style="width:84px;height:84px;flex:0 0 auto"></div>
     <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800">📱 QR kod otomatik oluşturuldu</div><div class="mut" style="font-size:13px;margin:2px 0 6px">Seri no değişince QR de güncellenir. Kayıttan sonra etikette ve iş takip formunda yer alır.</div><button type="button" class="btn b6 sm" id="iQrBtn" style="width:auto;margin:0">🔍 Büyüt / PNG indir</button></div>
@@ -573,17 +585,17 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="raporlar.js?v=64"></script>
+<script src="raporlar.js?v=65"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=64"></script>
+<script src="app.js?v=65"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=64"></script>
-<script src="saat.js?v=64"></script>
+<script src="foto-onizleme.js?v=65"></script>
+<script src="saat.js?v=65"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=64"></script>
+<script src="diyalog.js?v=65"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -614,8 +626,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=64"></script>
-<script src="etiket.js?v=64"></script>
+<script src="qr.js?v=65"></script>
+<script src="etiket.js?v=65"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -625,10 +637,11 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="talimat.js?v=64"></script>
-<script src="tahsilat.js?v=64"></script>
-<script src="arama.js?v=64"></script>
-<script src="israpor.js?v=64"></script>
-<script src="sw-kayit.js?v=64"></script>
+<script src="talimat.js?v=65"></script>
+<script src="tahsilat.js?v=65"></script>
+<script src="arama.js?v=65"></script>
+<script src="israpor.js?v=65"></script>
+<script src="fotookut.js?v=65"></script>
+<script src="sw-kayit.js?v=65"></script>
 </body>
 </html>
