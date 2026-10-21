@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v66**
+**GÜNCEL SÜRÜM: v67**
 Son güncelleme: 2026-10-21 (v65: Mikro formu fotoğrafından iş emri doldurma)
 
 ---
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v66)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v67)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -242,6 +242,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-15: v47 — (1) Tahsilat/talimat fotoğrafları küçük önizleme + fotoTam; hafifletme aracı tahsilat+talimat'ı da tarar. (2) Tahsilat silme → çöp kutusu + denetim; geri al → çöp kutusu + denetim; ✏ Düzenle eklendi. (3) Kayıt saatleri sunucudan. (5) Yeni `tah` izni, Muhasebe varsayılanı, menüde 💰 TAHSİLAT düğmesi. Dosyalar: app.js, index.html, tahsilat.js, talimat.js, rules.json, kontrol.js, sw.js, PROJE-NOTLARI.md, README.md. Rules DEĞİŞTİ.
 - 2026-10-21: v65 — **Fotoğraftan iş emri doldurma.** Yeni iş emri penceresinde «📷 Mikro formunun fotoğrafından doldur» düğmesi: fotoğraf 1600 px'e küçültülüp tarayıcıdan doğrudan Google Gemini API'ye (`gemini-flash-latest`, yedek `gemini-2.5-flash`; ücretsiz anahtar) gönderilir; dönen JSON seri no, müşteri, işin adı, stok adı, SP tarihi, F/X, formül, 3 sütun (kg/en/mikron/korona/boy), üretim ve baskı notları, ürün adı, baskı rengi alanlarına yazılır; baskılı iş kutusu stokta «BASKILI» geçiyorsa veya baskı rengi varsa işaretlenir. Kullanıcı kontrol edip Kaydet der (seri no zaten kayıtlıysa uyarı). Elle atılmış çarpı (X) yok sayılır. Sütun notları tek NOT listesine madde madde birleştirilir (hangi sütuna ait olduğu tutulmaz). Anahtarı yalnız yönetici 🔑 düğmesiyle girer (`okumaAyar`). Fotoğraf kaydedilmez. CSP değişmedi (connect-src zaten https:). Dosyalar: fotookut.js (YENİ), index.html, sw.js, rules.json, PROJE-NOTLARI.md. **Firebase kuralı: DEĞİŞTİ (yeni yol `okumaAyar`).** Cihazda ve Gemini ile SINANMADI.
 - 2026-10-21: v66 — Hata düzeltme: API anahtarı kontrolü nokta içeren yeni Google anahtarlarını («AQ.…») reddediyordu; izinli karakterlere `.` eklendi. Dosyalar: fotookut.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
+- 2026-10-21: v67 — Fotoğraftan doldurma: «📷 Kamera ile çek» (telefonda doğrudan arka kamerayı açar, `capture=environment`) ve «🖼️ Galeriden seç» olarak iki düğme. Dosyalar: fotookut.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
 - 2026-10-15: v48 — "Etiket hazırla" penceresi (#lbDlg) "Yeni iş emri" gibi geniş ve büyük yazılı açılır; sütun etiketleri yan yana dizilir (dar ekranda alt alta). İş emri kartındaki "🏷️ Etiket hazırla" düğmesi "Yeni iş emri aç" ile aynı boyda (`big`). Sadece style.css + app.js. Firebase kuralı: değişmedi.
 - 2026-10-15: v49 — Yeni **ÜRETİM** bölümü (`uretim`, menüde 🏭). Ekstruder, Baskı, Kesim, Depo, Biten aşamaları İş emirleri'nden buraya taşındı; **İş emirleri'nde sadece Etiket aşaması + Dosyalar** kaldı (arama açıkken İş emirleri tüm aşamaları tarar). Aynı `isEmirleri` verisi ve aynı kart/düğmeler kullanılır (`isListele` panele göre çizer: `iList/iTabs/iq` = İş emirleri, `uList/uTabs/uq` = Üretim; `URA` = üretim aşamaları). Yeni izin anahtarı `uretim` (app.js YETKI/IZ_GRUP + rules.json validate). Rol şablonları: Ekstruder/Matbaa/Kesim/Bobinoz operatörleri artık `mod:["uretim"]`, `ana:"uretim"`; Depo Görevlisi ve Muhasebe `is`+`uretim`. rules.json: `isEmirleri`/`isHareket` okuma/yazma `is` yanına `uretim` de kabul eder. QR okutulunca iş emri `is` yetkisi varsa İş emirleri, yoksa Üretim bölümünde açılır. **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).**

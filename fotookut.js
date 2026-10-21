@@ -116,24 +116,25 @@
     g("okKey").value="";g("okModel").value=(ayar&&ayar.model)||"";g("okE").textContent="";
     g("dOkAyar").showModal()}
 
-  async function tikla(){
+  async function tikla(kam){
     if(mesgul)return;
     try{await ayarYukle(false)}catch(e){return durum("Ayar okunamadı: "+errText(e),true)}
     if(!ayar){
       if(typeof isAdmin==="function"&&isAdmin()){durum("Önce ücretsiz okuma anahtarı girilmeli.",true);return ayarAc()}
       return durum("Fotoğraftan okuma henüz kurulmamış. Yöneticiden anahtar girmesini isteyin.",true)}
-    g("iFotoDosya").value="";g("iFotoDosya").click()}
+    var i=g(kam?"iFotoKam":"iFotoDosya");i.value="";i.click()}
 
-  async function secildi(){
-    var f=g("iFotoDosya").files[0];if(!f||mesgul)return;
-    mesgul=true;g("iFoto").disabled=true;durum("⏳ Fotoğraf okunuyor… (10-20 sn sürebilir)");
+  async function secildi(e){
+    var f=e&&e.target&&e.target.files&&e.target.files[0];if(!f||mesgul)return;
+    mesgul=true;g("iFoto").disabled=true;g("iFotoGal").disabled=true;durum("⏳ Fotoğraf okunuyor… (10-20 sn sürebilir)");
     try{var b=await kucult(f),o=await gemini(b);doldur(o)}
     catch(e){durum("✖ "+(e&&e.message?e.message:String(e)),true)}
-    mesgul=false;g("iFoto").disabled=false}
+    mesgul=false;g("iFoto").disabled=false;g("iFotoGal").disabled=false}
 
   function kur(){
     if(!g("iFoto"))return;
-    g("iFoto").onclick=tikla;g("iFotoDosya").onchange=secildi;
+    g("iFoto").onclick=function(){tikla(true)};g("iFotoGal").onclick=function(){tikla(false)};
+    g("iFotoKam").onchange=secildi;g("iFotoDosya").onchange=secildi;
     g("iFotoAyar").onclick=async function(){try{await ayarYukle(true)}catch(e){}ayarAc()};
     g("okVazgec").onclick=function(){g("dOkAyar").close()};
     g("okKaydet").onclick=async function(){
