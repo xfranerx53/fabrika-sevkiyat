@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v71**
+**GÜNCEL SÜRÜM: v72**
 Son güncelleme: 2026-10-22 (v69: açılış takılma tanısı)
 
 ---
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v71)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v72)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -265,6 +265,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-22: v69 — «Uygulama açılamadı» ekranı (giriş yanıtı geliyor ama veritabanı yanıt vermiyor, Chrome'da site verisi silince düzeliyor) için tanı eklendi: tanıya «veritabanı yanıtı» ve «oturum yenileme» (token yenileme sınaması) satırı, 10 sn sonra bağlantı tazeleme (goOffline/goOnline), ve «Çıkış yap ve giriş ekranına dön» düğmesi (Chrome ayarına girmeden çözüm). Dosyalar: app.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-22: v70 — (v69 açılış tanısı + yönetici çıkış düğmesi) Sabit Gemini anahtarını koda yazma denendi ama GitHub «Secret scanning» push'u engelledi (anahtar herkese açık depoda sızar, Google iptal edebilir); KODA ANAHTAR YAZILMAZ. Anahtar yalnızca yönetici 🔑 penceresinden girilir (Firebase `okumaAyar`), iş emri verebilenler oradan okur. Dosyalar: app.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-22: v71 — Fotoğraftan okuma: Google 503 (yoğunluk) ve zaman aşımında artık sıradaki modele geçiliyor (gemini-flash-latest → gemini-2.5-flash → gemini-2.5-flash-lite), her model 45 sn; hata mesajı «Google sunucusu yoğun, anahtar sorunu değil». 🔑 penceresi kayıtlı anahtarı maskeli (ilk 6 + son 4 hane) ve modeli gösteriyor; kayıttan sonra aynı maske toast'ta çıkıyor. Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
+- 2026-10-22: v72 — Fotoğraftan okuma: sabit model listesi yerine anahtarın kullanabildiği flash modelleri Google'dan (`/v1beta/models`) sorulup sıralanıyor (kararlı sürümler önce, preview/lite sonra; ilk 4 denenir). Yönetici modeli listede yoksa yok sayılır. 503/yoğunlukta 4 sn sonra bir tur daha denenir; hata mesajı hangi modelde ne olduğunu parantez içinde gösterir. Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 

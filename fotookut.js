@@ -53,35 +53,67 @@
     im.src=url})}
 
   /* ---- Gemini çağrısı ---- */
+  var listeOnb=null;
+  var bekle=function(ms){return new Promise(function(r){setTimeout(r,ms)})};
+  /* Anahtarın gerçekten kullanabildiği Gemini "flash" modellerini Google'dan sorar (model adları zamanla değişir/kalkar) */
+  async function modelListesi(){
+    if(listeOnb)return listeOnb;
+    var ac=new AbortController(),zt=setTimeout(function(){ac.abort()},8000),out=[];
+    try{
+      var r=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",{signal:ac.signal,headers:{"x-goog-api-key":ayar.anahtar}});
+      clearTimeout(zt);
+      if(r.ok){var j=await r.json();
+        (j.models||[]).forEach(function(m){
+          var ad=String(m.name||"").replace(/^models\//,"");
+          if(!/^gemini-/.test(ad)||!/flash/i.test(ad))return;
+          if(/image|tts|live|audio|embed|native|robot|computer|veo|imagen/i.test(ad))return;
+          if((m.supportedGenerationMethods||[]).indexOf("generateContent")<0)return;
+          out.push(ad)});
+        var puan=function(a){var v=(a.match(/(\d+(?:\.\d+)?)/)||[0,0])[1];return(/preview|exp/i.test(a)?100:0)+(/lite/i.test(a)?50:0)-parseFloat(v||0)};
+        out.sort(function(x,y){return puan(x)-puan(y)})}
+    }catch(e){clearTimeout(zt)}
+    if(out.length)listeOnb=out;
+    return out}
+
   async function gemini(b64){
-    var modeller=ayar.model?[ayar.model].concat(MODELLER):MODELLER,sonHata=null;
-    for(var i=0;i<modeller.length;i++){
-      var ac=new AbortController(),zt=setTimeout(function(){ac.abort()},45000);
-      try{
-        var r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(modeller[i])+":generateContent",{
-          method:"POST",signal:ac.signal,
-          headers:{"Content-Type":"application/json","x-goog-api-key":ayar.anahtar},
-          body:JSON.stringify({contents:[{parts:[{text:PROMPT},{inline_data:{mime_type:"image/jpeg",data:b64}}]}],
-            generationConfig:{temperature:0,responseMimeType:"application/json"}})});
-        clearTimeout(zt);
-        if(r.status===404){sonHata=new Error("Model bulunamadı ("+modeller[i]+")");continue}
-        if(r.status===500||r.status===502||r.status===503||r.status===504){sonHata=new Error("Google okuma sunucusu şu an yoğun ("+r.status+"). Birkaç saniye sonra tekrar deneyin. Anahtar sorunu değil.");continue}
-        if(!r.ok){var t="";try{t=(await r.json()).error.message||""}catch(e){}
-          if(r.status===429)throw new Error("Ücretsiz okuma limiti doldu. Biraz bekleyip tekrar deneyin (günlük limit gece sıfırlanır).");
-          if(r.status===400&&/API key/i.test(t))throw new Error("API anahtarı geçersiz. Yönetici 🔑 düğmesinden anahtarı yeniden girsin.");
-          if(r.status===403)throw new Error("Anahtarın bu sitede/ülkede kullanımına izin yok (403). "+t.slice(0,120));
-          throw new Error("Okuma hatası ("+r.status+"). "+t.slice(0,120))}
-        var j=await r.json(),p=j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts;
-        var tx=(p||[]).map(function(x){return x.text||""}).join("").trim();
-        if(!tx)throw new Error("Fotoğraftan sonuç alınamadı. Formu daha net ve düz çekip tekrar deneyin.");
-        tx=tx.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
-        return JSON.parse(tx);
-      }catch(e){clearTimeout(zt);
-        if(e&&e.name==="AbortError"){sonHata=new Error("Okuma zaman aşımına uğradı (Google yavaş yanıt verdi). Tekrar deneyin.");continue}
-        if(e instanceof SyntaxError)throw new Error("Okunan metin anlaşılamadı. Tekrar deneyin.");
-        throw e}
+    var liste=await modelListesi(),adaylar=[];
+    if(ayar.model&&(!liste.length||liste.indexOf(ayar.model)>=0))adaylar.push(ayar.model);
+    liste.slice(0,4).concat(liste.length?[]:MODELLER).forEach(function(m){if(adaylar.indexOf(m)<0)adaylar.push(m)});
+    var hatalar=[],yogun=false,zamanasimi=false;
+    for(var tur=0;tur<2;tur++){
+      hatalar=[];yogun=false;zamanasimi=false;var sadece5xx=true;
+      for(var i=0;i<adaylar.length;i++){
+        var ac=new AbortController(),zt=setTimeout(function(){ac.abort()},45000);
+        try{
+          var r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(adaylar[i])+":generateContent",{
+            method:"POST",signal:ac.signal,
+            headers:{"Content-Type":"application/json","x-goog-api-key":ayar.anahtar},
+            body:JSON.stringify({contents:[{parts:[{text:PROMPT},{inline_data:{mime_type:"image/jpeg",data:b64}}]}],
+              generationConfig:{temperature:0,responseMimeType:"application/json"}})});
+          clearTimeout(zt);
+          if(r.status===404){hatalar.push(adaylar[i]+": yok");continue}
+          if(r.status===500||r.status===502||r.status===503||r.status===504){hatalar.push(adaylar[i]+": "+r.status);yogun=true;continue}
+          if(!r.ok){var t="";try{t=(await r.json()).error.message||""}catch(e){}
+            if(r.status===429)throw new Error("Ücretsiz okuma limiti doldu. Biraz bekleyip tekrar deneyin (günlük limit gece sıfırlanır).");
+            if(r.status===400&&/API key/i.test(t))throw new Error("API anahtarı geçersiz. Yönetici 🔑 düğmesinden anahtarı yeniden girsin.");
+            if(r.status===403)throw new Error("Anahtarın bu sitede/ülkede kullanımına izin yok (403). "+t.slice(0,120));
+            throw new Error("Okuma hatası ("+r.status+"). "+t.slice(0,120))}
+          var j=await r.json(),p=j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts;
+          var tx=(p||[]).map(function(x){return x.text||""}).join("").trim();
+          if(!tx)throw new Error("Fotoğraftan sonuç alınamadı. Formu daha net ve düz çekip tekrar deneyin.");
+          tx=tx.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
+          return JSON.parse(tx);
+        }catch(e){clearTimeout(zt);
+          if(e&&e.name==="AbortError"){hatalar.push(adaylar[i]+": zaman aşımı");zamanasimi=true;sadece5xx=false;continue}
+          if(e instanceof SyntaxError)throw new Error("Okunan metin anlaşılamadı. Tekrar deneyin.");
+          if(e instanceof TypeError)throw new Error("Google'a bağlanılamadı. İnternet bağlantısını kontrol edin.");
+          throw e}
+      }
+      if(!(yogun&&sadece5xx)||tur===1)break;
+      durum("⏳ Google yoğun, tekrar deneniyor…");await bekle(4000)
     }
-    throw sonHata||new Error("Model bulunamadı.")}
+    var ek=" ("+hatalar.join(", ")+")";
+    throw new Error((yogun?"Google okuma sunucusu şu an yoğun. Birkaç saniye sonra tekrar deneyin. Anahtar sorunu değil.":zamanasimi?"Okuma zaman aşımına uğradı. Tekrar deneyin.":"Uygun okuma modeli bulunamadı. Yönetici 🔑 penceresinde Model kutusunu boş bırakıp kaydetsin.")+ek)}
 
   /* ---- alanları doldur ---- */
   function doldur(o){
