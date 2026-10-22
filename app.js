@@ -65,14 +65,29 @@ window.__st={sdk:typeof firebase!=="undefined",init:0,auth:0,t0:Date.now()};
 function bootMsg(m,tani){const b=$("boot");b.classList.remove("hide");
   let h="<b>Uygulama açılamadı</b><br><br>"+esc(m);
   if(tani){const S=window.__st||{};
-    h+='<br><br><small style="line-height:1.6">Tanı: Firebase yüklendi: '+(S.sdk?"evet":"HAYIR")+' · başlatıldı: '+(S.init?"evet":"HAYIR")+' · giriş yanıtı: '+(S.auth?"geldi":"GELMEDİ")+' · çevrimiçi: '+(navigator.onLine?"evet":"HAYIR")+'</small><br><br><button class="btn b3" id="bootFix" type="button">🔄 Önbelleği temizle ve yeniden dene</button>'}
+    h+='<br><br><small style="line-height:1.6">Tanı: Firebase yüklendi: '+(S.sdk?"evet":"HAYIR")+' · başlatıldı: '+(S.init?"evet":"HAYIR")+' · giriş yanıtı: '+(S.auth?"geldi":"GELMEDİ")+' · çevrimiçi: '+(navigator.onLine?"evet":"HAYIR")+' · veritabanı yanıtı: '+(S.db?"geldi":"GELMEDİ")+(S.tok?' · oturum yenileme: '+esc(S.tok):'')+'</small><br><br><button class="btn b3" id="bootOut" type="button">🚪 Çıkış yap ve giriş ekranına dön</button><br><br><button class="btn b3" id="bootFix" type="button">🔄 Önbelleği temizle ve yeniden dene</button>'}
   b.innerHTML=h;
+  const o=document.getElementById("bootOut");
+  if(o)o.onclick=async()=>{try{await Promise.race([auth.signOut(),new Promise(r=>setTimeout(r,4000))])}catch(e){}location.href=location.pathname+"?t="+Date.now()};
   const f=document.getElementById("bootFix");
   if(f)f.onclick=async()=>{try{const r=await navigator.serviceWorker.getRegistrations();await Promise.all(r.map(x=>x.unregister()));const k=await caches.keys();await Promise.all(k.map(x=>caches.delete(x)))}catch(e){}location.href=location.pathname+"?t="+Date.now()}}
 window.addEventListener("error",e=>{if(["vLogin","vWait","vMenu","vApp"].every(x=>$(x).classList.contains("hide")))bootMsg(e.message||"Bilinmeyen hata")});
 if(typeof firebase==="undefined"){bootMsg("Firebase yüklenemedi. İnternet bağlantısını kontrol edin.");throw new Error("firebase yok")}
 if(!/^https?:$/.test(location.protocol))bootMsg("Uygulama dosyadan açılmış ("+location.protocol+"). Giriş sistemi sadece internet adresi (https) üzerinden çalışır.");
-setTimeout(()=>{if(!$("boot").classList.contains("hide")&&$("boot").textContent==="Yükleniyor...")bootMsg("Sunucuya bağlanılamadı. İnternet bağlantısını ve Firebase ayarlarını kontrol edin.",true)},10000);
+setTimeout(async()=>{
+  if(!($("boot").classList.contains("hide"))&&$("boot").textContent==="Yükleniyor..."){
+    /* giriş yanıtı geldiyse ama veritabanı susuyorsa: oturum anahtarını yenilemeyi sına, bağlantıyı tazele */
+    const S=window.__st;
+    try{
+      if(auth.currentUser){
+        S.tok=await Promise.race([auth.currentUser.getIdToken(true).then(()=>"tamam"),new Promise(r=>setTimeout(()=>r("zaman aşımı"),6000))]);
+        try{db.goOffline();db.goOnline()}catch(_){}
+        await new Promise(r=>setTimeout(r,5000));
+      }
+    }catch(e){S.tok="hata: "+(e.code||e.message||"")}
+    if(!$("boot").classList.contains("hide"))bootMsg("Sunucuya bağlanılamadı. İnternet bağlantısını ve Firebase ayarlarını kontrol edin.",true)
+  }
+},10000);
 firebase.initializeApp(CFG);window.__st.init=1;
 const auth=firebase.auth(),db=firebase.database();
 let fbFn=null;
@@ -146,7 +161,7 @@ auth.onAuthStateChanged(u=>{
   if(!u){show("vLogin");return}
   recRef=db.ref("kullanicilar/"+u.uid);
   recRef.on("value",s=>{
-    rec=s.val();
+    window.__st.db=1;rec=s.val();
     if(rec&&rec.onay){
       $("me").textContent=ad();
       $("bAdm").classList.toggle("hide",!isAdmin());$("fSevk").classList.add("hide");fiyatBaglan();
