@@ -1,5 +1,5 @@
-const CACHE = 'fabrika-v70';
-const V = '?v=70';
+const CACHE = 'fabrika-v71';
+const V = '?v=71';
 const ASSETS = ['./', './index.html', './manifest.webmanifest',
   './style.css'+V, './raporlar.js'+V, './app.js'+V, './foto-onizleme.js'+V, './saat.js'+V, './diyalog.js'+V,
   './qr.js'+V, './etiket.js'+V, './arama.js'+V, './israpor.js'+V, './fotookut.js'+V, './talimat.js'+V, './tahsilat.js'+V, './sw-kayit.js'+V,

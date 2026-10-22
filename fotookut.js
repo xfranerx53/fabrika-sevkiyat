@@ -5,7 +5,8 @@
    Kullanılan genel işlevler (app.js): $, toast, db, isE, isAdmin, notSet, errText, bugun, iAc. */
 (function(){
   var g=function(i){return document.getElementById(i)};
-  var MODELLER=["gemini-flash-latest","gemini-2.5-flash"];
+  var MODELLER=["gemini-flash-latest","gemini-2.5-flash","gemini-2.5-flash-lite"];
+  var maske=function(k){k=String(k||"");return k.length>12?k.slice(0,6)+"…"+k.slice(-4):(k?"…":"")};
   var ayar=null;           /* {anahtar, model} */
   var mesgul=false;
 
@@ -55,7 +56,7 @@
   async function gemini(b64){
     var modeller=ayar.model?[ayar.model].concat(MODELLER):MODELLER,sonHata=null;
     for(var i=0;i<modeller.length;i++){
-      var ac=new AbortController(),zt=setTimeout(function(){ac.abort()},60000);
+      var ac=new AbortController(),zt=setTimeout(function(){ac.abort()},45000);
       try{
         var r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(modeller[i])+":generateContent",{
           method:"POST",signal:ac.signal,
@@ -64,6 +65,7 @@
             generationConfig:{temperature:0,responseMimeType:"application/json"}})});
         clearTimeout(zt);
         if(r.status===404){sonHata=new Error("Model bulunamadı ("+modeller[i]+")");continue}
+        if(r.status===500||r.status===502||r.status===503||r.status===504){sonHata=new Error("Google okuma sunucusu şu an yoğun ("+r.status+"). Birkaç saniye sonra tekrar deneyin. Anahtar sorunu değil.");continue}
         if(!r.ok){var t="";try{t=(await r.json()).error.message||""}catch(e){}
           if(r.status===429)throw new Error("Ücretsiz okuma limiti doldu. Biraz bekleyip tekrar deneyin (günlük limit gece sıfırlanır).");
           if(r.status===400&&/API key/i.test(t))throw new Error("API anahtarı geçersiz. Yönetici 🔑 düğmesinden anahtarı yeniden girsin.");
@@ -75,7 +77,7 @@
         tx=tx.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
         return JSON.parse(tx);
       }catch(e){clearTimeout(zt);
-        if(e&&e.name==="AbortError")throw new Error("Okuma zaman aşımına uğradı. Tekrar deneyin.");
+        if(e&&e.name==="AbortError"){sonHata=new Error("Okuma zaman aşımına uğradı (Google yavaş yanıt verdi). Tekrar deneyin.");continue}
         if(e instanceof SyntaxError)throw new Error("Okunan metin anlaşılamadı. Tekrar deneyin.");
         throw e}
     }
@@ -113,6 +115,7 @@
     ayar=v&&v.anahtar?{anahtar:String(v.anahtar),model:v.model?String(v.model):""}:null;return ayar}
 
   function ayarAc(){
+    var mv=g("okMevcut");if(mv)mv.textContent=ayar&&ayar.anahtar?"Kayıtlı anahtar: "+maske(ayar.anahtar)+" · model: "+(ayar.model||"otomatik"):"Kayıtlı anahtar yok. Aşağıya yapıştırıp Kaydet'e basın.";
     g("okKey").value="";g("okModel").value=(ayar&&ayar.model)||"";g("okE").textContent="";
     g("dOkAyar").showModal()}
 
@@ -145,7 +148,7 @@
       g("okKaydet").disabled=true;
       try{var yeni={anahtar:k||ayar.anahtar};if(m)yeni.model=m;
         await db.ref("okumaAyar").set(yeni);ayar={anahtar:yeni.anahtar,model:m||""};
-        g("dOkAyar").close();durum("✓ Anahtar kaydedildi. Şimdi fotoğraf seçebilirsiniz.");toast("Anahtar kaydedildi")}
+        g("dOkAyar").close();durum("✓ Anahtar kaydedildi ("+maske(yeni.anahtar)+"). Şimdi fotoğraf seçebilirsiniz.");toast("Anahtar kaydedildi: "+maske(yeni.anahtar))}
       catch(e){E.textContent=errText(e)}
       g("okKaydet").disabled=false};
     /* iAc sarmalayıcı: yalnız YENİ iş emrinde düğme görünsün; açılışta mesaj temizlensin */
