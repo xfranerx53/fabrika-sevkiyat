@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v69**
+**GÜNCEL SÜRÜM: v70**
 Son güncelleme: 2026-10-22 (v69: açılış takılma tanısı)
 
 ---
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v69)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v70)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -263,6 +263,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-16: v63 — 5 özellik: (1) **Üretim raporları** (yeni `israpor.js`, pencere `dIR`, düğmeler `irAc1/irAc2`; yönetici veya Raporlar izni): «Biten işler» (dönem: bu/geçen hafta, bu/geçen ay, özel tarih; `asama=bitti` sorgusu + bitiş = log.depo.zaman; Excel) ve «Aşama süreleri» (isHareket'ten aşama/operatör bazlı iş sayısı, ort./toplam süre, kg/saat; Excel'de Özet+Detay). Süre = aşamada geçen toplam zaman (bekleme dahil). Eski işlerde `olustur` hareketi yoksa ilk aşama süresi hesaplanamaz. (2) **Hata önleme:** ileri/geri işlemlerinde sunucudaki güncel aşama kontrol edilir (başkası değiştirdiyse işlem yapılmaz), çift basma kilidi (`isKilit`), onay metinleri «MG-xxx: EKSTRUDER → KESİM geçirilsin mi?», geri almada onay eklendi; etiketten ekstruder'e geçişte onay (etiket.js). (3) **Termin:** iş emrinde `termin` alanı (form `iTermin`); kartta rozet (gecikti/bugün/kalan), listelerde kırmızı «N geciken iş» uyarısı ve geciken işler üstte (`terminGun`, `terminRozet`). `termin` yalnızca değiştiyse yazılır. (4) **Aşama bildirimi:** iş sizin aşamanıza gelince anında ekran mesajı + titreşim (`bAsamaUyar`), zil listesinde «📥 MG-xxx aşamanıza geldi»; etiket aşaması tamamlanınca `log/etiket` yazılır (`etLog`, başarısız olursa sessiz). (5) rules.json: `isEmirleri/$id/termin` ve `isEmirleri/$id/log/etiket` kuralları eklendi. Dosyalar: app.js, etiket.js, israpor.js (YENİ), index.html, sw.js, rules.json, PROJE-NOTLARI.md. **Cihazda ve Firebase'de sınanmadı.**
 - 2026-10-16: v64 — **Bağımsız (serbest) etiket:** İş Emirleri bölümünde «🏷️ Yeni etiket oluştur (iş emri olmadan)» düğmesi (`etNew`; etiket yetkisi olan veya yönetici). Mevcut etiket penceresini (`lbDlg`) sahte iş emriyle (`id:"__serbest"`) açar: işin adı/ürün/ebat/kg elle yazılır, «＋ Bir etiket daha ekle» (`lbPlus`) ile birden çok etiket, ölçü/tasarım/yön ayarları aynı. Veritabanına YAZMAZ (iş emri, hareket, etiketGecmis yok), QR yok, şablon kaydedilmez. etiket.js: satır HTML'i `rowHtml()` fonksiyonuna ayrıldı; `serbest` bayrağı bas()'ta DB yazımlarını atlar. Dosyalar: etiket.js, app.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-22: v69 — «Uygulama açılamadı» ekranı (giriş yanıtı geliyor ama veritabanı yanıt vermiyor, Chrome'da site verisi silince düzeliyor) için tanı eklendi: tanıya «veritabanı yanıtı» ve «oturum yenileme» (token yenileme sınaması) satırı, 10 sn sonra bağlantı tazeleme (goOffline/goOnline), ve «Çıkış yap ve giriş ekranına dön» düğmesi (Chrome ayarına girmeden çözüm). Dosyalar: app.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
+- 2026-10-22: v70 — (v69 açılış tanısı + yönetici çıkış düğmesi) Sabit Gemini anahtarını koda yazma denendi ama GitHub «Secret scanning» push'u engelledi (anahtar herkese açık depoda sızar, Google iptal edebilir); KODA ANAHTAR YAZILMAZ. Anahtar yalnızca yönetici 🔑 penceresinden girilir (Firebase `okumaAyar`), iş emri verebilenler oradan okur. Dosyalar: app.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
