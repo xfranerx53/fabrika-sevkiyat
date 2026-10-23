@@ -16,7 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=78">
+<link rel="stylesheet" href="style.css?v=79">
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -215,7 +215,7 @@
         <input id="grAra" placeholder="🔍 Açıklama, tarih ara..." style="margin-top:8px" autocomplete="off">
         <div style="display:flex;gap:6px;margin-top:8px"><button class="btn b7 sm" id="grCDuz" type="button">✏ Granülcü adını değiştir</button><button class="btn b5 sm" id="grCSil" type="button">🗑 Granülcüyü sil</button></div>
       </div>
-      <div class="grw"><table><thead><tr><th class="l">TARİH</th><th>Ş N</th><th>GİDEN KİLO</th><th>GELEN KİLO</th><th>SATIŞ</th><th>FİRE</th><th>FİYAT</th><th>TOPLAM FİYAT</th><th>KDV</th><th>SATIŞ FİYAT</th><th>ÖDEME</th><th class="l">AÇIKLAMA</th><th></th></tr></thead><tbody id="grTb"></tbody></table></div>
+      <div class="grw"><table><thead><tr><th class="l">TARİH</th><th>FİŞ NO</th><th>GİDEN KİLO</th><th>GELEN KİLO</th><th>SATIŞ</th><th>FİRE</th><th>FİYAT</th><th>TOPLAM FİYAT</th><th>KDV</th><th>SATIŞ FİYAT</th><th>ÖDEME</th><th class="l">AÇIKLAMA</th><th></th></tr></thead><tbody id="grTb"></tbody></table></div>
       <button class="btn b6" id="grDaha" type="button" style="margin-top:8px">Daha eski kayıtları göster</button>
     </div>
   </div>
@@ -443,7 +443,7 @@
   <h3 id="grH" style="margin-bottom:10px">＋ Yeni kayıt</h3>
   <div class="grid">
     <div><label for="grT">Tarih</label><input id="grT" type="date"></div>
-    <div><label for="grSn">Ş N (isteğe bağlı)</label><input id="grSn" maxlength="20" autocomplete="off"></div>
+    <div><label for="grSn">Fiş no (isteğe bağlı)</label><input id="grSn" maxlength="20" autocomplete="off"></div>
   </div>
   <div class="grid" style="margin-top:8px">
     <div><label for="grGid">Giden kilo</label><input id="grGid" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
@@ -639,17 +639,17 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="raporlar.js?v=78"></script>
+<script src="raporlar.js?v=79"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=78"></script>
+<script src="app.js?v=79"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=78"></script>
-<script src="saat.js?v=78"></script>
+<script src="foto-onizleme.js?v=79"></script>
+<script src="saat.js?v=79"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=78"></script>
+<script src="diyalog.js?v=79"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -680,8 +680,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=78"></script>
-<script src="etiket.js?v=78"></script>
+<script src="qr.js?v=79"></script>
+<script src="etiket.js?v=79"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -691,12 +691,12 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="talimat.js?v=78"></script>
-<script src="tahsilat.js?v=78"></script>
-<script src="granul.js?v=78"></script>
-<script src="arama.js?v=78"></script>
-<script src="israpor.js?v=78"></script>
-<script src="fotookut.js?v=78"></script>
-<script src="sw-kayit.js?v=78"></script>
+<script src="talimat.js?v=79"></script>
+<script src="tahsilat.js?v=79"></script>
+<script src="granul.js?v=79"></script>
+<script src="arama.js?v=79"></script>
+<script src="israpor.js?v=79"></script>
+<script src="fotookut.js?v=79"></script>
+<script src="sw-kayit.js?v=79"></script>
 </body>
 </html>

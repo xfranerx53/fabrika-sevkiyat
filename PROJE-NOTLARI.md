@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v78**
+**GÜNCEL SÜRÜM: v79**
 Son güncelleme: 2026-10-23 (v78: GRANÜL bölümü)
 
 ---
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v78)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v79)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -210,7 +210,7 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
   - **Saatler sunucudan (v47):** `zaman`, `alinmaZaman`, `yapilmaZaman` artık `ServerValue.TIMESTAMP`; rules `newData.val() === now` ister (yönetici hariç: çöp kutusundan geri yükleme eski saati yazabilsin). "Bugün/Son 7 gün" süzgeci de `.info/serverTimeOffset` ile sunucu saatine göre hesaplanır.
   - **Fotoğraflar (v47):** `fotoHazirla` ile kayıtta küçük önizleme (+`#fotoTam anahtarı`), tam boy `fotoTam`'da; büyütünce yüklenir. Talimat da aynı. Eski kayıtlardaki büyük fotoğraflar için **Yönetici > Fotoğraf hafifletme** artık `tahsilatlar` ve `sevkTalimat`'ı da tarar (JSON yedek alıp bir kez çalıştırın).
   - Rules: `tahsilatlar` okuma/yazma = sevkiyat yetkisi (yönetici | `sevk` izni | rol Depo/Sevkiyat). Alım alanlarını yalnız ilk dolduran veya yönetici değiştirebilir. Yedeğe (`BK_DUGUM`) dahil.
-- **GRANÜL (v78, `granul.js`, panel `pGranul`, menüde ♻️ GRANÜL, izin `granul`; varsayılan: yönetici + Muhasebe):** Üstte granülcü sekmeleri (＋ Granülcü ekle; ad değiştirme; silme yalnız yönetici ve kaydı yoksa). Seçili granülcünün defteri Excel'deki gibi tablo: TARİH, Ş N, GİDEN KİLO, GELEN KİLO, SATIŞ, FİRE, FİYAT, TOPLAM FİYAT, KDV, SATIŞ FİYAT, ÖDEME, AÇIKLAMA. Formüller Excel'den çıkarıldı ve ekranda yazar: TOPLAM FİYAT = gelen × fiyat; SATIŞ FİYAT = satış × fiyat; KALAN KG = Σgiden − Σgelen − Σfire; BAKİYE = Σtoplam fiyat + ΣKDV − Σsatış fiyat − Σödeme (kullanıcının Excel görüntüsüyle birebir tuttu: 7607 kg / 46.607 ₺). KDV ve FİRE elle girilen alanlardır (Excel'de de elle). «Ş N» sütununun anlamı BİLİNMİYOR, serbest kısa metin olarak kondu. Kayıt silme çöp kutusuna gider (`silCop`), düzeltmeler `denetim`'e düşer. «📥 Excel'den al»: Excel'deki TARİH başlıklı tabloyu okur, aynı satırı ikinci kez eklemez, onay sorar. «📤 Excel'e aktar» aynı düzende .xlsx indirir. Yedeğe (`BK_DUGUM`) dahil.
+- **GRANÜL (v78, `granul.js`, panel `pGranul`, menüde ♻️ GRANÜL, izin `granul`; varsayılan: yönetici + Muhasebe):** Üstte granülcü sekmeleri (＋ Granülcü ekle; ad değiştirme; silme yalnız yönetici ve kaydı yoksa). Seçili granülcünün defteri Excel'deki gibi tablo: TARİH, Ş N, GİDEN KİLO, GELEN KİLO, SATIŞ, FİRE, FİYAT, TOPLAM FİYAT, KDV, SATIŞ FİYAT, ÖDEME, AÇIKLAMA. Formüller Excel'den çıkarıldı ve ekranda yazar: TOPLAM FİYAT = gelen × fiyat; SATIŞ FİYAT = satış × fiyat; KALAN KG = Σgiden − Σgelen − Σfire; BAKİYE = Σtoplam fiyat + ΣKDV − Σsatış fiyat − Σödeme (kullanıcının Excel görüntüsüyle birebir tuttu: 7607 kg / 46.607 ₺). KDV ve FİRE elle girilen alanlardır (Excel'de de elle). «Ş N» sütunu = **FİŞ NO** (kullanıcı söyledi; Excel'de daraltılmış olduğundan görünmüyordu); alan adı `sn`, ekranda «FİŞ NO», Excel içe aktarmada «Ş N» veya «FİŞ NO» başlığı kabul edilir. Kayıt silme çöp kutusuna gider (`silCop`), düzeltmeler `denetim`'e düşer. «📥 Excel'den al»: Excel'deki TARİH başlıklı tabloyu okur, aynı satırı ikinci kez eklemez, onay sorar. «📤 Excel'e aktar» aynı düzende .xlsx indirir. Yedeğe (`BK_DUGUM`) dahil.
 - **Stok modülü:** KALEMLER (giriş/çıkış, geçmiş, yazdır), SİPARİŞLER (kategoriye göre / liste),
   TEDARİKÇİLER.
 - **İş emirleri aşama akışı:** `etiket → ekstruder → (baskı varsa baski) → kesim → depo → bitti`.
@@ -249,6 +249,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-21: v67 — Fotoğraftan doldurma: «📷 Kamera ile çek» (telefonda doğrudan arka kamerayı açar, `capture=environment`) ve «🖼️ Galeriden seç» olarak iki düğme. Dosyalar: fotookut.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-21: v68 — İş takip formu yazdırma/kart: logodaki amblem W görünüyordu, M olarak düzeltildi (app.js `isForm` içindeki `logo` SVG yolu dikey çevrildi: `M10 19L24 6L30 17L36 6L50 19`). Dosyalar: app.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
+- 2026-10-23: v79 — GRANÜL: «Ş N» sütunu «FİŞ NO» olarak adlandırıldı (tablo, kayıt penceresi, Excel aktar/al). Dosyalar: granul.js, index.html, sw.js, PROJE-NOTLARI.md, README.md. Firebase kuralı: değişmedi.
 - 2026-10-23: v78 — **GRANÜL bölümü** eklendi (Excel «ZEKERİYA GRANÜL TAKİP» karşılığı; birden çok granülcü; Excel'e aktar / Excel'den al). Yeni izin anahtarı `granul` (Muhasebe varsayılan). Dosyalar: granul.js (YENİ), app.js, index.html, style.css, sw.js, rules.json, PROJE-NOTLARI.md. **Firebase kuralı: DEĞİŞTİ (yeni yollar `granulcular`, `granulKayit`, izin `granul`, çöp kutusu yolları).** Hesaplar kullanıcının Excel görüntüsüyle sınandı, Excel içe aktarma ayrıştırıcısı örnek satırlarla sınandı; cihazda ve Firebase'de SINANMADI.
 - 2026-10-15: v48 — "Etiket hazırla" penceresi (#lbDlg) "Yeni iş emri" gibi geniş ve büyük yazılı açılır; sütun etiketleri yan yana dizilir (dar ekranda alt alta). İş emri kartındaki "🏷️ Etiket hazırla" düğmesi "Yeni iş emri aç" ile aynı boyda (`big`). Sadece style.css + app.js. Firebase kuralı: değişmedi.
 - 2026-10-15: v49 — Yeni **ÜRETİM** bölümü (`uretim`, menüde 🏭). Ekstruder, Baskı, Kesim, Depo, Biten aşamaları İş emirleri'nden buraya taşındı; **İş emirleri'nde sadece Etiket aşaması + Dosyalar** kaldı (arama açıkken İş emirleri tüm aşamaları tarar). Aynı `isEmirleri` verisi ve aynı kart/düğmeler kullanılır (`isListele` panele göre çizer: `iList/iTabs/iq` = İş emirleri, `uList/uTabs/uq` = Üretim; `URA` = üretim aşamaları). Yeni izin anahtarı `uretim` (app.js YETKI/IZ_GRUP + rules.json validate). Rol şablonları: Ekstruder/Matbaa/Kesim/Bobinoz operatörleri artık `mod:["uretim"]`, `ana:"uretim"`; Depo Görevlisi ve Muhasebe `is`+`uretim`. rules.json: `isEmirleri`/`isHareket` okuma/yazma `is` yanına `uretim` de kabul eder. QR okutulunca iş emri `is` yetkisi varsa İş emirleri, yoksa Üretim bölümünde açılır. **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).**

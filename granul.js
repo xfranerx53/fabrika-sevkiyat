@@ -2,7 +2,7 @@
    Excel'deki "ZEKERİYA GRANÜL TAKİP" tablosunun programdaki karşılığı. Birden çok granülcü eklenebilir; her birinin kendi defteri vardır.
    Veri yolları:
      granulcular/{id}  : {ad, zaman}
-     granulKayit/{id}  : {gid (granülcü id), tarih "YYYY-MM-DD", sn, giden, gelen, satis, fire, fiyat, kdv, odeme, aciklama, ekleyen, ekleyenUid, zaman}
+     granulKayit/{id}  : {gid (granülcü id), tarih "YYYY-MM-DD", fiş no (sn), giden, gelen, satis, fire, fiyat, kdv, odeme, aciklama, ekleyen, ekleyenUid, zaman}
    Hesaplar kayıtta SAKLANMAZ, her seferinde şöyle hesaplanır (Excel ile aynı):
      TOPLAM FİYAT = gelen kilo × fiyat        SATIŞ FİYAT = satış kilo × fiyat
      KALAN KG     = Σ giden − Σ gelen − Σ fire
@@ -232,7 +232,7 @@
       var A=[
         ["TOPLAM","",t.giden,t.gelen,t.satis,t.fire,"",t.top,t.kdv,t.sfy,t.odeme,t.kalan,t.bakiye],
         [g.ad.toLocaleUpperCase("tr-TR")+" GRANÜL TAKİP","","","","","","","","","","","^ KALAN KG ^","BAKİYE"],
-        ["TARİH","Ş N","GİDEN KİLO","GELEN KİLO","SATIŞ","FİRE","FİYAT","TOPLAM FİYAT","KDV","SATIŞ FİYAT","ÖDEME","AÇIKLAMA"]
+        ["TARİH","FİŞ NO","GİDEN KİLO","GELEN KİLO","SATIŞ","FİRE","FİYAT","TOPLAM FİYAT","KDV","SATIŞ FİYAT","ÖDEME","AÇIKLAMA"]
       ];
       L.forEach(function(x){var h=hesap(x);
         A.push([tarihTR(x.tarih),x.sn||"",+x.giden||"",+x.gelen||"",+x.satis||"",+x.fire||"",+x.fiyat||"",h.top,+x.kdv||"",h.sfy,+x.odeme||"",x.aciklama||""])});
@@ -260,7 +260,7 @@
       for(var j=0;j<r.length;j++){if(bas(r[j])==="tarih"){hs=i;break}}
     }
     if(hs<0)return {hata:"«TARİH» başlığı bulunamadı. Excel dosyasında TARİH, GİDEN KİLO, GELEN KİLO... başlıklı satır olmalı."};
-    var H=rows[hs],ad2={"tarih":"tarih","s n":"sn","giden kilo":"giden","gelen kilo":"gelen","satis":"satis","fire":"fire","fiyat":"fiyat","toplam fiyat":"top","kdv":"kdv","satis fiyat":"sfy","odeme":"odeme","aciklama":"aciklama"};
+    var H=rows[hs],ad2={"tarih":"tarih","s n":"sn","fis no":"sn","fis":"sn","giden kilo":"giden","gelen kilo":"gelen","satis":"satis","fire":"fire","fiyat":"fiyat","toplam fiyat":"top","kdv":"kdv","satis fiyat":"sfy","odeme":"odeme","aciklama":"aciklama"};
     H.forEach(function(h,j){var k=ad2[bas(h)];if(k&&kol[k]==null)kol[k]=j});
     if(kol.giden==null&&kol.gelen==null)return {hata:"GİDEN KİLO / GELEN KİLO sütunları bulunamadı."};
     var out=[],atla=0;
