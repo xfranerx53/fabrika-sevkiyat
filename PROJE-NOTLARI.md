@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v79**
-Son güncelleme: 2026-10-23 (v78: GRANÜL bölümü)
+**GÜNCEL SÜRÜM: v80**
+Son güncelleme: 2026-10-23 (v80: GRANÜL ekranı sadeleştirildi)
 
 ---
 
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v79)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v80)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -249,6 +249,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-21: v67 — Fotoğraftan doldurma: «📷 Kamera ile çek» (telefonda doğrudan arka kamerayı açar, `capture=environment`) ve «🖼️ Galeriden seç» olarak iki düğme. Dosyalar: fotookut.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-21: v68 — İş takip formu yazdırma/kart: logodaki amblem W görünüyordu, M olarak düzeltildi (app.js `isForm` içindeki `logo` SVG yolu dikey çevrildi: `M10 19L24 6L30 17L36 6L50 19`). Dosyalar: app.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
+- 2026-10-23: v80 — GRANÜL ekranı yenilendi: (1) dar ekranda kart, geniş ekranda tablo (900 px üstü; tabloya KALAN KG ve BAKİYE sütunu eklendi); (2) kayıt ekleme işlem türüne göre: 📤 Mal gönderdim, 📥 Granül geldi (KDV %1/%10/%20 otomatik), 💰 Ödeme yaptım, 🛒 Satış yaptım, 🔥 Fire yaz — sadece ilgili alanlar açılır, düzenlemede tüm alanlar; (3) üstte iki büyük sayı: «Granülcüde kalan mal» ve «Granülcüye borcunuz / alacağınız» (bakiye + ise borç; bu yorum kullanıcıya soruldu, cevap gelmedi, yanlışsa `bakiyeYazi` düzelt); kalan kg eksiye düşerse kırmızı uyarı; diğer toplamlar «Ayrıntılı toplamlar» altında; (4) her satırda o satırdan sonraki kalan kg + bakiye; (5) ay filtresi + aylık toplam kutusu; (6) renk kodu (giden mavi, gelen yeşil, satış mor, fire turuncu, ödeme sarı); (7) 📲 WhatsApp özeti (wa.me; ay seçiliyse o ayın hareketleri, değilse son 8). Dosyalar: granul.js, index.html, style.css, sw.js, PROJE-NOTLARI.md, README.md. Firebase kuralı: değişmedi. Başsız tarayıcıda sahte Firebase ile ekran/akış sınandı; gerçek Firebase'de ve telefonda SINANMADI.
 - 2026-10-23: v79 — GRANÜL: «Ş N» sütunu «FİŞ NO» olarak adlandırıldı (tablo, kayıt penceresi, Excel aktar/al). Dosyalar: granul.js, index.html, sw.js, PROJE-NOTLARI.md, README.md. Firebase kuralı: değişmedi.
 - 2026-10-23: v78 — **GRANÜL bölümü** eklendi (Excel «ZEKERİYA GRANÜL TAKİP» karşılığı; birden çok granülcü; Excel'e aktar / Excel'den al). Yeni izin anahtarı `granul` (Muhasebe varsayılan). Dosyalar: granul.js (YENİ), app.js, index.html, style.css, sw.js, rules.json, PROJE-NOTLARI.md. **Firebase kuralı: DEĞİŞTİ (yeni yollar `granulcular`, `granulKayit`, izin `granul`, çöp kutusu yolları).** Hesaplar kullanıcının Excel görüntüsüyle sınandı, Excel içe aktarma ayrıştırıcısı örnek satırlarla sınandı; cihazda ve Firebase'de SINANMADI.
 - 2026-10-15: v48 — "Etiket hazırla" penceresi (#lbDlg) "Yeni iş emri" gibi geniş ve büyük yazılı açılır; sütun etiketleri yan yana dizilir (dar ekranda alt alta). İş emri kartındaki "🏷️ Etiket hazırla" düğmesi "Yeni iş emri aç" ile aynı boyda (`big`). Sadece style.css + app.js. Firebase kuralı: değişmedi.

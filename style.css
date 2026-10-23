@@ -279,11 +279,14 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 /* Üretim/iş emri kartında yazdırılan form birebir görünür; sabit 560px tasarlanıp kutuya sığacak şekilde küçültülür (isfSigdir) */
 .isf{--z:.66;--fk:1.35;margin:8px 0;overflow:hidden;box-sizing:border-box;position:relative;color:#000;font-family:Arial,Helvetica,sans-serif;font-weight:700;-webkit-text-stroke:.25px #000;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:0}
 .isf .pf{width:560px;min-width:0;max-width:none;margin:0;box-sizing:border-box;transform-origin:top left;font-size:calc(13pt*var(--z)*var(--fk));padding:2mm}
-/* GRANÜL tablosu (Excel görünümü) */
-#pGranul .grw{overflow-x:auto;-webkit-overflow-scrolling:touch;background:#fff;border:1px solid #cbd5e1;border-radius:10px}
-#pGranul .grw table{border-collapse:collapse;min-width:1020px;width:100%;font-size:14px}
+/* GRANÜL: dar ekranda kartlar, geniş ekranda Excel görünümlü tablo */
+#pGranul .grb{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#pGranul .grb .btn{margin:0;padding:16px 6px;font-size:17px;color:#fff;border:0}
+#pGranul .grw{display:none;overflow-x:auto;-webkit-overflow-scrolling:touch;background:#fff;border:1px solid #cbd5e1;border-radius:10px}
+#pGranul .grw table{border-collapse:collapse;min-width:1200px;width:100%;font-size:14px}
 #pGranul .grw th{background:#e2e8f0;color:#0f172a;font-size:12px;font-weight:800;padding:8px 8px;white-space:nowrap;text-align:right;position:sticky;top:0}
 #pGranul .grw td{padding:6px 8px;border-top:1px solid #e2e8f0;white-space:nowrap;text-align:right}
 #pGranul .grw .l{text-align:left}
 #pGranul .grw tbody tr:nth-child(even){background:#f8fafc}
 #pGranul .grw td .btn.sm{padding:3px 7px;font-size:13px}
+@media (min-width:900px){#pGranul .grw{display:block}#pGranul .grk{display:none}}
