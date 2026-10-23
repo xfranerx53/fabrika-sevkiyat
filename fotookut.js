@@ -102,7 +102,7 @@
     var liste=await modelListesi(),adaylar=[];
     if(ayar.model&&(!liste.length||liste.indexOf(ayar.model)>=0))adaylar.push(ayar.model);
     liste.slice(0,4).concat(liste.length?[]:MODELLER).forEach(function(m){if(adaylar.indexOf(m)<0)adaylar.push(m)});
-    var hatalar=[],yogun=false,zamanasimi=false,kota=false,gunluk=false,bekleSn=0;
+    var hatalar=[],yogun=false,zamanasimi=false,kota=false,gunluk=false,bekleSn=0,gMesaj="",sifir=false;
     for(var tur=0;tur<2;tur++){
       hatalar=[];yogun=false;zamanasimi=false;kota=false;gunluk=false;bekleSn=0;var sadece5xx=true;
       for(var i=0;i<adaylar.length;i++){
@@ -121,7 +121,7 @@
         if(st===500||st===502||st===503||st===504){hatalar.push(adaylar[i]+": "+st);yogun=true;continue}
         if(st==="zaman"){hatalar.push(adaylar[i]+": zaman aşımı");zamanasimi=true;sadece5xx=false;continue}
         if(st==="ag")throw new Error("Google'a bağlanılamadı. İnternet bağlantısını kontrol edin.");
-        if(st===429){kota=true;sadece5xx=false;if(/PerDay|per day/i.test(t))gunluk=true;var mm=t.match(/retry in ([\d.]+)\s*s/i);if(mm)bekleSn=Math.max(bekleSn,Math.ceil(+mm[1]));hatalar.push(adaylar[i]+": limit"+(/PerDay|per day/i.test(t)?" (günlük)":"")+(mm?" ("+Math.ceil(+mm[1])+" sn)":""));continue}
+        if(st===429){kota=true;sadece5xx=false;if(/PerDay|per day/i.test(t))gunluk=true;if(/limit:\s*0\b/i.test(t))sifir=true;if(!gMesaj)gMesaj=t.replace(/\s+/g," ").slice(0,170);var mm=t.match(/retry in ([\d.]+)\s*s/i);if(mm)bekleSn=Math.max(bekleSn,Math.ceil(+mm[1]));hatalar.push(adaylar[i]+": limit"+(/PerDay|per day/i.test(t)?" (günlük)":"")+(mm?" ("+Math.ceil(+mm[1])+" sn)":""));continue}
         if(st===400&&/API key/i.test(t))throw new Error("API anahtarı geçersiz. Yönetici 🔑 düğmesinden anahtarı yeniden girsin.");
         if(st===403)throw new Error("Anahtarın bu sitede/ülkede kullanımına izin yok (403). "+t.slice(0,120));
         hatalar.push(adaylar[i]+": "+st+" "+t.slice(0,80));continue}
@@ -129,6 +129,8 @@
       asamaM="Google yoğun, tekrar deneniyor";await bekle(4000)
     }
     var ek=" ("+hatalar.join(", ")+")";
+    if(kota&&!yogun&&!zamanasimi&&sifir)throw new Error("Bu anahtarın projesinde ücretsiz okuma kotası 0 görünüyor; beklemek çözmez. AI Studio'da faturalamayı açmak veya farklı bir Google hesabından yeni anahtar almak gerekir. Google'ın mesajı: "+gMesaj+ek);
+    if(kota&&!yogun&&!zamanasimi&&gMesaj)ek+=" Google: "+gMesaj;
     if(kota&&!yogun&&!zamanasimi)throw new Error(gunluk||!bekleSn?"Ücretsiz Gemini okuma limiti doldu. Günlük limit Türkiye saatiyle yaklaşık 10:00'da (kış saatinde 11:00) sıfırlanır. Limit modele göre ayrı sayılır; yönetici 🔑 penceresinden başka bir modelin adını yazabilir."+ek:"Dakikalık okuma limiti doldu. "+bekleSn+" saniye sonra tekrar deneyin."+ek);
     throw new Error((yogun?"Google okuma sunucusu şu an yoğun. Birkaç saniye sonra tekrar deneyin. Anahtar sorunu değil.":zamanasimi?"Okuma zaman aşımına uğradı. Tekrar deneyin.":"Uygun okuma modeli bulunamadı.")+ek)}
 

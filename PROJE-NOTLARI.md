@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v75**
+**GÜNCEL SÜRÜM: v76**
 Son güncelleme: 2026-10-22 (v69: açılış takılma tanısı)
 
 ---
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v75)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v76)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -269,6 +269,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-22: v73 — «Uygulama açılamadı» (Wi-Fi ↔ mobil veri geçince veritabanı yanıt vermiyor, oturum yenileme «tamam»): (1) Firebase'in localStorage'a yazdığı `firebase:host:*` (bağlandığı sunucu adı) her açılışta siliniyor; (2) 10 sn sonra sunucuya REST ile ulaşılıp ulaşılmadığı sınanıyor, ulaşılıyorsa `firebase.database.INTERNAL.forceLongPolling()` (uzun-sorgu kipi) açılıp bağlantı tazeleniyor ve `localStorage.fbPoll=1` ile sonraki açılışlarda baştan kullanılıyor; (3) tanı satırına «sunucu», «uzun-sorgu kipi denendi», «eski sunucu adı» eklendi. Dosyalar: app.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı; sebep henüz kesinleşmedi (tanıya bakılacak).
 - 2026-10-22: v74 — Fotoğraftan okuma donuyordu (ekranda sonsuza kadar «Fotoğraf okunuyor»). Olası sebep: yeni Gemini modelleri varsayılan olarak uzun «düşünüyor». Düzeltme: `generationConfig.thinkingConfig` ile düşünme kısıldı (gemini-3/latest: thinkingLevel low → thinkingBudget 0 → ayarsız; 2.5: thinkingBudget 0 → ayarsız; model 400 verirse sıradaki ayara geçilir). Her deneme 40 sn ile sınırlı, fotoğraf hazırlama 15 sn ile sınırlı. Ekranda canlı durum: «Okunuyor (model adı)… N sn». Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-22: v75 — Fotoğraftan okuma: gerçek hata 429 (Google ücretsiz kota doldu; kota proje+model başına, günlük kota gece yarısı Pasifik saatinde sıfırlanır = TR 10:00, kışın 11:00). 429 artık sıradaki modele geçirir (kota modele göre ayrı); hepsi 429 ise günlük/dakikalık ayrımıyla ve «N sn sonra» bilgisiyle mesaj verir, parantez içinde model bazlı durum yazar. Çok sayıda deneme kotayı yemiş olabilir; kalıcı çözüm AI Studio'da faturalamayı açmak (Tier 1). Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
+- 2026-10-22: v76 — 429 hatasında Google'ın kendi mesajı (ilk 170 karakter, kota adı/limit değeri) ekranda gösteriliyor; «limit: 0» geçiyorsa «ücretsiz kota 0, beklemek çözmez» uyarısı veriliyor. Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
