@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v81**
-Son güncelleme: 2026-10-23 (v81: bağlantı göstergesi + kayıt uyarısı, yönetici panosu, yedek hatırlatması)
+**GÜNCEL SÜRÜM: v82**
+Son güncelleme: 2026-10-23 (v82: özet menüden kaldırıldı, «YÖNETİCİ PANELİ» düğmesi/penceresi içine alındı)
 
 ---
 
@@ -93,7 +93,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 | `tahsilat.js` | Tahsilat bölümü (Bölüm 7): WhatsApp "MAG TAHSİLAT" grubunun yerine geçer. Ofis talep açar, sahadaki kişi "Tahsil ettim" der | GitHub |
 | `granul.js` | **GRANÜL bölümü (v78):** Excel'deki «ZEKERİYA GRANÜL TAKİP» tablosunun karşılığı; birden çok granülcü, her birinin ayrı defteri, toplamlar (KALAN KG, BAKİYE), Excel'e aktar / Excel'den al | GitHub |
 | `fotookut.js` | Yeni iş emrinde «📷 Mikro formunun fotoğrafından doldur»: fotoğrafı Google Gemini (ücretsiz API anahtarı) ile okuyup alanları doldurur (v65) | GitHub |
-| `pano.js` | **Yönetici panosu (v81):** yönetici menüsünün üstünde «GÜNÜN ÖZETİ»: onay bekleyen kullanıcı, geciken iş emri, bugün termini olan, sevk edilecekler, bekleyen tahsilat/talimat, kritik stok, yedek durumu + tek dokunuşla yedek | GitHub |
+| `pano.js` | **Yönetici panosu (v81):** menüdeki «🛡️ YÖNETİCİ PANELİ» düğmesinin açtığı pencerede (`dPano`) özet: onay bekleyen kullanıcı, geciken iş emri, bugün termini olan, sevk edilecekler, bekleyen tahsilat/talimat, kritik stok, yedek durumu + tek dokunuşla yedek | GitHub |
 | `baglanti.js` | **Bağlantı durumu + kayıt güvenliği (v81):** sol altta ● Çevrimiçi/Bağlantı yok/Gönderiliyor etiketi, kopunca kırmızı şerit, kayıt 8 sn'de gitmezse turuncu şerit, reddedilen kayıtta «⚠ Kaydedilemedi», bekleyen kayıt varken sayfa kapanırsa uyarı. Firebase `set/update/remove/transaction` işlemlerini sarar | GitHub |
 | `arama.js`, `saat.js`, `diyalog.js`, `foto-onizleme.js`, `sw-kayit.js` | Küçük yardımcılar | GitHub |
 | `sw.js` | Çevrimdışı önbellek. `CACHE='fabrika-vNN'` ve `V='?v=NN'` | GitHub |
@@ -220,7 +220,7 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
   Her aşamayı ilgili rol/izin ilerletir; `geriAl` izni olanlar bir aşama geri alabilir. Biten iş
   "HAZIR ÜRÜNLER"e aktarılabilir (`bekleAktar`, `aktarildi`). İş emri seri no biçimi: `MG-0945`.
   Etiketteki QR okutulunca iş emri açılır (`?is=MG-0945`).
-- **Yönetici panosu (v81, `pano.js`, `panoBox` menüde):** yalnız yönetici. Giriş sonrası menünün üstünde görünür; ↻ Yenile, 2 dk'da bir otomatik, menüye dönülünce (30 sn'den eskiyse) yenilenir. Kartlar: 👤 onay bekleyen kullanıcı (`kullanicilar` canlı) · ⏰ geciken iş emri (`terminGun>0`) · 📅 bugün termini · 🚚 sevk edilecekler (`urunler` `durum` indeksiyle `sevk_edilecek`; «bugün» için tarih alanı yok, sevk listesinin tamamı) · 💰 bekleyen tahsilat ve 📋 talimat (tahsilat.js/talimat.js'in canlı `L` listesi; `window.tahOzet/talOzet`, her güncellemede `panoYenile`) · ⚠️ kritik stok (`dur(k)!=="ok"`) · 💾 yedek (3 gün sarı, 7 gün kırmızı; «Yedek al» düğmeleri `bkJson` düğmesini tıklar, ilerleme `bkDurum`'dan yansır). Her kartın «git» düğmesi ilgili bölümü açar. Yaşam döngüsü: `bildBaslat → panoBaslat`, `bildDurdur → panoDurdur`.
+- **Yönetici paneli (v81, `pano.js`):** yalnız yönetici. Menüde «🛡️ YÖNETİCİ PANELİ» düğmesi (`mPano`, altında «N konu dikkatinizi bekliyor» rozeti) `dPano` penceresini açar; pencerede özet kartları + «⚙️ Kullanıcılar · Çöp kutusu · Denetim · Yedekleme» (eski Yönetici penceresi `dAdm`) düğmesi var. Menüde artık özet gösterilmez; ↻ Yenile, 2 dk'da bir otomatik, menüye dönülünce (30 sn'den eskiyse) yenilenir. Kartlar: 👤 onay bekleyen kullanıcı (`kullanicilar` canlı) · ⏰ geciken iş emri (`terminGun>0`) · 📅 bugün termini · 🚚 sevk edilecekler (`urunler` `durum` indeksiyle `sevk_edilecek`; «bugün» için tarih alanı yok, sevk listesinin tamamı) · 💰 bekleyen tahsilat ve 📋 talimat (tahsilat.js/talimat.js'in canlı `L` listesi; `window.tahOzet/talOzet`, her güncellemede `panoYenile`) · ⚠️ kritik stok (`dur(k)!=="ok"`) · 💾 yedek (3 gün sarı, 7 gün kırmızı; «Yedek al» düğmeleri `bkJson` düğmesini tıklar, ilerleme `bkDurum`'dan yansır). Her kartın «git» düğmesi ilgili bölümü açar. Yaşam döngüsü: `bildBaslat → panoBaslat`, `bildDurdur → panoDurdur`.
 - **Bağlantı göstergesi (v81, `baglanti.js`):** bkz. Dosyalar. Firebase web SDK'sı bağlantı yokken yazılan kayıtları yalnız telefonun belleğinde tutar; uygulama KAPANIRSA bu kayıtlar kaybolur (kalıcı çevrimdışı kuyruk YOK, yapılmadı). `ayarlar/yedek` yazımı hata toast'ı vermez (sessiz liste `sessiz()`).
 - **Yönetici:** yedekleme (JSON/Excel indirme), çöp kutusu (geri yükle/kalıcı sil), denetim günlüğü,
   kullanıcı yönetimi (onay, rol, izin), fiyatlar, KDV ayarı.
@@ -284,6 +284,8 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-22: v76 — 429 hatasında Google'ın kendi mesajı (ilk 170 karakter, kota adı/limit değeri) ekranda gösteriliyor; «limit: 0» geçiyorsa «ücretsiz kota 0, beklemek çözmez» uyarısı veriliyor. Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-22: v77 — Fotoğraftan okuma artık FİYAT hücresini de okuyor (fiyatlı nüsha: «FİYAT : 120₺»; fiyatsız imalat nüshasında hücre yok, o zaman fiyat alanına dokunulmaz). Metinden sayı + para birimi (₺/$/€) + «+KDV» ayrıştırılıp `iFy`, `iPb`, `iKd` alanları doldurulur (`fiyatCoz`). Fiyat alanı yalnızca fiyat yetkisi olanlara görünür. Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-23: v81 — (1) `baglanti.js`: bağlantı durumu etiketi + kopma/yavaşlık şeridi + «Kaydedilemedi» uyarısı + kapatma uyarısı. (2) `pano.js`: yönetici panosu (menüde). (3) Yedek: son yedek zamanı artık veritabanında (`ayarlar/yedek`), tüm yönetici cihazlarında ve panoda görünür; 3/7 gün hatırlatma. (4) `tahsilat.js`/`talimat.js`: `tahOzet`/`talOzet` + `panoYenile` çağrısı. (5) `app.js`: `bildBaslat/bildDurdur` pano kancaları, `bMenu` → `panoGoster`, `bkBitir`/`bkSonGoster` DB'li. Dosyalar: baglanti.js (yeni), pano.js (yeni), app.js, index.html, style.css, sw.js, tahsilat.js, talimat.js, rules.json, PROJE-NOTLARI.md, README.md. **Firebase kuralı: DEĞİŞTİ** (`urunler` `.indexOn` + `durum`; yeni `ayarlar/yedek`). Kural yayınlanmazsa pano «sevk edilecekler» kartı tüm ürünleri indirir (yavaş) ve yedek zamanı DB'ye yazılamaz. Mantık sahte veriyle (node) sınandı; gerçek cihazda/Firebase'de SINANMADI.
+- 2026-10-23: v82 — Kullanıcı isteği: özet kartları menüde görünmesin. Menüye yalnız yöneticiye görünen «🛡️ YÖNETİCİ PANELİ» düğmesi eklendi; kartlar `dPano` penceresine taşındı (`index.html`, `pano.js`). Pencerede eski Yönetici penceresine (`dAdm`) giden düğme var. Dosyalar: index.html, pano.js, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi (v81'deki kural yeterli). Cihazda sınanmadı.
+
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 

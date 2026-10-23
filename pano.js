@@ -13,6 +13,8 @@
   var TRZ="Europe/Istanbul";
   var zm=function(t){return t?new Date(+t).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",timeZone:TRZ}):""};
   var menuAcik=function(){var m=$("vMenu");return !!m&&!m.classList.contains("hide")};
+  var penAcik=function(){var d=$("dPano");return !!(d&&d.open)};
+  var gorunuyor=function(){return menuAcik()||penAcik()}; /* menüde rozet ya da pencere açıkken yenile */
   var kes=function(s,n){s=String(s||"");return s.length>n?s.slice(0,n-1)+"…":s};
   var liste=function(v){return Object.keys(v||{}).map(function(k){return Object.assign({id:k},v[k])})};
 
@@ -78,6 +80,7 @@
     var yedekEski=!(+S.yedek)||(Date.now()-(+S.yedek))>=7*864e5;
 
     var dikkat=(gec.length?1:0)+(tah&&tah.length?1:0)+(tal&&tal.length?1:0)+(kul&&kul.length?1:0)+(stk&&stk.length?1:0)+(yedekEski?1:0);
+    var ms=$("mPanoS");if(ms)ms.textContent=dikkat?"⚠ "+dikkat+" konu dikkatinizi bekliyor":"Günün özeti, kullanıcılar, yedekleme";
     var h='<div class="pnOz" data-r="'+(dikkat?"kr":"ye")+'">'+(dikkat?"⚠ "+dikkat+" konu dikkatinizi bekliyor":"✓ Her şey yolunda")+'</div>';
 
     h+=kart({ik:"👤",baslik:"Onay bekleyen kullanıcılar",bos:"Onay bekleyen kullanıcı yok",hata:S.hata.kul,n:kul?kul.length:null,renk:"kr",git:"usr",gitTxt:"Kullanıcıları yönet",
@@ -97,8 +100,10 @@
   }
 
   /* ---------- gezinme ---------- */
+  function acPano(){var d=$("dPano");if(!d||!isAdmin())return;ciz();yukle(false);if(!d.open)d.showModal()}
   function git(k){
     if(k==="usr"){$("bAdm").click();return}
+    var d=$("dPano");if(d&&d.open)d.close();
     menuOk=true;
     if(k==="is")modSec("is");
     else if(k==="sevk"){modSec("sevk");vTabSet("sev")}
@@ -112,9 +117,9 @@
   /* ---------- yaşam döngüsü (app.js bildBaslat / bildDurdur çağırır) ---------- */
   window.panoBaslat=function(){
     window.panoDurdur();
-    var box=$("panoBox");if(!box)return;
-    if(!isAdmin()){box.classList.add("hide");return}
-    box.classList.remove("hide");
+    var mp=$("mPano");if(!mp)return;
+    if(!isAdmin()){mp.classList.add("hide");return}
+    mp.classList.remove("hide");
     try{
       kulRef=db.ref("kullanicilar");
       kulRef.on("value",function(s){var v=s.val()||{};S.kul=Object.keys(v).map(function(k){var x=v[k]||{};return{uid:k,ad:x.ad,kullanici:x.kullanici,rol:x.rol,onay:x.onay}});delete S.hata.kul;ciz()},
@@ -125,23 +130,26 @@
     }catch(e){}
     var bd=$("bkDurum");
     if(bd&&window.MutationObserver){obs=new MutationObserver(function(){var d=$("pnBkDurum");if(d){d.innerHTML=bd.innerHTML;d.classList.toggle("hide",!bd.textContent)}});obs.observe(bd,{childList:true,characterData:true,subtree:true})}
-    tm=setInterval(function(){if(menuAcik()&&!document.hidden)yukle(true)},120000);
+    tm=setInterval(function(){if(gorunuyor()&&!document.hidden)yukle(true)},120000);
     ciz();yukle(true);
   };
   window.panoDurdur=function(){
     if(kulRef){kulRef.off();kulRef=null}if(yedekRef){yedekRef.off();yedekRef=null}
     if(tm){clearInterval(tm);tm=null}if(obs){obs.disconnect();obs=null}
     S={is:null,urun:null,stok:null,kul:null,yedek:0,yedekKim:"",yedekBoyut:"",hata:{}};sonYuk=0;yukluyor=false;
-    var box=$("panoBox");if(box)box.classList.add("hide");var b=$("pnBody");if(b)b.innerHTML="";
+    var d=$("dPano");if(d&&d.open)d.close();var mp=$("mPano");if(mp)mp.classList.add("hide");var ms=$("mPanoS");if(ms)ms.textContent="Günün özeti, kullanıcılar, yedekleme";var b=$("pnBody");if(b)b.innerHTML="";
   };
   window.panoGoster=function(){if(isAdmin())yukle(false)};   /* menüye dönülünce */
-  window.panoYenile=function(){if(isAdmin()&&menuAcik())ciz()}; /* tahsilat / talimat canlı güncellemesi */
+  window.panoYenile=function(){if(isAdmin())ciz()}; /* tahsilat / talimat canlı güncellemesi */
 
   document.addEventListener("click",function(e){
-    var box=$("panoBox");if(!box||!box.contains(e.target))return;
+    if(e.target.closest("#mPano")){acPano();return}
+    var box=$("dPano");if(!box||!box.contains(e.target))return;
+    if(e.target.closest("#pnKapat")){box.close();return}
+    if(e.target.closest("#pnYon")){$("bAdm").click();return}
     var y=e.target.closest("[data-y]");if(y){yedekAl(y.dataset.y==="1");return}
     var g=e.target.closest("[data-g]");if(g){git(g.dataset.g);return}
     if(e.target.closest("#pnYn"))yukle(true);
   });
-  document.addEventListener("visibilitychange",function(){if(!document.hidden&&menuAcik()&&isAdmin())yukle(false)});
+  document.addEventListener("visibilitychange",function(){if(!document.hidden&&gorunuyor()&&isAdmin())yukle(false)});
 })();
