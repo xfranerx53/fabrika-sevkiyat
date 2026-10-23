@@ -19,9 +19,10 @@
     "- Hücre boşsa ya da '-' yazıyorsa \"\" (boş metin) yaz. Görünmeyen veya okunamayan bir şeyi UYDURMA, boş bırak.",
     "- Türkçe karakterleri ve yazılışı olduğu gibi koru (büyük harfle yazıldığı gibi). Seri no örneği: MG-0968.",
     "- kg: yalnızca sayı (birim yazma). mikron: yalnızca sayı (µ işareti yazma, virgül varsa koru: 3,5). en: formda yazıldığı gibi (örn. 22*7*7).",
+    "- fiyat: formda «FİYAT :» hücresi varsa içindeki yazıyı aynen yaz (örn. 120₺ veya 3,5 $ +KDV). Hücre yoksa, boşsa ya da '-' ise \"\" yaz.",
     "- spTarihi: formda yazıldığı gibi (örn. 20.10.26). fx: formda yazıldığı gibi (örn. X-PEŞİN).",
     "JSON şeması (sutunlar tam 3 elemanlı, formdaki sütun sırasıyla):",
-    "{\"seriNo\":\"\",\"musteri\":\"\",\"isAdi\":\"\",\"stokAdi\":\"\",\"spTarihi\":\"\",\"fx\":\"\",\"spNo\":\"\",\"formul\":\"\",",
+    "{\"seriNo\":\"\",\"musteri\":\"\",\"isAdi\":\"\",\"stokAdi\":\"\",\"spTarihi\":\"\",\"fx\":\"\",\"spNo\":\"\",\"formul\":\"\",\"fiyat\":\"\",",
     "\"sutunlar\":[{\"kg\":\"\",\"en\":\"\",\"mikron\":\"\",\"korona\":\"\",\"uretimNotu\":\"\",\"urunAdi\":\"\",\"boy\":\"\",\"baskiRengi\":\"\",\"baskiNotu\":\"\"},{...},{...}]}"
   ].join("\n");
 
@@ -134,12 +135,28 @@
     if(kota&&!yogun&&!zamanasimi)throw new Error(gunluk||!bekleSn?"Ücretsiz Gemini okuma limiti doldu. Günlük limit Türkiye saatiyle yaklaşık 10:00'da (kış saatinde 11:00) sıfırlanır. Limit modele göre ayrı sayılır; yönetici 🔑 penceresinden başka bir modelin adını yazabilir."+ek:"Dakikalık okuma limiti doldu. "+bekleSn+" saniye sonra tekrar deneyin."+ek);
     throw new Error((yogun?"Google okuma sunucusu şu an yoğun. Birkaç saniye sonra tekrar deneyin. Anahtar sorunu değil.":zamanasimi?"Okuma zaman aşımına uğradı. Tekrar deneyin.":"Uygun okuma modeli bulunamadı.")+ek)}
 
+  /* "120₺", "3,5 $ +KDV", "1.250,50 TL" gibi yazıyı sayı + para birimi + KDV bilgisine çevirir */
+  function fiyatCoz(v){
+    var m=String(v==null?"":v),r={sayi:null,pb:"TRY",kdv:false};
+    var n=m.match(/\d[\d.,]*/);if(!n)return r;
+    var x=n[0].replace(/[.,]+$/,"");
+    if(x.indexOf(".")>=0&&x.indexOf(",")>=0)x=x.replace(/\./g,"").replace(",",".");
+    else if(x.indexOf(",")>=0)x=x.replace(",",".");
+    else if(/^\d{1,3}(\.\d{3})+$/.test(x))x=x.replace(/\./g,"");
+    var f=parseFloat(x);if(!(f>0))return r;
+    r.sayi=String(f).replace(".",",");
+    if(/\$|USD|DOLAR/i.test(m))r.pb="USD";else if(/€|EUR/i.test(m))r.pb="EUR";
+    r.kdv=/\+\s*KDV|KDV\s*HAR[İI]?[ÇC]/i.test(m);
+    return r}
+
   /* ---- alanları doldur ---- */
   function doldur(o){
     var S=Array.isArray(o.sutunlar)?o.sutunlar:[],set=function(id,v){var e=g(id);if(e)e.value=v==null?"":v};
     var no=seriNo(o.seriNo);if(no)set("iNo",no);
     set("iMu",temiz(o.musteri));set("iAdi",temiz(o.isAdi));set("iSt",temiz(o.stokAdi));set("iFo",temiz(o.formul));
     var t=tarih(o.spTarihi);if(t)set("iTr",t);
+    var fy=fiyatCoz(o.fiyat);   /* kâğıtta fiyat yoksa (fiyatsız imalat nüshası) mevcut değere dokunma */
+    if(fy.sayi!=null){set("iFy",fy.sayi);var pbE=g("iPb");if(pbE)pbE.value=fy.pb;var kdE=g("iKd");if(kdE)kdE.checked=fy.kdv}
     var fx=temiz(o.fx);
     if(fx){var sx=g("iFx"),bul=null;[].forEach.call(sx.options,function(op){if(fold(op.value)===fold(fx))bul=op});
       if(!bul){bul=document.createElement("option");bul.value=bul.textContent=fx.toUpperCase();bul.dataset.ek="1";sx.appendChild(bul)}
