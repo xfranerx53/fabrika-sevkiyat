@@ -1,7 +1,7 @@
 # fabrika-sevkiyat
 Stok ve Sevkiyat Takip (MAG AMBALAJ) — https://xfranerx53.github.io/fabrika-sevkiyat/
 
-Devam eden çalışma için önce `PROJE-NOTLARI.md` dosyasını okuyun.
+**CLAUDE / yeni sohbet: önce `00-ONCE-BUNU-OKU.md`, sonra `PROJE-NOTLARI.md` dosyasını okuyun.**
 
 ## Dosyalar
 - `index.html` (sayfa yapısı), `style.css` (görünüm), `*.js` (app, pano, baglanti, raporlar, etiket, qr, talimat, tahsilat, arama, saat, diyalog, foto-onizleme, sw-kayit), `sw.js`, `manifest.webmanifest`, ikonlar: siteye yüklenen dosyalar (GitHub)
