@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v83**
-Son güncelleme: 2026-10-23 (v83: Yönetici paneli penceresi dışına basınca kapanır)
+**GÜNCEL SÜRÜM: v84**
+Son güncelleme: 2026-10-23 (v84: etikette ebat sadece rakam; favicon önbelleğe eklendi)
 
 ---
 
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v80)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v84)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -114,7 +114,6 @@ birlikte artmalı, yoksa telefonlar eski sürümde kalır. Bunu `node kontrol.js
 - Denetlediği şeyler: tüm .js dosyalarında yazım hatası, index.html'in çağırdığı dosyaların varlığı,
   `?v` ile `fabrika-vNN` tutarlılığı, sw.js önbellek listesi, rules.json/manifest geçerliliği,
   rol ve izin listesinin app.js ↔ rules.json uyumu, bu dosyadaki "GÜNCEL SÜRÜM" satırı.
-- Bilinen zararsız uyarı: `favicon-32.png` sw.js önbelleğinde yok.
 - Sonuç "HATA VAR" ise teslim edilmez.
 
 ## 4. Güvenlik: CSP (İçerik Güvenlik Politikası)
@@ -288,6 +287,7 @@ Satır numaraları kayar; bu başlıkları ara:
 
 - 2026-10-23: v83 — Yönetici paneli penceresi (`dPano`): pencerenin dışındaki boşluğa basınca kapanır (`pano.js`, genel tıklama dinleyicisi; `iqDlg` ile aynı yöntem). Dosyalar: pano.js, sw.js, index.html, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 
+- 2026-10-23: v84 — (1) **Etikette ebat sadece rakam:** `etiket.js` `defs()` içindeki `tmz`: iş emrindeki «30CM T.AÇIK» / «22,5 CM» etikete `30 X 22,5` olarak gelir (ilk sayı alınır; «30+5» gibi toplamlar korunur; rakam yoksa KAPALI/T.AÇIK/CM temizlenir). İş emri formu ve yazdırma etkilenmez; daha önce hazırlanmış etiketler kayıtlı ebatla kalır. (2) `favicon-32.png` sw.js önbellek listesine eklendi (kontrol.js uyarısı kalktı). Dosyalar: etiket.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
@@ -297,7 +297,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - Olası ek: Cloud Function ile zamanlanmış otomatik yedek (Blaze), pano kartlarını rol bazlı diğer kullanıcılara açma, bağlantısız kayıtlar için kalıcı kuyruk.
 - v63'te eklenenler (rapor, termin, bildirim, hata önleme) cihazda denenmeli; kullanıcı geri bildirimine göre düzeltilecek. Olası ek: termine göre filtre, raporda operatör filtresi, geciken işi zilde gösterme.
 - **[KULLANICIYA SÖYLENDİ] Firebase otomatik günlük yedeği (Realtime Database > Backups, Blaze planı) açılmalı;** açık mı bilinmiyor. Kullanıcıdan adım adım isterse anlat.
-- **[TEMİZLİK] GitHub deposunda `fabrika-v44-degisen-dosyalar.zip` ve `fabrika-v45-degisen-dosyalar.zip` gereksiz;** kullanıcı silebilir (siteyi etkilemez).
+- **[TEMİZLİK] GitHub deposunda `fabrika-v44-degisen-dosyalar.zip` ve `fabrika-v45-degisen-dosyalar.zip` gereksiz;** kullanıcı silebilir (siteyi etkilemez). v84 temizliğinde zip'te bu dosyalar yoktu; GitHub'da hâlâ duruyorsa silinmeli.
 - Tahsilat için olası eklemeler (kullanıcı istemedi, yapılmadı): Excel'e aktarma, çek vadesi/banka alanı, firmaya göre toplam/cari özeti, bekleyen talep için bildirim, WhatsApp'a özet gönderme. Ayrıca WhatsApp grubundaki eski kayıtlar uygulamaya aktarılmadı (sadece bundan sonrası).
 - Talimatlar için olası ek: zil bildirimi / WhatsApp önerisi, talimata fotoğraf veya not ekleme (kullanıcı istemedi, yapılmadı).
 
@@ -322,7 +322,6 @@ Satır numaraları kayar; bu başlıkları ara:
   içinde olmalı). Fonksiyonun Firebase'e deploy edilip edilmediği bilinmiyor; şifre sıfırlama
   gerektiğinde kullanıcıya sor.
 - Firebase otomatik günlük yedek (Blaze planı) açık mı bilinmiyor.
-- `sw.js` önbelleğinde `favicon-32.png` yok (zararsız).
 - Önceki sohbetlerin ayrıntılı geçmişi kayıp; bilinen tek şey bu dosya ve zip.
 
 ---
