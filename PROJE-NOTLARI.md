@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v82**
-Son güncelleme: 2026-10-23 (v82: özet menüden kaldırıldı, «YÖNETİCİ PANELİ» düğmesi/penceresi içine alındı)
+**GÜNCEL SÜRÜM: v83**
+Son güncelleme: 2026-10-23 (v83: Yönetici paneli penceresi dışına basınca kapanır)
 
 ---
 
@@ -285,6 +285,8 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-22: v77 — Fotoğraftan okuma artık FİYAT hücresini de okuyor (fiyatlı nüsha: «FİYAT : 120₺»; fiyatsız imalat nüshasında hücre yok, o zaman fiyat alanına dokunulmaz). Metinden sayı + para birimi (₺/$/€) + «+KDV» ayrıştırılıp `iFy`, `iPb`, `iKd` alanları doldurulur (`fiyatCoz`). Fiyat alanı yalnızca fiyat yetkisi olanlara görünür. Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-23: v81 — (1) `baglanti.js`: bağlantı durumu etiketi + kopma/yavaşlık şeridi + «Kaydedilemedi» uyarısı + kapatma uyarısı. (2) `pano.js`: yönetici panosu (menüde). (3) Yedek: son yedek zamanı artık veritabanında (`ayarlar/yedek`), tüm yönetici cihazlarında ve panoda görünür; 3/7 gün hatırlatma. (4) `tahsilat.js`/`talimat.js`: `tahOzet`/`talOzet` + `panoYenile` çağrısı. (5) `app.js`: `bildBaslat/bildDurdur` pano kancaları, `bMenu` → `panoGoster`, `bkBitir`/`bkSonGoster` DB'li. Dosyalar: baglanti.js (yeni), pano.js (yeni), app.js, index.html, style.css, sw.js, tahsilat.js, talimat.js, rules.json, PROJE-NOTLARI.md, README.md. **Firebase kuralı: DEĞİŞTİ** (`urunler` `.indexOn` + `durum`; yeni `ayarlar/yedek`). Kural yayınlanmazsa pano «sevk edilecekler» kartı tüm ürünleri indirir (yavaş) ve yedek zamanı DB'ye yazılamaz. Mantık sahte veriyle (node) sınandı; gerçek cihazda/Firebase'de SINANMADI.
 - 2026-10-23: v82 — Kullanıcı isteği: özet kartları menüde görünmesin. Menüye yalnız yöneticiye görünen «🛡️ YÖNETİCİ PANELİ» düğmesi eklendi; kartlar `dPano` penceresine taşındı (`index.html`, `pano.js`). Pencerede eski Yönetici penceresine (`dAdm`) giden düğme var. Dosyalar: index.html, pano.js, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi (v81'deki kural yeterli). Cihazda sınanmadı.
+
+- 2026-10-23: v83 — Yönetici paneli penceresi (`dPano`): pencerenin dışındaki boşluğa basınca kapanır (`pano.js`, genel tıklama dinleyicisi; `iqDlg` ile aynı yöntem). Dosyalar: pano.js, sw.js, index.html, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar

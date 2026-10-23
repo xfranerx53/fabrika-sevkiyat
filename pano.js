@@ -144,7 +144,10 @@
 
   document.addEventListener("click",function(e){
     if(e.target.closest("#mPano")){acPano();return}
-    var box=$("dPano");if(!box||!box.contains(e.target))return;
+    var box=$("dPano");
+    /* pencerenin dışına (arka plandaki boşluğa) basınca kapat */
+    if(box&&box.open&&e.target===box){var r=box.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom){box.close();return}}
+    if(!box||!box.contains(e.target))return;
     if(e.target.closest("#pnKapat")){box.close();return}
     if(e.target.closest("#pnYon")){$("bAdm").click();return}
     var y=e.target.closest("[data-y]");if(y){yedekAl(y.dataset.y==="1");return}
