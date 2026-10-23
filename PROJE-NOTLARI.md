@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v85**
-Son güncelleme: 2026-10-23 (v85: Wi-Fi ↔ mobil veri geçişinde / internet gidip gelince bağlantının kendiliğinden toparlanması)
+**GÜNCEL SÜRÜM: v86**
+Son güncelleme: 2026-10-23 (v86: kırmızı şeride «🔍 Tanı» düğmesi)
 
 ---
 
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v85)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v86)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -289,6 +289,7 @@ Satır numaraları kayar; bu başlıkları ara:
 
 - 2026-10-23: v84 — (1) **Etikette ebat sadece rakam:** `etiket.js` `defs()` içindeki `tmz`: iş emrindeki «30CM T.AÇIK» / «22,5 CM» etikete `30 X 22,5` olarak gelir (ilk sayı alınır; «30+5» gibi toplamlar korunur; rakam yoksa KAPALI/T.AÇIK/CM temizlenir). İş emri formu ve yazdırma etkilenmez; daha önce hazırlanmış etiketler kayıtlı ebatla kalır. (2) `favicon-32.png` sw.js önbellek listesine eklendi (kontrol.js uyarısı kalktı). Dosyalar: etiket.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-23: v85 — **Bağlantı toparlama (Wi-Fi ↔ mobil veri, internet gidip gelince «Bağlantı yok» takılması):** v73'te yazılan uzun-sorgu/host temizliği zip'te YOKTU (v78-80 arası kaybolmuş); yeniden yazıldı. `baglanti.js`: (1) `online`, `pageshow`, `visibilitychange`, `navigator.connection change` olaylarında `cevir()` = `db.goOffline()`→400 ms→`goOnline()` (ölü soketi bırakıp yeni bağlantı; eski kod sadece `goOnline()` çağırıyordu, o işe yaramaz); (2) 4 sn'lik bekçi: kopukken ve telefon «internet var» derken ilk ~12 sn yeni bağlantı dener, sonra `sunucuVar()` (REST `no-cors` fetch) ile sunucuya ulaşılıyorsa `uzunSorgu()` (`firebase.database.INTERNAL.forceLongPolling()` + `localStorage.fbPoll=1`), sonra 8 sn'de bir dener; (3) kırmızı şeritte «↻ Yeniden dene» güçlendi, «⟳ Sayfayı yenile» düğmesi eklendi (bekleyen kayıt varsa onay ister). `app.js`: her açılışta `localStorage` içindeki `firebase:host:*` silinir; `fbPoll=1` ise açılışta uzun-sorgu kipi açılır. Dosyalar: baglanti.js, app.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Mantık sahte ortamda (node) sınandı; gerçek telefonda/Firebase'de SINANMADI.
+- 2026-10-23: v86 — v85 telefonda işe yaramadı (Wi-Fi'ye geçince «Bağlantı yok» sürdü, «Sayfayı yenile» de düzeltmedi). Sebep henüz bilinmiyor; kırmızı şeride **«🔍 Tanı»** düğmesi eklendi (`baglanti.js` `tani()`): genel internet, veritabanı https, veritabanı WebSocket, giriş sunucusu, gstatic erişimini 6 sn'de sınayıp sonucu pencerede gösterir. Kullanıcıdan ekran görüntüsü istenecek. Dosyalar: baglanti.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 

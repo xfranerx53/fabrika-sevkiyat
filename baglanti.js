@@ -43,7 +43,7 @@
       var sp=document.createElement("span");sp.textContent=m;ban.appendChild(sp);
       var b=document.createElement("button");b.type="button";b.textContent="↻ Yeniden dene";
       b.onclick=yenidenDene;ban.appendChild(b);
-      if(kesik){var b2=document.createElement("button");b2.type="button";b2.textContent="⟳ Sayfayı yenile";b2.onclick=function(){if(bekle>0&&!confirm("Gönderilmemiş "+bekle+" kayıt var, sayfa yenilenirse kaybolur. Yine de yenilensin mi?"))return;sayfaYenile()};ban.appendChild(b2)}
+      if(kesik){var b3=document.createElement("button");b3.type="button";b3.textContent="🔍 Tanı";b3.onclick=tani;ban.appendChild(b3);var b2=document.createElement("button");b2.type="button";b2.textContent="⟳ Sayfayı yenile";b2.onclick=function(){if(bekle>0&&!confirm("Gönderilmemiş "+bekle+" kayıt var, sayfa yenilenirse kaybolur. Yine de yenilensin mi?"))return;sayfaYenile()};ban.appendChild(b2)}
       if(pop)ac(ban,!oncekiKesik);else ban.style.display="block";
     }else{kapat(ban)}
     oncekiKesik=goster;
@@ -75,6 +75,34 @@
       sunucuVar().then(function(ok){if(ok&&!bagli){toast("Bağlantı yolu değiştiriliyor…");uzunSorgu()}else if(!ok&&!bagli)toast("Sunucuya ulaşılamıyor. İnternetinizi kontrol edin.")});
     },5000);
   }
+  /* Tanı: hangi yol çalışmıyor? (ekran görüntüsü alıp gönderin) */
+  function zamanli(p,ms){return Promise.race([p,new Promise(function(r){setTimeout(function(){r("ZAMAN AŞIMI (>"+ms/1000+" sn)")},ms)})])}
+  function http(ad,url){var t0=Date.now();
+    return zamanli(fetch(url,{mode:"no-cors",cache:"no-store"}).then(function(){return"tamam ("+(Date.now()-t0)+" ms)"},function(){return"ULAŞILAMADI"}),6000).then(function(r){return ad+": "+r})}
+  function sok(ad){
+    return zamanli(new Promise(function(ok){
+      try{var h="",t0=Date.now();try{h=new URL(CFG.databaseURL).host}catch(e){}
+        var w=new WebSocket("wss://"+h+"/.ws?v=5");
+        w.onopen=function(){try{w.close()}catch(e){}ok("tamam ("+(Date.now()-t0)+" ms)")};
+        w.onerror=function(){ok("ULAŞILAMADI")};
+      }catch(e){ok("HATA: "+e.message)}
+    }),6000).then(function(r){return ad+": "+r})}
+  function tani(){
+    var L=["Telefon internet: "+(navigator.onLine?"var":"YOK")];
+    try{var cn=navigator.connection;if(cn)L.push("Ağ türü: "+(cn.type||"?")+" / "+(cn.effectiveType||"?"))}catch(e){}
+    var lp="kapalı";try{if(localStorage.getItem("fbPoll")==="1")lp="açık"}catch(e){}
+    L.push("Veritabanı bağlı: "+(bagli?"evet":"HAYIR")+" · uzun-sorgu: "+lp+" · bekleyen kayıt: "+bekle);
+    toast("Sınanıyor… (6 sn)");
+    var u="";try{u=CFG.databaseURL}catch(e){}
+    Promise.all([
+      http("Google (genel internet)","https://www.google.com/generate_204"),
+      http("Veritabanı (https)",u+"/.json?shallow=true&limitToFirst=1"),
+      sok("Veritabanı (WebSocket)"),
+      http("Giriş sunucusu","https://identitytoolkit.googleapis.com/"),
+      http("Firebase dosyaları","https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js")
+    ]).then(function(r){alert("BAĞLANTI TANISI\n\n"+L.concat(r).join("\n"))});
+  }
+
   function sayfaYenile(){
     var u=location.pathname+"?t="+Date.now();
     try{location.href=u}catch(e){location.reload()}
