@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v77**
-Son güncelleme: 2026-10-22 (v69: açılış takılma tanısı)
+**GÜNCEL SÜRÜM: v78**
+Son güncelleme: 2026-10-23 (v78: GRANÜL bölümü)
 
 ---
 
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v77)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v78)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -91,6 +91,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 | `qr.js` | QR kod üretimi (kütüphane) | GitHub |
 | `talimat.js` | Sevkiyat talimatları (Bölüm 7): yönetici/Depo Görevlisi sevkiyat sorumlusuna iş verir, o "Yaptım" der | GitHub |
 | `tahsilat.js` | Tahsilat bölümü (Bölüm 7): WhatsApp "MAG TAHSİLAT" grubunun yerine geçer. Ofis talep açar, sahadaki kişi "Tahsil ettim" der | GitHub |
+| `granul.js` | **GRANÜL bölümü (v78):** Excel'deki «ZEKERİYA GRANÜL TAKİP» tablosunun karşılığı; birden çok granülcü, her birinin ayrı defteri, toplamlar (KALAN KG, BAKİYE), Excel'e aktar / Excel'den al | GitHub |
 | `fotookut.js` | Yeni iş emrinde «📷 Mikro formunun fotoğrafından doldur»: fotoğrafı Google Gemini (ücretsiz API anahtarı) ile okuyup alanları doldurur (v65) | GitHub |
 | `arama.js`, `saat.js`, `diyalog.js`, `foto-onizleme.js`, `sw-kayit.js` | Küçük yardımcılar | GitHub |
 | `sw.js` | Çevrimdışı önbellek. `CACHE='fabrika-vNN'` ve `V='?v=NN'` | GitHub |
@@ -143,13 +144,15 @@ Satır içi `<script>` yazma; kodu `.js` dosyasına koy.
 | `sevkTalimat/{id}` | Sevkiyat talimatları: `metin`, `hedefUid` (`*`=tüm sorumlular), `hedefAd`, `atayan`, `atayanUid`, `zaman`, `durum` (`bekliyor`/`yapildi`), `yapan`, `yapanUid`, `yapilmaZaman`, `fotolar` (en fazla 6 küçültülmüş jpeg), `adres`, `haritaUrl`, `adresAd` (isteğe bağlı) |
 | `tahsilatlar/{id}` | Tahsilat kayıtları: `cari`, `durum` (`bekliyor`/`alindi`), `not`, `talepUid`, `talepEden`, `zaman`, `talepTur` (`talep`/`dogrudan`); alınınca: `nakit`, `cek` (₺, yalnız >0 olanlar yazılır), `makbuzNo`, `alan`, `alanUid`, `alinmaZaman`, `alanNot`, `fotolar` (en fazla 6 küçültülmüş jpeg). `zaman` üzerinde indeks var, uygulama son 300 kaydı okur. v47: `fotolar` önizleme+`#fotoTam` anahtarı olabilir; düzeltmede `duzenleyen`, `duzenleyenUid`, `duzenlemeZaman`, `duzenlemeNot` |
 | `okumaAyar` | Fotoğraftan okuma ayarı: `anahtar` (Gemini API anahtarı), `model` (isteğe bağlı). Okuma: yönetici + iş açma yetkisi olanlar; yazma: yalnız yönetici. **Yedeğe (`BK_DUGUM`) KOYMA** (anahtar yedek dosyasına sızmasın) |
+| `granulcular/{id}` | Granülcüler: `ad`, `zaman`. Okuma/yazma: yönetici, `granul` izni olanlar, varsayılan Muhasebe; granülcü silmeyi yalnız yönetici yapar |
+| `granulKayit/{id}` | Granül defter satırları: `gid` (granülcü id), `tarih` (YYYY-MM-DD), `sn`, `giden`, `gelen`, `satis`, `fire` (kg), `fiyat` (₺/kg), `kdv`, `odeme` (₺), `aciklama`, `ekleyen`, `ekleyenUid`, `zaman`; düzeltmede `duzenleyen`, `duzenleyenUid`, `duzenlemeZaman`. `gid` üzerinde indeks var. Toplam fiyat / satış fiyat / kalan kg / bakiye **saklanmaz, hesaplanır** |
 | `etiketGecmis/{id}/{h}`, `etiketSablon/{m}/{k}` | Etiket basım geçmişi ve şablonlar |
 | `ayarlar/etiket` | Etiket ayarı (`w`, `h`, `mag`) |
 | `cop/{id}` | Çöp kutusu: silinenlerin yedeği (yönetici geri yükler) |
 | `denetim/{id}` | Denetim günlüğü (kim ne yaptı), sadece yönetici okur |
 
 Fotoğraflar `data:image/jpeg;base64,...` metni olarak tutulur (300.000 karakter sınırı).
-`rules.json` içinde 22 ana yol vardır ve yukarıdaki listeyle aynıdır.
+`rules.json` içinde 24 ana yol vardır ve yukarıdaki listeyle aynıdır.
 Yeni bir yol eklenirse: rules'a ekle; yedekleme (`bkIndir`/`bkCalistir`) ve silme/çöp (`silCop`)
 akışlarına eklenmesi gerekip gerekmediğini düşün.
 
@@ -164,7 +167,7 @@ açamaz (rules engeller).
 
 **İzin anahtarları** (`kullanicilar/{uid}/izin/...`, true = rolden bağımsız ver, false = rol
 varsayılanını kapat, yoksa rol varsayılanı geçerli):
-`sevk`, `stok`, `is`, `rap`, `tah`, `a_etiket`, `a_ekstruder`, `a_baski`, `a_kesim`, `a_depo`,
+`sevk`, `stok`, `is`, `rap`, `tah`, `granul`, `a_etiket`, `a_ekstruder`, `a_baski`, `a_kesim`, `a_depo`,
 `isAc`, `isDuzenle`, `geriAl`, `isSil`, `fiyat`.
 (**`tah` = Tahsilat & talimat (v47).** Tahsilat ve Talimatlar Sevkiyat içinde sekmedir; `sevk` yetkisi olan görür. `tah` izni olan ama `sevk`'i olmayan kişi (varsayılan: **Muhasebe**) ana menüde ayrı 💰 TAHSİLAT düğmesi görür; içinde yalnız TAHSİLAT ve TALİMATLAR sekmeleri vardır. Muhasebe tahsilat talebi açabilir, tahsil edildi diyebilir; talimatları yalnız okur. Kodda `tahGor()=modGor("sevk")||modGor("tah")`.)
 
@@ -207,6 +210,7 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
   - **Saatler sunucudan (v47):** `zaman`, `alinmaZaman`, `yapilmaZaman` artık `ServerValue.TIMESTAMP`; rules `newData.val() === now` ister (yönetici hariç: çöp kutusundan geri yükleme eski saati yazabilsin). "Bugün/Son 7 gün" süzgeci de `.info/serverTimeOffset` ile sunucu saatine göre hesaplanır.
   - **Fotoğraflar (v47):** `fotoHazirla` ile kayıtta küçük önizleme (+`#fotoTam anahtarı`), tam boy `fotoTam`'da; büyütünce yüklenir. Talimat da aynı. Eski kayıtlardaki büyük fotoğraflar için **Yönetici > Fotoğraf hafifletme** artık `tahsilatlar` ve `sevkTalimat`'ı da tarar (JSON yedek alıp bir kez çalıştırın).
   - Rules: `tahsilatlar` okuma/yazma = sevkiyat yetkisi (yönetici | `sevk` izni | rol Depo/Sevkiyat). Alım alanlarını yalnız ilk dolduran veya yönetici değiştirebilir. Yedeğe (`BK_DUGUM`) dahil.
+- **GRANÜL (v78, `granul.js`, panel `pGranul`, menüde ♻️ GRANÜL, izin `granul`; varsayılan: yönetici + Muhasebe):** Üstte granülcü sekmeleri (＋ Granülcü ekle; ad değiştirme; silme yalnız yönetici ve kaydı yoksa). Seçili granülcünün defteri Excel'deki gibi tablo: TARİH, Ş N, GİDEN KİLO, GELEN KİLO, SATIŞ, FİRE, FİYAT, TOPLAM FİYAT, KDV, SATIŞ FİYAT, ÖDEME, AÇIKLAMA. Formüller Excel'den çıkarıldı ve ekranda yazar: TOPLAM FİYAT = gelen × fiyat; SATIŞ FİYAT = satış × fiyat; KALAN KG = Σgiden − Σgelen − Σfire; BAKİYE = Σtoplam fiyat + ΣKDV − Σsatış fiyat − Σödeme (kullanıcının Excel görüntüsüyle birebir tuttu: 7607 kg / 46.607 ₺). KDV ve FİRE elle girilen alanlardır (Excel'de de elle). «Ş N» sütununun anlamı BİLİNMİYOR, serbest kısa metin olarak kondu. Kayıt silme çöp kutusuna gider (`silCop`), düzeltmeler `denetim`'e düşer. «📥 Excel'den al»: Excel'deki TARİH başlıklı tabloyu okur, aynı satırı ikinci kez eklemez, onay sorar. «📤 Excel'e aktar» aynı düzende .xlsx indirir. Yedeğe (`BK_DUGUM`) dahil.
 - **Stok modülü:** KALEMLER (giriş/çıkış, geçmiş, yazdır), SİPARİŞLER (kategoriye göre / liste),
   TEDARİKÇİLER.
 - **İş emirleri aşama akışı:** `etiket → ekstruder → (baskı varsa baski) → kesim → depo → bitti`.
@@ -245,6 +249,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-21: v67 — Fotoğraftan doldurma: «📷 Kamera ile çek» (telefonda doğrudan arka kamerayı açar, `capture=environment`) ve «🖼️ Galeriden seç» olarak iki düğme. Dosyalar: fotookut.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-21: v68 — İş takip formu yazdırma/kart: logodaki amblem W görünüyordu, M olarak düzeltildi (app.js `isForm` içindeki `logo` SVG yolu dikey çevrildi: `M10 19L24 6L30 17L36 6L50 19`). Dosyalar: app.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - (Yeni satırlar buraya: tarih, ne değişti, hangi dosyalar, rules değişti mi, yeni sürüm)
+- 2026-10-23: v78 — **GRANÜL bölümü** eklendi (Excel «ZEKERİYA GRANÜL TAKİP» karşılığı; birden çok granülcü; Excel'e aktar / Excel'den al). Yeni izin anahtarı `granul` (Muhasebe varsayılan). Dosyalar: granul.js (YENİ), app.js, index.html, style.css, sw.js, rules.json, PROJE-NOTLARI.md. **Firebase kuralı: DEĞİŞTİ (yeni yollar `granulcular`, `granulKayit`, izin `granul`, çöp kutusu yolları).** Hesaplar kullanıcının Excel görüntüsüyle sınandı, Excel içe aktarma ayrıştırıcısı örnek satırlarla sınandı; cihazda ve Firebase'de SINANMADI.
 - 2026-10-15: v48 — "Etiket hazırla" penceresi (#lbDlg) "Yeni iş emri" gibi geniş ve büyük yazılı açılır; sütun etiketleri yan yana dizilir (dar ekranda alt alta). İş emri kartındaki "🏷️ Etiket hazırla" düğmesi "Yeni iş emri aç" ile aynı boyda (`big`). Sadece style.css + app.js. Firebase kuralı: değişmedi.
 - 2026-10-15: v49 — Yeni **ÜRETİM** bölümü (`uretim`, menüde 🏭). Ekstruder, Baskı, Kesim, Depo, Biten aşamaları İş emirleri'nden buraya taşındı; **İş emirleri'nde sadece Etiket aşaması + Dosyalar** kaldı (arama açıkken İş emirleri tüm aşamaları tarar). Aynı `isEmirleri` verisi ve aynı kart/düğmeler kullanılır (`isListele` panele göre çizer: `iList/iTabs/iq` = İş emirleri, `uList/uTabs/uq` = Üretim; `URA` = üretim aşamaları). Yeni izin anahtarı `uretim` (app.js YETKI/IZ_GRUP + rules.json validate). Rol şablonları: Ekstruder/Matbaa/Kesim/Bobinoz operatörleri artık `mod:["uretim"]`, `ana:"uretim"`; Depo Görevlisi ve Muhasebe `is`+`uretim`. rules.json: `isEmirleri`/`isHareket` okuma/yazma `is` yanına `uretim` de kabul eder. QR okutulunca iş emri `is` yetkisi varsa İş emirleri, yoksa Üretim bölümünde açılır. **Firebase kuralı: DEĞİŞTİ (rules.json yapıştırılacak).**
 - 2026-10-15: v50 — Yönetici (`dAdm`), 🔔 Bildirimler (`dBild`), 🔑 Şifre (`dSf`) pencereleri ve yeni İsim penceresi (`dAd`, eski `prompt()` yerine) arka plandaki boş alana dokununca kapanır (diyalog.js). Firebase kuralı: değişmedi.

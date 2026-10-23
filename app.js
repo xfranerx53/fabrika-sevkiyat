@@ -124,7 +124,7 @@ const YETKI={
   "Ekstruder Operatörü":{mod:["uretim"],              asama:["ekstruder"],ana:"uretim",     isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
   "Matbaa Operatörü":   {mod:["uretim"],              asama:["baski"],    ana:"uretim",     isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
   "Kesim Operatörü":    {mod:["uretim"],              asama:["kesim"],    ana:"uretim",     isAc:false,isDuzenle:false,geriAl:false,isSil:false,fiyat:false},
-  "Muhasebe":           {mod:["is","uretim","stok","rap","tah"], asama:["etiket"],                 isAc:true, isDuzenle:true, geriAl:false,isSil:false,fiyat:true}
+  "Muhasebe":           {mod:["is","uretim","stok","rap","tah","granul"], asama:["etiket"],                 isAc:true, isDuzenle:true, geriAl:false,isSil:false,fiyat:true}
 };
 const yRol=()=>(rec&&YETKI[rec.rol])||null;
 const yAcik=()=>isAdmin()||!YETKI_UYGULA;                       /* kısıtlama kapalıysa / yöneticiyse serbest */
@@ -143,7 +143,7 @@ const sevForm=()=>yAcik()||!(rec&&rec.rol==="Sevkiyat Sorumlusu");
 const anaBolum=()=>(YETKI_UYGULA&&!isAdmin()&&yRol()&&yRol().ana)||null;
 /* kayıt ekranındaki rol listesi de aynı tablodan dolar */
 try{const rs=$("rr");if(rs)rs.innerHTML=Object.keys(YETKI).map(r=>`<option>${r}</option>`).join("")}catch(e){}
-window.yetkiOzet=()=>({rol:rec&&rec.rol,yonetici:isAdmin(),uygula:YETKI_UYGULA,moduller:["sevk","stok","is","uretim","rap","tah"].filter(modGor),asamalar:["etiket","ekstruder","baski","kesim","depo"].filter(asamaYap),islemler:["isAc","isDuzenle","geriAl","isSil","fiyat"].filter(k=>k==="isAc"?canIsAc():islemYap(k))});
+window.yetkiOzet=()=>({rol:rec&&rec.rol,yonetici:isAdmin(),uygula:YETKI_UYGULA,moduller:["sevk","stok","is","uretim","rap","tah","granul"].filter(modGor),asamalar:["etiket","ekstruder","baski","kesim","depo"].filter(asamaYap),islemler:["isAc","isDuzenle","geriAl","isSil","fiyat"].filter(k=>k==="isAc"?canIsAc():islemYap(k))});
 
 /* ---------- Oturum ---------- */
 let pendReg=null,kayitDevam=false;const kyTry={};
@@ -575,8 +575,8 @@ async function isGeri(u){
 /* ---------- Yönetici paneli ---------- */
 const ROLLER=Object.keys(YETKI); /* rol listesi tek yerden: YETKI tablosu */
 /* adım 4: kişiye özel izinler — rol şablonu varsayılan, kutucuklar sadece farkı kaydeder (kullanicilar/<uid>/izin/<anahtar>) */
-const IZ_GRUP=[["Bölümler",[["sevk","Sevkiyat"],["stok","Stok"],["is","İş emirleri"],["uretim","Üretim"],["rap","Raporlar"],["tah","Tahsilat & talimat"]]],["İş emri aşamasını ilerletme",[["a_etiket","Etiket"],["a_ekstruder","Ekstruder"],["a_baski","Baskı"],["a_kesim","Kesim"],["a_depo","Depo"]]],["İşlemler",[["isAc","Yeni iş emri aç"],["isDuzenle","İş emri düzenle"],["geriAl","Aşama geri al"],["isSil","İş emri sil"],["fiyat","İş emrinde fiyat"]]]];
-const izVarsayilan=(rol,k)=>{const y=YETKI[rol];if(!y)return false;if(k.indexOf("a_")===0)return y.asama.includes(k.slice(2));if(["sevk","stok","is","uretim","rap","tah"].includes(k))return y.mod.includes(k);return !!y[k]};
+const IZ_GRUP=[["Bölümler",[["sevk","Sevkiyat"],["stok","Stok"],["is","İş emirleri"],["uretim","Üretim"],["rap","Raporlar"],["tah","Tahsilat & talimat"],["granul","Granül"]]],["İş emri aşamasını ilerletme",[["a_etiket","Etiket"],["a_ekstruder","Ekstruder"],["a_baski","Baskı"],["a_kesim","Kesim"],["a_depo","Depo"]]],["İşlemler",[["isAc","Yeni iş emri aç"],["isDuzenle","İş emri düzenle"],["geriAl","Aşama geri al"],["isSil","İş emri sil"],["fiyat","İş emrinde fiyat"]]]];
+const izVarsayilan=(rol,k)=>{const y=YETKI[rol];if(!y)return false;if(k.indexOf("a_")===0)return y.asama.includes(k.slice(2));if(["sevk","stok","is","uretim","rap","tah","granul"].includes(k))return y.mod.includes(k);return !!y[k]};
 const izEtkin=(k0,k)=>{const v=k0.izin?k0.izin[k]:undefined;return typeof v==="boolean"?v:izVarsayilan(k0.rol,k)};
 const izKayit={},izAcik=new Set();
 function izOzet(det,k0){const n=Object.keys(k0.izin||{}).length,sp=det&&det.querySelector("[data-izs]");if(sp){sp.textContent=n?"· "+n+" özel ayar":"· rol şablonu";sp.style.color=n?"#b45309":"#64748b"}}
@@ -637,10 +637,10 @@ async function silCop(yol,id,baslik,ek){
   up["cop/"+k]=c;up[yol+"/"+id]=null;
   up["denetim/"+db.ref("denetim").push().key]={tur:"sil",baslik:kisalt(baslik||id,120),yol:kisalt(yol,140),id:kisalt(id,100),kim:kisalt(ad(),100),uid:user.uid,zaman:TSV()};
   await db.ref().update(up);return true}
-const COP_YOL=/^(urunler|stokKalem|tedarikciler|siparisler|sevkAdresleri|isEmirleri|dosyalar|tahsilatlar|etiketSablon\/[^\/.$#\[\]]+)$/,
+const COP_YOL=/^(urunler|stokKalem|tedarikciler|siparisler|sevkAdresleri|isEmirleri|dosyalar|tahsilatlar|granulKayit|granulcular|etiketSablon\/[^\/.$#\[\]]+)$/,
   COP_EK=/^(fiyatlar\/(sevk|stok|siparis)|isHareket|etiketGecmis|dosyaFoto)\/[^\/.$#\[\]]+$/,COP_ID=/^[^\/.$#\[\]]+$/;
 const zamanTR=t=>t?new Date(t).toLocaleString("tr-TR",{timeZone:TRZ,day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
-const TURAD={urunler:"Sevkiyat",stokKalem:"Stok kalemi",tedarikciler:"Tedarikçi",siparisler:"Sipariş",sevkAdresleri:"Sevk adresi",isEmirleri:"İş emri",dosyalar:"Dosya",etiketSablon:"Etiket şablonu",tahsilatlar:"Tahsilat"};
+const TURAD={granulKayit:"Granül kaydı",granulcular:"Granülcü",urunler:"Sevkiyat",stokKalem:"Stok kalemi",tedarikciler:"Tedarikçi",siparisler:"Sipariş",sevkAdresleri:"Sevk adresi",isEmirleri:"İş emri",dosyalar:"Dosya",etiketSablon:"Etiket şablonu",tahsilatlar:"Tahsilat"};
 async function copListele(){
   try{
     const s=await db.ref("cop").orderByChild("zaman").limitToLast(50).once("value"),v=s.val()||{},ks=Object.keys(v).sort((a,b)=>(v[b].zaman||0)-(v[a].zaman||0));
@@ -737,7 +737,7 @@ $("fgBtn").onclick=async()=>{
   $("fgBtn").disabled=false};
 
 /* ---------- Yedekleme: tüm veriyi JSON / Excel olarak indir (sadece yönetici) ---------- */
-const BK_DUGUM=[["kullanicilar",1],["urunler",1],["dosyalar",1],["dosyaFoto",1],["stokKalem",1],["stokHareket",1],["tedarikciler",1],["siparisler",1],["sevkAdresleri",1],["sevkTalimat",1],["tahsilatlar",1],["fiyatlar",2],["isEmirleri",1],["isHareket",2],["etiketGecmis",2],["etiketSablon",2],["ayarlar",1],["cop",1],["denetim",1],["fotoTam",1]];
+const BK_DUGUM=[["kullanicilar",1],["urunler",1],["dosyalar",1],["dosyaFoto",1],["stokKalem",1],["stokHareket",1],["tedarikciler",1],["siparisler",1],["sevkAdresleri",1],["sevkTalimat",1],["tahsilatlar",1],["granulcular",1],["granulKayit",1],["fiyatlar",2],["isEmirleri",1],["isHareket",2],["etiketGecmis",2],["etiketSablon",2],["ayarlar",1],["cop",1],["denetim",1],["fotoTam",1]];
 const bkFotoMu=v=>typeof v==="string"&&(v.slice(0,5)==="data:"||v.length>5000);
 function bkTemizle(v,yerine){ // fotoğraf (base64) alanlarını çıkar/yer tutucu koy
   if(bkFotoMu(v))return yerine;
@@ -867,7 +867,7 @@ const ust=(v,m)=>v<=0?"no":(m>0&&v<=m)?"lo":"ok";
 const dur=k=>{const n=norm(k),ks=Object.keys(n.mik);if(!ks.length||ks.every(u=>!(n.mik[u]>0)))return"no";return ks.some(u=>n.min[u]>0&&n.mik[u]<=n.min[u])?"lo":"ok"};
 const fmtQ=(o,z)=>UN.filter(([u])=>o&&u in o&&(z||+o[u]>0)).map(([u,l])=>fmt(o[u])+" "+l).join(", ")||"-";
 /* ---- adım 3: rolün göremediği bölümleri gizle ---- */
-const BOLUMLER=["sevk","stok","is","uretim","rap","tah"],ilkBolum=()=>BOLUMLER.find(modGor)||null;
+const BOLUMLER=["sevk","stok","is","uretim","rap","tah","granul"],ilkBolum=()=>BOLUMLER.find(modGor)||null;
 function menuUygula(){
   document.querySelectorAll("[data-go]").forEach(b=>b.classList.toggle("hide",!modGor(b.dataset.go)));
   const is=isVeriGor();["mQr","bBell"].forEach(id=>{const el=$(id);if(el)el.classList.toggle("hide",!is)});
@@ -882,8 +882,8 @@ function modSec(m){
   if(!modGor(m)){const f=ilkBolum();if(!f){toast("Bu bölüm için yetkiniz yok.");menuOk=false;show("vMenu");return}m=f}
   panel=m;if(m==="tah")vTabSet("tah");
   document.querySelectorAll("#mods button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
-  $("pSevk").classList.toggle("hide",m!=="sevk"&&m!=="tah");$("pStok").classList.toggle("hide",m!=="stok");$("pIs").classList.toggle("hide",m!=="is");$("pUr").classList.toggle("hide",m!=="uretim");$("pRap").classList.toggle("hide",m!=="rap");
-  $("mt").textContent=m==="sevk"?"SEVKİYAT":m==="tah"?"TAHSİLAT":m==="is"?"İŞ EMİRLERİ":m==="uretim"?"ÜRETİM":m==="rap"?"RAPORLAR":"STOK";if(m==="rap"&&window.rapAc)window.rapAc();
+  $("pSevk").classList.toggle("hide",m!=="sevk"&&m!=="tah");$("pStok").classList.toggle("hide",m!=="stok");$("pIs").classList.toggle("hide",m!=="is");$("pUr").classList.toggle("hide",m!=="uretim");$("pRap").classList.toggle("hide",m!=="rap");$("pGranul").classList.toggle("hide",m!=="granul");
+  $("mt").textContent=m==="sevk"?"SEVKİYAT":m==="tah"?"TAHSİLAT":m==="is"?"İŞ EMİRLERİ":m==="uretim"?"ÜRETİM":m==="rap"?"RAPORLAR":m==="granul"?"GRANÜL":"STOK";if(m==="granul"){if(window.granAc)window.granAc()}else if(window.granKapat)window.granKapat();if(m==="rap"&&window.rapAc)window.rapAc();
   if(m==="stok")stokYukle();else stokKapat();if(m==="is"||m==="uretim"){isYukle();if(m==="is")isMTSet("list");else if(!isAdmin()&&yRol()){const o=yRol().asama.find(k=>URA.includes(k));if(o)uTab=o}}else isKapat();$("iAdd").classList.toggle("hide",!canIsAc())}
 $("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===panel)return;modSec(m)};
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{menuOk=true;modSec(b.dataset.go);show("vApp");window.scrollTo(0,0)});
@@ -2022,7 +2022,7 @@ function bAsamaUyar(){try{
     if(ilk||onc===undefined||onc===e.asama||isAdmin()||e.asama==="bitti"||!asamaGor(e.asama))return;
     const o=asOrd(e);if(o.indexOf(e.asama)>o.indexOf(onc))yeni.push(e.no+" → "+(ASL[e.asama]||e.asama))});
   if(yeni.length){toast("📥 Aşamanıza geldi: "+yeni.join(", "));try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(x){}}}catch(x){}}
-function bildDurdur(){bAsm=null;if(window.etAyarDurdur)window.etAyarDurdur();if(window.talDurdur)window.talDurdur();if(window.tahDurdur)window.tahDurdur();if(bRef){bRef.off();bRef=null}if(bTm){clearInterval(bTm);bTm=null}bIs=[];bStok=false;bRozet()}
+function bildDurdur(){bAsm=null;if(window.etAyarDurdur)window.etAyarDurdur();if(window.talDurdur)window.talDurdur();if(window.tahDurdur)window.tahDurdur();if(window.granKapat)window.granKapat();if(bRef){bRef.off();bRef=null}if(bTm){clearInterval(bTm);bTm=null}bIs=[];bStok=false;bRozet()}
 function bildBaslat(){bildDurdur();if(window.etAyarBaslat)window.etAyarBaslat();if(window.talBaslat)window.talBaslat();if(window.tahBaslat)window.tahBaslat();if(!bAyar().son)bYaz("bildSon",Date.now());
   bRef=db.ref("isEmirleri").orderByChild("eklenmeTarihi").limitToLast(30);
   bRef.on("value",s=>{const v=s.val()||{};bIs=Object.keys(v).map(k=>Object.assign({id:k},v[k]));bRozet();bAsamaUyar()},()=>{});

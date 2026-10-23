@@ -16,7 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=77">
+<link rel="stylesheet" href="style.css?v=78">
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -77,6 +77,7 @@
     <button class="menuBtn" style="background:#ff9f1c" data-go="sevk"><span class="ic">🚚</span><div>SEVKİYAT<small>Hazır ürünler, sevk listesi, adresler</small></div></button>
     <button class="menuBtn" style="background:#2563eb" data-go="stok"><span class="ic">📦</span><div>STOK<small>Stok, sipariş, tedarikçi, hareketler</small></div></button>
     <button class="menuBtn hide" style="background:#0f766e" data-go="tah"><span class="ic">💰</span><div>TAHSİLAT<small>Tahsilat talepleri, alınan ödemeler, talimatlar</small></div></button>
+    <button class="menuBtn" style="background:#15803d" data-go="granul"><span class="ic">♻️</span><div>GRANÜL<small>Granülcü takibi: giden/gelen kilo, fire, ödeme, bakiye</small></div></button>
     <button class="menuBtn" style="background:#7c3aed" data-go="rap"><span class="ic">📊</span><div>RAPORLAR<small>Üretim, müşteri sevki, malzeme tüketimi, maliyet</small></div></button>
     <button class="menuBtn" style="background:#475569" id="mQr" type="button"><span class="ic">📷</span><div>QR OKUT<small>Etiketteki QR ile iş emrini aç</small></div></button>
     <div id="menuYok" class="hide" style="background:#fff3cd;color:#664d03;border-radius:10px;padding:12px;font-size:14px;margin:10px 0">Hesabınıza henüz bir bölüm tanımlanmamış. Lütfen yöneticiye başvurun.</div>
@@ -193,6 +194,30 @@
     <div id="aSay" class="shd"></div>
     <div id="aList"></div>
   </div>
+  </div>
+
+  <div id="pGranul" class="hide">
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><b style="font-size:17px">♻️ GRANÜL TAKİP</b><button class="btn b1 sm" id="grCEkle" style="width:auto;margin:0" type="button">＋ Granülcü ekle</button></div>
+      <div id="grBos" class="hide" style="text-align:center;padding:14px 4px"><div class="sub" style="margin-bottom:8px">Henüz granülcü yok. İlk granülcüyü ekleyin (örn. Zekeriya).</div><button class="btn b3" id="grCBos" type="button" style="width:auto;display:inline-block">＋ İlk granülcüyü ekle</button></div>
+      <div id="grChipW"><div class="tabs stabs" id="grChips" style="margin-bottom:0"></div></div>
+    </div>
+    <div id="grIc" class="hide">
+      <div id="grOz" style="margin-bottom:10px"></div>
+      <div class="sub" style="margin:-4px 0 10px">KALAN KG = Giden − Gelen − Fire · BAKİYE = Toplam fiyat + KDV − Satış fiyat − Ödeme</div>
+      <div class="card" style="margin-bottom:10px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn b1" id="grYeni" type="button" style="margin:0;flex:2;white-space:nowrap">＋ Yeni kayıt</button>
+          <button class="btn b6" id="grXlsx" type="button" style="margin:0;flex:1;white-space:nowrap">📤 Excel'e aktar</button>
+          <button class="btn b6" id="grIce" type="button" style="margin:0;flex:1;white-space:nowrap">📥 Excel'den al</button>
+        </div>
+        <input type="file" id="grDosya" accept=".xlsx,.xls" class="hide">
+        <input id="grAra" placeholder="🔍 Açıklama, tarih ara..." style="margin-top:8px" autocomplete="off">
+        <div style="display:flex;gap:6px;margin-top:8px"><button class="btn b7 sm" id="grCDuz" type="button">✏ Granülcü adını değiştir</button><button class="btn b5 sm" id="grCSil" type="button">🗑 Granülcüyü sil</button></div>
+      </div>
+      <div class="grw"><table><thead><tr><th class="l">TARİH</th><th>Ş N</th><th>GİDEN KİLO</th><th>GELEN KİLO</th><th>SATIŞ</th><th>FİRE</th><th>FİYAT</th><th>TOPLAM FİYAT</th><th>KDV</th><th>SATIŞ FİYAT</th><th>ÖDEME</th><th class="l">AÇIKLAMA</th><th></th></tr></thead><tbody id="grTb"></tbody></table></div>
+      <button class="btn b6" id="grDaha" type="button" style="margin-top:8px">Daha eski kayıtları göster</button>
+    </div>
   </div>
 
   <div id="pIs" class="hide">
@@ -414,6 +439,34 @@
   <div class="err" id="aracE" style="margin-top:6px"></div>
   <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="aracX">Vazgeç</button><button type="button" class="btn b3" id="aracOk">✓ Sevk listesine al</button></div>
 </dialog>
+<dialog id="dGr" style="max-height:92vh;overflow:auto">
+  <h3 id="grH" style="margin-bottom:10px">＋ Yeni kayıt</h3>
+  <div class="grid">
+    <div><label for="grT">Tarih</label><input id="grT" type="date"></div>
+    <div><label for="grSn">Ş N (isteğe bağlı)</label><input id="grSn" maxlength="20" autocomplete="off"></div>
+  </div>
+  <div class="grid" style="margin-top:8px">
+    <div><label for="grGid">Giden kilo</label><input id="grGid" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+    <div><label for="grGel">Gelen kilo</label><input id="grGel" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+    <div><label for="grSat">Satış (kg)</label><input id="grSat" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+    <div><label for="grFir">Fire (kg)</label><input id="grFir" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+    <div><label for="grFiy">Fiyat (₺ / kg)</label><input id="grFiy" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+    <div><label for="grKdv">KDV (₺)</label><input id="grKdv" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+    <div class="full"><label for="grOde">Ödeme (₺)</label><input id="grOde" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+  </div>
+  <div id="grOn" class="sub" style="margin:8px 0 0"></div>
+  <label for="grAc" style="margin-top:8px">Açıklama</label>
+  <input id="grAc" maxlength="200" placeholder="Örn: çek verildi, nakit ödeme, renkli hurda satışı" autocomplete="off">
+  <div class="err" id="grE" style="margin-top:6px"></div>
+  <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="grX">Vazgeç</button><button type="button" class="btn b3" id="grOk">💾 Kaydet</button></div>
+</dialog>
+<dialog id="dGrC">
+  <h3 id="grCH" style="margin-bottom:10px">＋ Yeni granülcü</h3>
+  <label for="grCAd">Granülcü adı</label>
+  <input id="grCAd" maxlength="60" placeholder="Örn: Zekeriya" autocomplete="off">
+  <div class="err" id="grCE" style="margin-top:6px"></div>
+  <div style="display:flex;gap:8px"><button type="button" class="btn b6" id="grCX">Vazgeç</button><button type="button" class="btn b3" id="grCOk">💾 Kaydet</button></div>
+</dialog>
 <dialog id="dTah" style="max-height:92vh;overflow:auto">
   <h3 id="tahH" style="margin-bottom:10px">💰 Yeni Tahsilat Talebi</h3>
   <label for="tahCari">Firma / kişi</label>
@@ -586,17 +639,17 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="raporlar.js?v=77"></script>
+<script src="raporlar.js?v=78"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=77"></script>
+<script src="app.js?v=78"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=77"></script>
-<script src="saat.js?v=77"></script>
+<script src="foto-onizleme.js?v=78"></script>
+<script src="saat.js?v=78"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=77"></script>
+<script src="diyalog.js?v=78"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -627,8 +680,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=77"></script>
-<script src="etiket.js?v=77"></script>
+<script src="qr.js?v=78"></script>
+<script src="etiket.js?v=78"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -638,11 +691,12 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="talimat.js?v=77"></script>
-<script src="tahsilat.js?v=77"></script>
-<script src="arama.js?v=77"></script>
-<script src="israpor.js?v=77"></script>
-<script src="fotookut.js?v=77"></script>
-<script src="sw-kayit.js?v=77"></script>
+<script src="talimat.js?v=78"></script>
+<script src="tahsilat.js?v=78"></script>
+<script src="granul.js?v=78"></script>
+<script src="arama.js?v=78"></script>
+<script src="israpor.js?v=78"></script>
+<script src="fotookut.js?v=78"></script>
+<script src="sw-kayit.js?v=78"></script>
 </body>
 </html>
