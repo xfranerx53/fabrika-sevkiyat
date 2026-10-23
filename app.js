@@ -88,8 +88,11 @@ setTimeout(async()=>{
     if(!$("boot").classList.contains("hide"))bootMsg("Sunucuya bağlanılamadı. İnternet bağlantısını ve Firebase ayarlarını kontrol edin.",true)
   }
 },10000);
+/* Wi-Fi <-> mobil veri geçişinde takılmayı önlemek için: Firebase'in önbelleğe aldığı sunucu adı her açılışta silinir */
+try{Object.keys(localStorage).forEach(k=>{if(k.indexOf("firebase:host:")===0)localStorage.removeItem(k)})}catch(_){}
 firebase.initializeApp(CFG);window.__st.init=1;
 const auth=firebase.auth(),db=firebase.database();
+try{if(localStorage.getItem("fbPoll")==="1")firebase.database.INTERNAL.forceLongPolling()}catch(_){} /* baglanti.js takılma görürse bunu açar */
 let fbFn=null;
 /* Cloud Functions bileşeni yalnızca gerektiğinde (yönetici şifre sıfırlama) yüklenir */
 function fnYukle(){if(fbFn)return Promise.resolve(fbFn);

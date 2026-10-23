@@ -43,15 +43,52 @@
       var sp=document.createElement("span");sp.textContent=m;ban.appendChild(sp);
       var b=document.createElement("button");b.type="button";b.textContent="↻ Yeniden dene";
       b.onclick=yenidenDene;ban.appendChild(b);
+      if(kesik){var b2=document.createElement("button");b2.type="button";b2.textContent="⟳ Sayfayı yenile";b2.onclick=function(){if(bekle>0&&!confirm("Gönderilmemiş "+bekle+" kayıt var, sayfa yenilenirse kaybolur. Yine de yenilensin mi?"))return;sayfaYenile()};ban.appendChild(b2)}
       if(pop)ac(ban,!oncekiKesik);else ban.style.display="block";
     }else{kapat(ban)}
     oncekiKesik=goster;
   }
 
-  function yenidenDene(){
+  /* Yeni bağlantı kur: eski (ölü) soketi bırakıp sıfırdan bağlanır. Bekleyen kayıtlar kaybolmaz, bağlanınca gider. */
+  var sonCyc=0,dene=0;
+  function cevir(zorla){
+    var n=Date.now();if(!zorla&&n-sonCyc<2500)return;sonCyc=n;
     try{db.goOffline();setTimeout(function(){try{db.goOnline()}catch(e){}},400)}catch(e){}
-    toast("Yeniden bağlanılıyor…");
   }
+  /* Sunucuya hiç ulaşılıyor mu? (cevap ne olursa olsun ulaşıldı demektir; sadece ağ hatası = ulaşılamıyor) */
+  function sunucuVar(){
+    var u="";try{u=CFG.databaseURL}catch(e){}
+    if(!u||typeof fetch!=="function")return Promise.resolve(false);
+    return fetch(u+"/.json?shallow=true&limitToFirst=1",{mode:"no-cors",cache:"no-store"}).then(function(){return true},function(){return false});
+  }
+  /* WebSocket takılıyorsa (Wi-Fi <-> mobil veri geçişinde olur) uzun-sorgu kipine geç; sonraki açılışlarda baştan kullanılır */
+  function uzunSorgu(){
+    try{firebase.database.INTERNAL.forceLongPolling()}catch(e){}
+    try{localStorage.setItem("fbPoll","1")}catch(e){}
+    cevir(true);
+  }
+  function yenidenDene(){
+    toast("Yeniden bağlanılıyor…");
+    cevir(true);
+    setTimeout(function(){
+      if(bagli)return;
+      sunucuVar().then(function(ok){if(ok&&!bagli){toast("Bağlantı yolu değiştiriliyor…");uzunSorgu()}else if(!ok&&!bagli)toast("Sunucuya ulaşılamıyor. İnternetinizi kontrol edin.")});
+    },5000);
+  }
+  function sayfaYenile(){
+    var u=location.pathname+"?t="+Date.now();
+    try{location.href=u}catch(e){location.reload()}
+  }
+
+  /* Bekçi: bağlantı kopukken ama telefon "internet var" diyorsa kendiliğinden yeniden bağlanmayı dener */
+  setInterval(function(){
+    if(bagli){dene=0;return}
+    if(navigator.onLine===false)return;
+    dene++;
+    if(dene<=3){cevir();return}                       /* ilk ~12 sn: yeni bağlantı dene */
+    if(dene===4){sunucuVar().then(function(ok){if(ok&&!bagli)uzunSorgu()});return}  /* sunucuya ulaşılıyor ama bağlanmıyor -> uzun-sorgu */
+    if(dene%2===0)cevir();                           /* sonra 8 sn'de bir dene */
+  },4000);
 
   /* --- bağlantı durumu --- */
   function kesikAyarla(v){
@@ -68,8 +105,11 @@
     db.ref(".info/connected").on("value",function(s){bagli=s.val()===true;kesikAyarla(!bagli)});
   }catch(e){}
   window.addEventListener("offline",function(){bagli=false;kesikAyarla(true)});
-  window.addEventListener("online",function(){try{db.goOnline()}catch(e){}});
-  document.addEventListener("visibilitychange",function(){if(!document.hidden&&kesik){try{db.goOffline();db.goOnline()}catch(e){}}});
+  /* Ağ değişince (Wi-Fi <-> mobil veri, internet geri geldi, uygulamaya dönüldü) eski soketi bırakıp yeniden bağlan */
+  window.addEventListener("online",function(){dene=0;cevir(true);setTimeout(cevir,3000)});
+  window.addEventListener("pageshow",function(e){if(e.persisted){dene=0;cevir(true)}});
+  document.addEventListener("visibilitychange",function(){if(!document.hidden){dene=0;cevir()}});
+  try{var cn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;if(cn&&cn.addEventListener)cn.addEventListener("change",function(){dene=0;cevir(true);setTimeout(cevir,3000)})}catch(e){}
 
   /* --- kayıt işlemlerini izle --- */
   function sessiz(ref){try{return /\/ayarlar\/yedek$/.test(String(ref.toString()))}catch(e){return false}}
