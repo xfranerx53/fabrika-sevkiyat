@@ -92,7 +92,8 @@ setTimeout(async()=>{
 try{Object.keys(localStorage).forEach(k=>{if(k.indexOf("firebase:host:")===0)localStorage.removeItem(k)})}catch(_){}
 firebase.initializeApp(CFG);window.__st.init=1;
 const auth=firebase.auth(),db=firebase.database();
-try{if(localStorage.getItem("fbPoll")==="1")firebase.database.INTERNAL.forceLongPolling()}catch(_){} /* baglanti.js takılma görürse bunu açar */
+try{localStorage.removeItem("fbPoll")}catch(_){} /* v85'te yanlışlıkla açılan uzun-sorgu işareti silinir */
+try{firebase.database.INTERNAL.forceWebSockets()}catch(_){} /* uzun-sorgu CSP'ye takılır; sadece WebSocket */
 let fbFn=null;
 /* Cloud Functions bileşeni yalnızca gerektiğinde (yönetici şifre sıfırlama) yüklenir */
 function fnYukle(){if(fbFn)return Promise.resolve(fbFn);

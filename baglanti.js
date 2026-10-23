@@ -61,10 +61,10 @@
     if(!u||typeof fetch!=="function")return Promise.resolve(false);
     return fetch(u+"/.json?shallow=true&limitToFirst=1",{mode:"no-cors",cache:"no-store"}).then(function(){return true},function(){return false});
   }
-  /* WebSocket takılıyorsa (Wi-Fi <-> mobil veri geçişinde olur) uzun-sorgu kipine geç; sonraki açılışlarda baştan kullanılır */
-  function uzunSorgu(){
-    try{firebase.database.INTERNAL.forceLongPolling()}catch(e){}
-    try{localStorage.setItem("fbPoll","1")}catch(e){}
+  /* Uzun-sorgu (long polling) KULLANILMAZ: sitenin CSP'si (index.html) firebaseio.com'dan script yüklemeyi engeller, uzun-sorgu hep takılır.
+     Takılma görülürse sadece WebSocket zorlanıp yeni bağlantı kurulur. */
+  function sokZorla(){
+    try{firebase.database.INTERNAL.forceWebSockets()}catch(e){}
     cevir(true);
   }
   function yenidenDene(){
@@ -72,7 +72,7 @@
     cevir(true);
     setTimeout(function(){
       if(bagli)return;
-      sunucuVar().then(function(ok){if(ok&&!bagli){toast("Bağlantı yolu değiştiriliyor…");uzunSorgu()}else if(!ok&&!bagli)toast("Sunucuya ulaşılamıyor. İnternetinizi kontrol edin.")});
+      sunucuVar().then(function(ok){if(ok&&!bagli){toast("Bağlantı yeniden kuruluyor…");sokZorla()}else if(!ok&&!bagli)toast("Sunucuya ulaşılamıyor. İnternetinizi kontrol edin.")});
     },5000);
   }
   /* Tanı: hangi yol çalışmıyor? (ekran görüntüsü alıp gönderin) */
@@ -90,8 +90,7 @@
   function tani(){
     var L=["Telefon internet: "+(navigator.onLine?"var":"YOK")];
     try{var cn=navigator.connection;if(cn)L.push("Ağ türü: "+(cn.type||"?")+" / "+(cn.effectiveType||"?"))}catch(e){}
-    var lp="kapalı";try{if(localStorage.getItem("fbPoll")==="1")lp="açık"}catch(e){}
-    L.push("Veritabanı bağlı: "+(bagli?"evet":"HAYIR")+" · uzun-sorgu: "+lp+" · bekleyen kayıt: "+bekle);
+    L.push("Veritabanı bağlı: "+(bagli?"evet":"HAYIR")+" · bekleyen kayıt: "+bekle);
     toast("Sınanıyor… (6 sn)");
     var u="";try{u=CFG.databaseURL}catch(e){}
     Promise.all([
@@ -114,7 +113,7 @@
     if(navigator.onLine===false)return;
     dene++;
     if(dene<=3){cevir();return}                       /* ilk ~12 sn: yeni bağlantı dene */
-    if(dene===4){sunucuVar().then(function(ok){if(ok&&!bagli)uzunSorgu()});return}  /* sunucuya ulaşılıyor ama bağlanmıyor -> uzun-sorgu */
+    if(dene===4){sokZorla();return}  /* hâlâ bağlanmadı -> WebSocket zorla, yeni bağlantı */
     if(dene%2===0)cevir();                           /* sonra 8 sn'de bir dene */
   },4000);
 
