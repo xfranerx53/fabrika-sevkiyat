@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v72**
+**GÜNCEL SÜRÜM: v75**
 Son güncelleme: 2026-10-22 (v69: açılış takılma tanısı)
 
 ---
@@ -79,7 +79,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v72)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v75)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -266,6 +266,9 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-22: v70 — (v69 açılış tanısı + yönetici çıkış düğmesi) Sabit Gemini anahtarını koda yazma denendi ama GitHub «Secret scanning» push'u engelledi (anahtar herkese açık depoda sızar, Google iptal edebilir); KODA ANAHTAR YAZILMAZ. Anahtar yalnızca yönetici 🔑 penceresinden girilir (Firebase `okumaAyar`), iş emri verebilenler oradan okur. Dosyalar: app.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-22: v71 — Fotoğraftan okuma: Google 503 (yoğunluk) ve zaman aşımında artık sıradaki modele geçiliyor (gemini-flash-latest → gemini-2.5-flash → gemini-2.5-flash-lite), her model 45 sn; hata mesajı «Google sunucusu yoğun, anahtar sorunu değil». 🔑 penceresi kayıtlı anahtarı maskeli (ilk 6 + son 4 hane) ve modeli gösteriyor; kayıttan sonra aynı maske toast'ta çıkıyor. Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-22: v72 — Fotoğraftan okuma: sabit model listesi yerine anahtarın kullanabildiği flash modelleri Google'dan (`/v1beta/models`) sorulup sıralanıyor (kararlı sürümler önce, preview/lite sonra; ilk 4 denenir). Yönetici modeli listede yoksa yok sayılır. 503/yoğunlukta 4 sn sonra bir tur daha denenir; hata mesajı hangi modelde ne olduğunu parantez içinde gösterir. Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
+- 2026-10-22: v73 — «Uygulama açılamadı» (Wi-Fi ↔ mobil veri geçince veritabanı yanıt vermiyor, oturum yenileme «tamam»): (1) Firebase'in localStorage'a yazdığı `firebase:host:*` (bağlandığı sunucu adı) her açılışta siliniyor; (2) 10 sn sonra sunucuya REST ile ulaşılıp ulaşılmadığı sınanıyor, ulaşılıyorsa `firebase.database.INTERNAL.forceLongPolling()` (uzun-sorgu kipi) açılıp bağlantı tazeleniyor ve `localStorage.fbPoll=1` ile sonraki açılışlarda baştan kullanılıyor; (3) tanı satırına «sunucu», «uzun-sorgu kipi denendi», «eski sunucu adı» eklendi. Dosyalar: app.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı; sebep henüz kesinleşmedi (tanıya bakılacak).
+- 2026-10-22: v74 — Fotoğraftan okuma donuyordu (ekranda sonsuza kadar «Fotoğraf okunuyor»). Olası sebep: yeni Gemini modelleri varsayılan olarak uzun «düşünüyor». Düzeltme: `generationConfig.thinkingConfig` ile düşünme kısıldı (gemini-3/latest: thinkingLevel low → thinkingBudget 0 → ayarsız; 2.5: thinkingBudget 0 → ayarsız; model 400 verirse sıradaki ayara geçilir). Her deneme 40 sn ile sınırlı, fotoğraf hazırlama 15 sn ile sınırlı. Ekranda canlı durum: «Okunuyor (model adı)… N sn». Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
+- 2026-10-22: v75 — Fotoğraftan okuma: gerçek hata 429 (Google ücretsiz kota doldu; kota proje+model başına, günlük kota gece yarısı Pasifik saatinde sıfırlanır = TR 10:00, kışın 11:00). 429 artık sıradaki modele geçirir (kota modele göre ayrı); hepsi 429 ise günlük/dakikalık ayrımıyla ve «N sn sonra» bilgisiyle mesaj verir, parantez içinde model bazlı durum yazar. Çok sayıda deneme kotayı yemiş olabilir; kalıcı çözüm AI Studio'da faturalamayı açmak (Tier 1). Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
