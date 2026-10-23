@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v80**
-Son güncelleme: 2026-10-23 (v80: GRANÜL ekranı sadeleştirildi)
+**GÜNCEL SÜRÜM: v81**
+Son güncelleme: 2026-10-23 (v81: bağlantı göstergesi + kayıt uyarısı, yönetici panosu, yedek hatırlatması)
 
 ---
 
@@ -93,6 +93,8 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 | `tahsilat.js` | Tahsilat bölümü (Bölüm 7): WhatsApp "MAG TAHSİLAT" grubunun yerine geçer. Ofis talep açar, sahadaki kişi "Tahsil ettim" der | GitHub |
 | `granul.js` | **GRANÜL bölümü (v78):** Excel'deki «ZEKERİYA GRANÜL TAKİP» tablosunun karşılığı; birden çok granülcü, her birinin ayrı defteri, toplamlar (KALAN KG, BAKİYE), Excel'e aktar / Excel'den al | GitHub |
 | `fotookut.js` | Yeni iş emrinde «📷 Mikro formunun fotoğrafından doldur»: fotoğrafı Google Gemini (ücretsiz API anahtarı) ile okuyup alanları doldurur (v65) | GitHub |
+| `pano.js` | **Yönetici panosu (v81):** yönetici menüsünün üstünde «GÜNÜN ÖZETİ»: onay bekleyen kullanıcı, geciken iş emri, bugün termini olan, sevk edilecekler, bekleyen tahsilat/talimat, kritik stok, yedek durumu + tek dokunuşla yedek | GitHub |
+| `baglanti.js` | **Bağlantı durumu + kayıt güvenliği (v81):** sol altta ● Çevrimiçi/Bağlantı yok/Gönderiliyor etiketi, kopunca kırmızı şerit, kayıt 8 sn'de gitmezse turuncu şerit, reddedilen kayıtta «⚠ Kaydedilemedi», bekleyen kayıt varken sayfa kapanırsa uyarı. Firebase `set/update/remove/transaction` işlemlerini sarar | GitHub |
 | `arama.js`, `saat.js`, `diyalog.js`, `foto-onizleme.js`, `sw-kayit.js` | Küçük yardımcılar | GitHub |
 | `sw.js` | Çevrimdışı önbellek. `CACHE='fabrika-vNN'` ve `V='?v=NN'` | GitHub |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `favicon-32.png` | Telefona kurulum ve ikonlar | GitHub |
@@ -146,6 +148,7 @@ Satır içi `<script>` yazma; kodu `.js` dosyasına koy.
 | `okumaAyar` | Fotoğraftan okuma ayarı: `anahtar` (Gemini API anahtarı), `model` (isteğe bağlı). Okuma: yönetici + iş açma yetkisi olanlar; yazma: yalnız yönetici. **Yedeğe (`BK_DUGUM`) KOYMA** (anahtar yedek dosyasına sızmasın) |
 | `granulcular/{id}` | Granülcüler: `ad`, `zaman`. Okuma/yazma: yönetici, `granul` izni olanlar, varsayılan Muhasebe; granülcü silmeyi yalnız yönetici yapar |
 | `granulKayit/{id}` | Granül defter satırları: `gid` (granülcü id), `tarih` (YYYY-MM-DD), `sn`, `giden`, `gelen`, `satis`, `fire` (kg), `fiyat` (₺/kg), `kdv`, `odeme` (₺), `aciklama`, `ekleyen`, `ekleyenUid`, `zaman`; düzeltmede `duzenleyen`, `duzenleyenUid`, `duzenlemeZaman`. `gid` üzerinde indeks var. Toplam fiyat / satış fiyat / kalan kg / bakiye **saklanmaz, hesaplanır** |
+| `ayarlar/yedek` | (v81) Son yedek: `zaman` (sunucu saati), `kim`, `boyut`. Yalnız yönetici yazar; JSON yedek başarıyla (eksiksiz) inince `bkBitir` yazar. Pano ve Yedekleme penceresi "son yedek"i buradan gösterir |
 | `etiketGecmis/{id}/{h}`, `etiketSablon/{m}/{k}` | Etiket basım geçmişi ve şablonlar |
 | `ayarlar/etiket` | Etiket ayarı (`w`, `h`, `mag`) |
 | `cop/{id}` | Çöp kutusu: silinenlerin yedeği (yönetici geri yükler) |
@@ -217,6 +220,8 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
   Her aşamayı ilgili rol/izin ilerletir; `geriAl` izni olanlar bir aşama geri alabilir. Biten iş
   "HAZIR ÜRÜNLER"e aktarılabilir (`bekleAktar`, `aktarildi`). İş emri seri no biçimi: `MG-0945`.
   Etiketteki QR okutulunca iş emri açılır (`?is=MG-0945`).
+- **Yönetici panosu (v81, `pano.js`, `panoBox` menüde):** yalnız yönetici. Giriş sonrası menünün üstünde görünür; ↻ Yenile, 2 dk'da bir otomatik, menüye dönülünce (30 sn'den eskiyse) yenilenir. Kartlar: 👤 onay bekleyen kullanıcı (`kullanicilar` canlı) · ⏰ geciken iş emri (`terminGun>0`) · 📅 bugün termini · 🚚 sevk edilecekler (`urunler` `durum` indeksiyle `sevk_edilecek`; «bugün» için tarih alanı yok, sevk listesinin tamamı) · 💰 bekleyen tahsilat ve 📋 talimat (tahsilat.js/talimat.js'in canlı `L` listesi; `window.tahOzet/talOzet`, her güncellemede `panoYenile`) · ⚠️ kritik stok (`dur(k)!=="ok"`) · 💾 yedek (3 gün sarı, 7 gün kırmızı; «Yedek al» düğmeleri `bkJson` düğmesini tıklar, ilerleme `bkDurum`'dan yansır). Her kartın «git» düğmesi ilgili bölümü açar. Yaşam döngüsü: `bildBaslat → panoBaslat`, `bildDurdur → panoDurdur`.
+- **Bağlantı göstergesi (v81, `baglanti.js`):** bkz. Dosyalar. Firebase web SDK'sı bağlantı yokken yazılan kayıtları yalnız telefonun belleğinde tutar; uygulama KAPANIRSA bu kayıtlar kaybolur (kalıcı çevrimdışı kuyruk YOK, yapılmadı). `ayarlar/yedek` yazımı hata toast'ı vermez (sessiz liste `sessiz()`).
 - **Yönetici:** yedekleme (JSON/Excel indirme), çöp kutusu (geri yükle/kalıcı sil), denetim günlüğü,
   kullanıcı yönetimi (onay, rol, izin), fiyatlar, KDV ayarı.
 - **Şifre sıfırlama:** Cloud Function `sifreSifirla` (Blaze planı gerekir). Deploy durumu bilinmiyor
@@ -278,10 +283,14 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-22: v75 — Fotoğraftan okuma: gerçek hata 429 (Google ücretsiz kota doldu; kota proje+model başına, günlük kota gece yarısı Pasifik saatinde sıfırlanır = TR 10:00, kışın 11:00). 429 artık sıradaki modele geçirir (kota modele göre ayrı); hepsi 429 ise günlük/dakikalık ayrımıyla ve «N sn sonra» bilgisiyle mesaj verir, parantez içinde model bazlı durum yazar. Çok sayıda deneme kotayı yemiş olabilir; kalıcı çözüm AI Studio'da faturalamayı açmak (Tier 1). Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-22: v76 — 429 hatasında Google'ın kendi mesajı (ilk 170 karakter, kota adı/limit değeri) ekranda gösteriliyor; «limit: 0» geçiyorsa «ücretsiz kota 0, beklemek çözmez» uyarısı veriliyor. Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
 - 2026-10-22: v77 — Fotoğraftan okuma artık FİYAT hücresini de okuyor (fiyatlı nüsha: «FİYAT : 120₺»; fiyatsız imalat nüshasında hücre yok, o zaman fiyat alanına dokunulmaz). Metinden sayı + para birimi (₺/$/€) + «+KDV» ayrıştırılıp `iFy`, `iPb`, `iKd` alanları doldurulur (`fiyatCoz`). Fiyat alanı yalnızca fiyat yetkisi olanlara görünür. Dosyalar: fotookut.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Cihazda sınanmadı.
+- 2026-10-23: v81 — (1) `baglanti.js`: bağlantı durumu etiketi + kopma/yavaşlık şeridi + «Kaydedilemedi» uyarısı + kapatma uyarısı. (2) `pano.js`: yönetici panosu (menüde). (3) Yedek: son yedek zamanı artık veritabanında (`ayarlar/yedek`), tüm yönetici cihazlarında ve panoda görünür; 3/7 gün hatırlatma. (4) `tahsilat.js`/`talimat.js`: `tahOzet`/`talOzet` + `panoYenile` çağrısı. (5) `app.js`: `bildBaslat/bildDurdur` pano kancaları, `bMenu` → `panoGoster`, `bkBitir`/`bkSonGoster` DB'li. Dosyalar: baglanti.js (yeni), pano.js (yeni), app.js, index.html, style.css, sw.js, tahsilat.js, talimat.js, rules.json, PROJE-NOTLARI.md, README.md. **Firebase kuralı: DEĞİŞTİ** (`urunler` `.indexOn` + `durum`; yeni `ayarlar/yedek`). Kural yayınlanmazsa pano «sevk edilecekler» kartı tüm ürünleri indirir (yavaş) ve yedek zamanı DB'ye yazılamaz. Mantık sahte veriyle (node) sınandı; gerçek cihazda/Firebase'de SINANMADI.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
 **Yapılacaklar (kullanıcı isteklerini buraya yaz, bitenleri günlüğe taşı):**
+- **v81 cihazda denenmeli:** pano kartları, bağlantı şeridi (uçak modu ile), yedek zamanının panoda görünmesi. Rules yayınlandı mı sorulmalı.
+- **[ERTELENDİ] Telefona gerçek bildirim (push, FCM):** FCM ücretsiz ama gönderen sunucu kodu (Cloud Functions) **Blaze planı** (kart bilgisi) ister; kullanıcı «ücretsizse ekle» dedi → eklenmedi. Blaze'e geçilirse: istemci FCM token + `sw.js` push dinleyicisi + `index.js`'e `sevkTalimat`/`tahsilatlar` onCreate ve zamanlanmış geciken-iş fonksiyonları. iPhone'da yalnız ana ekrana eklenmiş PWA (iOS 16.4+) alır.
+- Olası ek: Cloud Function ile zamanlanmış otomatik yedek (Blaze), pano kartlarını rol bazlı diğer kullanıcılara açma, bağlantısız kayıtlar için kalıcı kuyruk.
 - v63'te eklenenler (rapor, termin, bildirim, hata önleme) cihazda denenmeli; kullanıcı geri bildirimine göre düzeltilecek. Olası ek: termine göre filtre, raporda operatör filtresi, geciken işi zilde gösterme.
 - **[KULLANICIYA SÖYLENDİ] Firebase otomatik günlük yedeği (Realtime Database > Backups, Blaze planı) açılmalı;** açık mı bilinmiyor. Kullanıcıdan adım adım isterse anlat.
 - **[TEMİZLİK] GitHub deposunda `fabrika-v44-degisen-dosyalar.zip` ve `fabrika-v45-degisen-dosyalar.zip` gereksiz;** kullanıcı silebilir (siteyi etkilemez).

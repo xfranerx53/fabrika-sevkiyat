@@ -3,7 +3,7 @@
    Sevkiyat sorumlusu kendine verilenleri (veya "herkese" verilenleri) görür ve "Yaptım" der.
    Veri yolu: sevkTalimat/{id}  (app.js'teki db, user, rec, isAdmin, $, esc, toast, errText ortak kullanılır) */
 (function(){
-  var ref=null,L=[],FM=6,TF=[],sek="bek";
+  var ref=null,yuk=false,L=[],FM=6,TF=[],sek="bek";
   var rolSor=function(){return !!(rec&&rec.rol==="Sevkiyat Sorumlusu")};
   var canAta=function(){return !!(rec&&rec.onay&&(isAdmin()||rec.rol==="Depo Görevlisi"))};
   var benim=function(x){return x.hedefUid==="*"||(user&&x.hedefUid===user.uid)};
@@ -48,10 +48,12 @@
     window.talDurdur();
     if(!rec||!rec.onay||!tahGor())return; /* sevkiyat yetkisi veya "tah" izni (Muhasebe) */
     ref=db.ref("sevkTalimat").orderByChild("zaman").limitToLast(50);
-    ref.on("value",function(s){var v=s.val()||{};L=Object.keys(v).map(function(k){return Object.assign({id:k},v[k])});ciz()},
+    ref.on("value",function(s){var v=s.val()||{};L=Object.keys(v).map(function(k){return Object.assign({id:k},v[k])});yuk=true;ciz();if(window.panoYenile)window.panoYenile()},
       function(e){toast("Talimatlar okunamadı: "+errText(e)+" (Firebase kuralını güncellediniz mi?)")});
   };
-  window.talDurdur=function(){if(ref){ref.off();ref=null}L=[];var l=$("talList");if(l)l.innerHTML="";var v=$("vtT");if(v)v.textContent="📋 TALİMATLAR"};
+  /* yönetici panosu (pano.js): bekleyen talimatlar; veri henüz gelmediyse null */
+  window.talOzet=function(){return(rec&&rec.onay&&yuk)?L.filter(gorunur).filter(function(x){return x.durum!=="yapildi"}).sort(function(a,b){return a.zaman-b.zaman}):null};
+  window.talDurdur=function(){if(ref){ref.off();ref=null}L=[];yuk=false;var l=$("talList");if(l)l.innerHTML="";var v=$("vtT");if(v)v.textContent="📋 TALİMATLAR"};
 
   $("talList").onclick=async function(e){
     var im=e.target.closest("img[data-z]");

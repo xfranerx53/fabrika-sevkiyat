@@ -6,7 +6,7 @@
    Veri yolu: tahsilatlar/{id}  (app.js'teki db, user, rec, isAdmin, tahGor, $, esc, fmt, trn, toast, errText, sikistir, fotoHazirla, silCop ortak kullanılır)
    v47: fotoğraflar küçük önizleme + fotoTam (Sevkiyat gibi) · silme çöp kutusuna + denetim · ✏ Düzenle · saatler sunucudan · Muhasebe ("tah" izni) */
 (function(){
-  var ref=null,offRef=null,off=0,L=[],FM=6,TF=[],mod="talep",mevcut=null,sek="bek",don="bugun",ara="";
+  var ref=null,offRef=null,off=0,yuk=false,L=[],FM=6,TF=[],mod="talep",mevcut=null,sek="bek",don="bugun",ara="";
   var TS=function(){return firebase.database.ServerValue.TIMESTAMP}; /* kayıt saati: sunucu saati */
   var simdi=function(){return Date.now()+off}; /* "bugün / son 7 gün" hesabı da sunucu saatine göre */
   var TRZ="Europe/Istanbul";
@@ -83,10 +83,12 @@
     if(!canTah())return;
     offRef=db.ref(".info/serverTimeOffset");offRef.on("value",function(s){off=+s.val()||0});
     ref=db.ref("tahsilatlar").orderByChild("zaman").limitToLast(300);
-    ref.on("value",function(s){var v=s.val()||{};L=Object.keys(v).map(function(k){return Object.assign({id:k},v[k])});ciz()},
+    ref.on("value",function(s){var v=s.val()||{};L=Object.keys(v).map(function(k){return Object.assign({id:k},v[k])});yuk=true;ciz();if(window.panoYenile)window.panoYenile()},
       function(e){toast("Tahsilat okunamadı: "+errText(e)+" (Firebase kuralını güncellediniz mi?)")});
   };
-  window.tahDurdur=function(){if(ref){ref.off();ref=null}if(offRef){offRef.off();offRef=null}L=[];if($("tahList"))$("tahList").innerHTML="";if($("vtH"))$("vtH").textContent="💰 TAHSİLAT"};
+  /* yönetici panosu (pano.js): bekleyen tahsilatlar; veri henüz gelmediyse null */
+  window.tahOzet=function(){return(canTah()&&yuk)?L.filter(function(x){return x.durum!=="alindi"}).sort(function(a,b){return a.zaman-b.zaman}):null};
+  window.tahDurdur=function(){if(ref){ref.off();ref=null}if(offRef){offRef.off();offRef=null}L=[];yuk=false;if($("tahList"))$("tahList").innerHTML="";if($("vtH"))$("vtH").textContent="💰 TAHSİLAT"};
 
   $("tahTB").onclick=function(){sek="bek";ciz()};
   $("tahTA").onclick=function(){sek="alin";ciz()};

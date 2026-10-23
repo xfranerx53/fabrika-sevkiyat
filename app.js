@@ -747,6 +747,7 @@ function bkTemizle(v,yerine){ // fotoğraf (base64) alanlarını çıkar/yer tut
 function bkIndir(blob,ad){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=ad;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),20000)}
 function bkTarih(){const d=new Date(),z=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+"_"+z(d.getHours())+z(d.getMinutes())}
 function bkSonGoster(){let t=0;try{t=+localStorage.getItem("sonYedek")||0}catch(e){}
+  t=Math.max(t,+window.bkDbT||0); /* v81: başka cihazdan/yöneticiden alınan yedek de sayılır (ayarlar/yedek) */
   const el=$("bkSon");if(!t){el.innerHTML='<b style="color:#e71d36">⚠️ Bu cihazdan henüz yedek alınmadı.</b>';return}
   const g=Math.floor((Date.now()-t)/864e5),tx=new Date(t).toLocaleString("tr-TR",{timeZone:TRZ});
   el.innerHTML=g>=7?'<b style="color:#e71d36">⚠️ Son yedek '+g+' gün önce ('+esc(tx)+'). Yeni yedek alın.</b>':'Son yedek: '+esc(tx)+(g?" ("+g+" gün önce)":" (bugün)")}
@@ -756,6 +757,8 @@ async function bkOku(excel){ // her düğümü ayrı okur; okunamayanları bildi
     try{const s=await db.ref(ad).once("value");if(s.exists())veri[ad]=s.val()}catch(e){hata.push(ad+" ("+errText(e)+")")}}
   return{veri,hata}}
 function bkBitir(hata,ek){try{localStorage.setItem("sonYedek",String(Date.now()))}catch(e){}
+  /* v81: son yedek zamanı veritabanına da yazılır (pano ve tüm yönetici cihazları görsün). Eksik yedekte yazılmaz. */
+  if(!hata.length&&isAdmin()){try{db.ref("ayarlar/yedek").set({zaman:firebase.database.ServerValue.TIMESTAMP,kim:String(rec.ad||"").slice(0,100),boyut:String(ek||"").slice(0,60)}).catch(()=>{})}catch(e){}}
   $("bkDurum").innerHTML=hata.length?'<b style="color:#e71d36">⚠️ Şu bölümler okunamadı, yedek eksik: '+esc(hata.join("; "))+'</b>':'✓ Yedek indirildi'+(ek?" · "+esc(ek):"");
   bkSonGoster()}
 async function bkCalistir(btn,fn){
@@ -887,7 +890,7 @@ function modSec(m){
   if(m==="stok")stokYukle();else stokKapat();if(m==="is"||m==="uretim"){isYukle();if(m==="is")isMTSet("list");else if(!isAdmin()&&yRol()){const o=yRol().asama.find(k=>URA.includes(k));if(o)uTab=o}}else isKapat();$("iAdd").classList.toggle("hide",!canIsAc())}
 $("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===panel)return;modSec(m)};
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{menuOk=true;modSec(b.dataset.go);show("vApp");window.scrollTo(0,0)});
-$("bMenu").onclick=()=>{menuOk=false;show("vMenu");window.scrollTo(0,0)};
+$("bMenu").onclick=()=>{menuOk=false;show("vMenu");window.scrollTo(0,0);if(window.panoGoster)window.panoGoster()};
 function stokKapat(){if(sRef){sRef.off();sRef=null}if(tRef){tRef.off();tRef=null}if(oRef){oRef.off();oRef=null}}
 function stokYukle(){stokKapat();sRef=db.ref("stokKalem");
   sRef.on("value",x=>{const v=x.val()||{};sKalem=Object.keys(v).map(k=>Object.assign({id:k},v[k]));stokListele()},e=>toast("Stok okunamadı: "+errText(e)));
@@ -2022,11 +2025,12 @@ function bAsamaUyar(){try{
     if(ilk||onc===undefined||onc===e.asama||isAdmin()||e.asama==="bitti"||!asamaGor(e.asama))return;
     const o=asOrd(e);if(o.indexOf(e.asama)>o.indexOf(onc))yeni.push(e.no+" → "+(ASL[e.asama]||e.asama))});
   if(yeni.length){toast("📥 Aşamanıza geldi: "+yeni.join(", "));try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(x){}}}catch(x){}}
-function bildDurdur(){bAsm=null;if(window.etAyarDurdur)window.etAyarDurdur();if(window.talDurdur)window.talDurdur();if(window.tahDurdur)window.tahDurdur();if(window.granKapat)window.granKapat();if(bRef){bRef.off();bRef=null}if(bTm){clearInterval(bTm);bTm=null}bIs=[];bStok=false;bRozet()}
+function bildDurdur(){bAsm=null;if(window.panoDurdur)window.panoDurdur();if(window.etAyarDurdur)window.etAyarDurdur();if(window.talDurdur)window.talDurdur();if(window.tahDurdur)window.tahDurdur();if(window.granKapat)window.granKapat();if(bRef){bRef.off();bRef=null}if(bTm){clearInterval(bTm);bTm=null}bIs=[];bStok=false;bRozet()}
 function bildBaslat(){bildDurdur();if(window.etAyarBaslat)window.etAyarBaslat();if(window.talBaslat)window.talBaslat();if(window.tahBaslat)window.tahBaslat();if(!bAyar().son)bYaz("bildSon",Date.now());
   bRef=db.ref("isEmirleri").orderByChild("eklenmeTarihi").limitToLast(30);
   bRef.on("value",s=>{const v=s.val()||{};bIs=Object.keys(v).map(k=>Object.assign({id:k},v[k]));bRozet();bAsamaUyar()},()=>{});
-  bTm=setInterval(bRozet,20000)}
+  bTm=setInterval(bRozet,20000);
+  if(window.panoBaslat)window.panoBaslat() /* yönetici panosu (pano.js) */}
 function bOlaylar(){
   const son=bAyar().son,me=user&&user.uid,adm=ad(),O=[],kgS=e=>{const t=icols(e).reduce((a,c)=>a+(+c.kg||0),0);return t?"\nMiktar: "+fmt(t)+" kg":""};
   bIs.forEach(e=>{

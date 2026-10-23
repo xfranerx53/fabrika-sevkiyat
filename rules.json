@@ -35,7 +35,8 @@
     "urunler": {
       ".read": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Depo Görevlisi' || root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Sevkiyat Sorumlusu'))) || (root.child('kullanicilar/' + auth.uid).child('izin').child('rap').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('rap').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Muhasebe')))))",
       ".indexOn": [
-        "eklenmeTarihi"
+        "eklenmeTarihi",
+        "durum"
       ],
       "$id": {
         ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Depo Görevlisi' || root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Sevkiyat Sorumlusu'))))) && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || root.child('kullanicilar/' + auth.uid).child('rol').val() !== 'Sevkiyat Sorumlusu') && ((newData.exists() && (data.exists() ? newData.child('ekleyenUid').val() === data.child('ekleyenUid').val() : (newData.child('ekleyenUid').val() === auth.uid || (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true && root.child('kullanicilar/' + auth.uid).child('onay').val() === true)))) || (!newData.exists() && ((root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true && root.child('kullanicilar/' + auth.uid).child('onay').val() === true) || data.child('ekleyenUid').val() === auth.uid)))",
@@ -625,6 +626,22 @@
         },
         "kh": {
           ".validate": "newData.isNumber() && newData.val() >= 10 && newData.val() <= 300"
+        },
+        "$other": {
+          ".validate": "false"
+        }
+      },
+      "yedek": {
+        ".write": "(root.child('kullanicilar').child(auth.uid).child('yonetici').val() === true && root.child('kullanicilar').child(auth.uid).child('onay').val() === true)",
+        ".validate": "newData.hasChildren(['zaman'])",
+        "zaman": {
+          ".validate": "newData.isNumber()"
+        },
+        "kim": {
+          ".validate": "newData.isString() && newData.val().length <= 100"
+        },
+        "boyut": {
+          ".validate": "newData.isString() && newData.val().length <= 60"
         },
         "$other": {
           ".validate": "false"
