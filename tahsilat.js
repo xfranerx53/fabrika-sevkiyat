@@ -4,8 +4,10 @@
    Sahadaki kişi: gidip alınca "Tahsil ettim" der; nakit + çek tutarı, makbuz no, makbuz/çek fotoğrafı girer (alindi).
    Sahadaki kişi talep olmadan da doğrudan "alındı" kaydı açabilir (grupta "Doku ambalaj 50.000 nakit alındı" yazmak gibi).
    Veri yolu: tahsilatlar/{id}  (app.js'teki db, user, rec, isAdmin, tahGor, $, esc, fmt, trn, toast, errText, sikistir, fotoHazirla, silCop ortak kullanılır)
+   v88: isteğe bağlı adres (kayıtlı adreslerden seç / link / açık adres; adrsec.js) · bekleyen talebi ✏ Düzenle (firma, not, adres) · alınmış kayıtta adres de düzeltilir
    v47: fotoğraflar küçük önizleme + fotoTam (Sevkiyat gibi) · silme çöp kutusuna + denetim · ✏ Düzenle · saatler sunucudan · Muhasebe ("tah" izni) */
 (function(){
+  var AS=adrSecKur("tahAdrBox","tah"),AF=["adres","haritaUrl","adresAd"];
   var ref=null,offRef=null,off=0,yuk=false,L=[],FM=6,TF=[],mod="talep",mevcut=null,sek="bek",don="bugun",ara="";
   var TS=function(){return firebase.database.ServerValue.TIMESTAMP}; /* kayıt saati: sunucu saati */
   var simdi=function(){return Date.now()+off}; /* "bugün / son 7 gün" hesabı da sunucu saatine göre */
@@ -29,6 +31,11 @@
   var fl=function(x){var v=x.fotolar;return(Array.isArray(v)?v:Object.values(v||{})).filter(function(s){return typeof s==="string"&&s.indexOf("data:image/jpeg;base64,")===0})};
   function fotoHtml(x){var f=fl(x);return f.length?'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px">'+f.map(function(s,i){return '<div class="fth"><img src="'+s+'" alt="Foto '+(i+1)+'" data-z="'+i+'" data-id="'+esc(x.id)+'" style="height:80px"></div>'}).join("")+'</div>':""}
 
+  function adrHtml(x){if(!x.adres&&!x.haritaUrl)return"";
+    return '<div class="sub" style="font-size:15px;color:#334155;margin-top:4px">📍 '+(x.adresAd?'<b>'+esc(x.adresAd)+'</b> · ':"")+esc(x.adres||"")+'</div><button class="btn b7 sm" style="width:auto;margin:4px 0 0" data-a="harita" data-id="'+esc(x.id)+'">🗺️ Harita / Yol tarifi</button>'}
+  var adrFark=function(a,x){return AF.some(function(f){return (a[f]||"")!==(x[f]||"")})};
+  var adrYaz=function(u,p,a){AF.forEach(function(f){u[p+f]=a[f]!==undefined?a[f]:null})}; /* silinen adres alanları kayıttan kalkar */
+
   /* ---------- liste ---------- */
   function donemSinir(){
     var sm=simdi(),bugun=gunAnahtar(sm);
@@ -40,6 +47,7 @@
   function kart(x){
     var bit=x.durum==="alindi",b="";
     if(!bit)b+='<button class="btn b3 sm" style="width:auto;margin:6px 6px 0 0" data-a="al" data-id="'+esc(x.id)+'">✓ Tahsil ettim</button>';
+    if(!bit&&silebilir(x))b+='<button class="btn b7 sm" style="width:auto;margin:6px 6px 0 0" data-a="tduzenle" data-id="'+esc(x.id)+'">✏ Düzenle</button>';
     if(bit&&duzenleyebilir(x))b+='<button class="btn b7 sm" style="width:auto;margin:6px 6px 0 0" data-a="duzenle" data-id="'+esc(x.id)+'">✏ Düzenle</button>';
     if(bit&&geriAlabilir(x))b+='<button class="btn b6 sm" style="width:auto;margin:6px 6px 0 0" data-a="geri" data-id="'+esc(x.id)+'">↩ Geri al</button>';
     if(silebilir(x))b+='<button class="btn b5 sm" style="width:auto;margin:6px 0 0" data-a="sil" data-id="'+esc(x.id)+'">🗑 Sil</button>';
@@ -52,14 +60,14 @@
     return '<div class="item c" style="border-left-color:'+(bit?"#16a34a":"#f59e0b")+'">'+
       '<b style="font-size:17px">'+(bit?"✓ ":"⏳ ")+esc(x.cari)+'</b>'+
       (x.not?'<div style="white-space:pre-wrap;font-size:15px;color:#334155;margin-top:2px">'+esc(x.not)+'</div>':"")+
-      '<div class="sub">'+(x.talepTur==="dogrudan"?"kayıt":"talep")+': '+esc(x.talepEden||"-")+' · '+esc(zm(x.zaman))+'</div>'+tut+
+      '<div class="sub">'+(x.talepTur==="dogrudan"?"kayıt":"talep")+': '+esc(x.talepEden||"-")+' · '+esc(zm(x.zaman))+'</div>'+adrHtml(x)+tut+
       (bit?'<div class="sub" style="color:#16a34a;font-weight:700">Tahsil eden: '+esc(x.alan||"-")+' · '+esc(zm(x.alinmaZaman))+'</div>'+(x.alanNot?'<div class="sub" style="white-space:pre-wrap;color:#334155">'+esc(x.alanNot)+'</div>':"")+(x.duzenlemeZaman?'<div class="sub" style="color:#b45309;font-weight:700">✎ Düzeltildi: '+esc(x.duzenleyen||"-")+' · '+esc(zm(x.duzenlemeZaman))+(x.duzenlemeNot?' — '+esc(x.duzenlemeNot):"")+'</div>':""):"")+
       fotoHtml(x)+(b?'<div>'+b+'</div>':"")+'</div>';
   }
   function ciz(){
     var k=$("tahList");if(!k)return;
     var q=trn(ara).trim().split(/\s+/).filter(Boolean);
-    var V=L.filter(function(x){var h=trn([x.cari,x.not,x.makbuzNo,x.talepEden,x.alan,x.alanNot].join(" "));return q.every(function(t){return h.indexOf(t)>=0})});
+    var V=L.filter(function(x){var h=trn([x.cari,x.not,x.makbuzNo,x.talepEden,x.alan,x.alanNot,x.adres,x.adresAd].join(" "));return q.every(function(t){return h.indexOf(t)>=0})});
     var bek=V.filter(function(x){return x.durum!=="alindi"}).sort(function(a,b){return a.zaman-b.zaman});
     var uyar=donemSinir();
     var bit=V.filter(function(x){return x.durum==="alindi"&&uyar(x.alinmaZaman||x.zaman)}).sort(function(a,b){return (b.alinmaZaman||b.zaman)-(a.alinmaZaman||a.zaman)});
@@ -101,7 +109,9 @@
     var b=e.target.closest("button[data-a]");if(!b)return;
     var id=b.dataset.id,x=L.find(function(y){return y.id===id});if(!x)return;
     try{
-      if(b.dataset.a==="al"){ac("al",x)}
+      if(b.dataset.a==="harita"){haritaAc(safeUrl(x.haritaUrl||""),x.adres||x.adresAd||"")}
+      else if(b.dataset.a==="al"){ac("al",x)}
+      else if(b.dataset.a==="tduzenle"){ac("talepduz",x)}
       else if(b.dataset.a==="duzenle"){ac("duzenle",x)}
       else if(b.dataset.a==="geri"){
         if(!confirm("Tahsilat tekrar 'bekliyor' durumuna alınsın mı? (Girilen tutar ve fotoğraflar kayıttan kalkar; eski hali çöp kutusuna ve denetim günlüğüne yazılır, yönetici geri yükleyebilir)"))return;
@@ -150,15 +160,17 @@
   function ac(m,x){
     mod=m;mevcut=x||null;TF=[];fCiz();
     $("tahE").textContent="";
-    $("tahCari").value=x?x.cari:"";$("tahCari").readOnly=!!x;
-    $("tahDl").innerHTML=x?"":cariListe().map(function(c){return '<option value="'+esc(c)+'">'}).join("");
-    $("tahNot").value=m==="talep"?(x&&x.not||""):"";
-    $("tahNot").placeholder=m==="talep"?"Örn: Çek hazır, sevkiyat uygunluğuna göre alalım · Kaşe imzalı ekstre ile gidilsin":"Not (isteğe bağlı)";
+    $("tahCari").value=x?x.cari:"";$("tahCari").readOnly=!!x&&m!=="talepduz";
+    AS.doldur(x||{}); /* talep adresi varsa gelir; "Tahsil ettim"de de düzeltilebilir */
+    $("tahDl").innerHTML=(x&&m!=="talepduz")?"":cariListe().map(function(c){return '<option value="'+esc(c)+'">'}).join("");
+    var tp=m==="talep"||m==="talepduz";
+    $("tahNot").value=tp?(x&&x.not||""):"";
+    $("tahNot").placeholder=tp?"Örn: Çek hazır, sevkiyat uygunluğuna göre alalım · Kaşe imzalı ekstre ile gidilsin":"Not (isteğe bağlı)";
     $("tahNakit").value="";$("tahCek").value="";$("tahMak").value="";
-    $("tahAlW").classList.toggle("hide",m==="talep");
+    $("tahAlW").classList.toggle("hide",tp);
     $("tahFW").classList.toggle("hide",m==="duzenle"); /* düzenlemede fotoğraf alanı yok: tutar, makbuz no ve not düzeltilir */
-    $("tahH").textContent=m==="talep"?"💰 Yeni Tahsilat Talebi":m==="duzenle"?"✏ Tahsilatı düzenle":(x?"✓ Tahsil ettim":"✓ Tahsilat kaydı");
-    $("tahOk").textContent=m==="talep"?"✓ Talep aç":m==="duzenle"?"✓ Değişikliği kaydet":"✓ Kaydet";
+    $("tahH").textContent=m==="talep"?"💰 Yeni Tahsilat Talebi":m==="talepduz"?"✏ Talebi düzenle":m==="duzenle"?"✏ Tahsilatı düzenle":(x?"✓ Tahsil ettim":"✓ Tahsilat kaydı");
+    $("tahOk").textContent=m==="talep"?"✓ Talep aç":m==="talepduz"?"✓ Değişikliği kaydet":m==="duzenle"?"✓ Değişikliği kaydet":"✓ Kaydet";
     if(m==="duzenle"&&x){
       var gir=function(n){return +n>0?String(n).replace(".",","):""};
       $("tahNakit").value=gir(x.nakit);$("tahCek").value=gir(x.cek);$("tahMak").value=x.makbuzNo||"";$("tahNot").value=x.alanNot||"";
@@ -176,9 +188,19 @@
     var b=$("tahOk");b.disabled=true;
     try{
       var ad=String((rec&&rec.ad)||"?").slice(0,100);
+      var adr=AS.oku();
+      if(mod==="talepduz"&&mevcut){
+        var nt2=$("tahNot").value.trim(),cr=cari.slice(0,100);
+        if(cr===(mevcut.cari||"")&&nt2===(mevcut.not||"")&&!adrFark(adr,mevcut)){$("tahE").textContent="Değişiklik yapmadınız.";b.disabled=false;return}
+        var pt="tahsilatlar/"+mevcut.id+"/",ut={};
+        ut[pt+"cari"]=cr;ut[pt+"not"]=nt2?nt2.slice(0,300):null;adrYaz(ut,pt,adr);
+        await db.ref().update(ut);
+        $("dTah").close();toast("✓ Talep düzeltildi");b.disabled=false;return;
+      }
       if(mod==="talep"){
         var o={cari:cari.slice(0,100),talepUid:user.uid,talepEden:ad,zaman:TS(),durum:"bekliyor",talepTur:"talep"};
         var nt=$("tahNot").value.trim();if(nt)o.not=nt.slice(0,300);
+        Object.assign(o,adr);
         await db.ref("tahsilatlar").push(o);
         $("dTah").close();toast("✓ Tahsilat talebi açıldı");
       }else{
@@ -193,9 +215,10 @@
           fr("Nakit",E.nakit,n);fr("Çek",E.cek,c);
           if((E.makbuzNo||"")!==mk)fk.push("Makbuz "+(E.makbuzNo||"—")+" → "+(mk||"—"));
           if((E.alanNot||"")!==an)fk.push("Not değişti");
+          if(adrFark(adr,E))fk.push("Adres değişti");
           if(!fk.length){$("tahE").textContent="Değişiklik yapmadınız.";b.disabled=false;return}
           var dz=fk.join(" · ").slice(0,200),ts=TS();
-          u[p0+"nakit"]=n>0?n:null;u[p0+"cek"]=c>0?c:null;u[p0+"makbuzNo"]=mk?mk.slice(0,30):null;u[p0+"alanNot"]=an?an.slice(0,300):null;
+          u[p0+"nakit"]=n>0?n:null;u[p0+"cek"]=c>0?c:null;u[p0+"makbuzNo"]=mk?mk.slice(0,30):null;u[p0+"alanNot"]=an?an.slice(0,300):null;adrYaz(u,p0,adr);
           u[p0+"duzenleyen"]=ad;u[p0+"duzenleyenUid"]=user.uid;u[p0+"duzenlemeZaman"]=ts;u[p0+"duzenlemeNot"]=dz;
           u["denetim/"+db.ref("denetim").push().key]={tur:"tahsilat-duzenle",baslik:String(E.cari).slice(0,120),detay:dz,yol:"tahsilatlar",id:String(E.id).slice(0,100),kim:ad,uid:user.uid,zaman:ts};
           await db.ref().update(u);
@@ -207,13 +230,14 @@
           var p="tahsilatlar/"+mevcut.id+"/";
           u[p+"durum"]="alindi";u[p+"nakit"]=n>0?n:null;u[p+"cek"]=c>0?c:null;u[p+"makbuzNo"]=mk?mk.slice(0,30):null;
           u[p+"alan"]=ad;u[p+"alanUid"]=user.uid;u[p+"alinmaZaman"]=TS();u[p+"alanNot"]=an?an.slice(0,300):null;
+          adrYaz(u,p,adr);
           fh.forEach(function(f,i){u[p+"fotolar/"+i]=f});
           await db.ref().update(u);
         }else{
           var o2={cari:cari.slice(0,100),talepUid:user.uid,talepEden:ad,zaman:TS(),durum:"alindi",talepTur:"dogrudan",
             alan:ad,alanUid:user.uid,alinmaZaman:TS()};
           if(n>0)o2.nakit=n;if(c>0)o2.cek=c;if(mk)o2.makbuzNo=mk.slice(0,30);if(an)o2.alanNot=an.slice(0,300);
-          if(fh.length)o2.fotolar=fh;
+          if(fh.length)o2.fotolar=fh;Object.assign(o2,adr);
           await db.ref("tahsilatlar").push(o2);
         }
         $("dTah").close();toast("✓ Tahsilat kaydedildi");sek="alin";don="bugun";$("tahDon").value="bugun";ciz();

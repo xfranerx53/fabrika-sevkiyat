@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v87**
-Son güncelleme: 2026-10-23 (v87 + notlar sadeleştirildi: eski günlük ARSIV-GUNLUK.md'ye taşındı, Dersler bölümü eklendi)
+**GÜNCEL SÜRÜM: v88**
+Son güncelleme: 2026-10-23 (v88: Talimat + Tahsilat'a isteğe bağlı adres ve ✏ Düzenle)
 
 ---
 
@@ -81,7 +81,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v87)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v88)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -91,6 +91,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 | `raporlar.js` | Raporlar | GitHub |
 | `etiket.js` | Etiket tasarımı/basımı | GitHub |
 | `qr.js` | QR kod üretimi (kütüphane) | GitHub |
+| `adrsec.js` | **(v88)** Talimat ve Tahsilat pencerelerinin ortak «📍 Adres (isteğe bağlı)» bloğu: `adrSecKur(kutuId,önek)` → kayıtlı sevk adreslerinden seç, link/açık adres, haritada seç, temizle; `.oku()/.doldur()/.sifirla()` | GitHub |
 | `talimat.js` | Sevkiyat talimatları (Bölüm 7): yönetici/Depo Görevlisi sevkiyat sorumlusuna iş verir, o "Yaptım" der | GitHub |
 | `tahsilat.js` | Tahsilat bölümü (Bölüm 7): WhatsApp "MAG TAHSİLAT" grubunun yerine geçer. Ofis talep açar, sahadaki kişi "Tahsil ettim" der | GitHub |
 | `granul.js` | **GRANÜL bölümü (v78):** Excel'deki «ZEKERİYA GRANÜL TAKİP» tablosunun karşılığı; birden çok granülcü, her birinin ayrı defteri, toplamlar (KALAN KG, BAKİYE), Excel'e aktar / Excel'den al | GitHub |
@@ -146,8 +147,8 @@ Satır içi `<script>` yazma; kodu `.js` dosyasına koy.
 | `fiyatlar/{m}/{id}` | Fiyatlar (`tutar`, `kdv`, `f`); sadece yönetici okur/yazar |
 | `isEmirleri/{id}` | İş emirleri (aşama akışı Bölüm 7) |
 | `isHareket/{id}/{h}` | İş emri hareket kayıtları (yalnız eklenir) |
-| `sevkTalimat/{id}` | Sevkiyat talimatları: `metin`, `hedefUid` (`*`=tüm sorumlular), `hedefAd`, `atayan`, `atayanUid`, `zaman`, `durum` (`bekliyor`/`yapildi`), `yapan`, `yapanUid`, `yapilmaZaman`, `fotolar` (en fazla 6 küçültülmüş jpeg), `adres`, `haritaUrl`, `adresAd` (isteğe bağlı) |
-| `tahsilatlar/{id}` | Tahsilat kayıtları: `cari`, `durum` (`bekliyor`/`alindi`), `not`, `talepUid`, `talepEden`, `zaman`, `talepTur` (`talep`/`dogrudan`); alınınca: `nakit`, `cek` (₺, yalnız >0 olanlar yazılır), `makbuzNo`, `alan`, `alanUid`, `alinmaZaman`, `alanNot`, `fotolar` (en fazla 6 küçültülmüş jpeg). `zaman` üzerinde indeks var, uygulama son 300 kaydı okur. v47: `fotolar` önizleme+`#fotoTam` anahtarı olabilir; düzeltmede `duzenleyen`, `duzenleyenUid`, `duzenlemeZaman`, `duzenlemeNot` |
+| `sevkTalimat/{id}` | Sevkiyat talimatları: `metin`, `hedefUid` (`*`=tüm sorumlular), `hedefAd`, `atayan`, `atayanUid`, `zaman`, `durum` (`bekliyor`/`yapildi`), `yapan`, `yapanUid`, `yapilmaZaman`, `fotolar` (en fazla 6 küçültülmüş jpeg), `adres`, `haritaUrl`, `adresAd` (isteğe bağlı; v88: ✏ Düzenle ile metin+adres değişir) |
+| `tahsilatlar/{id}` | Tahsilat kayıtları: `cari`, `durum` (`bekliyor`/`alindi`), `not`, `talepUid`, `talepEden`, `zaman`, `talepTur` (`talep`/`dogrudan`), `adres`, `haritaUrl`, `adresAd` (isteğe bağlı, v88); alınınca: `nakit`, `cek` (₺, yalnız >0 olanlar yazılır), `makbuzNo`, `alan`, `alanUid`, `alinmaZaman`, `alanNot`, `fotolar` (en fazla 6 küçültülmüş jpeg). `zaman` üzerinde indeks var, uygulama son 300 kaydı okur. v47: `fotolar` önizleme+`#fotoTam` anahtarı olabilir; düzeltmede `duzenleyen`, `duzenleyenUid`, `duzenlemeZaman`, `duzenlemeNot` |
 | `okumaAyar` | Fotoğraftan okuma ayarı: `anahtar` (Gemini API anahtarı), `model` (isteğe bağlı). Okuma: yönetici + iş açma yetkisi olanlar; yazma: yalnız yönetici. **Yedeğe (`BK_DUGUM`) KOYMA** (anahtar yedek dosyasına sızmasın) |
 | `granulcular/{id}` | Granülcüler: `ad`, `zaman`. Okuma/yazma: yönetici, `granul` izni olanlar, varsayılan Muhasebe; granülcü silmeyi yalnız yönetici yapar |
 | `granulKayit/{id}` | Granül defter satırları: `gid` (granülcü id), `tarih` (YYYY-MM-DD), `sn`, `giden`, `gelen`, `satis`, `fire` (kg), `fiyat` (₺/kg), `kdv`, `odeme` (₺), `aciklama`, `ekleyen`, `ekleyenUid`, `zaman`; düzeltmede `duzenleyen`, `duzenleyenUid`, `duzenlemeZaman`. `gid` üzerinde indeks var. Toplam fiyat / satış fiyat / kalan kg / bakiye **saklanmaz, hesaplanır** |
@@ -256,6 +257,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-23: v86 — v85 telefonda işe yaramadı (Wi-Fi'ye geçince «Bağlantı yok» sürdü, «Sayfayı yenile» de düzeltmedi). Sebep henüz bilinmiyor; kırmızı şeride **«🔍 Tanı»** düğmesi eklendi (`baglanti.js` `tani()`): genel internet, veritabanı https, veritabanı WebSocket, giriş sunucusu, gstatic erişimini 6 sn'de sınayıp sonucu pencerede gösterir. Kullanıcıdan ekran görüntüsü istenecek. Dosyalar: baglanti.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi.
 
 - 2026-10-23: v87 — **Bağlantı takılmasının asıl sebebi bulundu:** v86 tanısı (telefon mobil veride): internet, https, WebSocket, giriş sunucusu hepsi «tamam» ama «Veritabanı bağlı: HAYIR · uzun-sorgu: açık». v85'in `forceLongPolling()` + `localStorage.fbPoll=1` eklemesi bağlantıyı kalıcı bozmuştu: **index.html CSP'si `script-src`te firebaseio.com'a izin vermez, Firebase uzun-sorgu script yükler → engellenir → hiç bağlanamaz.** DERS: bu sitede uzun-sorgu ASLA kullanılmaz (v73 notundaki uzun-sorgu fikri de geçersiz). Düzeltme: `uzunSorgu()` kaldırıldı; takılmada `forceWebSockets()` + `goOffline/goOnline` (`sokZorla`); `app.js` her açılışta `fbPoll` anahtarını siler ve `forceWebSockets()` çağırır; tanıdan uzun-sorgu satırı kaldırıldı. Dosyalar: baglanti.js, app.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Telefonda SINANMADI.
+- 2026-10-23: v88 — (1) Yeni `adrsec.js`: ortak adres bloğu (talimatın eski satır-içi adres kodu buna taşındı). (2) **Talimat:** ✏ Düzenle (metin + adres; yazan veya yönetici). (3) **Tahsilat:** talep/doğrudan kayıt/«Tahsil ettim» pencerelerinde isteğe bağlı adres (kayıtlı adreslerden seçilebilir), kartta 📍 adres + Harita düğmesi, bekleyen talepte ✏ Düzenle (firma, not, adres; talebi açan veya yönetici), alınmış kayıtta düzenlemede adres de düzeltilir (denetim günlüğüne «Adres değişti»). Dosyalar: adrsec.js (yeni), talimat.js, tahsilat.js, index.html, sw.js, rules.json, PROJE-NOTLARI.md, README.md. **Firebase kuralı: DEĞİŞTİ** (`tahsilatlar` altına `adres`, `haritaUrl`, `adresAd`; yapıştırılmazsa tahsilatta adres kaydı «izin yok» der). Telefonda/Firebase'de SINANMADI.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
