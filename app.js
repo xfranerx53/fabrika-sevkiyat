@@ -133,7 +133,9 @@ const YETKI={
 const yRol=()=>(rec&&YETKI[rec.rol])||null;
 const yAcik=()=>isAdmin()||!YETKI_UYGULA;                       /* kısıtlama kapalıysa / yöneticiyse serbest */
 const iz=k=>{const v=rec&&rec.izin?rec.izin[k]:undefined;return typeof v==="boolean"?v:undefined}; /* adım 4: kişiye özel izin (yoksa rol şablonu geçerli) */
-const modGor=m=>yAcik()||(iz(m)!==undefined?iz(m):!!(yRol()&&yRol().mod.includes(m)));     /* bölümü görebilir mi */
+const modGor0=m=>yAcik()||(iz(m)!==undefined?iz(m):!!(yRol()&&yRol().mod.includes(m)));
+/* bölümü görebilir mi. "dos" (Dosyalar) ayrı izin değildir: okuma yetkisi rules.json ile aynı → sevk veya raporlar */
+const modGor=m=>m==="dos"?(modGor0("sevk")||modGor0("rap")):modGor0(m);
 /* Tahsilat + Talimatlar: sevkiyat yetkisi olan VEYA ayrı "tah" izni olan (örn. Muhasebe) görür. rules.json ile aynı */
 const tahGor=()=>modGor("sevk")||modGor("tah");
 const isVeriGor=()=>modGor("is")||modGor("uretim"); /* iş emri verisini okuyabilir mi (İş emirleri veya Üretim) */
@@ -874,7 +876,7 @@ const ust=(v,m)=>v<=0?"no":(m>0&&v<=m)?"lo":"ok";
 const dur=k=>{const n=norm(k),ks=Object.keys(n.mik);if(!ks.length||ks.every(u=>!(n.mik[u]>0)))return"no";return ks.some(u=>n.min[u]>0&&n.mik[u]<=n.min[u])?"lo":"ok"};
 const fmtQ=(o,z)=>UN.filter(([u])=>o&&u in o&&(z||+o[u]>0)).map(([u,l])=>fmt(o[u])+" "+l).join(", ")||"-";
 /* ---- adım 3: rolün göremediği bölümleri gizle ---- */
-const BOLUMLER=["sevk","stok","is","uretim","rap","tah","granul"],ilkBolum=()=>BOLUMLER.find(modGor)||null;
+const BOLUMLER=["sevk","stok","is","uretim","rap","tah","granul","dos"],ilkBolum=()=>BOLUMLER.find(modGor)||null;
 function menuUygula(){
   document.querySelectorAll("[data-go]").forEach(b=>b.classList.toggle("hide",!modGor(b.dataset.go)));
   const is=isVeriGor();["mQr","bBell"].forEach(id=>{const el=$(id);if(el)el.classList.toggle("hide",!is)});
@@ -889,9 +891,9 @@ function modSec(m){
   if(!modGor(m)){const f=ilkBolum();if(!f){toast("Bu bölüm için yetkiniz yok.");menuOk=false;show("vMenu");return}m=f}
   panel=m;if(m==="tah")vTabSet("tah");
   document.querySelectorAll("#mods button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
-  $("pSevk").classList.toggle("hide",m!=="sevk"&&m!=="tah");$("pStok").classList.toggle("hide",m!=="stok");$("pIs").classList.toggle("hide",m!=="is");$("pUr").classList.toggle("hide",m!=="uretim");$("pRap").classList.toggle("hide",m!=="rap");$("pGranul").classList.toggle("hide",m!=="granul");
-  $("mt").textContent=m==="sevk"?"SEVKİYAT":m==="tah"?"TAHSİLAT":m==="is"?"İŞ EMİRLERİ":m==="uretim"?"ÜRETİM":m==="rap"?"RAPORLAR":m==="granul"?"GRANÜL":"STOK";if(m==="granul"){if(window.granAc)window.granAc()}else if(window.granKapat)window.granKapat();if(m==="rap"&&window.rapAc)window.rapAc();
-  if(m==="stok")stokYukle();else stokKapat();if(m==="is"||m==="uretim"){isYukle();if(m==="is")isMTSet("list");else if(!isAdmin()&&yRol()){const o=yRol().asama.find(k=>URA.includes(k));if(o)uTab=o}}else isKapat();$("iAdd").classList.toggle("hide",!canIsAc())}
+  $("pSevk").classList.toggle("hide",m!=="sevk"&&m!=="tah");$("pStok").classList.toggle("hide",m!=="stok");$("pIs").classList.toggle("hide",m!=="is");$("pUr").classList.toggle("hide",m!=="uretim");$("pRap").classList.toggle("hide",m!=="rap");$("pGranul").classList.toggle("hide",m!=="granul");$("pDos").classList.toggle("hide",m!=="dos");
+  $("mt").textContent=m==="sevk"?"SEVKİYAT":m==="tah"?"TAHSİLAT":m==="is"?"İŞ EMİRLERİ":m==="uretim"?"ÜRETİM":m==="rap"?"RAPORLAR":m==="granul"?"GRANÜL":m==="dos"?"DOSYALAR":"STOK";if(m==="granul"){if(window.granAc)window.granAc()}else if(window.granKapat)window.granKapat();if(m==="rap"&&window.rapAc)window.rapAc();
+  if(m==="stok")stokYukle();else stokKapat();if(m==="is"||m==="uretim"){isYukle();if(m!=="is"&&!isAdmin()&&yRol()){const o=yRol().asama.find(k=>URA.includes(k));if(o)uTab=o}}else isKapat();if(m==="dos"&&!window.dRef)dosYukle();$("iAdd").classList.toggle("hide",!canIsAc())}
 $("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===panel)return;modSec(m)};
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{menuOk=true;modSec(b.dataset.go);show("vApp");window.scrollTo(0,0)});
 $("bMenu").onclick=()=>{menuOk=false;show("vMenu");window.scrollTo(0,0);if(window.panoGoster)window.panoGoster()};
@@ -1349,13 +1351,7 @@ $("tsOk").onclick=()=>{
 var aRef=null,sAdr=[],aEdit=null;
 function vTabSet(t){document.querySelectorAll("#vtabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===t));
   [["sev","vSev"],["tal","vTal"],["tah","vTah"],["adr","vAdr"]].forEach(([k,id])=>$(id).classList.toggle("hide",t!==k))}
-/* İş emirleri bölümü üst sekmesi: İŞ EMİRLERİ / DOSYALAR (onaylanmış sevkler) */
-function isMTSet(t){const dos=t==="dos"&&dosGor();
-  document.querySelectorAll("#isMT button").forEach(b=>b.classList.toggle("on",b.dataset.im===(dos?"dos":"list")));
-  $("iAna").classList.toggle("hide",dos);$("vDos").classList.toggle("hide",!dos);$("isMT").classList.toggle("hide",!dosGor());
-  if(dos&&!window.dRef)dosYukle()}
-const dosGor=()=>modGor("sevk")||modGor("rap"); /* Dosyalar okuma yetkisi rules.json ile aynı: sevk veya raporlar */
-$("isMT").onclick=e=>{const b=e.target.closest("button[data-im]");if(b)isMTSet(b.dataset.im)};
+const dosGor=()=>modGor("dos"); /* Dosyalar (ayrı bölüm) okuma yetkisi: sevk veya raporlar */
 $("vtabs").onclick=e=>{const b=e.target.closest("button");if(b&&b.dataset.v)vTabSet(b.dataset.v)};
 function adrYukle(){
   if(aRef){aRef.off();aRef=null}
@@ -1476,11 +1472,13 @@ $("aCsv").onclick=()=>{
 var dRef=null,dosya=[],dLimit=200,dAcik=new Set(),dFoto={};
 const IST="Europe/Istanbul",_df=new Intl.DateTimeFormat("en-GB",{timeZone:IST,year:"numeric",month:"2-digit",day:"2-digit"});
 function dKey(t){const p={};_df.formatToParts(new Date(+t)).forEach(x=>p[x.type]=x.value);return p.year+"-"+p.month+"-"+p.day}
-const dTarih=d=>+d.irsaliyeTarihi?dKey(d.irsaliyeTarihi):(d.tarih||(+d.onayTarihi?dKey(d.onayTarihi):""));
-const dZaman=d=>+d.irsaliyeTarihi||+d.onayTarihi||0;
+const dOlay=d=>+d.yapilmaZaman||+d.alinmaZaman||0; /* talimat yapıldı / tahsilat alındı zamanı */
+const dTarih=d=>d.kaynak?((dOlay(d)||+d.onayTarihi)?dKey(dOlay(d)||+d.onayTarihi):""):(+d.irsaliyeTarihi?dKey(d.irsaliyeTarihi):(d.tarih||(+d.onayTarihi?dKey(d.onayTarihi):"")));
+const dZaman=d=>d.kaynak?(dOlay(d)||+d.onayTarihi||0):(+d.irsaliyeTarihi||+d.onayTarihi||0);
+const kTut=d=>(+d.nakit||0)+(+d.cek||0);
 const dSaat=t=>t?new Date(+t).toLocaleTimeString("tr-TR",{timeZone:IST,hour:"2-digit",minute:"2-digit"}):"";
 const dTam=t=>t?new Date(+t).toLocaleString("tr-TR",{timeZone:IST,day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
-function turAd(d){const t=d.irsTur||"irsaliye";return t==="iade"?"İade":t==="diger"?"Diğer"+(d.irsNot?": "+d.irsNot:""):"İmzalı irsaliye"}
+function turAd(d){if(d.kaynak==="talimat")return"Talimat";if(d.kaynak==="tahsilat")return"Tahsilat";const t=d.irsTur||"irsaliye";return t==="iade"?"İade":t==="diger"?"Diğer"+(d.irsNot?": "+d.irsNot:""):"İmzalı irsaliye"}
 function dGun(k){return /^\d{4}-\d\d-\d\d$/.test(k)?trDate(k)+" · "+new Date(k+"T12:00:00Z").toLocaleDateString("tr-TR",{weekday:"long",timeZone:"UTC"}):"Tarihsiz"}
 function dosYukle(){
   if(dRef){dRef.off();dRef=null}
@@ -1493,7 +1491,7 @@ function dosYukle(){
 $("dMore").onclick=()=>{dLimit+=200;dosYukle()};
 function dosFiltre(){
   const st=fbDurum("dq"),tp=$("dtp").value;
-  const R=dosya.filter(d=>fbEsles(st,[d.musteri,d.urun,d.adres,d.not,d.irsNot,d.ekleyen,d.teslimEden,d.onaylayan,turAd(d)],dTarih(d))&&(!tp||(d.irsTur||"irsaliye")===tp))
+  const R=dosya.filter(d=>fbEsles(st,[d.musteri,d.urun,d.adres,d.not,d.irsNot,d.ekleyen,d.teslimEden,d.onaylayan,turAd(d),d.metin,d.cari,d.makbuzNo,d.alanNot,d.atayan,d.yapan,d.talepEden,d.alan,d.adresAd],dTarih(d))&&(!tp||(tp==="talimat"||tp==="tahsilat"?d.kaynak===tp:(!d.kaynak&&(d.irsTur||"irsaliye")===tp))))
     .sort((x,y)=>(dTarih(y)>dTarih(x)?1:dTarih(y)<dTarih(x)?-1:0)||dZaman(y)-dZaman(x));
   fbSay("dq",R.length,dosya.length);return R;
 }
@@ -1503,7 +1501,62 @@ function ebatBlok(urun){
   if(L.length>1&&L.slice(1).every(pr))rows=L.slice(1).map(pr);else ad=L.join("\n");
   return `<div class="info full"><small>Ürün / Ebat</small><b class="ebad">${esc(ad)}</b>${rows.map(r=>`<div class="ebr"><span class="eb1">${esc(r[0])}</span><span class="eb2">${esc(r[1])}</span></div>`).join("")}</div>`;
 }
+/* ---- Talimat / Tahsilat dosyaları (yönetici «Dosyalara ekle» ile taşır; d.kaynak = "talimat" | "tahsilat") ---- */
+function kSatir(d){
+  const id=esc(d.id),open=dAcik.has(d.id),tl=d.kaynak==="talimat",
+    bas=tl?String(d.metin||"").split("\n")[0].slice(0,80):(d.cari||"-"),
+    alt=tl?"Talimat · Yapan: "+(d.yapan||"-")+(d.yapilmaZaman?" · "+dSaat(d.yapilmaZaman):""):"Tahsilat · "+fmt(kTut(d))+" ₺"+(d.makbuzNo?" · Makbuz "+d.makbuzNo:"")+(d.alinmaZaman?" · "+dSaat(d.alinmaZaman):"");
+  return `<button type="button" class="dfile ${tl?"dg":""}" data-id="${id}"><span class="dz">${tl?"📋":"💰"}</span><div class="dm"><div class="dn">${esc(bas)}</div><div class="dd">${esc(alt)}</div></div><span class="chev">${open?"▲":"▼"}</span></button>${open?kDetay(d):""}`;
+}
+function kDetay(d){
+  const id=esc(d.id),tl=d.kaynak==="talimat",ek=(a,b)=>a?`<div class="who" style="${b||""}">${a}</div>`:"";
+  let h='<div class="ddet">';
+  if(tl)h+=`<div class="note" style="white-space:pre-wrap">📋 ${esc(d.metin||"")}</div>`;
+  else{
+    h+=`<div class="grid"><div class="hl"><small>NAKİT</small><b>${esc(fmt(+d.nakit||0))} ₺</b></div><div class="hl"><small>ÇEK</small><b>${esc(fmt(+d.cek||0))} ₺</b></div></div>`;
+    h+=`<div class="grid" style="margin-top:6px"><div class="info full"><small>Firma / Kişi</small><b>${esc(d.cari||"-")}</b></div>${d.makbuzNo?`<div class="info full"><small>Makbuz no</small><b>${esc(d.makbuzNo)}</b></div>`:""}</div>`;
+    h+=`<div class="who" style="font-weight:700">Toplam: ${esc(fmt(kTut(d)))} ₺</div>`;
+    if(d.not)h+=`<div class="note">📌 <b>Talep notu:</b> ${esc(d.not)}</div>`;
+    if(d.alanNot)h+=`<div class="note">📝 <b>Not:</b> ${esc(d.alanNot)}</div>`;
+  }
+  if(d.adres||d.haritaUrl)h+=`<div class="addr">📍 ${d.adresAd?`<b>${esc(d.adresAd)}</b> · `:""}${esc(d.adres||"")}</div><button class="btn b7" data-a="dharita" data-id="${id}">🗺️ Harita / Yol tarifi</button>`;
+  if(tl){
+    h+=ek("Yazan: "+esc(d.atayan||"-")+(d.zaman?" · "+esc(dTam(d.zaman)):""));
+    h+=ek("Yapan: "+esc(d.yapan||"-")+(d.yapilmaZaman?" · "+esc(dTam(d.yapilmaZaman)):""),"color:#16a34a;font-weight:700");
+  }else{
+    h+=ek((d.talepTur==="dogrudan"?"Kayıt":"Talep")+": "+esc(d.talepEden||"-")+(d.zaman?" · "+esc(dTam(d.zaman)):""));
+    h+=ek("Tahsil eden: "+esc(d.alan||"-")+(d.alinmaZaman?" · "+esc(dTam(d.alinmaZaman)):""),"color:#16a34a;font-weight:700");
+    if(d.duzenlemeZaman)h+=ek("✎ Düzeltildi: "+esc(d.duzenleyen||"-")+" · "+esc(dTam(d.duzenlemeZaman))+(d.duzenlemeNot?" — "+esc(d.duzenlemeNot):""),"color:#b45309;font-weight:700");
+  }
+  h+=ek("📁 Dosyalara ekleyen: "+esc(d.onaylayan||"-")+(d.onayTarihi?" · "+esc(dTam(d.onayTarihi)):""),"color:#0f766e;font-weight:700");
+  const n=+d.fotoSayi||0;
+  if(n)h+=`<div class="acts s">${Array.from({length:n},(_,i)=>`<button class="btn b4" data-a="dfoto" data-p="fotolar/${i}" data-id="${id}">🖼️ Fotoğraf ${i+1}</button>`).join("")}</div>`;
+  if(isAdmin())h+=`<div class="acts"><button class="btn b6" data-a="dgeri" data-id="${id}">↩️ Dosyalardan çıkar</button><button class="btn b5" data-a="dsil" data-id="${id}">🗑️ Sil</button></div>`;
+  return h+"</div>";
+}
+/* Yönetici: tamamlanan talimat / alınan tahsilatı Dosyalar bölümüne taşır (kaynak kayıt silinir, fotoğraflar dosyaFoto'ya gider) */
+async function kayitDosyala(yol,x,kaynak){
+  const L=Object.assign({},x);delete L.id;delete L.fotolar;
+  const F=(Array.isArray(x.fotolar)?x.fotolar:Object.values(x.fotolar||{})).filter(f=>safeImg(f));
+  L.kaynak=kaynak;L.fotoSayi=F.length;
+  L.onayTarihi=firebase.database.ServerValue.TIMESTAMP;L.onaylayan=ad();
+  const up={["dosyalar/"+x.id]:L,[yol+"/"+x.id]:null};
+  if(F.length)up["dosyaFoto/"+x.id+"/fotolar"]=F;
+  await db.ref().update(up);
+  toast("✓ Dosyalar bölümüne eklendi");
+}
+async function kayitDosyadanCik(d){
+  const yol=d.kaynak==="talimat"?"sevkTalimat":"tahsilatlar";
+  const s=await db.ref("dosyaFoto/"+d.id+"/fotolar").once("value"),v=s.val(),
+    F=(Array.isArray(v)?v:Object.values(v||{})).filter(f=>safeImg(f)),R=Object.assign({},d);
+  ["id","kaynak","fotoSayi","onayTarihi","onaylayan"].forEach(k=>delete R[k]);
+  if(F.length)R.fotolar=F;
+  await db.ref().update({[yol+"/"+d.id]:R,["dosyalar/"+d.id]:null,["dosyaFoto/"+d.id]:null});
+  dAcik.delete(d.id);
+  toast("Dosyalardan çıkarıldı, "+(d.kaynak==="talimat"?"Tamamlanan talimatlara":"Alınanlara")+" geri alındı");
+}
 function dSatir(d){
+  if(d.kaynak)return kSatir(d);
   const id=esc(d.id),open=dAcik.has(d.id),t=d.irsTur||"irsaliye",
     m=d.musteri&&d.musteri!=="Etikete Bakınız",p=d.urun&&d.urun!=="Etikete Bakınız",
     pf=p?String(d.urun).split("\n")[0]:"",bas=m&&p?d.musteri+" — "+pf:m?d.musteri:p?pf:"Etikete bakınız",
@@ -1511,6 +1564,7 @@ function dSatir(d){
   return `<button type="button" class="dfile ${cls}" data-id="${id}"><span class="dz">${ic}</span><div class="dm"><div class="dn">${esc(bas)}</div><div class="dd">${esc(fmt(d.kg))} kg · ${esc(fmt(d.paket))} adet · ${esc(turAd(d))}${sa?" · "+esc(sa):""}</div></div><span class="chev">${open?"▲":"▼"}</span></button>${open?dDetay(d):""}`;
 }
 function dDetay(d){
+  if(d.kaynak)return kDetay(d);
   const id=esc(d.id),t=d.irsTur||"irsaliye",ic={irsaliye:"📄",diger:"📝",iade:"↩️"}[t]||"📄",
     m=d.musteri&&d.musteri!=="Etikete Bakınız",p=d.urun&&d.urun!=="Etikete Bakınız",
     tn=t==="iade"?"İade":t==="diger"?"Diğer":"İmzalı irsaliye";
@@ -1530,8 +1584,10 @@ function dDetay(d){
 function dosListele(){
   const L=dosFiltre(),G=[];
   L.forEach(d=>{const k=dTarih(d)||"-";let g=G[G.length-1];if(!g||g.k!==k){g={k,items:[]};G.push(g)}g.items.push(d)});
-  $("dSumT").textContent=L.length+" dosya · "+fmt(L.reduce((s,d)=>s+(+d.kg||0),0))+" kg";
-  $("dList").innerHTML=G.length?G.map(g=>`<div class="shd">📅 ${esc(dGun(g.k))} · ${g.items.length} dosya · ${esc(fmt(g.items.reduce((s,d)=>s+(+d.kg||0),0)))} kg</div>`+g.items.map(dSatir).join("")).join(""):'<div class="empty">Dosya bulunamadı.</div>';
+  const kgO=a=>a.reduce((s,d)=>s+(d.kaynak?0:(+d.kg||0)),0),tlO=a=>a.reduce((s,d)=>s+(d.kaynak==="tahsilat"?kTut(d):0),0),
+    oz=a=>a.length+" dosya"+(kgO(a)||!tlO(a)?" · "+fmt(kgO(a))+" kg":"")+(tlO(a)?" · "+fmt(tlO(a))+" ₺":"");
+  $("dSumT").textContent=oz(L);
+  $("dList").innerHTML=G.length?G.map(g=>`<div class="shd">📅 ${esc(dGun(g.k))} · ${esc(oz(g.items))}</div>`+g.items.map(dSatir).join("")).join(""):'<div class="empty">Dosya bulunamadı.</div>';
 }
 fbKur("dq",{d1:"dd1",d2:"dd2",sel:["dtp"],fn:()=>dosListele(),nocount:true});
 async function dosFoto(id,p){
@@ -1576,9 +1632,11 @@ $("dList").onclick=async e=>{
     const d=dosya.find(x=>x.id===b.dataset.id);if(!d)return;const a=b.dataset.a;
     try{
       if(a==="dfoto")await dosFoto(d.id,b.dataset.p);
+      else if(a==="dharita")haritaAc(safeUrl(d.haritaUrl||""),d.adres||d.adresAd||"");
+      else if(a==="dgeri"&&isAdmin()&&d.kaynak){if(confirm("Bu kayıt Dosyalar'dan çıkarılıp "+(d.kaynak==="talimat"?"Tamamlanan talimatlara":"Alınanlara")+" geri alınsın mı?"))await kayitDosyadanCik(d)}
       else if(a==="dgeri"&&isAdmin()&&confirm("Onay kaldırılsın ve sevk 'Sevk Edilenler' bölümüne geri alınsın mı?"))await dosyaGeri(d);
       else if(a==="dsil"&&isAdmin()&&confirm("Bu dosya kalıcı olarak silinsin mi?")){
-        await silCop("dosyalar",d.id,(d.musteri||"")+" / "+(d.urun||"Dosya"),["dosyaFoto/"+d.id,"fiyatlar/sevk/"+d.id]);
+        await silCop("dosyalar",d.id,(d.musteri||d.cari||"")+" / "+(d.urun||d.metin||"Dosya"),["dosyaFoto/"+d.id,"fiyatlar/sevk/"+d.id]);
         dAcik.delete(d.id);toast("Silindi");
       }
     }catch(err){toast(errText(err))}
@@ -1589,8 +1647,8 @@ $("dList").onclick=async e=>{
 };
 $("dCsv").onclick=()=>{
   const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',n=v=>q(String(+v||0).replace(".",","));
-  const r=[["Teslim Tarihi","Tür","Müşteri","Ürün","Kg","Adet","Adres","Not","Kaydeden","Teslim eden","Onaylayan","Onay Tarihi"].concat(isAdmin()?["Fiyat (₺)","Esas","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")]
-    .concat(dosFiltre().map(d=>[q(trDate(dTarih(d))),q(turAd(d)),q(d.musteri),q(d.urun),n(d.kg),n(d.paket),q(d.adres),q(d.not),q(d.ekleyen),q(d.teslimEden),q(d.onaylayan),q(dTam(d.onayTarihi))].concat(isAdmin()?sFyCsv(d):[]).join(";")));
+  const r=[["Teslim Tarihi","Tür","Müşteri","Ürün","Kg","Adet","Tahsilat (₺)","Adres","Not","Kaydeden","Teslim eden","Onaylayan","Onay Tarihi"].concat(isAdmin()?["Fiyat (₺)","Esas","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")]
+    .concat(dosFiltre().map(d=>[q(trDate(dTarih(d))),q(turAd(d)),q(d.kaynak==="tahsilat"?d.cari:d.musteri),q(d.kaynak==="talimat"?d.metin:d.urun),d.kaynak?q(""):n(d.kg),d.kaynak?q(""):n(d.paket),d.kaynak==="tahsilat"?n(kTut(d)):q(""),q(d.adres),q(d.kaynak==="tahsilat"?[d.not,d.alanNot,d.makbuzNo?"Makbuz "+d.makbuzNo:""].filter(Boolean).join(" | "):d.not),q(d.kaynak?(d.atayan||d.talepEden):d.ekleyen),q(d.kaynak?(d.yapan||d.alan):d.teslimEden),q(d.onaylayan),q(dTam(d.onayTarihi))].concat(isAdmin()?sFyCsv(d):[]).join(";")));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download="dosyalar.csv";a.click();
 };
 

@@ -50,6 +50,7 @@
     if(!bit&&silebilir(x))b+='<button class="btn b7 sm" style="width:auto;margin:6px 6px 0 0" data-a="tduzenle" data-id="'+esc(x.id)+'">✏ Düzenle</button>';
     if(bit&&duzenleyebilir(x))b+='<button class="btn b7 sm" style="width:auto;margin:6px 6px 0 0" data-a="duzenle" data-id="'+esc(x.id)+'">✏ Düzenle</button>';
     if(bit&&geriAlabilir(x))b+='<button class="btn b6 sm" style="width:auto;margin:6px 6px 0 0" data-a="geri" data-id="'+esc(x.id)+'">↩ Geri al</button>';
+    if(bit&&isAdmin())b+='<button class="btn b4 sm" style="width:auto;margin:6px 6px 0 0" data-a="dosya" data-id="'+esc(x.id)+'">📁 Dosyalara ekle</button>';
     if(silebilir(x))b+='<button class="btn b5 sm" style="width:auto;margin:6px 0 0" data-a="sil" data-id="'+esc(x.id)+'">🗑 Sil</button>';
     var tut="";
     if(bit){
@@ -113,7 +114,10 @@
       else if(b.dataset.a==="al"){ac("al",x)}
       else if(b.dataset.a==="tduzenle"){ac("talepduz",x)}
       else if(b.dataset.a==="duzenle"){ac("duzenle",x)}
-      else if(b.dataset.a==="geri"){
+      else if(b.dataset.a==="dosya"){
+        if(!isAdmin()||x.durum!=="alindi")return;
+        if(confirm("Bu tahsilat kaydı Dosyalar bölümüne taşınsın mı?\n(Alınanlar listesinden kalkar, Dosyalar'da görünür; yönetici geri çıkarabilir)"))await kayitDosyala("tahsilatlar",x,"tahsilat");
+      }else if(b.dataset.a==="geri"){
         if(!confirm("Tahsilat tekrar 'bekliyor' durumuna alınsın mı? (Girilen tutar ve fotoğraflar kayıttan kalkar; eski hali çöp kutusuna ve denetim günlüğüne yazılır, yönetici geri yükleyebilir)"))return;
         /* eski hali (tutar + fotoğraf dahil) çöp kutusuna: yönetici "Geri yükle" ile alınmış haline döndürebilir */
         var raw=JSON.parse(JSON.stringify(x));delete raw.id;

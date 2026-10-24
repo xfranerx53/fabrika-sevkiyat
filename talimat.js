@@ -21,6 +21,7 @@
     var b="";
     if(!bitti&&yapabilir(x))b+='<button class="btn b3 sm" style="width:auto;margin:6px 6px 0 0" data-a="yap" data-id="'+esc(x.id)+'">✓ Yaptım</button>';
     if(bitti&&yapabilir(x)&&(isAdmin()||x.yapanUid===(user&&user.uid)))b+='<button class="btn b6 sm" style="width:auto;margin:6px 6px 0 0" data-a="geri" data-id="'+esc(x.id)+'">↩ Geri al</button>';
+    if(bitti&&isAdmin())b+='<button class="btn b4 sm" style="width:auto;margin:6px 6px 0 0" data-a="dosya" data-id="'+esc(x.id)+'">📁 Dosyalara ekle</button>';
     if(silebilir(x))b+='<button class="btn b7 sm" style="width:auto;margin:6px 6px 0 0" data-a="duzenle" data-id="'+esc(x.id)+'">✏ Düzenle</button>';
     if(silebilir(x))b+='<button class="btn b5 sm" style="width:auto;margin:6px 0 0" data-a="sil" data-id="'+esc(x.id)+'">🗑 Sil</button>';
     return '<div class="item c" style="border-left-color:'+(bitti?"#16a34a":"#f59e0b")+'">'+
@@ -65,8 +66,11 @@
       if(b.dataset.a==="harita"){haritaAc(safeUrl(x.haritaUrl||""),x.adres||x.adresAd||"")}
       else if(b.dataset.a==="duzenle"){ac(x)}
       else if(b.dataset.a==="yap"){
-        var u={};u["sevkTalimat/"+id+"/durum"]="yapildi";u["sevkTalimat/"+id+"/yapan"]=String((rec&&rec.ad)||"?").slice(0,100);u["sevkTalimat/"+id+"/yapanUid"]=user.uid;u["sevkTalimat/"+id+"/yapilmaZaman"]=firebase.database.ServerValue.TIMESTAMP; /* sunucu saati */
-        await db.ref().update(u);toast("✓ Talimat yapıldı olarak işaretlendi");
+        if(!yapabilir(x))return;
+        yapId=id;$("talOnMetin").textContent=x.metin||"";$("dTalOn").showModal(); /* onay ekranı: «Evet, yaptım» denmeden kayıt yazılmaz */
+      }else if(b.dataset.a==="dosya"){
+        if(!isAdmin())return;
+        if(confirm("Bu talimat Dosyalar bölümüne taşınsın mı?\n(Tamamlananlar listesinden kalkar, Dosyalar'da görünür; yönetici geri çıkarabilir)"))await kayitDosyala("sevkTalimat",x,"talimat");
       }else if(b.dataset.a==="geri"){
         var g={};g["sevkTalimat/"+id+"/durum"]="bekliyor";g["sevkTalimat/"+id+"/yapan"]=null;g["sevkTalimat/"+id+"/yapanUid"]=null;g["sevkTalimat/"+id+"/yapilmaZaman"]=null;
         await db.ref().update(g);
@@ -74,6 +78,21 @@
         await db.ref("sevkTalimat/"+id).remove();toast("Talimat silindi");
       }
     }catch(err){toast(errText(err))}
+  };
+
+  /* «Yaptım» onay penceresi (dTalOn) */
+  var yapId=null;
+  $("talOnX").onclick=function(){yapId=null;$("dTalOn").close()};
+  $("talOnOk").onclick=async function(){
+    var id=yapId,x=L.find(function(y){return y.id===id}),bt=$("talOnOk");
+    if(!x||x.durum==="yapildi"||!yapabilir(x)){yapId=null;$("dTalOn").close();return}
+    bt.disabled=true;
+    try{
+      var u={};u["sevkTalimat/"+id+"/durum"]="yapildi";u["sevkTalimat/"+id+"/yapan"]=String((rec&&rec.ad)||"?").slice(0,100);u["sevkTalimat/"+id+"/yapanUid"]=user.uid;u["sevkTalimat/"+id+"/yapilmaZaman"]=firebase.database.ServerValue.TIMESTAMP; /* sunucu saati */
+      await db.ref().update(u);
+      yapId=null;$("dTalOn").close();toast("✓ Talimat yapıldı olarak işaretlendi");
+    }catch(err){toast(errText(err))}
+    bt.disabled=false;
   };
 
   function fCiz(){

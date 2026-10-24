@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v88**
-Son güncelleme: 2026-10-23 (v88: Talimat + Tahsilat'a isteğe bağlı adres ve ✏ Düzenle)
+**GÜNCEL SÜRÜM: v89**
+Son güncelleme: 2026-10-24 (v89: Dosyalar ayrı bölüm; talimat/tahsilat «Dosyalara ekle»; talimatta «Yaptım» onayı)
 
 ---
 
@@ -194,7 +194,7 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
 - **Görünümler (index.html):** `vLogin`, `vWait` (onay bekleme), `vMenu`, `vApp` (stok), `vSev`
   (sevkiyat), `vAdr` (adresler), `vDos` (dosyalar).
 - **Modüller:** 🚚 SEVKİYAT, 📦 STOK (üstte sekme).
-- **Sevkiyat sekmeleri (v45):** 🚚 SEVKİYATLAR · 📋 TALİMATLAR · 💰 TAHSİLAT · 📍 SEVK ADRESLERİ (`vtabs`, `vTabSet`). **📁 DOSYALAR artık İŞ EMİRLERİ bölümünde** (üstte İŞ EMİRLERİ / DOSYALAR sekmesi `isMT`, `isMTSet`; `sevk` veya `rap` yetkisi olan görür, operatörler görmez). Sevkiyat kartındaki "ONAYLA" yine sevkiyatta, onaylananlar Dosyalar'a düşer.
+- **Sevkiyat sekmeleri (v45):** 🚚 SEVKİYATLAR · 📋 TALİMATLAR · 💰 TAHSİLAT · 📍 SEVK ADRESLERİ (`vtabs`, `vTabSet`). **📁 DOSYALAR (v89) artık ayrı bir ana bölüm** (menüde `data-go="dos"`, panel `pDos`, içinde `vDos`; `modGor("dos")` = `sevk` veya `rap` yetkisi; operatörler görmez; İş Emirleri'ndeki `isMT` sekmesi kaldırıldı). Dosyalar üç türü barındırır: onaylanan sevkler (eskisi gibi), **tamamlanan talimatlar** ve **alınan tahsilatlar** (`dosyalar/{id}` kaydında `kaynak:"talimat"/"tahsilat"`; fotoğraflar `dosyaFoto/{id}/fotolar`). Talimat «✓ TAMAMLANANLAR» ve tahsilat «✓ ALINANLAR» listelerinde yöneticiye **«📁 Dosyalara ekle»** düğmesi çıkar (`kayitDosyala` app.js); kaynak kayıt listeden kalkar. Dosyalar'da yönetici «↩️ Dosyalardan çıkar» ile geri alır (`kayitDosyadanCik`). Tür süzgeci: Talimat / Tahsilat seçenekleri eklendi; Excel çıktısına «Tahsilat (₺)» sütunu eklendi. **Talimat «✓ Yaptım» artık onay penceresi (`dTalOn`) açar**, «Evet, yaptım» denince kaydeder. Sevkiyat kartındaki "ONAYLA" yine sevkiyatta, onaylananlar Dosyalar'a düşer.
 - **Sevkiyat modülü:** SEVKİYATLAR (HAZIR ÜRÜNLER → SEVK EDİLECEKLER → SEVK EDİLENLER; Excel'e
   aktar), SEVK ADRESLERİ, DOSYALAR (yönetici "ONAYLA" ile arşive taşır). Ürün kartında: fotoğraf,
   irsaliye fotoğrafı (tür: irsaliye/iade/diğer), araç/sorumlu, Yol tarifi, WhatsApp ile paylaşma,
@@ -258,6 +258,8 @@ Satır numaraları kayar; bu başlıkları ara:
 
 - 2026-10-23: v87 — **Bağlantı takılmasının asıl sebebi bulundu:** v86 tanısı (telefon mobil veride): internet, https, WebSocket, giriş sunucusu hepsi «tamam» ama «Veritabanı bağlı: HAYIR · uzun-sorgu: açık». v85'in `forceLongPolling()` + `localStorage.fbPoll=1` eklemesi bağlantıyı kalıcı bozmuştu: **index.html CSP'si `script-src`te firebaseio.com'a izin vermez, Firebase uzun-sorgu script yükler → engellenir → hiç bağlanamaz.** DERS: bu sitede uzun-sorgu ASLA kullanılmaz (v73 notundaki uzun-sorgu fikri de geçersiz). Düzeltme: `uzunSorgu()` kaldırıldı; takılmada `forceWebSockets()` + `goOffline/goOnline` (`sokZorla`); `app.js` her açılışta `fbPoll` anahtarını siler ve `forceWebSockets()` çağırır; tanıdan uzun-sorgu satırı kaldırıldı. Dosyalar: baglanti.js, app.js, index.html, sw.js, README.md, PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Telefonda SINANMADI.
 - 2026-10-23: v88 — (1) Yeni `adrsec.js`: ortak adres bloğu (talimatın eski satır-içi adres kodu buna taşındı). (2) **Talimat:** ✏ Düzenle (metin + adres; yazan veya yönetici). (3) **Tahsilat:** talep/doğrudan kayıt/«Tahsil ettim» pencerelerinde isteğe bağlı adres (kayıtlı adreslerden seçilebilir), kartta 📍 adres + Harita düğmesi, bekleyen talepte ✏ Düzenle (firma, not, adres; talebi açan veya yönetici), alınmış kayıtta düzenlemede adres de düzeltilir (denetim günlüğüne «Adres değişti»). Dosyalar: adrsec.js (yeni), talimat.js, tahsilat.js, index.html, sw.js, rules.json, PROJE-NOTLARI.md, README.md. **Firebase kuralı: DEĞİŞTİ** (`tahsilatlar` altına `adres`, `haritaUrl`, `adresAd`; yapıştırılmazsa tahsilatta adres kaydı «izin yok» der). Telefonda/Firebase'de SINANMADI.
+
+- 2026-10-24: v89 — (1) **Dosyalar ayrı ana bölüm** (menüde 📁 DOSYALAR; İş Emirleri içindeki sekme kalktı; `app.js` `modGor("dos")`, `modSec`, `index.html` `pDos`). (2) **Talimat:** tamamlananlarda yönetici için «📁 Dosyalara ekle»; «✓ Yaptım» önce onay penceresi (`dTalOn`) gösterir. (3) **Tahsilat:** alınanlarda yönetici için «📁 Dosyalara ekle». (4) Dosyalar listesi talimat/tahsilat kayıtlarını gösterir (satır, detay, fotoğraf, harita, arama, tür süzgeci, Excel, silme, geri çıkarma). Dosyalar: index.html, app.js, talimat.js, tahsilat.js, sw.js, README.md, PROJE-NOTLARI.md. **Firebase kuralı: değişmedi** (`dosyalar` yazma zaten yöneticiye açık, doğrulama yok). Bilinen sınır: Muhasebe (yalnız `rap`, `sevk` yok) Dosyalar'da talimat/tahsilat kaydını görür ama `dosyaFoto` okuma kuralı `sevk` istediği için fotoğrafları açılmaz (sevk dosyalarında da aynıydı). Mantık sahte veriyle (node) sınandı; telefonda/Firebase'de SINANMADI.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
