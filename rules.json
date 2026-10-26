@@ -4,7 +4,7 @@
       ".read": "(root.child('kullanicilar').child(auth.uid).child('yonetici').val() === true && root.child('kullanicilar').child(auth.uid).child('onay').val() === true)",
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
-        ".write": "(auth != null && auth.uid === $uid && !data.exists() && newData.child('onay').val() === false && newData.child('yonetici').val() === false && !newData.child('izin').exists()) || (root.child('kullanicilar').child(auth.uid).child('yonetici').val() === true && root.child('kullanicilar').child(auth.uid).child('onay').val() === true)",
+        ".write": "(root.child('kullanicilar').child(auth.uid).child('yonetici').val() === true && root.child('kullanicilar').child(auth.uid).child('onay').val() === true)",
         ".validate": "newData.hasChildren(['onay', 'yonetici'])",
         "ad": {
           ".write": "auth != null && auth.uid === $uid",

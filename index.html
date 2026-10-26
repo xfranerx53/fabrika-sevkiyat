@@ -16,7 +16,8 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=89">
+<link rel="stylesheet" href="style.css?v=90">
+<script src="yazi.js?v=90"></script>
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -36,23 +37,15 @@
 <div id="vLogin" class="overlay hide">
   <div class="box">
     <h2 style="color:#c82333;margin-bottom:10px;font-weight:900">MAG AMBALAJ</h2>
-    <div class="tabs2"><button id="tG" class="on">Giriş Yap</button><button id="tK">Kayıt Ol</button></div>
+    
     <form id="fG" autocomplete="on">
       <input id="lk" name="username" placeholder="Kullanıcı Adı" autocomplete="username" autocapitalize="none" autocorrect="off">
       <input id="lp" name="password" type="password" placeholder="Şifre" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false">
       <label style="display:flex;align-items:center;gap:8px;font-size:17px;color:#334155;margin:0 0 10px;text-align:left;cursor:pointer"><input id="lb" type="checkbox" style="width:auto;margin:0" checked> Kullanıcı adı ve şifreyi hatırla</label>
       <div class="err" id="eG"></div>
       <button type="button" class="btn b8" id="bG">Sisteme Giriş Yap</button>
+      <p style="font-size:15px;color:#64748b;margin-top:10px">Hesabınız yoksa yöneticinizden hesap isteyin.</p>
     </form>
-    <div id="fK" class="hide">
-      <input id="rn" placeholder="Adınız Soyadınız">
-      <input id="rk" placeholder="Kullanıcı Adı (harf/rakam)" autocomplete="username">
-      <input id="rp" type="password" placeholder="Şifre" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false">
-      <select id="rr"><option>Depo Görevlisi</option><option>Sevkiyat Sorumlusu</option><option>Ekstruder Operatörü</option><option>Matbaa Operatörü</option><option>Kesim Operatörü</option><option>Muhasebe</option></select>
-      <div class="err" id="eK"></div>
-      <button class="btn b3" id="bK">Hesap Oluştur</button>
-      <p style="font-size:14px;color:#64748b;margin-top:8px">Hesabınız yönetici onayından sonra açılır.</p>
-    </div>
   </div>
 </div>
 
@@ -60,9 +53,8 @@
 <div id="vWait" class="overlay hide">
   <div class="box">
     <h2 style="margin-bottom:8px">Onay bekleniyor</h2>
-    <p style="color:#475569;margin-bottom:12px">Hesabınız oluşturuldu. Bir yönetici onayladığında bu ekran kendiliğinden açılır.</p>
+    <p style="color:#475569;margin-bottom:12px">Hesabınız yönetici onayı bekliyor. Onaylandığında bu ekran kendiliğinden açılır.</p>
     <div class="err" id="wE"></div>
-    <button class="btn b3 hide" id="wR">🔄 Kaydı yeniden gönder</button>
     <button class="btn b6" data-out>Çıkış</button>
   </div>
 </div>
@@ -83,6 +75,7 @@
     <button class="menuBtn" style="background:#7c3aed" data-go="rap"><span class="ic">📊</span><div>RAPORLAR<small>Üretim, müşteri sevki, malzeme tüketimi, maliyet</small></div></button>
     <button class="menuBtn" style="background:#475569" id="mQr" type="button"><span class="ic">📷</span><div>QR OKUT<small>Etiketteki QR ile iş emrini aç</small></div></button>
     <div id="menuYok" class="hide" style="background:#fff3cd;color:#664d03;border-radius:10px;padding:12px;font-size:14px;margin:10px 0">Hesabınıza henüz bir bölüm tanımlanmamış. Lütfen yöneticiye başvurun.</div>
+    <button class="btn b6" data-hes type="button">👤 Hesabım (isim, şifre, yazı boyutu)</button>
     <button class="btn b6" data-out>Çıkış</button>
   </div>
 </div>
@@ -95,9 +88,7 @@
       <button class="btn b8 sm hide" id="bAdm">Yönetici</button>
       <button class="btn b6 sm bell" id="bBell">🔔<span class="bn hide" id="bBellN"></span></button>
       <button class="btn b7 sm" id="bMenu">🏠 Menü</button>
-      <button class="btn b6 sm" id="bAd">İsim</button>
-      <button class="btn b6 sm" id="bSf">🔑 Şifre</button>
-      <button class="btn b5 sm" data-out>Çıkış</button>
+      <button class="btn b6 sm" id="bHes" data-hes type="button">👤 Hesabım</button>
     </div>
   </div>
 
@@ -240,7 +231,6 @@
     <div id="iAna">
     <button class="btn b2 big" style="margin:0 0 10px" id="iAdd">＋ Yeni iş emri aç</button>
     <button class="btn b7 hide" id="etNew" type="button" style="margin:0 0 10px">🏷️ Yeni etiket oluştur (iş emri olmadan)</button>
-    <div style="font-size:12px;color:#94a3b8;margin:-4px 0 8px">Sürüm: etiket-v33 (iş emri tek form, aşağı inmeden)</div>
     <button class="btn b6 hide" id="irAc1" type="button" style="margin:0 0 8px">📊 Üretim raporları (biten işler · aşama süreleri)</button>
     <input id="iq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="iTabs"></div>
@@ -321,6 +311,7 @@
 </dialog>
 <dialog id="dAdm">
   <h3 style="margin-bottom:8px">Kullanıcılar</h3>
+  <button class="btn b1" id="uYeni" type="button" style="margin:0 0 8px">＋ Yeni kullanıcı hesabı aç</button>
   <div id="ulist"></div>
   <h3 style="margin:14px 0 6px">🛟 Kurtarma ve kayıt</h3>
   <button class="btn b6" id="copAc">🗑️ Çöp kutusu (silinenler)</button>
@@ -356,6 +347,28 @@
   <div id="sfE" style="color:#e71d36;font-size:14px;min-height:16px;margin-top:4px"></div>
   <button class="btn b3" id="sfOk">Kaydet</button>
   <button class="btn b6" id="sfIptal">İptal</button>
+</dialog>
+<dialog id="dHes" style="width:min(380px,94vw)">
+  <h3 style="margin-bottom:2px">👤 Hesabım</h3>
+  <div id="hesBilgi" class="sub" style="margin-bottom:10px"></div>
+  <button class="btn b6" id="bAd" type="button">✏️ Adımı değiştir</button>
+  <button class="btn b6" id="bSf" type="button">🔑 Şifremi değiştir</button>
+  <label style="margin-top:14px">Yazı boyutu (yalnız bu cihazda)</label>
+  <div class="yb" id="hesYb"><button type="button" class="btn b6" data-yb="0">Normal</button><button type="button" class="btn b6" data-yb="1" style="font-size:19px">Büyük</button><button type="button" class="btn b6" data-yb="2" style="font-size:22px">Çok büyük</button></div>
+  <button class="btn b5" data-out type="button" style="margin-top:14px">🚪 Çıkış yap</button>
+  <button class="btn b6" id="hesKapat" type="button">Kapat</button>
+</dialog>
+<dialog id="dYeni" style="width:min(400px,94vw)">
+  <h3 style="margin-bottom:4px">＋ Yeni kullanıcı hesabı</h3>
+  <small class="mut" style="display:block;margin-bottom:8px">Hesabı yönetici açar; kişi onaylı olarak girer. Kullanıcı adı ve şifreyi ona siz iletirsiniz (sonra kendisi 👤 Hesabım'dan değiştirebilir).</small>
+  <label for="yAd">Ad soyad</label><input id="yAd" maxlength="60" autocomplete="off">
+  <label for="yKa" style="margin-top:8px">Kullanıcı adı (harf/rakam, 3-20)</label><input id="yKa" maxlength="20" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+  <label for="ySi" style="margin-top:8px">Şifre (en az 6 karakter)</label><input id="ySi" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+  <label for="yRo" style="margin-top:8px">Rol</label><select id="yRo"></select>
+  <div class="err" id="yE" style="margin-top:6px"></div>
+  <div id="yOk" class="hide" style="background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:10px;margin-bottom:6px;color:#166534"></div>
+  <button class="btn b3" id="yKaydet" type="button">Hesabı aç</button>
+  <button class="btn b6" id="yIptal" type="button">Vazgeç</button>
 </dialog>
 <dialog id="dAd" style="width:min(380px,94vw)">
   <h3 style="margin-bottom:8px">✏️ Adımı değiştir</h3>
@@ -669,17 +682,17 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="raporlar.js?v=89"></script>
+<script src="raporlar.js?v=90"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=89"></script>
+<script src="app.js?v=90"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=89"></script>
-<script src="saat.js?v=89"></script>
+<script src="foto-onizleme.js?v=90"></script>
+<script src="saat.js?v=90"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=89"></script>
+<script src="diyalog.js?v=90"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -710,8 +723,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=89"></script>
-<script src="etiket.js?v=89"></script>
+<script src="qr.js?v=90"></script>
+<script src="etiket.js?v=90"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -721,15 +734,16 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="adrsec.js?v=89"></script>
-<script src="talimat.js?v=89"></script>
-<script src="tahsilat.js?v=89"></script>
-<script src="granul.js?v=89"></script>
-<script src="arama.js?v=89"></script>
-<script src="israpor.js?v=89"></script>
-<script src="fotookut.js?v=89"></script>
-<script src="pano.js?v=89"></script>
-<script src="baglanti.js?v=89"></script>
-<script src="sw-kayit.js?v=89"></script>
+<script src="adrsec.js?v=90"></script>
+<script src="talimat.js?v=90"></script>
+<script src="tahsilat.js?v=90"></script>
+<script src="granul.js?v=90"></script>
+<script src="arama.js?v=90"></script>
+<script src="israpor.js?v=90"></script>
+<script src="fotookut.js?v=90"></script>
+<script src="pano.js?v=90"></script>
+<script src="baglanti.js?v=90"></script>
+<script src="hesap.js?v=90"></script>
+<script src="sw-kayit.js?v=90"></script>
 </body>
 </html>

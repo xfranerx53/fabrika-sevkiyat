@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v89**
-Son güncelleme: 2026-10-24 (v89: Dosyalar ayrı bölüm; talimat/tahsilat «Dosyalara ekle»; talimatta «Yaptım» onayı)
+**GÜNCEL SÜRÜM: v90**
+Son güncelleme: 2026-10-26 (v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
 
@@ -98,6 +98,8 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 | `fotookut.js` | Yeni iş emrinde «📷 Mikro formunun fotoğrafından doldur»: fotoğrafı Google Gemini (ücretsiz API anahtarı) ile okuyup alanları doldurur (v65) | GitHub |
 | `pano.js` | **Yönetici panosu (v81):** menüdeki «🛡️ YÖNETİCİ PANELİ» düğmesinin açtığı pencerede (`dPano`) özet: onay bekleyen kullanıcı, geciken iş emri, bugün termini olan, sevk edilecekler, bekleyen tahsilat/talimat, kritik stok, yedek durumu + tek dokunuşla yedek | GitHub |
 | `baglanti.js` | **Bağlantı durumu + kayıt güvenliği (v81):** sol altta ● Çevrimiçi/Bağlantı yok/Gönderiliyor etiketi, kopunca kırmızı şerit, kayıt 8 sn'de gitmezse turuncu şerit, reddedilen kayıtta «⚠ Kaydedilemedi», bekleyen kayıt varken sayfa kapanırsa uyarı. Firebase `set/update/remove/transaction` işlemlerini sarar | GitHub |
+| `yazi.js` | **(v90)** Yazı boyutu ayarı (Normal/Büyük/Çok büyük; `localStorage.yaziBoyut`). `<head>`te yüklenir, `<html>`e `byz1`/`byz2` sınıfı koyar; kurallar `style.css` sonundaki «Büyük yazı kipleri» bölümünde | GitHub |
+| `hesap.js` | **(v90)** 👤 Hesabım penceresi (`dHes`: isim, şifre, yazı boyutu, çıkış) ve yönetici «＋ Yeni kullanıcı hesabı aç» (`dYeni`, `uYeni`). Hesap, ikinci geçici Firebase uygulamasıyla (`hesapAc`) açılır ki yönetici oturumdan çıkmasın; sonra `kullanicilar/{uid}` `onay:true` yazılır | GitHub |
 | `arama.js`, `saat.js`, `diyalog.js`, `foto-onizleme.js`, `sw-kayit.js` | Küçük yardımcılar | GitHub |
 | `sw.js` | Çevrimdışı önbellek. `CACHE='fabrika-vNN'` ve `V='?v=NN'` | GitHub |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `favicon-32.png` | Telefona kurulum ve ikonlar | GitHub |
@@ -168,9 +170,7 @@ akışlarına eklenmesi gerekip gerekmediğini düşün.
 **Roller:** Depo Görevlisi, Sevkiyat Sorumlusu, Ekstruder Operatörü, Matbaa Operatörü,
 Kesim Operatörü, Muhasebe. (Bobinoz Ustası rolü v51'de kaldırıldı: Ekstruder Operatörü ile aynı.) Ayrıca `yonetici=true` olan **yönetici**.
 
-**Onay:** Yeni kayıt olan kullanıcı `onay=false` başlar; yönetici onaylayana kadar hiçbir şey
-göremez/yapamaz. Kullanıcı kendi kaydında `onay`, `yonetici`, `izin` alanlarını kendi kendine
-açamaz (rules engeller).
+**Hesaplar (v90):** Herkese açık «Kayıt Ol» KALDIRILDI. Hesabı yalnız yönetici açar (Yönetici paneli > Kullanıcılar > «＋ Yeni kullanıcı hesabı aç»: ad, kullanıcı adı, şifre ≥6, rol); hesap `onay=true` doğar. `rules.json`te `kullanicilar/$uid` yazması yalnız onaylı yöneticiye açıktır (kullanıcı kendi kaydını oluşturamaz); kullanıcı yalnız kendi `ad` alanını değiştirebilir. Eski bekleyen (`onay=false`) kayıtlar listede «Onayla» ile hâlâ onaylanabilir. Kaydı olmayan hesap «Bu hesap için kayıt bulunamadı» ekranını görür. **Firebase > Authentication > Settings > User actions > «Enable create (sign-up)» AÇIK kalmalı** (istemci hesap açabilsin diye); veri erişimi rules ile kapalıdır.
 
 **İzin anahtarları** (`kullanicilar/{uid}/izin/...`, true = rolden bağımsız ver, false = rol
 varsayılanını kapat, yoksa rol varsayılanı geçerli):
@@ -190,7 +190,7 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
 
 ## 7. Uygulama ekranları ve iş akışı
 
-- **Giriş Yap / Kayıt Ol** ekranı. Kayıt sonrası yönetici onayı beklenir.
+- **Giriş Yap** ekranı (v90: Kayıt Ol yok; «Hesabınız yoksa yöneticinizden hesap isteyin»). Üst çubukta yalnız Yönetici, 🔔, 🏠 Menü, 👤 Hesabım; isim/şifre/çıkış/yazı boyutu `dHes` penceresinde (`index.html`, `hesap.js`). Ana menüde de «👤 Hesabım» düğmesi var.
 - **Görünümler (index.html):** `vLogin`, `vWait` (onay bekleme), `vMenu`, `vApp` (stok), `vSev`
   (sevkiyat), `vAdr` (adresler), `vDos` (dosyalar).
 - **Modüller:** 🚚 SEVKİYAT, 📦 STOK (üstte sekme).
@@ -261,6 +261,8 @@ Satır numaraları kayar; bu başlıkları ara:
 
 - 2026-10-24: v89 — (1) **Dosyalar ayrı ana bölüm** (menüde 📁 DOSYALAR; İş Emirleri içindeki sekme kalktı; `app.js` `modGor("dos")`, `modSec`, `index.html` `pDos`). (2) **Talimat:** tamamlananlarda yönetici için «📁 Dosyalara ekle»; «✓ Yaptım» önce onay penceresi (`dTalOn`) gösterir. (3) **Tahsilat:** alınanlarda yönetici için «📁 Dosyalara ekle». (4) Dosyalar listesi talimat/tahsilat kayıtlarını gösterir (satır, detay, fotoğraf, harita, arama, tür süzgeci, Excel, silme, geri çıkarma). Dosyalar: index.html, app.js, talimat.js, tahsilat.js, sw.js, README.md, PROJE-NOTLARI.md. **Firebase kuralı: değişmedi** (`dosyalar` yazma zaten yöneticiye açık, doğrulama yok). Bilinen sınır: Muhasebe (yalnız `rap`, `sevk` yok) Dosyalar'da talimat/tahsilat kaydını görür ama `dosyaFoto` okuma kuralı `sevk` istediği için fotoğrafları açılmaz (sevk dosyalarında da aynıydı). Mantık sahte veriyle (node) sınandı; telefonda/Firebase'de SINANMADI.
 
+- 2026-10-26: v90 — (1) **Hesapları yönetici açar:** Kayıt Ol sekmesi/formu ve `app.js`'teki kayıt kodu (`kayitYaz`, `bK`…) kaldırıldı; yönetici penceresine «＋ Yeni kullanıcı hesabı aç» (`hesap.js`, ikinci Firebase uygulamasıyla, yarım kalan hesabı tamamlayabilir, denetim günlüğüne yazar; şifre ≥6). `rules.json`: `kullanicilar/$uid` kendi kendine kayıt cümlesi silindi. (2) **👤 Hesabım:** üst çubuktaki İsim/Şifre/Çıkış tek pencerede; menüye de eklendi. (3) **Dokunma alanı + yazı:** tüm düğme/giriş/sekmelerde en az 44px, 11-13px yazılar 13-14px'e çıktı (satır içi olanlar `[style*=…]` kuralıyla), Hesabım'dan Normal/Büyük(×1,2)/Çok büyük(×1,4) yazı boyutu (`yazi.js`, cihazda saklanır). (4) İş Emirleri'ndeki «Sürüm: etiket-v33» geliştirme yazısı kaldırıldı. Dosyalar: index.html, app.js, style.css, yazi.js (yeni), hesap.js (yeni), diyalog.js, sw.js, rules.json, README.md, PROJE-NOTLARI.md. **Firebase kuralı: DEĞİŞTİ** (yapıştırılmazsa eski kendi-kendine-kayıt izni sunucuda açık kalır; yönetici hesap açma yine çalışır). Hesap açma mantığı sahte ortamda (node) sınandı; telefonda/Firebase'de ve büyük yazı görünümü gerçek ekranda SINANMADI.
+
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
 1. **Uzun-sorgu (`forceLongPolling`) bu sitede ASLA kullanılmaz.** `index.html` CSP'si `script-src`te firebaseio.com'a izin vermez; Firebase uzun-sorgu script yükler, engellenir, bağlantı kalıcı kopar (v85-v87 yaşandı). Takılmada: `forceWebSockets()` + `db.goOffline()` → `goOnline()`.
@@ -271,11 +273,14 @@ Satır numaraları kayar; bu başlıkları ara:
 6. **Claude telefonda/Firebase'de deneyemez.** «Sınanmadı» diye dürüstçe yaz. Sorun bulunamazsa tahmin etme: ölçen bir **tanı** ekle, kullanıcıdan ekran görüntüsü iste (v86 tanısı sorunu 1 turda buldu).
 7. **`fbKur(q)` kimlikleri:** `q+"N"`, `q+"X"`, `q+"D1"`, `q+"D2"` kullanılır; yeni öğelere bu önekleri verme (v61 kimlik çakışması).
 8. **Etikette ebat sadece rakam** (kullanıcı kararı, v84): iş emrindeki «30CM T.AÇIK» etikette `30`; iş emri formu ve yazdırma olduğu gibi kalır.
-9. **Kullanıcı kod bilmiyor:** tam hazır dosya ver, «şuraya git şunu değiştir» deme; her teslimatta GitHub'a yüklenecek dosyaları, Firebase kuralı durumunu, yeni sürümü yaz.
+9. **Yönetici hesap açarken oturumunu kaybetmemeli:** `createUserWithEmailAndPassword` normalde yeni hesapla giriş yaptırır; bu yüzden hesap ikinci uygulamada (`firebase.initializeApp(CFG,"hesapAc")`, kalıcılık `NONE`) açılır. Ana `auth`/`db` aynen yönetici kalır.
+10. **Kullanıcı kod bilmiyor:** tam hazır dosya ver, «şuraya git şunu değiştir» deme; her teslimatta GitHub'a yüklenecek dosyaları, Firebase kuralı durumunu, yeni sürümü yaz.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
 **Yapılacaklar (kullanıcı isteklerini buraya yaz, bitenleri günlüğe taşı):**
+- **v90 cihazda denenmeli:** yönetici ile yeni kullanıcı aç → o hesapla giriş; Hesabım menüsü (isim, şifre, çıkış); yazı boyutu Büyük/Çok büyük ile ana ekranlar (sevkiyat kartı, iş emri, tahsilat, granül tablosu) taşma yapıyor mu; rules yayınlandı mı.
+- **Önerilenlerden kalanlar (kullanıcı sırayla isteyecek):** yeni sürüm uyarısı, operatör «Benim işlerim» ekranı, test Firebase projesi, taslak kaydı, hata günlüğü, Gemini anahtarı kısıtlama, şifre sıfırlama fonksiyonunun deploy testi.
 - **v81 cihazda denenmeli:** pano kartları, bağlantı şeridi (uçak modu ile), yedek zamanının panoda görünmesi. Rules yayınlandı mı sorulmalı.
 - **[ERTELENDİ] Telefona gerçek bildirim (push, FCM):** FCM ücretsiz ama gönderen sunucu kodu (Cloud Functions) **Blaze planı** (kart bilgisi) ister; kullanıcı «ücretsizse ekle» dedi → eklenmedi. Blaze'e geçilirse: istemci FCM token + `sw.js` push dinleyicisi + `index.js`'e `sevkTalimat`/`tahsilatlar` onCreate ve zamanlanmış geciken-iş fonksiyonları. iPhone'da yalnız ana ekrana eklenmiş PWA (iOS 16.4+) alır.
 - Olası ek: Cloud Function ile zamanlanmış otomatik yedek (Blaze), pano kartlarını rol bazlı diğer kullanıcılara açma, bağlantısız kayıtlar için kalıcı kuyruk.

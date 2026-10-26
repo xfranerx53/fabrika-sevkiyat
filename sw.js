@@ -1,8 +1,8 @@
-const CACHE = 'fabrika-v89';
-const V = '?v=89';
+const CACHE = 'fabrika-v90';
+const V = '?v=90';
 const ASSETS = ['./', './index.html', './manifest.webmanifest',
   './style.css'+V, './raporlar.js'+V, './app.js'+V, './foto-onizleme.js'+V, './saat.js'+V, './diyalog.js'+V,
-  './qr.js'+V, './etiket.js'+V, './arama.js'+V, './israpor.js'+V, './fotookut.js'+V, './adrsec.js'+V, './talimat.js'+V, './tahsilat.js'+V, './granul.js'+V, './pano.js'+V, './baglanti.js'+V, './sw-kayit.js'+V,
+  './qr.js'+V, './etiket.js'+V, './arama.js'+V, './israpor.js'+V, './fotookut.js'+V, './adrsec.js'+V, './talimat.js'+V, './tahsilat.js'+V, './granul.js'+V, './pano.js'+V, './baglanti.js'+V, './sw-kayit.js'+V, './yazi.js'+V, './hesap.js'+V,
   './icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon-32.png'];
 
 self.addEventListener('install', e => {

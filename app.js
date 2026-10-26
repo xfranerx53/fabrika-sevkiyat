@@ -152,14 +152,6 @@ try{const rs=$("rr");if(rs)rs.innerHTML=Object.keys(YETKI).map(r=>`<option>${r}<
 window.yetkiOzet=()=>({rol:rec&&rec.rol,yonetici:isAdmin(),uygula:YETKI_UYGULA,moduller:["sevk","stok","is","uretim","rap","tah","granul"].filter(modGor),asamalar:["etiket","ekstruder","baski","kesim","depo"].filter(asamaYap),islemler:["isAc","isDuzenle","geriAl","isSil","fiyat"].filter(k=>k==="isAc"?canIsAc():islemYap(k))});
 
 /* ---------- Oturum ---------- */
-let pendReg=null,kayitDevam=false;const kyTry={};
-async function kayitYaz(u){
-  if(!u)return;const ad0=(u.email||"").split("@")[0],P=pendReg||{n:ad0,k:ad0,r:"Depo Görevlisi"};
-  $("wE").textContent="Kayıt veritabanına yazılıyor...";$("wR").classList.add("hide");
-  try{await db.ref("kullanicilar/"+u.uid).set({ad:P.n,kullanici:P.k,rol:P.r,onay:false,yonetici:false});$("wE").textContent=""}
-  catch(e){$("wE").textContent="Kayıt veritabanına yazılamadı: "+errText(e);$("wR").classList.remove("hide")}
-}
-$("wR").onclick=()=>kayitYaz(auth.currentUser);
 auth.onAuthStateChanged(u=>{
   window.__st.auth=1;bildDurdur();
   if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null} if(window.tRef){tRef.off();tRef=null} if(window.oRef){oRef.off();oRef=null} if(window.aRef){aRef.off();aRef=null} if(window.dRef){dRef.off();dRef=null} dosya=[]; if(window.fRef){fRef.off();fRef=null} if(window.iRef){iRef.off();iRef=null} fyat={sevk:{},stok:{},siparis:{}};
@@ -176,13 +168,11 @@ auth.onAuthStateChanged(u=>{
       show(menuOk?"vApp":"vMenu");
       if(!started){started=true;if(modGor("sevk")){yukle();adrYukle()} /* adım 3: sevk verisini sadece sevk bölümünü görebilen roller okur */bildBaslat();if(panel==="stok")stokYukle()}
       listele();qrBasla();sevkSorKaydet();
-    }else{show("vWait");if(!rec&&!kayitDevam&&!kyTry[u.uid]){kyTry[u.uid]=1;kayitYaz(u)}}
+    }else{show("vWait");$("wE").textContent=rec?"":"Bu hesap için kayıt bulunamadı. Hesapları yönetici açar; lütfen yöneticinizle görüşün."}
   },e=>{toast("Hesap okunamadı: "+errText(e));$("wE").textContent="Hesap okunamadı: "+errText(e);show("vWait")});
 });
 document.querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>auth.signOut());
 
-$("tG").onclick=()=>{$("fG").classList.remove("hide");$("fK").classList.add("hide");$("tG").classList.add("on");$("tK").classList.remove("on")};
-$("tK").onclick=()=>{$("fK").classList.remove("hide");$("fG").classList.add("hide");$("tK").classList.add("on");$("tG").classList.remove("on")};
 /* Firebase Auth en az 6 karakter şart koşar (kapatılamaz). 6'dan kısa şifreler sabit bir ekle tamamlanıp Firebase'e öyle gönderilir. */
 const SF_EK="#magfs",sifreHz=p=>p.length<6?p+SF_EK:p;
 const mail=k=>k+"@mag-sevkiyat.com";
@@ -204,21 +194,6 @@ try{
   if(k0)$("lk").value=k0;
   localStorage.removeItem("hatirla_p");
 }catch(_){}
-$("bK").onclick=async()=>{
-  const n=$("rn").value.trim(),k=$("rk").value.trim().toLowerCase(),p=$("rp").value,r=$("rr").value;$("eK").textContent="";
-  if(!n){$("eK").textContent="Adınızı yazın.";return}
-  if(!/^[a-z0-9._-]{3,20}$/.test(k)){$("eK").textContent="Kullanıcı adı 3-20 karakter olmalı (harf, rakam, . _ -).";return}
-  if(!p){$("eK").textContent="Şifre yazın.";return}
-  $("bK").disabled=true;$("eK").style.color="#475569";$("eK").textContent="Hesap oluşturuluyor...";
-  let c=null;pendReg={n,k,r};kayitDevam=true;
-  try{c=await auth.createUserWithEmailAndPassword(mail(k),sifreHz(p))}
-  catch(e){kayitDevam=false;$("eK").style.color="";$("eK").textContent="1/2 Hesap açılamadı: "+errText(e);$("bK").disabled=false;return}
-  try{
-    await db.ref("kullanicilar/"+c.user.uid).set({ad:n,kullanici:k,rol:r,onay:false,yonetici:false});
-    $("eK").textContent="";$("wE").textContent="";
-  }catch(e){$("eK").style.color="";$("eK").textContent="2/2 Hesap açıldı ama kayıt veritabanına yazılamadı: "+errText(e);$("wE").textContent="Kayıt veritabanına yazılamadı: "+errText(e);$("wR").classList.remove("hide")}
-  kayitDevam=false;$("bK").disabled=false;
-};
 $("bAd").onclick=()=>{$("adYeni").value=(rec&&rec.ad)||"";$("dAd").showModal();$("adYeni").focus();$("adYeni").select()};
 $("adNo").onclick=()=>$("dAd").close();
 const adKaydet=()=>{const n=$("adYeni").value.trim();if(!n){$("dAd").close();return}db.ref("kullanicilar/"+user.uid+"/ad").set(n).then(()=>$("dAd").close()).catch(e=>toast(errText(e)))};
