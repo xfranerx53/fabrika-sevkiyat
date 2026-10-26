@@ -70,7 +70,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 
 - **Ne:** Fabrika için stok, sipariş, iş emri ve sevkiyat takip uygulaması (telefona eklenebilen
   PWA). Firma: MAG AMBALAJ.
-- **Adres (GitHub Pages):** https://xfranerx53.github.io/fabrika-sevkiyat/
+- **Adres:** v90 öncesi GitHub Pages (https://xfranerx53.github.io/fabrika-sevkiyat/); geçiş sonrası Firebase Hosting (Bölüm 1.1). Eski adres yönlendirme sayfasıdır.
 - **GitHub deposu:** xfranerx53/fabrika-sevkiyat (ana dal: main)
 - **Arka uç:** Firebase projesi `sevkiyat-fc22b`, **Realtime Database** (Firestore DEĞİL),
   Firebase Auth (e-posta/şifre). İstemci kütüphanesi: Firebase JS **8.10.1** (gstatic'ten yüklenir).
@@ -80,6 +80,15 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
   güvenlik `rules.json` ile sağlanır.
 - Kullanıcı e-postalarını değiştirerek yeni sohbet açıyor; Claude hafızası hesaplar arası paylaşılmaz.
   Süreklilik bu dosya + zip ile sağlanır.
+
+## 1.1 Yayın (hosting) düzeni — v90 sonrası
+
+- **Amaç:** Kod GitHub'da ÖZEL depoda durur; site Firebase Hosting'de yayınlanır (GitHub Pages ücretsiz planda özel depoyu yayınlayamaz). Veri güvenliği yine giriş + `rules.json` iledir.
+- **Yeni adres:** https://sevkiyat-fc22b.web.app/ (alan adı bağlanırsa değişir; o zaman Firebase > Authentication > Settings > Authorized domains'e eklenmeli ve etiket QR'ları yeni adresle basılır — `etiket.js` QR'ı açıldığı sitenin adresinden üretir).
+- **Akış:** Dosyalar GitHub'a yüklenir → `yayinla.yml` çalışır → Firebase Hosting güncellenir (GitHub > Actions sekmesinde yeşil ✓ aranır). Eski GitHub Pages gibi anında değil, 1-2 dk sürer.
+- **Eski adres:** Depo adı `fabrika-sevkiyat-kod` olarak değiştirilip özel yapılır; `fabrika-sevkiyat` adıyla yeni, GENEL bir depo yalnız `yonlendirme-repo` içeriğini (index.html, 404.html, sw.js) barındırır ve eski QR / ana ekran kısayollarını yeni adrese yönlendirir (`?is=` korunur). Bu depoya ASLA uygulama kodu konmaz.
+- **Gizli anahtar:** Firebase hizmet hesabı JSON'u yalnız GitHub Secrets'ta durur; depoya, sohbete veya zip'e konmaz. Yayın "izin yok" hatası verirse hata metnine bakılır (hizmet hesabına Firebase Hosting yetkisi gerekebilir).
+- Hosting yapılandırması site davranışını değiştirmediği için sürüm numarası artmadı.
 
 ## 2. Dosyalar (zip'teki gerçek durum, sürüm v88)
 
@@ -105,6 +114,8 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `favicon-32.png` | Telefona kurulum ve ikonlar | GitHub |
 | `rules.json` | Firebase kuralları metni (yedek kopya; gerçek kurallar Firebase'dedir) | GitHub + Firebase'e yapıştırılır |
 | `index.js` + `package.json` | Firebase Cloud Function `sifreSifirla` (yönetici başka kullanıcının şifresini sıfırlar). Siteyle ilgisi yok | Ayrıca Firebase'e deploy edilir |
+| `firebase.json` | **(v90+)** Firebase Hosting ayarı: depo kökü yayınlanır; `*.md`, `rules.json`, `kontrol.js`, `index.js`, `package.json` yayına GİRMEZ; tüm dosyalar `no-cache` (eski sürümde takılmasın). `.github/workflows/yayinla.yml` ile GitHub'a her yükleme otomatik yayınlanır | GitHub |
+| `.github/workflows/yayinla.yml` | **(v90+)** `main` dalına yükleme olunca siteyi Firebase Hosting (proje `sevkiyat-fc22b`) üzerinde yayınlar. Gizli anahtar GitHub Secrets > `FIREBASE_SERVICE_ACCOUNT`. Dosya yolu elle yazılarak oluşturulur (gizli klasör) | GitHub |
 | `kontrol.js` | Teslim öncesi otomatik kontrol + sürüm artırma. **Sadece Claude çalıştırır**, siteyi etkilemez | GitHub'da durabilir |
 | `README.md` | Kısa açıklama | GitHub |
 | `PROJE-NOTLARI.md` | Bu dosya | GitHub |
@@ -262,6 +273,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-24: v89 — (1) **Dosyalar ayrı ana bölüm** (menüde 📁 DOSYALAR; İş Emirleri içindeki sekme kalktı; `app.js` `modGor("dos")`, `modSec`, `index.html` `pDos`). (2) **Talimat:** tamamlananlarda yönetici için «📁 Dosyalara ekle»; «✓ Yaptım» önce onay penceresi (`dTalOn`) gösterir. (3) **Tahsilat:** alınanlarda yönetici için «📁 Dosyalara ekle». (4) Dosyalar listesi talimat/tahsilat kayıtlarını gösterir (satır, detay, fotoğraf, harita, arama, tür süzgeci, Excel, silme, geri çıkarma). Dosyalar: index.html, app.js, talimat.js, tahsilat.js, sw.js, README.md, PROJE-NOTLARI.md. **Firebase kuralı: değişmedi** (`dosyalar` yazma zaten yöneticiye açık, doğrulama yok). Bilinen sınır: Muhasebe (yalnız `rap`, `sevk` yok) Dosyalar'da talimat/tahsilat kaydını görür ama `dosyaFoto` okuma kuralı `sevk` istediği için fotoğrafları açılmaz (sevk dosyalarında da aynıydı). Mantık sahte veriyle (node) sınandı; telefonda/Firebase'de SINANMADI.
 
 - 2026-10-26: v90 — (1) **Hesapları yönetici açar:** Kayıt Ol sekmesi/formu ve `app.js`'teki kayıt kodu (`kayitYaz`, `bK`…) kaldırıldı; yönetici penceresine «＋ Yeni kullanıcı hesabı aç» (`hesap.js`, ikinci Firebase uygulamasıyla, yarım kalan hesabı tamamlayabilir, denetim günlüğüne yazar; şifre ≥6). `rules.json`: `kullanicilar/$uid` kendi kendine kayıt cümlesi silindi. (2) **👤 Hesabım:** üst çubuktaki İsim/Şifre/Çıkış tek pencerede; menüye de eklendi. (3) **Dokunma alanı + yazı:** tüm düğme/giriş/sekmelerde en az 44px, 11-13px yazılar 13-14px'e çıktı (satır içi olanlar `[style*=…]` kuralıyla), Hesabım'dan Normal/Büyük(×1,2)/Çok büyük(×1,4) yazı boyutu (`yazi.js`, cihazda saklanır). (4) İş Emirleri'ndeki «Sürüm: etiket-v33» geliştirme yazısı kaldırıldı. Dosyalar: index.html, app.js, style.css, yazi.js (yeni), hesap.js (yeni), diyalog.js, sw.js, rules.json, README.md, PROJE-NOTLARI.md. **Firebase kuralı: DEĞİŞTİ** (yapıştırılmazsa eski kendi-kendine-kayıt izni sunucuda açık kalır; yönetici hesap açma yine çalışır). Hesap açma mantığı sahte ortamda (node) sınandı; telefonda/Firebase'de ve büyük yazı görünümü gerçek ekranda SINANMADI.
+- 2026-10-26: Yayın düzeni (sürüm artmadı, v90) — `firebase.json` ve `.github/workflows/yayinla.yml` eklendi: site Firebase Hosting'de yayınlanır, depo özel yapılabilir; eski adres için ayrı genel `yonlendirme-repo` (index.html, 404.html, sw.js) hazırlandı. Dosyalar: firebase.json (yeni), yayinla.yml (yeni), yonlendirme-repo/* (ayrı depo), PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Yayın hattı (hizmet hesabı izni dahil) SINANMADI; ilk yayında Actions sekmesindeki sonuca bakılacak.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
