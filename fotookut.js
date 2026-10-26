@@ -110,7 +110,7 @@
           if(sn.ok||!(sn.st===400&&c<cf.length-1&&!/API key/i.test(sn.t||"")))break}
         return sn})().then(function(sn){
         if(cik)return;sonuc[i]=sn;bitti++;
-        if(sn.ok){cik=true;clearTimeout(zm);return res({ok:1,sn:sn})}
+        if(sn.ok){cik=true;clearTimeout(zm);try{localStorage.setItem("okSon",adaylar[i])}catch(e){}return res({ok:1,sn:sn})}
         if(bitti>=adaylar.length){cik=true;clearTimeout(zm);return res({sonuc:sonuc})}
         ileri()})}
     function ileri(){clearTimeout(zm);if(cik||sonraki>=adaylar.length)return;dene(sonraki++);zm=setTimeout(ileri,12000)}
@@ -119,8 +119,19 @@
   async function gemini(b64){
     asamaM="Model listesi alınıyor";
     var liste=await modelListesi(),adaylar=[];
-    if(ayar.model&&(!liste.length||liste.indexOf(ayar.model)>=0))adaylar.push(ayar.model);
-    liste.slice(0,4).concat(liste.length?[]:MODELLER).forEach(function(m){if(adaylar.indexOf(m)<0)adaylar.push(m)});
+    var ls=function(k){try{return localStorage.getItem(k)||""}catch(e){return""}};
+    var ys=function(k,v){try{localStorage.setItem(k,v)}catch(e){}};
+    var dolu={};try{dolu=JSON.parse(ls("okDolu")||"{}")}catch(e){dolu={}}
+    var simdi=Date.now(),ekle=function(m){if(m&&adaylar.indexOf(m)<0)adaylar.push(m)};
+    /* Sıra: yöneticinin yazdığı model, bu cihazda en son çalışan model, hızlı (lite) modeller, sonra diğerleri. Bugünkü limiti dolan modeller atlanır. */
+    var hepsi=liste.length?liste.slice():MODELLER.slice();
+    var lite=hepsi.filter(function(m){return/lite/i.test(m)}),normal=hepsi.filter(function(m){return!/lite/i.test(m)});
+    if(ayar.model&&(!liste.length||liste.indexOf(ayar.model)>=0))ekle(ayar.model);
+    var son=ls("okSon");if(son&&hepsi.indexOf(son)>=0)ekle(son);
+    lite.slice(0,2).concat(normal.slice(0,3)).forEach(ekle);
+    var uygun=adaylar.filter(function(m){return!(dolu[m]&&dolu[m]>simdi)});
+    if(uygun.length)adaylar=uygun;
+    adaylar=adaylar.slice(0,4);
     var hatalar=[],yogun=false,zamanasimi=false,kota=false,gunluk=false,bekleSn=0,gMesaj="",sifir=false;
     for(var tur=0;tur<2;tur++){
       hatalar=[];yogun=false;zamanasimi=false;kota=false;gunluk=false;bekleSn=0;var sadece5xx=true;
@@ -137,7 +148,7 @@
         if(st===500||st===502||st===503||st===504){hatalar.push(adaylar[i]+": "+st);yogun=true;continue}
         if(st==="zaman"){hatalar.push(adaylar[i]+": zaman aşımı");zamanasimi=true;sadece5xx=false;continue}
         if(st==="ag")throw new Error("Google'a bağlanılamadı. İnternet bağlantısını kontrol edin.");
-        if(st===429){kota=true;sadece5xx=false;if(/PerDay|per day/i.test(t))gunluk=true;if(/limit:\s*0\b/i.test(t))sifir=true;if(!gMesaj)gMesaj=t.replace(/\s+/g," ").slice(0,170);var mm=t.match(/retry in ([\d.]+)\s*s/i);if(mm)bekleSn=Math.max(bekleSn,Math.ceil(+mm[1]));hatalar.push(adaylar[i]+": limit"+(/PerDay|per day/i.test(t)?" (günlük)":"")+(mm?" ("+Math.ceil(+mm[1])+" sn)":""));continue}
+        if(st===429){kota=true;sadece5xx=false;if(/PerDay|per day/i.test(t)){gunluk=true;try{var dd=JSON.parse(localStorage.getItem("okDolu")||"{}");dd[adaylar[i]]=Date.now()+3*3600*1000;localStorage.setItem("okDolu",JSON.stringify(dd))}catch(e){}}if(/limit:\s*0\b/i.test(t))sifir=true;if(!gMesaj)gMesaj=t.replace(/\s+/g," ").slice(0,170);var mm=t.match(/retry in ([\d.]+)\s*s/i);if(mm)bekleSn=Math.max(bekleSn,Math.ceil(+mm[1]));hatalar.push(adaylar[i]+": limit"+(/PerDay|per day/i.test(t)?" (günlük)":"")+(mm?" ("+Math.ceil(+mm[1])+" sn)":""));continue}
         if(st===400&&/API key/i.test(t))throw new Error("API anahtarı geçersiz. Yönetici 🔑 düğmesinden anahtarı yeniden girsin.");
         if(st===403)throw new Error("Anahtarın bu sitede/ülkede kullanımına izin yok (403). "+t.slice(0,120));
         hatalar.push(adaylar[i]+": "+st+" "+t.slice(0,80));continue}

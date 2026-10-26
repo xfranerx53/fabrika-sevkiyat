@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v91**
-Son güncelleme: 2026-10-26 (v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
+**GÜNCEL SÜRÜM: v92**
+Son güncelleme: 2026-10-26 (v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
 
@@ -277,6 +277,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-26: Yayın düzeni (sürüm artmadı, v90) — `firebase.json` ve `.github/workflows/yayinla.yml` eklendi: site Firebase Hosting'de yayınlanır, depo özel yapılabilir; eski adres için ayrı genel `yonlendirme-repo` (index.html, 404.html, sw.js) hazırlandı. Dosyalar: firebase.json (yeni), yayinla.yml (yeni), yonlendirme-repo/* (ayrı depo), PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Yayın hattı (hizmet hesabı izni dahil) SINANMADI; ilk yayında Actions sekmesindeki sonuca bakılacak.
 - 2026-10-26: Hosting geçişi (sürüm v90, kod değişmedi) — Firebase Hosting yayını çalıştı (hizmet hesabına Service Usage Consumer + Firebase Hosting Admin eklenince). Yönlendirme dosyaları yanlışlıkla ana depoya yüklenip döngü yarattı, geri alındı. Depo özelleştirme + yönlendirme deposu adımları Bölüm 9'da bekliyor. Firebase kuralı: değişmedi.
 - 2026-10-26: v91 — **Fotoğraftan okuma (`fotookut.js`) hızlandırıldı:** kullanıcı okumanın eskiden ≤15 sn iken 50-90 sn sürdüğünü bildirdi (eski ve yeni adreste aynı → hosting değil, Google/Gemini tarafı; seçilen model yavaş/takılıyor olabilir; `gemini-2.5-flash` elle yazılınca da 50 sn). Çözüm: `yarisma()` — modeller sırayla değil **yarışır**: ilk model hemen başlar, 12 sn içinde cevap gelmezse sıradaki de başlar (en çok 3), ilk başarılı cevap kazanır. Hata sınıflandırma/mesajlar aynı kaldı. Node ile sahte fetch'le sınandı (yavaş ilk model → ~15 sn; 503 → hemen sıradaki; hepsi 429 → eski limit mesajı). **Gerçek Gemini ile SINANMADI.** Bedeli: yavaş durumda aynı istek iki modele gider (ücretsiz kota biraz daha çabuk dolabilir). Hâlâ yavaşsa: ekranda «Okunuyor (model)» yazan model adı istenmeli. Firebase kuralı: değişmedi.
+- 2026-10-26: v92 — **Fotoğraftan okuma model sırası değişti (`fotookut.js`):** v91 sonrası kullanıcı hata gördü: Google'ın listesinde artık gemini-3.5…3.8-flash var; `gemini-2.5-flash` **404 (kalkmış)**; 3.7/3.8 günlük limit doldu (ücretsiz günlük limit çok düşük; v91 yarışı + çok deneme kotayı yemiş olabilir); 3.5/3.6 zaman aşımı (yeni modeller yavaş). Eski sıralama en YENİ modeli başa koyuyordu. Yeni sıra: yöneticinin yazdığı model → bu cihazda en son çalışan (`localStorage.okSon`) → **lite (hızlı) modeller (en çok 2)** → normal modeller (en çok 3); en çok 4 aday; günlük limiti dolan model `localStorage.okDolu` ile 3 saat atlanır. Sahte fetch ile sınandı, gerçek Gemini ile SINANMADI. Kullanıcıdan 🔑 penceresindeki model kutusunu BOŞALTMASI istendi (`gemini-2.5-flash` kalkmış). Firebase kuralı: değişmedi.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
