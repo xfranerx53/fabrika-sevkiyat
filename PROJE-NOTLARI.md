@@ -6,7 +6,7 @@
 > Her teslimatta güncellenir.
 
 **GÜNCEL SÜRÜM: v92**
-Son güncelleme: 2026-10-26 (v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
+Son güncelleme: 2026-10-26 (yeni sohbette zip + 2 Excel incelendi, «GÜNCEL DURUM» bloğu Bölüm 9'a eklendi; v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
 
@@ -91,7 +91,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Hosting yapılandırması site davranışını değiştirmediği için sürüm numarası artmadı.
 - **Durum (2026-10-26):** web.app yayında ve çalışıyor; depoyu özel yapma + yönlendirme deposu adımları Bölüm 9 «Yarım kalan iş»te.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v88)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v92)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -99,6 +99,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 | `style.css` | Tüm görünüm | GitHub |
 | `app.js` (~2000 satır) | Ana kod: Firebase, giriş, yetki, sevkiyat, stok, sipariş, adres, dosyalar, iş emirleri, yönetici, yedek, WhatsApp | GitHub |
 | `raporlar.js` | Raporlar | GitHub |
+| `israpor.js` | Üretim raporları: biten işler, aşama/operatör süreleri (`isEmirleri` + `isHareket`); yetki: yönetici veya `rap` izni; Excel için `xlsxHazir()` kullanır. (Notlarda eksikti, v92 zip'inde var.) | GitHub |
 | `etiket.js` | Etiket tasarımı/basımı | GitHub |
 | `qr.js` | QR kod üretimi (kütüphane) | GitHub |
 | `adrsec.js` | **(v88)** Talimat ve Tahsilat pencerelerinin ortak «📍 Adres (isteğe bağlı)» bloğu: `adrSecKur(kutuId,önek)` → kayıtlı sevk adreslerinden seç, link/açık adres, haritada seç, temizle; `.oku()/.doldur()/.sifirla()` | GitHub |
@@ -279,6 +280,8 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-26: v91 — **Fotoğraftan okuma (`fotookut.js`) hızlandırıldı:** kullanıcı okumanın eskiden ≤15 sn iken 50-90 sn sürdüğünü bildirdi (eski ve yeni adreste aynı → hosting değil, Google/Gemini tarafı; seçilen model yavaş/takılıyor olabilir; `gemini-2.5-flash` elle yazılınca da 50 sn). Çözüm: `yarisma()` — modeller sırayla değil **yarışır**: ilk model hemen başlar, 12 sn içinde cevap gelmezse sıradaki de başlar (en çok 3), ilk başarılı cevap kazanır. Hata sınıflandırma/mesajlar aynı kaldı. Node ile sahte fetch'le sınandı (yavaş ilk model → ~15 sn; 503 → hemen sıradaki; hepsi 429 → eski limit mesajı). **Gerçek Gemini ile SINANMADI.** Bedeli: yavaş durumda aynı istek iki modele gider (ücretsiz kota biraz daha çabuk dolabilir). Hâlâ yavaşsa: ekranda «Okunuyor (model)» yazan model adı istenmeli. Firebase kuralı: değişmedi.
 - 2026-10-26: v92 — **Fotoğraftan okuma model sırası değişti (`fotookut.js`):** v91 sonrası kullanıcı hata gördü: Google'ın listesinde artık gemini-3.5…3.8-flash var; `gemini-2.5-flash` **404 (kalkmış)**; 3.7/3.8 günlük limit doldu (ücretsiz günlük limit çok düşük; v91 yarışı + çok deneme kotayı yemiş olabilir); 3.5/3.6 zaman aşımı (yeni modeller yavaş). Eski sıralama en YENİ modeli başa koyuyordu. Yeni sıra: yöneticinin yazdığı model → bu cihazda en son çalışan (`localStorage.okSon`) → **lite (hızlı) modeller (en çok 2)** → normal modeller (en çok 3); en çok 4 aday; günlük limiti dolan model `localStorage.okDolu` ile 3 saat atlanır. Sahte fetch ile sınandı, gerçek Gemini ile SINANMADI. Kullanıcıdan 🔑 penceresindeki model kutusunu BOŞALTMASI istendi (`gemini-2.5-flash` kalkmış). Firebase kuralı: değişmedi.
 
+- 2026-10-26: Yalnız notlar (sürüm v92 kaldı, kod değişmedi) — yeni sohbette zip ve iki Excel incelendi; kontrol.js temiz; Bölüm 9'a «GÜNCEL DURUM» eklendi (404.html zip'te duruyor, israpor.js notlarda yoktu). Firebase kuralı: değişmedi.
+
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
 1. **Uzun-sorgu (`forceLongPolling`) bu sitede ASLA kullanılmaz.** `index.html` CSP'si `script-src`te firebaseio.com'a izin vermez; Firebase uzun-sorgu script yükler, engellenir, bağlantı kalıcı kopar (v85-v87 yaşandı). Takılmada: `forceWebSockets()` + `db.goOffline()` → `goOnline()`.
@@ -311,6 +314,13 @@ Satır numaraları kayar; bu başlıkları ara:
 - Talimatlar için olası ek: zil bildirimi / WhatsApp önerisi, talimata fotoğraf veya not ekleme (kullanıcı istemedi, yapılmadı).
 
 **Yarım kalan iş (sohbet kesilirse buraya yaz: ne yapılıyordu, hangi dosyada, neresi kaldı):**
+- **GÜNCEL DURUM (2026-10-26, yeni sohbet; zip + 2 Excel incelendi):**
+  - **Zip = v92.** `node kontrol.js` → «Sorun yok»: 22 .js dosyasında yazım hatası yok, sürüm tutarlı (v92), rules.json geçerli (24 yol), roller ve izinler uyumlu. Bu sohbette kod DEĞİŞMEDİ, sürüm artmadı.
+  - **Kalınan yer:** Kod tarafı v92'de duruyor (son iş: fotoğraftan okuma model sırası). Hosting geçişi Bölüm 9 «HOSTING GEÇİŞİ KISMEN BİTTİ» maddesindeki **adım 0'da**: web.app yayında ve çalışıyor; adım 1-5 (depoyu `fabrika-sevkiyat-kod` yapmak, özel yapmak, yönlendirme deposu, eski adresi denemek, telefonlarda kısayolu yenilemek) YAPILDI mı bilinmiyor. Kullanıcıya sorulmalı.
+  - **Notla zip arasında FARK 1 — `404.html` zip'te var:** Önceki notta ana depodaki 404.html'in silinmesi gerektiği (Ders 12) ve kullanıcının «oldu» dediği yazıyordu; ama bu zip'in kökünde yönlendirme içerikli `404.html` duruyor (`firebase.json` onu yayından çıkarmıyor). Ya silinmedi ya zip eski. **İlk iş:** GitHub ana deposunda 404.html var mı baksın; varsa sildirilsin (sürüm artmaz). Aksi halde web.app'te olmayan bir adreste yönlendirme sayfası çıkar ve yeniden döngü riski olur.
+  - **Fark 2:** `israpor.js` kodda ve `sw.js`'de var, notlarda yoktu → Bölüm 2 tablosuna eklendi.
+  - **Bekleyen denemeler (kullanıcı haber verecek):** v92 fotoğraftan okuma (🔑 penceresindeki model kutusu BOŞALTILDI mı; okuma süresi); v90 hesap açma / Hesabım / büyük yazı; v81 pano ve bağlantı şeridi; rules yayınlandı mı.
+  - **Yüklenen 2 Excel (proje kodunun parçası DEĞİL, bilgi amaçlı):** `MALİYET_TABLOSU.XLSX` — MAG AMBALAJ güncel fiyat/maliyet hesabı (tarih 26.10.2026, dolar kuru 49,7285): sayfalar GÜNCEL FİYAT (günlük fiyat listesi), RULO MALİYET eko, RULO MALİYET (MAG rulo + baskılı rulo), ÇEŞİT MALİYET (atlet/torba HDPE, kalsitli karışımlar). Hammadde kg fiyatları: HDPE 1,85 · LDPE 2,1 · LLDPE 1,75 · kalsit 0,8 $; her üründe hammadde + baskı + elektrik + kutu + masura + fire + bıçak + genel gider → KDV hariç maliyet → hedef satış fiyatı ve ₺/$/€ karşılıkları hesaplanıyor. `POŞET_ADET_HESAPLAMA.xlsx` — poşet adet maliyeti (en × boy × mikron × özgül ağırlık → gramaj → kg/adet → TL/USD/EUR adet fiyatı; atlet, çanta, CPP bantlı, direk ölçü); **eski**: tarihi 17.05.2023, dolar kuru 19,80, kg fiyatları çoğu satırda boş. Uygulamaya bağlanması konusunda henüz istek yok; istenirse önce hangi hesabın uygulamaya taşınacağı sorulur.
 - **HOSTING GEÇİŞİ KISMEN BİTTİ (2026-10-26).** Amaç: kod özel GitHub deposunda dursun, site Firebase Hosting'de yayınlansın (Bölüm 1.1). Kullanıcı GitHub'ı web arayüzünden (Chrome, Windows, İngilizce arayüz) elle yönetir; adım adım, düğme adlarını İngilizce yazarak anlatılmalı. **YAPILDI VE SINANDI:** Firebase Hosting açık; hizmet hesabı `firebase-adminsdk-fbsvc@sevkiyat-fc22b.iam.gserviceaccount.com`'a IAM'de **Service Usage Consumer** + **Firebase Hosting Admin** rolleri verildi (ilk yayın 403 PERMISSION_DENIED vermişti); `yayinla.yml` yeşil ✓; https://sevkiyat-fc22b.web.app açılıyor, giriş ekranı geliyor, veritabanı «Çevrimiçi». **OLAY:** Yönlendirme dosyaları (index.html, 404.html, sw.js) yanlışlıkla ANA depoya yüklendi → web.app yönlendirme sayfasını gösterip döngüye girdi. Gerçek index.html ve sw.js (v90) zip'ten geri yüklendi, ana depodaki 404.html silinecekti; kullanıcı «oldu» dedi. **KALAN (bu sırayla, her adımı bitirince kullanıcı haber verir):** 0) web.app'te giriş + menüler sınanmalı (kullanıcıya söylendi), ana depoda 404.html KALMADIĞI doğrulanmalı; 1) ana depoyu `fabrika-sevkiyat-kod` olarak yeniden adlandır (Settings > Repository name > Rename); 2) Settings > Danger Zone > Change visibility > Make private (GitHub Pages kapanır, eski adres ölür); 3) `fabrika-sevkiyat` adıyla YENİ GENEL depo aç (README'siz), YALNIZ yönlendirme dosyalarını (index.html, 404.html, sw.js) yükle, Settings > Pages > main / root; 4) eski adresin yeni siteye atladığını dene; 5) herkesin telefonunda eski kısayolu silip https://sevkiyat-fc22b.web.app adresini yeniden ekle, yeni adreste herkes bir kez tekrar giriş yapar (localStorage origin'e bağlı). Yönlendirme dosyaları kullanıcının bilgisayarında bulunamadı; Claude yeniden yazdı (index.html: `location.replace('https://sevkiyat-fc22b.web.app/'+search+hash)` + düğme; 404.html aynısı; sw.js: önbellekleri siler, kendini kaldırır). **Bu yeniden yazılan dosyalar gerçek cihazda SINANMADI.** Güvenlik açıklaması kullanıcıya verildi: veriyi koruyan şey giriş + rules.json (değişmedi); deponun özel olması yalnız kodun/ayarların dışarıdan okunmasını engeller; site adresi herkese açık kalır.
 
 **Alınan kararlar:**
