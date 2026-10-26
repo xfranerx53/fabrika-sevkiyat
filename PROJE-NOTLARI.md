@@ -6,7 +6,7 @@
 > Her teslimatta güncellenir.
 
 **GÜNCEL SÜRÜM: v90**
-Son güncelleme: 2026-10-26 (v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
+Son güncelleme: 2026-10-26 (hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
 
@@ -89,6 +89,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - **Eski adres:** Depo adı `fabrika-sevkiyat-kod` olarak değiştirilip özel yapılır; `fabrika-sevkiyat` adıyla yeni, GENEL bir depo yalnız `yonlendirme-repo` içeriğini (index.html, 404.html, sw.js) barındırır ve eski QR / ana ekran kısayollarını yeni adrese yönlendirir (`?is=` korunur). Bu depoya ASLA uygulama kodu konmaz.
 - **Gizli anahtar:** Firebase hizmet hesabı JSON'u yalnız GitHub Secrets'ta durur; depoya, sohbete veya zip'e konmaz. Yayın "izin yok" hatası verirse hata metnine bakılır (hizmet hesabına Firebase Hosting yetkisi gerekebilir).
 - Hosting yapılandırması site davranışını değiştirmediği için sürüm numarası artmadı.
+- **Durum (2026-10-26):** web.app yayında ve çalışıyor; depoyu özel yapma + yönlendirme deposu adımları Bölüm 9 «Yarım kalan iş»te.
 
 ## 2. Dosyalar (zip'teki gerçek durum, sürüm v88)
 
@@ -274,6 +275,7 @@ Satır numaraları kayar; bu başlıkları ara:
 
 - 2026-10-26: v90 — (1) **Hesapları yönetici açar:** Kayıt Ol sekmesi/formu ve `app.js`'teki kayıt kodu (`kayitYaz`, `bK`…) kaldırıldı; yönetici penceresine «＋ Yeni kullanıcı hesabı aç» (`hesap.js`, ikinci Firebase uygulamasıyla, yarım kalan hesabı tamamlayabilir, denetim günlüğüne yazar; şifre ≥6). `rules.json`: `kullanicilar/$uid` kendi kendine kayıt cümlesi silindi. (2) **👤 Hesabım:** üst çubuktaki İsim/Şifre/Çıkış tek pencerede; menüye de eklendi. (3) **Dokunma alanı + yazı:** tüm düğme/giriş/sekmelerde en az 44px, 11-13px yazılar 13-14px'e çıktı (satır içi olanlar `[style*=…]` kuralıyla), Hesabım'dan Normal/Büyük(×1,2)/Çok büyük(×1,4) yazı boyutu (`yazi.js`, cihazda saklanır). (4) İş Emirleri'ndeki «Sürüm: etiket-v33» geliştirme yazısı kaldırıldı. Dosyalar: index.html, app.js, style.css, yazi.js (yeni), hesap.js (yeni), diyalog.js, sw.js, rules.json, README.md, PROJE-NOTLARI.md. **Firebase kuralı: DEĞİŞTİ** (yapıştırılmazsa eski kendi-kendine-kayıt izni sunucuda açık kalır; yönetici hesap açma yine çalışır). Hesap açma mantığı sahte ortamda (node) sınandı; telefonda/Firebase'de ve büyük yazı görünümü gerçek ekranda SINANMADI.
 - 2026-10-26: Yayın düzeni (sürüm artmadı, v90) — `firebase.json` ve `.github/workflows/yayinla.yml` eklendi: site Firebase Hosting'de yayınlanır, depo özel yapılabilir; eski adres için ayrı genel `yonlendirme-repo` (index.html, 404.html, sw.js) hazırlandı. Dosyalar: firebase.json (yeni), yayinla.yml (yeni), yonlendirme-repo/* (ayrı depo), PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Yayın hattı (hizmet hesabı izni dahil) SINANMADI; ilk yayında Actions sekmesindeki sonuca bakılacak.
+- 2026-10-26: Hosting geçişi (sürüm v90, kod değişmedi) — Firebase Hosting yayını çalıştı (hizmet hesabına Service Usage Consumer + Firebase Hosting Admin eklenince). Yönlendirme dosyaları yanlışlıkla ana depoya yüklenip döngü yarattı, geri alındı. Depo özelleştirme + yönlendirme deposu adımları Bölüm 9'da bekliyor. Firebase kuralı: değişmedi.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
@@ -287,6 +289,10 @@ Satır numaraları kayar; bu başlıkları ara:
 8. **Etikette ebat sadece rakam** (kullanıcı kararı, v84): iş emrindeki «30CM T.AÇIK» etikette `30`; iş emri formu ve yazdırma olduğu gibi kalır.
 9. **Yönetici hesap açarken oturumunu kaybetmemeli:** `createUserWithEmailAndPassword` normalde yeni hesapla giriş yaptırır; bu yüzden hesap ikinci uygulamada (`firebase.initializeApp(CFG,"hesapAc")`, kalıcılık `NONE`) açılır. Ana `auth`/`db` aynen yönetici kalır.
 10. **Kullanıcı kod bilmiyor:** tam hazır dosya ver, «şuraya git şunu değiştir» deme; her teslimatta GitHub'a yüklenecek dosyaları, Firebase kuralı durumunu, yeni sürümü yaz.
+
+11. **GitHub web arayüzü ipuçları (kullanıcı kod bilmez):** «Create new file»de dosya adının SONUNA `/` yazılırsa GitHub adı klasör sanır ve «Commit changes» soluk kalır → Backspace ile kaldır / adı bir karakter yazıp sil. `.github/workflows/...` gizli klasör: elle «Create new file» ile oluşturulur, zip/sürükle-bırak ile değil. Yüklenecek dosyaları her seferinde tek tek ADIYLA yaz (kullanıcı klasördeki hepsini yüklemek isteyebilir). Ekran görüntüsü gönderirse üzerinden düğmeyi tarif et.
+
+12. **Yönlendirme dosyaları (index.html, 404.html, sw.js) iki ayrı depodadır; ana depoya YÜKLENMEZ.** 26 Ekim'de ana depoya yüklenince web.app kendi kendine yönlendi (döngü). Kullanıcıya her seferinde hangi dosyanın HANGİ depoya gideceğini adıyla yaz. Ana depoda 404.html olmaz. Hosting izin hatasında çözüm: Google Cloud IAM'de `firebase-adminsdk-fbsvc@...` hesabına Service Usage Consumer + Firebase Hosting Admin.
 
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
@@ -303,7 +309,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - Talimatlar için olası ek: zil bildirimi / WhatsApp önerisi, talimata fotoğraf veya not ekleme (kullanıcı istemedi, yapılmadı).
 
 **Yarım kalan iş (sohbet kesilirse buraya yaz: ne yapılıyordu, hangi dosyada, neresi kaldı):**
-- (yok)
+- **HOSTING GEÇİŞİ KISMEN BİTTİ (2026-10-26).** Amaç: kod özel GitHub deposunda dursun, site Firebase Hosting'de yayınlansın (Bölüm 1.1). Kullanıcı GitHub'ı web arayüzünden (Chrome, Windows, İngilizce arayüz) elle yönetir; adım adım, düğme adlarını İngilizce yazarak anlatılmalı. **YAPILDI VE SINANDI:** Firebase Hosting açık; hizmet hesabı `firebase-adminsdk-fbsvc@sevkiyat-fc22b.iam.gserviceaccount.com`'a IAM'de **Service Usage Consumer** + **Firebase Hosting Admin** rolleri verildi (ilk yayın 403 PERMISSION_DENIED vermişti); `yayinla.yml` yeşil ✓; https://sevkiyat-fc22b.web.app açılıyor, giriş ekranı geliyor, veritabanı «Çevrimiçi». **OLAY:** Yönlendirme dosyaları (index.html, 404.html, sw.js) yanlışlıkla ANA depoya yüklendi → web.app yönlendirme sayfasını gösterip döngüye girdi. Gerçek index.html ve sw.js (v90) zip'ten geri yüklendi, ana depodaki 404.html silinecekti; kullanıcı «oldu» dedi. **KALAN (bu sırayla, her adımı bitirince kullanıcı haber verir):** 0) web.app'te giriş + menüler sınanmalı (kullanıcıya söylendi), ana depoda 404.html KALMADIĞI doğrulanmalı; 1) ana depoyu `fabrika-sevkiyat-kod` olarak yeniden adlandır (Settings > Repository name > Rename); 2) Settings > Danger Zone > Change visibility > Make private (GitHub Pages kapanır, eski adres ölür); 3) `fabrika-sevkiyat` adıyla YENİ GENEL depo aç (README'siz), YALNIZ yönlendirme dosyalarını (index.html, 404.html, sw.js) yükle, Settings > Pages > main / root; 4) eski adresin yeni siteye atladığını dene; 5) herkesin telefonunda eski kısayolu silip https://sevkiyat-fc22b.web.app adresini yeniden ekle, yeni adreste herkes bir kez tekrar giriş yapar (localStorage origin'e bağlı). Yönlendirme dosyaları kullanıcının bilgisayarında bulunamadı; Claude yeniden yazdı (index.html: `location.replace('https://sevkiyat-fc22b.web.app/'+search+hash)` + düğme; 404.html aynısı; sw.js: önbellekleri siler, kendini kaldırır). **Bu yeniden yazılan dosyalar gerçek cihazda SINANMADI.** Güvenlik açıklaması kullanıcıya verildi: veriyi koruyan şey giriş + rules.json (değişmedi); deponun özel olması yalnız kodun/ayarların dışarıdan okunmasını engeller; site adresi herkese açık kalır.
 
 **Alınan kararlar:**
 - Kod tabanı ayrı .js dosyalarıdır; satır içi script yazılmaz (CSP).
