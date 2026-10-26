@@ -98,6 +98,24 @@
       clearTimeout(zt);return{st:r.status,t:t}
     }catch(e){clearTimeout(zt);return{st:(e&&e.name==="AbortError")?"zaman":"ag"}}}
 
+  /* Aynı anda en fazla 3 model: ilki hemen, cevap 12 sn'de gelmezse sıradaki de başlar; ilk başarılı cevap kazanır (bir model takılırsa beklemeyiz) */
+  function yarisma(adaylar,b64){return new Promise(function(res){
+    var sonuc=[],bitti=0,cik=false,sonraki=0,zm=null;
+    function dene(i){
+      (async function(){
+        var cf=dusunmeAyari(adaylar[i]),sn=null;
+        for(var c=0;c<cf.length;c++){
+          asamaM="Okunuyor ("+adaylar[i]+")";
+          sn=await tek(adaylar[i],cf[c],b64);
+          if(sn.ok||!(sn.st===400&&c<cf.length-1&&!/API key/i.test(sn.t||"")))break}
+        return sn})().then(function(sn){
+        if(cik)return;sonuc[i]=sn;bitti++;
+        if(sn.ok){cik=true;clearTimeout(zm);return res({ok:1,sn:sn})}
+        if(bitti>=adaylar.length){cik=true;clearTimeout(zm);return res({sonuc:sonuc})}
+        ileri()})}
+    function ileri(){clearTimeout(zm);if(cik||sonraki>=adaylar.length)return;dene(sonraki++);zm=setTimeout(ileri,12000)}
+    ileri()})}
+
   async function gemini(b64){
     asamaM="Model listesi alınıyor";
     var liste=await modelListesi(),adaylar=[];
@@ -106,17 +124,14 @@
     var hatalar=[],yogun=false,zamanasimi=false,kota=false,gunluk=false,bekleSn=0,gMesaj="",sifir=false;
     for(var tur=0;tur<2;tur++){
       hatalar=[];yogun=false;zamanasimi=false;kota=false;gunluk=false;bekleSn=0;var sadece5xx=true;
+      var R=await yarisma(adaylar,b64);
+      if(R.ok){
+        var tx=R.sn.tx;
+        if(!tx)throw new Error("Fotoğraftan sonuç alınamadı. Formu daha net ve düz çekip tekrar deneyin.");
+        tx=tx.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
+        try{return JSON.parse(tx)}catch(e){throw new Error("Okunan metin anlaşılamadı. Tekrar deneyin.")}}
       for(var i=0;i<adaylar.length;i++){
-        var cf=dusunmeAyari(adaylar[i]),sn=null;
-        for(var c=0;c<cf.length;c++){
-          asamaM="Okunuyor ("+adaylar[i]+")";
-          sn=await tek(adaylar[i],cf[c],b64);
-          if(sn.ok||!(sn.st===400&&c<cf.length-1&&!/API key/i.test(sn.t||"")))break}
-        if(sn.ok){
-          var tx=sn.tx;
-          if(!tx)throw new Error("Fotoğraftan sonuç alınamadı. Formu daha net ve düz çekip tekrar deneyin.");
-          tx=tx.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
-          try{return JSON.parse(tx)}catch(e){throw new Error("Okunan metin anlaşılamadı. Tekrar deneyin.")}}
+        var sn=R.sonuc[i];if(!sn)continue;
         var st=sn.st,t=sn.t||"";
         if(st===404){hatalar.push(adaylar[i]+": yok");continue}
         if(st===500||st===502||st===503||st===504){hatalar.push(adaylar[i]+": "+st);yogun=true;continue}

@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v90**
-Son güncelleme: 2026-10-26 (hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
+**GÜNCEL SÜRÜM: v91**
+Son güncelleme: 2026-10-26 (v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
 
@@ -276,6 +276,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-26: v90 — (1) **Hesapları yönetici açar:** Kayıt Ol sekmesi/formu ve `app.js`'teki kayıt kodu (`kayitYaz`, `bK`…) kaldırıldı; yönetici penceresine «＋ Yeni kullanıcı hesabı aç» (`hesap.js`, ikinci Firebase uygulamasıyla, yarım kalan hesabı tamamlayabilir, denetim günlüğüne yazar; şifre ≥6). `rules.json`: `kullanicilar/$uid` kendi kendine kayıt cümlesi silindi. (2) **👤 Hesabım:** üst çubuktaki İsim/Şifre/Çıkış tek pencerede; menüye de eklendi. (3) **Dokunma alanı + yazı:** tüm düğme/giriş/sekmelerde en az 44px, 11-13px yazılar 13-14px'e çıktı (satır içi olanlar `[style*=…]` kuralıyla), Hesabım'dan Normal/Büyük(×1,2)/Çok büyük(×1,4) yazı boyutu (`yazi.js`, cihazda saklanır). (4) İş Emirleri'ndeki «Sürüm: etiket-v33» geliştirme yazısı kaldırıldı. Dosyalar: index.html, app.js, style.css, yazi.js (yeni), hesap.js (yeni), diyalog.js, sw.js, rules.json, README.md, PROJE-NOTLARI.md. **Firebase kuralı: DEĞİŞTİ** (yapıştırılmazsa eski kendi-kendine-kayıt izni sunucuda açık kalır; yönetici hesap açma yine çalışır). Hesap açma mantığı sahte ortamda (node) sınandı; telefonda/Firebase'de ve büyük yazı görünümü gerçek ekranda SINANMADI.
 - 2026-10-26: Yayın düzeni (sürüm artmadı, v90) — `firebase.json` ve `.github/workflows/yayinla.yml` eklendi: site Firebase Hosting'de yayınlanır, depo özel yapılabilir; eski adres için ayrı genel `yonlendirme-repo` (index.html, 404.html, sw.js) hazırlandı. Dosyalar: firebase.json (yeni), yayinla.yml (yeni), yonlendirme-repo/* (ayrı depo), PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Yayın hattı (hizmet hesabı izni dahil) SINANMADI; ilk yayında Actions sekmesindeki sonuca bakılacak.
 - 2026-10-26: Hosting geçişi (sürüm v90, kod değişmedi) — Firebase Hosting yayını çalıştı (hizmet hesabına Service Usage Consumer + Firebase Hosting Admin eklenince). Yönlendirme dosyaları yanlışlıkla ana depoya yüklenip döngü yarattı, geri alındı. Depo özelleştirme + yönlendirme deposu adımları Bölüm 9'da bekliyor. Firebase kuralı: değişmedi.
+- 2026-10-26: v91 — **Fotoğraftan okuma (`fotookut.js`) hızlandırıldı:** kullanıcı okumanın eskiden ≤15 sn iken 50-90 sn sürdüğünü bildirdi (eski ve yeni adreste aynı → hosting değil, Google/Gemini tarafı; seçilen model yavaş/takılıyor olabilir; `gemini-2.5-flash` elle yazılınca da 50 sn). Çözüm: `yarisma()` — modeller sırayla değil **yarışır**: ilk model hemen başlar, 12 sn içinde cevap gelmezse sıradaki de başlar (en çok 3), ilk başarılı cevap kazanır. Hata sınıflandırma/mesajlar aynı kaldı. Node ile sahte fetch'le sınandı (yavaş ilk model → ~15 sn; 503 → hemen sıradaki; hepsi 429 → eski limit mesajı). **Gerçek Gemini ile SINANMADI.** Bedeli: yavaş durumda aynı istek iki modele gider (ücretsiz kota biraz daha çabuk dolabilir). Hâlâ yavaşsa: ekranda «Okunuyor (model)» yazan model adı istenmeli. Firebase kuralı: değişmedi.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
