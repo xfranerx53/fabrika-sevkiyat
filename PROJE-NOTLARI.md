@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v92**
-Son güncelleme: 2026-10-26 (yeni sohbette zip + 2 Excel incelendi, «GÜNCEL DURUM» bloğu Bölüm 9'a eklendi; v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
+**GÜNCEL SÜRÜM: v93**
+Son güncelleme: 2026-10-27 (v93: stoka «📥 Hazır liste» toplu ekleme düğmesi, stokaktar.js); önceki: 2026-10-26 (yeni sohbette zip + 2 Excel incelendi, «GÜNCEL DURUM» bloğu Bölüm 9'a eklendi; v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
 
@@ -91,7 +91,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Hosting yapılandırması site davranışını değiştirmediği için sürüm numarası artmadı.
 - **Durum (2026-10-26):** web.app yayında ve çalışıyor; depoyu özel yapma + yönlendirme deposu adımları Bölüm 9 «Yarım kalan iş»te.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v92)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v93)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -108,6 +108,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 | `granul.js` | **GRANÜL bölümü (v78):** Excel'deki «ZEKERİYA GRANÜL TAKİP» tablosunun karşılığı; birden çok granülcü, her birinin ayrı defteri, toplamlar (KALAN KG, BAKİYE), Excel'e aktar / Excel'den al | GitHub |
 | `fotookut.js` | Yeni iş emrinde «📷 Mikro formunun fotoğrafından doldur»: fotoğrafı Google Gemini (ücretsiz API anahtarı) ile okuyup alanları doldurur (v65) | GitHub |
 | `pano.js` | **Yönetici panosu (v81):** menüdeki «🛡️ YÖNETİCİ PANELİ» düğmesinin açtığı pencerede (`dPano`) özet: onay bekleyen kullanıcı, geciken iş emri, bugün termini olan, sevk edilecekler, bekleyen tahsilat/talimat, kritik stok, yedek durumu + tek dokunuşla yedek | GitHub |
+| `stokaktar.js` | **Hazır stok listesi (v93):** Stok ekranında «＋ Yeni kalem ekle» yanında «📥 Hazır liste» düğmesi; 69 kalemi 19 kategoriyle (Hammadde (Granül), Konsantre (Masterbatch), Mürekkep, Vernik, Çözücü, Palet, Streç Film, PA-PE Vakum Torba…) `stokKalem`e ekler (miktar 0; birim kg/adet/rulo). Aynı isim varsa atlar. Kural değişmedi | GitHub |
 | `baglanti.js` | **Bağlantı durumu + kayıt güvenliği (v81):** sol altta ● Çevrimiçi/Bağlantı yok/Gönderiliyor etiketi, kopunca kırmızı şerit, kayıt 8 sn'de gitmezse turuncu şerit, reddedilen kayıtta «⚠ Kaydedilemedi», bekleyen kayıt varken sayfa kapanırsa uyarı. Firebase `set/update/remove/transaction` işlemlerini sarar | GitHub |
 | `yazi.js` | **(v90)** Yazı boyutu ayarı (Normal/Büyük/Çok büyük; `localStorage.yaziBoyut`). `<head>`te yüklenir, `<html>`e `byz1`/`byz2` sınıfı koyar; kurallar `style.css` sonundaki «Büyük yazı kipleri» bölümünde | GitHub |
 | `hesap.js` | **(v90)** 👤 Hesabım penceresi (`dHes`: isim, şifre, yazı boyutu, çıkış) ve yönetici «＋ Yeni kullanıcı hesabı aç» (`dYeni`, `uYeni`). Hesap, ikinci geçici Firebase uygulamasıyla (`hesapAc`) açılır ki yönetici oturumdan çıkmasın; sonra `kullanicilar/{uid}` `onay:true` yazılır | GitHub |
@@ -278,6 +279,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-26: Yayın düzeni (sürüm artmadı, v90) — `firebase.json` ve `.github/workflows/yayinla.yml` eklendi: site Firebase Hosting'de yayınlanır, depo özel yapılabilir; eski adres için ayrı genel `yonlendirme-repo` (index.html, 404.html, sw.js) hazırlandı. Dosyalar: firebase.json (yeni), yayinla.yml (yeni), yonlendirme-repo/* (ayrı depo), PROJE-NOTLARI.md. Firebase kuralı: değişmedi. Yayın hattı (hizmet hesabı izni dahil) SINANMADI; ilk yayında Actions sekmesindeki sonuca bakılacak.
 - 2026-10-26: Hosting geçişi (sürüm v90, kod değişmedi) — Firebase Hosting yayını çalıştı (hizmet hesabına Service Usage Consumer + Firebase Hosting Admin eklenince). Yönlendirme dosyaları yanlışlıkla ana depoya yüklenip döngü yarattı, geri alındı. Depo özelleştirme + yönlendirme deposu adımları Bölüm 9'da bekliyor. Firebase kuralı: değişmedi.
 - 2026-10-26: v91 — **Fotoğraftan okuma (`fotookut.js`) hızlandırıldı:** kullanıcı okumanın eskiden ≤15 sn iken 50-90 sn sürdüğünü bildirdi (eski ve yeni adreste aynı → hosting değil, Google/Gemini tarafı; seçilen model yavaş/takılıyor olabilir; `gemini-2.5-flash` elle yazılınca da 50 sn). Çözüm: `yarisma()` — modeller sırayla değil **yarışır**: ilk model hemen başlar, 12 sn içinde cevap gelmezse sıradaki de başlar (en çok 3), ilk başarılı cevap kazanır. Hata sınıflandırma/mesajlar aynı kaldı. Node ile sahte fetch'le sınandı (yavaş ilk model → ~15 sn; 503 → hemen sıradaki; hepsi 429 → eski limit mesajı). **Gerçek Gemini ile SINANMADI.** Bedeli: yavaş durumda aynı istek iki modele gider (ücretsiz kota biraz daha çabuk dolabilir). Hâlâ yavaşsa: ekranda «Okunuyor (model)» yazan model adı istenmeli. Firebase kuralı: değişmedi.
+- 2026-10-27: v93 — **Stok «📥 Hazır liste» (`stokaktar.js`, yeni dosya; index.html + sw.js'e eklendi):** kullanıcının verdiği 69 kalemlik liste (granül, konsantre, mürekkep, vernik, çözücü, palet, poşet/rulo, shrink, streç, vakum torba, çöp torbası, CPP/OPP…) kategorileriyle toplu eklenir. Birimler varsayılan (kg/adet/rulo), kullanıcı kalem düzenlemeden değiştirebilir. Firebase kuralı değişmedi. Cihazda SINANMADI.
 - 2026-10-26: v92 — **Fotoğraftan okuma model sırası değişti (`fotookut.js`):** v91 sonrası kullanıcı hata gördü: Google'ın listesinde artık gemini-3.5…3.8-flash var; `gemini-2.5-flash` **404 (kalkmış)**; 3.7/3.8 günlük limit doldu (ücretsiz günlük limit çok düşük; v91 yarışı + çok deneme kotayı yemiş olabilir); 3.5/3.6 zaman aşımı (yeni modeller yavaş). Eski sıralama en YENİ modeli başa koyuyordu. Yeni sıra: yöneticinin yazdığı model → bu cihazda en son çalışan (`localStorage.okSon`) → **lite (hızlı) modeller (en çok 2)** → normal modeller (en çok 3); en çok 4 aday; günlük limiti dolan model `localStorage.okDolu` ile 3 saat atlanır. Sahte fetch ile sınandı, gerçek Gemini ile SINANMADI. Kullanıcıdan 🔑 penceresindeki model kutusunu BOŞALTMASI istendi (`gemini-2.5-flash` kalkmış). Firebase kuralı: değişmedi.
 
 - 2026-10-26: Yalnız notlar (sürüm v92 kaldı, kod değişmedi) — yeni sohbette zip ve iki Excel incelendi; kontrol.js temiz; Bölüm 9'a «GÜNCEL DURUM» eklendi (404.html zip'te duruyor, israpor.js notlarda yoktu). Firebase kuralı: değişmedi.
