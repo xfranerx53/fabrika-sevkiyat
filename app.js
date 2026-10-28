@@ -1623,8 +1623,8 @@ $("dList").onclick=async e=>{
   const h=e.target.closest(".dfile");
   if(h){const id=h.dataset.id;if(dAcik.has(id))dAcik.delete(id);else dAcik.add(id);dosListele()}
 };
-/* Dosyalar → PDF (doğrudan indirilir): sayfalar ekran dışında çizilir, html2canvas ile resme, jsPDF ile PDF'e çevrilir.
-   Her sevk: sayfa 1 = iş emri formu + ebat tablosu + bilgiler; sonra fotoğraf sayfaları; talimat/tahsilat sonda. Fiyat yazılmaz. */
+/* Dosyalar → PDF (doğrudan indirilir). Sayfa 1 = iş emri formu + ebat tablosu + bilgiler + TIKLANABİLİR küçük fotoğraflar;
+   her fotoğraf kendi tam sayfasında, TAM ÇÖZÜNÜRLÜKTE (fotoTam'dan çekilir) ve «forma dön» bağlantılı. Talimat/tahsilat sonda tablo. Fiyat yok. */
 var pdfYuk=null;
 function pdfHazir(){
   if(window.html2canvas&&window.jspdf)return Promise.resolve();
@@ -1633,35 +1633,52 @@ function pdfHazir(){
   return pdfYuk}
 $("dPdf").onclick=async()=>{
   const L=dosFiltre();if(!L.length){toast("PDF için dosya yok.");return}
-  let S=L.filter(d=>!d.kaynak);const O=L.filter(d=>d.kaynak),MAX=30;
+  let S=L.filter(d=>!d.kaynak);const O=L.filter(d=>d.kaynak),MAX=25;
   if(S.length>MAX){S=S.slice(0,MAX);toast("İlk "+MAX+" sevk PDF'e alınıyor (tarih aralığını daraltabilirsiniz).")}else toast("PDF hazırlanıyor… ("+S.length+" sevk)");
   const btn=$("dPdf");btn.disabled=true;const kutu=document.createElement("div");
   try{
     await pdfHazir();
+    /* 1) fotoğrafları çek: önizleme (320px) + tam boy (fotoTam) */
     const F={};
-    for(let i=0;i<S.length;i+=5)await Promise.all(S.slice(i,i+5).map(async d=>{try{F[d.id]=(await db.ref("dosyaFoto/"+d.id).once("value")).val()||{}}catch(er){F[d.id]={}}}));
-    const im=(...a)=>a.flat().map(x=>typeof x==="string"?x:x&&x.f).map(x=>safeImg(x)).filter(Boolean);
-    const sat=(k,v)=>v?`<tr><th>${k}</th><td>${esc(v)}</td></tr>`:"";
-    const P=[];
+    for(let i=0;i<S.length;i+=4)await Promise.all(S.slice(i,i+4).map(async d=>{
+      let v={};try{v=(await db.ref("dosyaFoto/"+d.id).once("value")).val()||{}}catch(er){}
+      const ham=[];
+      [v.foto].concat(Object.values(v.fotolar||{})).map(safeImg).filter(Boolean).forEach((x,k)=>ham.push(["Etiket "+(k+1),x]));
+      [v.irsaliye].concat(Object.values(v.irsEkler||{}).map(x=>typeof x==="string"?x:x&&x.f)).map(safeImg).filter(Boolean).forEach((x,k)=>ham.push(["İrsaliye "+(k+1),x]));
+      F[d.id]=await Promise.all(ham.map(async([ad,x])=>{const m=x.match(/#([A-Za-z0-9_-]{20})$/),th=x.split("#")[0];let full=th;
+        if(m&&window.fotoTamGetir){try{full=await window.fotoTamGetir(m[1])||th}catch(er){}}
+        return{ad,th,full}}))}));
+    /* 2) sayfa listesi (sayfa numaraları baştan hesaplanır → bağlantılar için) */
+    const D=[],sat=(k,v)=>v?`<tr><th>${k}</th><td>${esc(v)}</td></tr>`:"";
     S.forEach(d=>{
-      const K=Array.isArray(d.kalem)?d.kalem:Object.values(d.kalem||{}),L2=String(d.urun||"").split("\n"),v=F[d.id]||{};
+      const K=Array.isArray(d.kalem)?d.kalem:Object.values(d.kalem||{}),L2=String(d.urun||"").split("\n"),ph=F[d.id]||[],main=D.length+1;
       const rows=K.length>1?K.map(k=>`<tr><td>${esc(k.ad)}</td><td>${esc(fmt(k.kg))}</td><td>${esc(fmt(k.paket))}</td></tr>`).join(""):`<tr><td>${esc(L2.slice(1).map(x=>x.split(":")[0]).join(", ")||"-")}</td><td>${esc(fmt(d.kg))}</td><td>${esc(fmt(d.paket))}</td></tr>`;
       let frm="";if(d.isFormu){try{frm=`<div class="pdl"><div class="isf dp">${isForm(d.isFormu,false)}</div></div>`}catch(er){}}
-      P.push(`<div class="pdfp"><div class="pdrow">${frm}<div class="pdr"><div class="pdh">${esc(d.musteri||"-")} — ${esc(d.urunAd||L2[0]||"")}</div>
+      const th=ph.length?`<div class="pdnot">📎 Ekler — küçük resme tıklayınca tam boy açılır</div><div class="pdths">`+ph.slice(0,9).map((x,i)=>`<div class="pdth" data-to="${main+1+i}"><img src="${x.th}" alt=""><span>${esc(x.ad)}</span></div>`).join("")+`</div>`:"";
+      D.push({html:`<div class="pdfp"><div class="pdrow">${frm}<div class="pdr"><div class="pdh">${esc(d.musteri||"-")} — ${esc(d.urunAd||L2[0]||"")}</div>
       <table class="pdt eb"><tr><th>Ebat</th><th>Kg</th><th>Adet / Paket</th></tr>${rows}<tr><td><b>TOPLAM</b></td><td><b>${esc(fmt(d.kg))}</b></td><td><b>${esc(fmt(d.paket))}</b></td></tr></table>
-      <table class="pdt">${sat("İş emri",d.isEmriNo)}${sat("Sevk tarihi",trDate(d.tarih))}${sat("Adres",d.adres)}${sat("Not",d.not)}${sat("Kaydeden",d.ekleyen)}${sat("Teslim eden",d.teslimEden)}${sat("Onaylayan",(d.onaylayan||"")+(d.onayTarihi?" · "+dTam(d.onayTarihi):""))}</table></div></div></div>`);
-      const X=[];im(v.foto,Object.values(v.fotolar||{})).forEach((x,i)=>X.push(["Etiket "+(i+1),x]));im(v.irsaliye,Object.values(v.irsEkler||{})).forEach((x,i)=>X.push(["İrsaliye "+(i+1),x]));
-      for(let i=0;i<X.length;i+=4)P.push(`<div class="pdfp"><div class="pdh">${esc(d.musteri||"-")} — fotoğraflar</div><div class="pdph">`+X.slice(i,i+4).map(x=>`<div class="pdpi"><b>${esc(x[0])}</b><img src="${x[1]}" alt=""></div>`).join("")+`</div></div>`)
-    });
+      <table class="pdt">${sat("İş emri",d.isEmriNo)}${sat("Sevk tarihi",trDate(d.tarih))}${sat("Adres",d.adres)}${sat("Not",d.not)}${sat("Kaydeden",d.ekleyen)}${sat("Teslim eden",d.teslimEden)}${sat("Onaylayan",(d.onaylayan||"")+(d.onayTarihi?" · "+dTam(d.onayTarihi):""))}</table>${th}</div></div></div>`});
+      ph.forEach(x=>D.push({foto:x.full,baslik:(d.musteri||"-")+" — "+x.ad,back:main}))});
     if(O.length){const T=r=>`<tr><td>${esc(trDate(dTarih(r)))}</td><td>${esc(turAd(r))}</td><td>${esc(r.kaynak==="tahsilat"?r.cari:String(r.metin||"").replace(/\s*\n\s*/g," / "))}</td><td>${r.kaynak==="tahsilat"?esc(fmt(kTut(r))):""}</td><td>${esc(r.kaynak==="talimat"?r.yapan:r.alan)}</td><td>${esc(r.onaylayan)}</td></tr>`;
-      for(let i=0;i<O.length;i+=16)P.push(`<div class="pdfp"><div class="pdh">TALİMAT ve TAHSİLATLAR</div><table class="pdt"><tr><th style="width:11%">Tarih</th><th style="width:12%">Tür</th><th>Firma / Talimat</th><th style="width:12%">Tutar (₺)</th><th style="width:15%">Yapan / Alan</th><th style="width:15%">Onaylayan</th></tr>${O.slice(i,i+16).map(T).join("")}</table></div>`)}
-    kutu.className="pdfk";kutu.innerHTML=P.join("");document.body.appendChild(kutu);
-    await Promise.all([...kutu.querySelectorAll("img")].map(i=>i.decode?i.decode().catch(()=>{}):0));
-    const pdf=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"}),pg=[...kutu.querySelectorAll(".pdfp")];
-    for(let i=0;i<pg.length;i++){
-      toast("PDF hazırlanıyor… sayfa "+(i+1)+" / "+pg.length);
-      const c=await html2canvas(pg[i],{scale:1.6,backgroundColor:"#fff",logging:false,useCORS:false});
-      if(i)pdf.addPage();pdf.addImage(c.toDataURL("image/jpeg",.85),"JPEG",0,0,297,210)}
+      for(let i=0;i<O.length;i+=16)D.push({html:`<div class="pdfp"><div class="pdh">TALİMAT ve TAHSİLATLAR</div><table class="pdt"><tr><th style="width:11%">Tarih</th><th style="width:12%">Tür</th><th>Firma / Talimat</th><th style="width:12%">Tutar (₺)</th><th style="width:15%">Yapan / Alan</th><th style="width:15%">Onaylayan</th></tr>${O.slice(i,i+16).map(T).join("")}</table></div>`})}
+    kutu.className="pdfk";document.body.appendChild(kutu);
+    const pdf=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true}),LK=[],MM=297/1100;
+    const resim=u=>new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>ok(null);im.src=u});
+    const boya=async h=>{const t=document.createElement("div");t.innerHTML=h;const el=t.firstElementChild;kutu.innerHTML="";kutu.appendChild(el);
+      await Promise.all([...el.querySelectorAll("img")].map(i=>i.decode?i.decode().catch(()=>{}):0));
+      const c=await html2canvas(el,{scale:1.6,backgroundColor:"#fff",logging:false});
+      const pr=el.getBoundingClientRect(),th=[...el.querySelectorAll(".pdth")].map(x=>{const r=x.getBoundingClientRect();return{x:(r.left-pr.left)*MM,y:(r.top-pr.top)*MM,w:r.width*MM,h:r.height*MM,to:+x.dataset.to}});
+      return{c,th}};
+    for(let i=0;i<D.length;i++){
+      toast("PDF hazırlanıyor… sayfa "+(i+1)+" / "+D.length);
+      if(i)pdf.addPage();const g=D[i];
+      if(g.html){const r=await boya(g.html);pdf.addImage(r.c.toDataURL("image/jpeg",.9),"JPEG",0,0,297,210);r.th.forEach(t=>LK.push({p:i+1,x:t.x,y:t.y,w:t.w,h:t.h,to:t.to}))}
+      else{
+        const r=await boya(`<div class="pdfp" style="height:46px;padding:8px 22px;display:flex;justify-content:space-between;align-items:center"><div class="pdh" style="border:0;margin:0;padding:0">${esc(g.baslik)}</div><div style="font-weight:800;font-size:16px;color:#1d4ed8">◀ Forma dön</div></div>`);
+        pdf.addImage(r.c.toDataURL("image/jpeg",.9),"JPEG",0,0,297,12.7);LK.push({p:i+1,x:0,y:0,w:297,h:12.7,to:g.back});
+        const im=await resim(g.foto);
+        if(im){const mw=285,mh=190,k=Math.min(mw/im.naturalWidth,mh/im.naturalHeight),w=im.naturalWidth*k,h=im.naturalHeight*k;pdf.addImage(g.foto,"JPEG",(297-w)/2,14+(mh-h)/2,w,h)}}}
+    LK.forEach(l=>{pdf.setPage(l.p);pdf.link(l.x,l.y,l.w,l.h,{pageNumber:l.to})});
     pdf.save("dosyalar_"+bkTarih()+".pdf");toast("✓ PDF indirildi");
   }catch(er){toast("PDF hazırlanamadı: "+errText(er))}
   finally{kutu.remove();btn.disabled=false}
