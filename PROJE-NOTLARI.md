@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v108**
+**GÜNCEL SÜRÜM: v109**
 Son güncelleme: 2026-10-27 (v93: stoka «📥 Hazır liste» toplu ekleme düğmesi, stokaktar.js); önceki: 2026-10-26 (yeni sohbette zip + 2 Excel incelendi, «GÜNCEL DURUM» bloğu Bölüm 9'a eklendi; v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
@@ -299,6 +299,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-28: v106 — **Dosyalar → Excel artık fotoğraflı.** Dışa aktarma SheetJS yerine ExcelJS 4.4.0 (cdnjs; `exceljsHazir`) ile yazılır (SheetJS resim koyamaz; diğer dışa/içe aktarmalar — yedek, granül, iş raporu — SheetJS'te kaldı). «Dosyalar» sayfası aynı (başlık stili, dondurulmuş satır, filtre, toplam). Yeni «Fotoğraflar» sayfası: her sevk bir satır, resimler (fotoTam, tam kalite, JPEG/PNG yeniden sıkıştırmasız) yan yana gerçek resim nesnesi (editAs oneCell), altında etiket. En çok 60 sevk fotoğraflanır. Sınanmadı (ExcelJS bu ortamda çalıştırılamadı).
 - 2026-10-28: v107 — **Dosyalar: tür adı + Excel/PDF tür bölümleri.** «İmzalı irsaliye» tür adı → «Üretim iş takip formu&imzalı irsaliye» (`TUR_AD`, `turKey`, `turAd`, Türler listesi). **Excel:** her tür ayrı sayfa, sırayla Üretim Formu&İmzalı İrsaliye (sayfa adı 31 karakter sınırı yüzünden kısaltıldı, `TUR_SAYFA`) → Tahsilat → Talimat → İade → Diğer; tür süzgeci seçiliyse yalnız o sayfa. Sevk türlerinde (irsaliye/iade/diğer) resimler kaydın ilk satırında Ebat/Kg/Adet'ten sonra yan yana (ayrı «Fotoğraflar» sayfası kaldırıldı); en çok 60 kayıt fotoğraflanır. **PDF:** bölüm sırası aynı: Üretim formu&irsaliye sayfaları → Tahsilatlar tablosu → Talimatlar tablosu → İade sayfaları → Diğer sayfaları; sevk sayfasının üstünde tür etiketi. Sınanmadı.
 - 2026-10-28: v108 — **PDF her tür ayrı dosya.** «PDF indir» artık türe göre ayrı PDF indirir (`pdfTur`; sırayla üretim formu&irsaliye, tahsilat, talimat, iade, diğer; kaydı olmayan tür atlanır). Dosya adı `dosyalar_<tür>_<tarih>.pdf`. 25 kayıt sınırı artık TÜR başına. Chrome ilk seferde «birden fazla dosya indirmeye izin ver» diye sorabilir. Sınanmadı.
+- 2026-10-28: v109 — **PDF indir = tek ZIP; her TÜR klasör, her KAYIT ayrı PDF.** `pdfTur` kaldırıldı; yerine `pdfKayit(d,kutu)` (tek kaydın PDF Blob'u: sevk türlerinde 1. sayfa form + fotoğraf sayfaları, tahsilat/talimat tek sayfa), `pdfAdi(d)` (dosya adı), `dsAd` (dosya adı temizleyici), `zipHazir` (JSZip 3.10.1, cdnjs) eklendi. ZIP içi klasörler `TUR_KLASOR`. **Dosya adları:** üretim formu&irsaliye = «Müşteri - İşin adı (isFormu.isAdi) - Tarih (gg.aa.yyyy)»; iade/diğer aynı + sonuna (İade)/(Diğer); tahsilat = «Firma - Tutar TL - Tarih»; talimat = «Talimat ilk satırı (40 krk) - Tarih». Aynı ad olursa (2), (3) eklenir. Üst sınır: tek seferde 100 kayıt (önceki 25/tür sınırı kalktı). ZIP adı `dosyalar_<tarih>.zip`. Yeni dış alan yok (cdnjs zaten CSP'de). Firebase kuralı değişmedi. Sınanmadı (cihazda denenmeli: ZIP açılıyor mu, Türkçe klasör/dosya adları, 100 kayıtta bellek).
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 

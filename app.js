@@ -1634,86 +1634,105 @@ function pdfHazir(){
   if(!pdfYuk){const yukle=u=>new Promise((ok,no)=>{const sc=document.createElement("script");sc.src=u;sc.onload=ok;sc.onerror=()=>no(new Error("PDF bileşeni yüklenemedi. İnternet bağlantısını kontrol edin."));document.head.appendChild(sc)});
     pdfYuk=Promise.all([yukle("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"),yukle("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")]).catch(er=>{pdfYuk=null;throw er})}
   return pdfYuk}
-/* Her TÜR ayrı PDF olarak iner (sırayla: Üretim formu&imzalı irsaliye, Tahsilat, Talimat, İade, Diğer); kaydı olmayan tür atlanır. */
-const TUR_DOSYA={irsaliye:"uretim-formu-imzali-irsaliye",tahsilat:"tahsilat",talimat:"talimat",iade:"iade",diger:"diger"};
-async function pdfTur(t,Z){
-  const MAX=25;let S=(t==="irsaliye"||t==="iade"||t==="diger")?Z:[];const O=S.length?[]:Z;
-  if(S.length>MAX){S=S.slice(0,MAX);toast("«"+TUR_AD[t]+"»: ilk "+MAX+" kayıt PDF'e alınıyor (tarih aralığını daraltabilirsiniz).")}else toast("PDF hazırlanıyor… "+TUR_AD[t]+" ("+Z.length+")");
-  const kutu=document.createElement("div");
-  try{
-    /* 1) fotoğrafları çek: önizleme (320px) + tam boy (fotoTam) */
-    const F={};
-    for(let i=0;i<S.length;i+=4)await Promise.all(S.slice(i,i+4).map(async d=>{
-      let v={};try{v=(await db.ref("dosyaFoto/"+d.id).once("value")).val()||{}}catch(er){}
-      const ham=[];
-      [v.foto].concat(Object.values(v.fotolar||{})).map(safeImg).filter(Boolean).forEach((x,k)=>ham.push(["Etiket "+(k+1),x]));
-      [v.irsaliye].concat(Object.values(v.irsEkler||{}).map(x=>typeof x==="string"?x:x&&x.f)).map(safeImg).filter(Boolean).forEach((x,k)=>ham.push(["İrsaliye "+(k+1),x]));
-      F[d.id]=await Promise.all(ham.map(async([ad,x])=>{const m=x.match(/#([A-Za-z0-9_-]{20})$/),th=x.split("#")[0];let full=th;
-        if(m&&window.fotoTamGetir){try{full=await window.fotoTamGetir(m[1])||th}catch(er){}}
-        return{ad,th,full}}))}));
-    /* 2) sayfa listesi (sayfa numaraları baştan hesaplanır → bağlantılar için) */
-    const D=[],sat=(k,v)=>v?`<tr><th>${k}</th><td>${esc(v)}</td></tr>`:"";
-    const sevkEkle=d=>{
-      const K=Array.isArray(d.kalem)?d.kalem:Object.values(d.kalem||{}),L2=String(d.urun||"").split("\n"),ph=F[d.id]||[];
-      const rows=K.length>1?K.map(k=>`<tr><td>${esc(k.ad)}</td><td>${esc(fmt(k.kg))}</td><td>${esc(fmt(k.paket))}</td></tr>`).join(""):`<tr><td>${esc(L2.slice(1).map(x=>x.split(":")[0]).join(", ")||"-")}</td><td>${esc(fmt(d.kg))}</td><td>${esc(fmt(d.paket))}</td></tr>`;
-      let frm="";if(d.isFormu){try{frm=`<div class="pdl"><div class="isf dp">${isForm(d.isFormu,false)}</div></div>`}catch(er){}}
-      const pk=ph,th=pk.length?`<div class="pdnot">📎 Fotoğraflar sonraki sayfada (${pk.length} adet)</div>`:"";
-      D.push({html:`<div class="pdfp"><div class="pdrow">${frm}<div class="pdr"><div class="pdtag">${esc(TUR_AD[turKey(d)]||"")}</div><div class="pdh">${esc(d.musteri||"-")} — ${esc(d.urunAd||L2[0]||"")}</div>
+/* Her KAYIT ayrı PDF olur; her TÜR ayrı klasöre konur; hepsi tek .zip olarak iner (v109).
+   Klasörler: Üretim iş takip formu&imzalı irsaliye · Tahsilat · Talimat · İade · Diğer. Kaydı olmayan tür için klasör açılmaz.
+   Dosya adı: sevk türlerinde «Müşteri - İşin adı - Tarih» (iade/diğerde sonuna (İade)/(Diğer)), tahsilatta «Firma - Tutar TL - Tarih», talimatta «Talimat ilk satırı - Tarih». Aynı ad çıkarsa sonuna (2), (3) eklenir. */
+const TUR_KLASOR={irsaliye:"Üretim iş takip formu&imzalı irsaliye",tahsilat:"Tahsilat",talimat:"Talimat",iade:"İade",diger:"Diğer"};
+const dsAd=(s,n)=>String(s==null?"":s).replace(/[\\\/:*?"<>|\u0000-\u001f]+/g," ").replace(/\s+/g," ").trim().slice(0,n||45).trim().replace(/[. ]+$/,"");
+function pdfAdi(d){
+  const t=turKey(d),tk=dTarih(d),tar=tk?trDate(tk):"tarihsiz";let p;
+  if(t==="tahsilat")p=[d.cari||"Firma",fmt(kTut(d))+" TL",tar];
+  else if(t==="talimat")p=[String(d.metin||"Talimat").split("\n")[0].slice(0,40),tar];
+  else{const f=d.isFormu||{},m=d.musteri&&d.musteri!=="Etikete Bakınız"?d.musteri:"Müşteri yok";
+    p=[m,f.isAdi||d.urunAd||String(d.urun||"").split("\n")[0]||"İş adı yok",tar]}
+  let s=p.map(x=>dsAd(x,45)).filter(Boolean).join(" - ");
+  if(t==="iade")s+=" (İade)";if(t==="diger")s+=" (Diğer)";
+  return s||"dosya"}
+var jzYuk=null;
+function zipHazir(){
+  if(window.JSZip)return Promise.resolve();
+  if(!jzYuk)jzYuk=new Promise((ok,no)=>{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";sc.onload=ok;sc.onerror=()=>{jzYuk=null;no(new Error("ZIP bileşeni yüklenemedi. İnternet bağlantısını kontrol edin."))};document.head.appendChild(sc)});
+  return jzYuk}
+/* Tek kaydın PDF'i (Blob döner). Sevk türleri: 1. sayfa form + bilgiler, sonra fotoğraf sayfaları (tam çözünürlük, en çok 6/sayfa). Tahsilat/talimat: tek sayfa. */
+async function pdfKayit(d,kutu){
+  const t=turKey(d),D=[],sat=(k,v)=>v?`<tr><th>${k}</th><td>${esc(v)}</td></tr>`:"";
+  if(t==="tahsilat"){
+    D.push({html:`<div class="pdfp"><div class="pdtag">${esc(TUR_AD.tahsilat)}</div><div class="pdh">TAHSİLAT — ${esc(d.cari||"-")}</div><table class="pdt">${sat("Tarih",trDate(dTarih(d)))}${sat("Firma / Kişi",d.cari)}${+d.nakit?sat("Nakit",fmt(d.nakit)+" ₺"):""}${+d.cek?sat("Çek",fmt(d.cek)+" ₺"):""}${sat("Toplam",fmt(kTut(d))+" ₺")}${sat("Makbuz no",d.makbuzNo)}${sat("Talep notu",d.not)}${sat("Not",d.alanNot)}${sat("Adres",(d.adresAd?d.adresAd+" · ":"")+(d.adres||""))}${sat("Talep eden",d.talepEden)}${sat("Tahsil eden",d.alan)}${sat("Tahsil zamanı",dTam(d.alinmaZaman))}${sat("Onaylayan",(d.onaylayan||"")+(d.onayTarihi?" · "+dTam(d.onayTarihi):""))}</table></div>`})}
+  else if(t==="talimat"){
+    D.push({html:`<div class="pdfp"><div class="pdtag">${esc(TUR_AD.talimat)}</div><div class="pdh">TALİMAT — ${esc(trDate(dTarih(d)))}</div><table class="pdt"><tr><th>Talimat</th><td style="white-space:pre-wrap">${esc(d.metin||"")}</td></tr>${sat("Adres",(d.adresAd?d.adresAd+" · ":"")+(d.adres||""))}${sat("Yazan",(d.atayan||"")+(d.zaman?" · "+dTam(d.zaman):""))}${sat("Yapan",(d.yapan||"")+(d.yapilmaZaman?" · "+dTam(d.yapilmaZaman):""))}${sat("Onaylayan",(d.onaylayan||"")+(d.onayTarihi?" · "+dTam(d.onayTarihi):""))}</table></div>`})}
+  else{
+    let v={};try{v=(await db.ref("dosyaFoto/"+d.id).once("value")).val()||{}}catch(er){}
+    const ham=[];
+    [v.foto].concat(Object.values(v.fotolar||{})).map(safeImg).filter(Boolean).forEach((x,k)=>ham.push(["Etiket "+(k+1),x]));
+    [v.irsaliye].concat(Object.values(v.irsEkler||{}).map(x=>typeof x==="string"?x:x&&x.f)).map(safeImg).filter(Boolean).forEach((x,k)=>ham.push(["İrsaliye "+(k+1),x]));
+    const ph=await Promise.all(ham.map(async([ad,x])=>{const m=x.match(/#([A-Za-z0-9_-]{20})$/),th=x.split("#")[0];let full=th;
+      if(m&&window.fotoTamGetir){try{full=await window.fotoTamGetir(m[1])||th}catch(er){}}
+      return{ad,th,full}}));
+    const K=Array.isArray(d.kalem)?d.kalem:Object.values(d.kalem||{}),L2=String(d.urun||"").split("\n");
+    const rows=K.length>1?K.map(k=>`<tr><td>${esc(k.ad)}</td><td>${esc(fmt(k.kg))}</td><td>${esc(fmt(k.paket))}</td></tr>`).join(""):`<tr><td>${esc(L2.slice(1).map(x=>x.split(":")[0]).join(", ")||"-")}</td><td>${esc(fmt(d.kg))}</td><td>${esc(fmt(d.paket))}</td></tr>`;
+    let frm="";if(d.isFormu){try{frm=`<div class="pdl"><div class="isf dp">${isForm(d.isFormu,false)}</div></div>`}catch(er){}}
+    const th=ph.length?`<div class="pdnot">📎 Fotoğraflar sonraki sayfada (${ph.length} adet)</div>`:"";
+    D.push({html:`<div class="pdfp"><div class="pdrow">${frm}<div class="pdr"><div class="pdtag">${esc(TUR_AD[t]||"")}</div><div class="pdh">${esc(d.musteri||"-")} — ${esc(d.urunAd||L2[0]||"")}</div>
       <table class="pdt eb"><tr><th>Ebat</th><th>Kg</th><th>Adet / Paket</th></tr>${rows}<tr><td><b>TOPLAM</b></td><td><b>${esc(fmt(d.kg))}</b></td><td><b>${esc(fmt(d.paket))}</b></td></tr></table>
-      <table class="pdt">${sat("İş emri",d.isEmriNo)}${sat("Sevk tarihi",trDate(d.tarih))}${sat("Adres",d.adres)}${sat("Not",d.not)}${sat("Kaydeden",d.ekleyen)}${sat("Teslim eden",d.teslimEden)}${sat("Onaylayan",(d.onaylayan||"")+(d.onayTarihi?" · "+dTam(d.onayTarihi):""))}</table>${th}</div></div></div>`,ph:pk.map(x=>({u:x.full,ad:x.ad})),bas:(d.musteri||"-")+" — "+(d.urunAd||L2[0]||"")+({iade:" (İade)",diger:" (Diğer)"}[turKey(d)]||"")})};
-    const tablo=(Z,bas,kol,satir)=>{for(let i=0;i<Z.length;i+=16)D.push({html:`<div class="pdfp"><div class="pdh">${bas}${Z.length>16?" ("+(i/16+1)+"/"+Math.ceil(Z.length/16)+")":""}</div><table class="pdt"><tr>${kol}</tr>${Z.slice(i,i+16).map(satir).join("")}</table></div>`})};
-    const tahNot=r=>[r.not,r.alanNot,r.makbuzNo?"Makbuz "+r.makbuzNo:""].filter(Boolean).join(" | ");
-    /* BÖLÜM SIRASI: Üretim iş takip formu&imzalı irsaliye → Tahsilat → Talimat → İade → Diğer */
-    const sev=t=>S.filter(d=>turKey(d)===t);
-    sev("irsaliye").forEach(sevkEkle);
-    tablo(O.filter(r=>r.kaynak==="tahsilat"),"TAHSİLATLAR",'<th style="width:11%">Tarih</th><th>Firma</th><th style="width:12%">Tutar (₺)</th><th style="width:28%">Not</th><th style="width:14%">Alan</th><th style="width:14%">Onaylayan</th>',r=>`<tr><td>${esc(trDate(dTarih(r)))}</td><td>${esc(r.cari)}</td><td>${esc(fmt(kTut(r)))}</td><td>${esc(tahNot(r))}</td><td>${esc(r.alan)}</td><td>${esc(r.onaylayan)}</td></tr>`);
-    tablo(O.filter(r=>r.kaynak==="talimat"),"TALİMATLAR",'<th style="width:11%">Tarih</th><th>Talimat</th><th style="width:15%">Yapan</th><th style="width:15%">Onaylayan</th>',r=>`<tr><td>${esc(trDate(dTarih(r)))}</td><td>${esc(String(r.metin||"").replace(/\s*\n\s*/g," / "))}</td><td>${esc(r.yapan)}</td><td>${esc(r.onaylayan)}</td></tr>`);
-    sev("iade").forEach(sevkEkle);sev("diger").forEach(sevkEkle);
-    kutu.className="pdfk";document.body.appendChild(kutu);
-    const pdf=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true}),MM=297/1100;
-    const resim=u=>new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>ok(null);im.src=u});
-    /* JPEG/PNG olduğu gibi gömülür (yeniden sıkıştırma YOK = kalite kaybı YOK); başka biçim (webp vb.) %95 JPEG'e çevrilir */
-    const gom=(u,im)=>{const m=/^data:image\/(jpeg|jpg|png)/i.exec(u);if(m)return{d:u,f:m[1].toLowerCase()==="png"?"PNG":"JPEG"};
-      const c=document.createElement("canvas");c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);return{d:c.toDataURL("image/jpeg",.95),f:"JPEG"}};
-    const boya=async h=>{const t=document.createElement("div");t.innerHTML=h;const el=t.firstElementChild;kutu.innerHTML="";kutu.appendChild(el);
-      const c=await html2canvas(el,{scale:3,backgroundColor:"#fff",logging:false});
-      const pr=el.getBoundingClientRect(),th=[...el.querySelectorAll(".pdim")].map(x=>{const r=x.getBoundingClientRect();return{x:(r.left-pr.left)*MM,y:(r.top-pr.top)*MM,w:r.width*MM,h:r.height*MM}});
-      return{c,th}};
-    /* fotoğraf sayfası: resimlerin gerçek en-boy oranına göre en çok alan kaplayan sütun/satır düzeni seçilir (sayfa başına en çok 6 resim) */
-    const duzen=(IM)=>{const n=IM.length,W=1056,H=640,G=12,LB=20;let best=null;
-      for(let c=1;c<=n;c++){const rw=Math.ceil(n/c),cw=(W-(c-1)*G)/c,ch=(H-(rw-1)*G)/rw-LB;let sc=0;
-        IM.forEach(im=>{const k=Math.min(cw/im.naturalWidth,ch/im.naturalHeight);sc+=k*k*im.naturalWidth*im.naturalHeight});
-        if(!best||sc>best.sc)best={sc,c,rw,cw,ch}}
-      return best};
-    for(let i=0;i<D.length;i++){
-      toast("PDF hazırlanıyor… sevk "+(i+1)+" / "+D.length);
-      if(i)pdf.addPage();const g=D[i];
-      const r=await boya(g.html);
-      pdf.addImage(r.c.toDataURL("image/jpeg",.95),"JPEG",0,0,297,210);
-      const P=g.ph||[];
-      for(let o=0;o<P.length;o+=6){
-        const grp=P.slice(o,o+6),IM=await Promise.all(grp.map(p=>resim(p.u))),ok=grp.map((p,k)=>({p,im:IM[k]})).filter(x=>x.im);
-        if(!ok.length)continue;
-        const L=duzen(ok.map(x=>x.im)),cells=ok.map((x,k)=>{const cx=k%L.c,ry=Math.floor(k/L.c);
-          return`<div style="position:absolute;left:${cx*(L.cw+12)}px;top:${ry*(L.ch+20+12)}px;width:${L.cw}px;height:${L.ch+20}px"><div class="pdim" style="width:${L.cw}px;height:${L.ch}px"></div><div class="pdcap">${esc(x.p.ad)}</div></div>`}).join("");
-        const rr=await boya(`<div class="pdfp"><div class="pdh">${esc(g.bas)} — Fotoğraflar${P.length>6?" ("+(Math.floor(o/6)+1)+"/"+Math.ceil(P.length/6)+")":""}</div><div style="position:relative;height:640px">${cells}</div></div>`);
-        pdf.addPage();pdf.addImage(rr.c.toDataURL("image/jpeg",.95),"JPEG",0,0,297,210);
-        ok.forEach((x,k)=>{const t=rr.th[k];if(!t)return;
-          const gm=gom(x.p.u,x.im),sc=Math.min(t.w/x.im.naturalWidth,t.h/x.im.naturalHeight),w=x.im.naturalWidth*sc,h=x.im.naturalHeight*sc;
-          pdf.addImage(gm.d,gm.f,t.x+(t.w-w)/2,t.y+(t.h-h)/2,w,h)})}}
-    pdf.save("dosyalar_"+TUR_DOSYA[t]+"_"+bkTarih()+".pdf");return true;
-  }catch(er){toast("«"+TUR_AD[t]+"» PDF'i hazırlanamadı: "+errText(er));return false}
-  finally{kutu.remove()}
-}
+      <table class="pdt">${sat("İş emri",d.isEmriNo)}${sat("Sevk tarihi",trDate(d.tarih))}${sat("Adres",d.adres)}${sat("Not",d.not)}${sat("Kaydeden",d.ekleyen)}${sat("Teslim eden",d.teslimEden)}${sat("Onaylayan",(d.onaylayan||"")+(d.onayTarihi?" · "+dTam(d.onayTarihi):""))}</table>${th}</div></div></div>`,
+      ph:ph.map(x=>({u:x.full,ad:x.ad})),bas:(d.musteri||"-")+" — "+(d.urunAd||L2[0]||"")+({iade:" (İade)",diger:" (Diğer)"}[t]||"")})}
+  const pdf=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true}),MM=297/1100;
+  const resim=u=>new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>ok(null);im.src=u});
+  /* JPEG/PNG olduğu gibi gömülür (yeniden sıkıştırma YOK); başka biçim (webp vb.) %95 JPEG'e çevrilir */
+  const gom=(u,im)=>{const m=/^data:image\/(jpeg|jpg|png)/i.exec(u);if(m)return{d:u,f:m[1].toLowerCase()==="png"?"PNG":"JPEG"};
+    const c=document.createElement("canvas");c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);return{d:c.toDataURL("image/jpeg",.95),f:"JPEG"}};
+  const boya=async h=>{const tt=document.createElement("div");tt.innerHTML=h;const el=tt.firstElementChild;kutu.innerHTML="";kutu.appendChild(el);
+    const c=await html2canvas(el,{scale:3,backgroundColor:"#fff",logging:false});
+    const pr=el.getBoundingClientRect(),th=[...el.querySelectorAll(".pdim")].map(x=>{const r=x.getBoundingClientRect();return{x:(r.left-pr.left)*MM,y:(r.top-pr.top)*MM,w:r.width*MM,h:r.height*MM}});
+    return{c,th}};
+  const duzen=(IM)=>{const n=IM.length,W=1056,H=640,G=12,LB=20;let best=null;
+    for(let c=1;c<=n;c++){const rw=Math.ceil(n/c),cw=(W-(c-1)*G)/c,ch=(H-(rw-1)*G)/rw-LB;let sc=0;
+      IM.forEach(im=>{const k=Math.min(cw/im.naturalWidth,ch/im.naturalHeight);sc+=k*k*im.naturalWidth*im.naturalHeight});
+      if(!best||sc>best.sc)best={sc,c,rw,cw,ch}}
+    return best};
+  for(let i=0;i<D.length;i++){
+    if(i)pdf.addPage();const g=D[i];
+    const r=await boya(g.html);
+    pdf.addImage(r.c.toDataURL("image/jpeg",.95),"JPEG",0,0,297,210);
+    const P=g.ph||[];
+    for(let o=0;o<P.length;o+=6){
+      const grp=P.slice(o,o+6),IM=await Promise.all(grp.map(p=>resim(p.u))),ok=grp.map((p,k)=>({p,im:IM[k]})).filter(x=>x.im);
+      if(!ok.length)continue;
+      const L=duzen(ok.map(x=>x.im)),cells=ok.map((x,k)=>{const cx=k%L.c,ry=Math.floor(k/L.c);
+        return`<div style="position:absolute;left:${cx*(L.cw+12)}px;top:${ry*(L.ch+20+12)}px;width:${L.cw}px;height:${L.ch+20}px"><div class="pdim" style="width:${L.cw}px;height:${L.ch}px"></div><div class="pdcap">${esc(x.p.ad)}</div></div>`}).join("");
+      const rr=await boya(`<div class="pdfp"><div class="pdh">${esc(g.bas)} — Fotoğraflar${P.length>6?" ("+(Math.floor(o/6)+1)+"/"+Math.ceil(P.length/6)+")":""}</div><div style="position:relative;height:640px">${cells}</div></div>`);
+      pdf.addPage();pdf.addImage(rr.c.toDataURL("image/jpeg",.95),"JPEG",0,0,297,210);
+      ok.forEach((x,k)=>{const tt=rr.th[k];if(!tt)return;
+        const gm=gom(x.p.u,x.im),sc=Math.min(tt.w/x.im.naturalWidth,tt.h/x.im.naturalHeight),w=x.im.naturalWidth*sc,h=x.im.naturalHeight*sc;
+        pdf.addImage(gm.d,gm.f,tt.x+(tt.w-w)/2,tt.y+(tt.h-h)/2,w,h)})}}
+  return pdf.output("blob")}
 $("dPdf").onclick=async()=>{
   const L=dosFiltre();if(!L.length){toast("PDF için dosya yok.");return}
-  const T=TUR_SIRA.filter(t=>L.some(d=>turKey(d)===t)),btn=$("dPdf");btn.disabled=true;let n=0;
+  const MAX=100,btn=$("dPdf"),kutu=document.createElement("div");btn.disabled=true;
+  let K=[];TUR_SIRA.forEach(t=>L.filter(d=>turKey(d)===t).forEach(d=>K.push(d)));
   try{
-    await pdfHazir();
-    for(const t of T){if(await pdfTur(t,L.filter(d=>turKey(d)===t)))n++;await new Promise(r=>setTimeout(r,900))}
-    toast(n?"✓ "+n+" PDF indirildi":"PDF hazırlanamadı")
+    if(K.length>MAX){K=K.slice(0,MAX);toast("İlk "+MAX+" kayıt alınıyor. Hepsini almak için tarih aralığını daraltın.");await new Promise(r=>setTimeout(r,2500))}
+    await pdfHazir();await zipHazir();
+    kutu.className="pdfk";document.body.appendChild(kutu);
+    const zip=new window.JSZip(),kul={};let n=0,hata=0;
+    for(let i=0;i<K.length;i++){
+      const d=K[i],t=turKey(d);
+      toast("PDF hazırlanıyor… "+(i+1)+" / "+K.length+" · "+(TUR_AD[t]||""));
+      try{
+        const blob=await pdfKayit(d,kutu),ad=pdfAdi(d);let x=ad,s=2;
+        while(kul[t+"|"+x.toLowerCase()]){x=ad+" ("+s+")";s++}
+        kul[t+"|"+x.toLowerCase()]=1;
+        zip.file(TUR_KLASOR[t]+"/"+x+".pdf",blob,{compression:"STORE"});n++;
+      }catch(er){hata++}
+    }
+    if(!n){toast("PDF hazırlanamadı");return}
+    toast("ZIP hazırlanıyor…");
+    const zb=await zip.generateAsync({type:"blob",compression:"STORE"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(zb);a.download="dosyalar_"+bkTarih()+".zip";document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},60000);
+    toast("✓ "+n+" PDF zip içinde indirildi"+(hata?" ("+hata+" kayıt hazırlanamadı)":""))
   }catch(er){toast("PDF hazırlanamadı: "+errText(er))}
-  finally{btn.disabled=false}
+  finally{kutu.remove();btn.disabled=false}
 };
 /* Dosyalar → Excel (.xlsx), ExcelJS ile: HER TÜR AYRI SAYFA (Üretim Formu&İmzalı İrsaliye, Tahsilat, Talimat, İade, Diğer). Sevk türlerinde her ebat ayrı satır,
    resimler tam kalitede gerçek resim nesnesi olarak aynı kaydın satırında yan yana (Excel'de büyütülebilir/kaydedilebilir). */
