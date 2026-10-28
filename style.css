@@ -352,3 +352,21 @@ html[class*="byz"] [style*="font-size:16px"],html[class*="byz"] [style*="font-si
 html[class*="byz"] .fth .fx{width:calc(38px*var(--k));height:calc(38px*var(--k))}
 html.byz2 .grid{grid-template-columns:1fr}
 html.byz2 .full{grid-column:auto}
+
+/* DOSYALAR → PDF (yazdır → PDF olarak kaydet): #prn.dok */
+#prn.dok{width:285mm;color:#000;font-family:Arial,Helvetica,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#prn.dok .dpg{display:flex;gap:6mm;min-height:185mm;page-break-after:always;break-after:page;align-items:flex-start}
+#prn.dok .dl{flex:0 0 566px}
+#prn.dok .isf.dp{width:566px;margin:0}
+#prn.dok .dr{flex:1;min-width:0}
+#prn.dok .dh{font-weight:900;font-size:15pt;border-bottom:2px solid #000;padding-bottom:2mm;margin-bottom:3mm}
+#prn.dok table.dt{width:100%;border-collapse:collapse;margin-bottom:4mm}
+#prn.dok table.dt th,#prn.dok table.dt td{border:1px solid #000;padding:1.6mm 2mm;font-size:11pt;text-align:left;vertical-align:top;word-break:break-word}
+#prn.dok table.dt th{background:#e5e5e5;width:28%}
+#prn.dok table.eb th{width:auto;text-align:center}
+#prn.dok table.eb td{text-align:center;font-weight:800}
+#prn.dok table.eb td:first-child{text-align:left}
+#prn.dok .dph{display:flex;flex-wrap:wrap;gap:5mm;page-break-after:always;break-after:page}
+#prn.dok .dpi{flex:0 0 calc(50% - 3mm);break-inside:avoid;font-size:11pt}
+#prn.dok .dpi img{display:block;width:100%;max-height:150mm;object-fit:contain;border:1px solid #888;margin-top:1mm}
+#prn.dok .dpg:last-child,#prn.dok .dph:last-child{page-break-after:auto;break-after:auto}

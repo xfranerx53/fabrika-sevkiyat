@@ -1623,6 +1623,36 @@ $("dList").onclick=async e=>{
   const h=e.target.closest(".dfile");
   if(h){const id=h.dataset.id;if(dAcik.has(id))dAcik.delete(id);else dAcik.add(id);dosListele()}
 };
+/* Dosyalar → PDF: her sevk bir sayfa (iş emri formu + ebat tablosu + bilgiler), ardından fotoğraf sayfası; talimat/tahsilat sonda tablo.
+   Yazdırma penceresinde «PDF olarak kaydet» seçilir. Fiyat PDF'e yazılmaz. */
+$("dPdf").onclick=async()=>{
+  const L=dosFiltre();if(!L.length){toast("PDF için dosya yok.");return}
+  let S=L.filter(d=>!d.kaynak);const O=L.filter(d=>d.kaynak),MAX=40;
+  if(S.length>MAX){S=S.slice(0,MAX);toast("İlk "+MAX+" sevk PDF'e alınıyor (tarih aralığını daraltabilirsiniz).")}else toast("PDF hazırlanıyor… ("+S.length+" sevk)");
+  try{
+    const F={};
+    for(let i=0;i<S.length;i+=5)await Promise.all(S.slice(i,i+5).map(async d=>{try{F[d.id]=(await db.ref("dosyaFoto/"+d.id).once("value")).val()||{}}catch(er){F[d.id]={}}}));
+    const im=(...a)=>a.flat().map(x=>typeof x==="string"?x:x&&x.f).map(x=>safeImg(x)).filter(Boolean);
+    const sat=(k,v)=>v?`<tr><th>${k}</th><td>${esc(v)}</td></tr>`:"";
+    const sayfa=d=>{
+      const K=Array.isArray(d.kalem)?d.kalem:Object.values(d.kalem||{}),L2=String(d.urun||"").split("\n"),v=F[d.id]||{};
+      const rows=K.length>1?K.map(k=>`<tr><td>${esc(k.ad)}</td><td>${esc(fmt(k.kg))}</td><td>${esc(fmt(k.paket))}</td></tr>`).join(""):`<tr><td>${esc(L2.slice(1).map(x=>x.split(":")[0]).join(", ")||"-")}</td><td>${esc(fmt(d.kg))}</td><td>${esc(fmt(d.paket))}</td></tr>`;
+      let frm="";if(d.isFormu){try{frm=`<div class="dl"><div class="isf dp">${isForm(d.isFormu,false)}</div></div>`}catch(er){}}
+      let h=`<div class="dpg">${frm}<div class="dr"><div class="dh">${esc(d.musteri||"-")} — ${esc(d.urunAd||L2[0]||"")}</div>
+      <table class="dt eb"><tr><th>Ebat</th><th>Kg</th><th>Adet / Paket</th></tr>${rows}<tr><td><b>TOPLAM</b></td><td><b>${esc(fmt(d.kg))}</b></td><td><b>${esc(fmt(d.paket))}</b></td></tr></table>
+      <table class="dt">${sat("İş emri",d.isEmriNo)}${sat("Sevk tarihi",trDate(d.tarih))}${sat("Adres",d.adres)}${sat("Not",d.not)}${sat("Kaydeden",d.ekleyen)}${sat("Teslim eden",d.teslimEden)}${sat("Onaylayan",(d.onaylayan||"")+(d.onayTarihi?" · "+dTam(d.onayTarihi):""))}</table></div></div>`;
+      const E=im(v.foto,Object.values(v.fotolar||{})),I=im(v.irsaliye,Object.values(v.irsEkler||{}));
+      if(E.length||I.length)h+=`<div class="dph">`+E.map((x,i)=>`<div class="dpi"><b>Etiket ${i+1}</b><img src="${x}" alt=""></div>`).join("")+I.map((x,i)=>`<div class="dpi"><b>İrsaliye ${i+1}</b><img src="${x}" alt=""></div>`).join("")+`</div>`;
+      return h};
+    let h=S.map(sayfa).join("");
+    if(O.length)h+=`<div class="dh">TALİMAT ve TAHSİLATLAR</div><table class="dt"><tr><th style="width:11%">Tarih</th><th style="width:11%">Tür</th><th>Firma / Talimat</th><th style="width:12%">Tutar (₺)</th><th style="width:16%">Yapan / Alan</th><th style="width:16%">Onaylayan</th></tr>`+O.map(d=>`<tr><td>${esc(trDate(dTarih(d)))}</td><td>${esc(turAd(d))}</td><td>${esc(d.kaynak==="tahsilat"?d.cari:String(d.metin||"").replace(/\s*\n\s*/g," / "))}</td><td>${d.kaynak==="tahsilat"?esc(fmt(kTut(d))):""}</td><td>${esc(d.kaynak==="talimat"?d.yapan:d.alan)}</td><td>${esc(d.onaylayan)}</td></tr>`).join("")+`</table>`;
+    const P=$("prn");P.className="dok";P.innerHTML=h;
+    await Promise.all([...P.querySelectorAll("img")].map(i=>i.decode?i.decode().catch(()=>{}):0));
+    const t=document.title;document.title="dosyalar_"+bkTarih();
+    window.onafterprint=()=>{document.title=t;P.innerHTML="";P.className=""};
+    setTimeout(()=>window.print(),200);
+  }catch(er){toast("PDF hazırlanamadı: "+errText(er));$("prn").className="";$("prn").innerHTML=""}
+};
 /* Dosyalar → Excel (.xlsx): her ebat ayrı satır, sayılar sayı, tarih metin (#### çıkmaz), sütun genişlikleri ayarlı, filtre + toplam satırı */
 $("dCsv").onclick=async()=>{
   try{toast("Excel hazırlanıyor…");await xlsxHazir()}catch(er){toast(errText(er));return}
@@ -1702,7 +1732,7 @@ isfSigdir()}
 /* Karttaki form kutusunu genişliğe sığdır (telefonda yana kaydırma gerekmesin) */
 var isfRO=window.ResizeObserver?new ResizeObserver(es=>{if(es.some(en=>String(Math.round(en.contentRect.width))!==en.target.dataset.w))isfSigdir()}):null;
 function isfSigdir(){
-  document.querySelectorAll(".isf").forEach(b=>{const f=b.firstElementChild;if(!f)return;if(isfRO&&!b._ro){b._ro=1;isfRO.observe(b)}const w=b.clientWidth;if(w<=0)return;b.dataset.w=w;
+  document.querySelectorAll(".isf:not(.dp)").forEach(b=>{const f=b.firstElementChild;if(!f)return;if(isfRO&&!b._ro){b._ro=1;isfRO.observe(b)}const w=b.clientWidth;if(w<=0)return;b.dataset.w=w;
     const s=Math.min(w/560,1.15);f.style.transform="scale("+s+")";f.style.marginLeft=Math.max(0,(w-560*s)/2)+"px";b.style.height=Math.ceil(f.offsetHeight*s)+2+"px"})}
 window.addEventListener("resize",isfSigdir);
 /* Termin: >0 gecikti, 0 bugün, <0 kalan gün; bitmiş/aktarılmış işte null */
