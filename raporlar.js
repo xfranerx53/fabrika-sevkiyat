@@ -35,7 +35,7 @@
         adm?rd(db.ref("siparisler")):Promise.resolve({})]);
       D={is:X[0],urn:X[1],dos:X[2],har:X[3],kal:X[4],sip:X[5]};
     }catch(e){g("rpO").innerHTML='<div class="empty">Okunamadı: '+esc(errText(e))+'</div>';g("rpOk").disabled=false;return}
-    cur=hesapla(D,f,t,adm);cur.f=f;cur.t=t;cur.adm=adm;cur.z=Date.now();tab="ozet";all=false;allC=false;ciz();g("rpOk").disabled=false;g("rpCsv").classList.remove("hide")}
+    cur=hesapla(D,f,t,adm);cur.f=f;cur.t=t;cur.adm=adm;cur.z=Date.now();tab="ozet";all=false;allC=false;ciz();g("rpOk").disabled=false;g("rpCsv").classList.remove("hide");g("rpPdf").classList.remove("hide")}
 
   function hesapla(D,f,t,adm){
     var inR=function(d){return d>=f&&d<=t},ms=aylar(f,t),A={};
@@ -234,5 +234,39 @@
       X.indir("MAG-Rapor_"+R.f+"_"+R.t,sh);
       toast("Excel dosyası indirildi")
     }catch(e){toast("Excel hazırlanamadı: "+errText(e))}}
-  g("rpOk").onclick=getir;g("rpCsv").onclick=excel;
+
+  /* ============ PDF (v111): tüm bölümler tek A4 PDF; Dosyalar'daki html2canvas + jsPDF ile ============ */
+  async function pdf(){
+    if(!cur)return;var btn=g("rpPdf"),kutu=null,sa=all,sc=allC,st=tab;
+    try{
+      if(btn)btn.disabled=true;toast("PDF hazırlanıyor…");
+      await pdfHazir();
+      var R=cur,B=function(t,h){return'<h3 class="rpdh">'+t+'</h3>'+h};
+      all=true;allC=true;
+      var h='<div class="rpdt"><b>MAG AMBALAJ — Rapor</b><span>'+esc(trDate(R.f))+' – '+esc(trDate(R.t))+' · Hazırlanma: '+esc(zamanTxt(R.z))+'</span></div>'
+        +B("Özet",tabOzet(R))+B("Üretim",tabUretim(R))+B("Sevk",tabSevk(R))+B("Malzeme",tabMalz(R))+(R.adm?B("Maliyet",tabMali(R)):"");
+      all=sa;allC=sc;tab=st;
+      kutu=document.createElement("div");kutu.className="rp rpdf";kutu.innerHTML=h;document.body.appendChild(kutu);
+      await new Promise(function(r){setTimeout(r,80)});
+      var S=2,c=await html2canvas(kutu,{scale:S,backgroundColor:"#fff",logging:false}),W=c.width,H=c.height,pH=Math.floor(W*297/210);
+      var kr=kutu.getBoundingClientRect(),cand=[];
+      kutu.querySelectorAll(".rcard,tr,.rtr,.rmr,.rwarn,.rn,.rpdt,.rpdh,.rg").forEach(function(e){cand.push(Math.round((e.getBoundingClientRect().bottom-kr.top)*S))});
+      cand.sort(function(a,b){return a-b});
+      var kes=[],y=0;
+      while(y<H-4){var lim=y+pH,end;
+        if(lim>=H)end=H;else{end=0;cand.forEach(function(v){if(v<=lim&&v>y+pH*0.4)end=v});if(!end)end=lim}
+        kes.push([y,end]);y=end}
+      var doc=new window.jspdf.jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true});
+      kes.forEach(function(k,i){
+        var t=document.createElement("canvas");t.width=W;t.height=k[1]-k[0];
+        var x=t.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,t.width,t.height);x.drawImage(c,0,k[0],W,t.height,0,0,W,t.height);
+        if(i)doc.addPage();
+        doc.addImage(t.toDataURL("image/jpeg",0.92),"JPEG",0,0,210,t.height*210/W);
+        doc.setFontSize(8);doc.setTextColor(120);doc.text("MAG AMBALAJ",8,291);doc.text("Sayfa "+(i+1)+" / "+kes.length,202,291,{align:"right"})});
+      var a=document.createElement("a");a.href=URL.createObjectURL(doc.output("blob"));a.download="MAG-Rapor_"+R.f+"_"+R.t+".pdf";document.body.appendChild(a);a.click();
+      setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},60000);
+      toast("✓ PDF indirildi")
+    }catch(e){all=sa;allC=sc;tab=st;toast("PDF hazırlanamadı: "+errText(e))}
+    finally{if(kutu)kutu.remove();if(btn)btn.disabled=false}}
+  g("rpOk").onclick=getir;g("rpCsv").onclick=excel;g("rpPdf").onclick=pdf;
 })();

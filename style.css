@@ -381,7 +381,7 @@ html.byz2 .full{grid-column:auto}
 .rp .rfilt label{font-size:calc(14px*var(--k,1));font-weight:700}
 .rp .rbtn{display:flex;gap:8px}
 .rp .rbtn .btn{margin-bottom:0}
-.rp .rbtn #rpCsv{width:auto;flex:0 0 auto;padding:0 16px;white-space:nowrap}
+.rp .rbtn #rpCsv,.rp .rbtn #rpPdf{width:auto;flex:0 0 auto;padding:0 16px;white-space:nowrap}
 .rp .rprod{display:flex;align-items:center;gap:12px;text-align:left;margin:0 0 12px;padding:12px 14px;background:#f5f3ff;border:2px solid #7c3aed;color:#4c1d95;border-radius:14px;width:100%;cursor:pointer}
 .rp .rprod>span{font-size:28px;line-height:1}
 .rp .rprod b{display:block;font-size:calc(16px*var(--k,1))}
@@ -438,3 +438,15 @@ html.byz2 .full{grid-column:auto}
 #dIR .irt th{position:sticky;top:0;background:#1e3a5f;color:#fff;text-align:left;padding:8px;white-space:nowrap;font-size:13px}
 #dIR .irt td{padding:7px 8px;border-bottom:1px solid #e2e8f0}
 #dIR .irt tbody tr:nth-child(even) td{background:#f8fafc}
+
+/* v111: Raporlar PDF çıktısı (ekran dışı, html2canvas ile çekilir) */
+.rpdf{position:fixed;left:-12000px;top:0;width:794px;box-sizing:border-box;padding:22px;background:#fff;color:#0f172a;font-family:Arial,Helvetica,sans-serif;--k:1}
+.rpdf .rpdt{border-bottom:3px solid #1e3a5f;padding-bottom:8px;margin-bottom:10px}
+.rpdf .rpdt b{display:block;font-size:22px;color:#1e3a5f}
+.rpdf .rpdt span{font-size:13px;color:#64748b}
+.rpdf .rpdh{margin:16px 0 8px;padding:6px 10px;background:#dbeafe;color:#1e3a5f;font-size:16px;border-radius:6px}
+.rpdf .rgit,.rpdf .rall{display:none}
+.rpdf .rw{overflow:visible}
+.rpdf .rcard{box-shadow:none}
+.rpdf .rt{font-size:13px}
+.rpdf .rt td,.rpdf .rt th{white-space:normal}
