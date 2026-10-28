@@ -1623,12 +1623,35 @@ $("dList").onclick=async e=>{
   const h=e.target.closest(".dfile");
   if(h){const id=h.dataset.id;if(dAcik.has(id))dAcik.delete(id);else dAcik.add(id);dosListele()}
 };
-$("dCsv").onclick=()=>{
-  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',n=v=>q(String(+v||0).replace(".",","));
-  const r=[["Teslim Tarihi","Tür","Müşteri","Ürün","Kg","Adet","Tahsilat (₺)","Adres","Not","Kaydeden","Teslim eden","Onaylayan","Onay Tarihi"].concat(isAdmin()?["Fiyat (₺)","Esas","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]).map(q).join(";")]
-    .concat(dosFiltre().map(d=>[q(trDate(dTarih(d))),q(turAd(d)),q(d.kaynak==="tahsilat"?d.cari:d.musteri),q(d.kaynak==="talimat"?d.metin:d.urun),d.kaynak?q(""):n(d.kg),d.kaynak?q(""):n(d.paket),d.kaynak==="tahsilat"?n(kTut(d)):q(""),q(d.adres),q(d.kaynak==="tahsilat"?[d.not,d.alanNot,d.makbuzNo?"Makbuz "+d.makbuzNo:""].filter(Boolean).join(" | "):d.not),q(d.kaynak?(d.atayan||d.talepEden):d.ekleyen),q(d.kaynak?(d.yapan||d.alan):d.teslimEden),q(d.onaylayan),q(dTam(d.onayTarihi))].concat(isAdmin()?sFyCsv(d):[]).join(";")));
-  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\r\n")],{type:"text/csv;charset=utf-8"}));a.download="dosyalar.csv";a.click();
+/* Dosyalar → Excel (.xlsx): her ebat ayrı satır, sayılar sayı, tarih metin (#### çıkmaz), sütun genişlikleri ayarlı, filtre + toplam satırı */
+$("dCsv").onclick=async()=>{
+  try{toast("Excel hazırlanıyor…");await xlsxHazir()}catch(er){toast(errText(er));return}
+  try{
+  const adm=isAdmin(),R=[],tx=v=>String(v==null?"":v).replace(/\s*\n\s*/g," / ").trim();
+  const H=["Tarih","Tür","Müşteri / Firma","İş emri","Ürün / Talimat","Ebat","Kg","Adet / Paket","Tahsilat (₺)","Adres","Not","Kaydeden / Yazan","Teslim eden / Yapan","Onaylayan","Onay tarihi"].concat(adm?["Fiyat (₺)","Esas","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]);
+  let tk=0,tp=0,tt=0;
+  dosFiltre().forEach(d=>{
+    const ts=d.kaynak==="tahsilat",tl=d.kaynak==="talimat";
+    const ortak=[trDate(dTarih(d)),turAd(d),tx(ts?d.cari:d.musteri),tx(d.isEmriNo)];
+    const son=[tx(d.adres),tx(ts?[d.not,d.alanNot,d.makbuzNo?"Makbuz "+d.makbuzNo:""].filter(Boolean).join(" | "):d.not),tx(d.kaynak?(d.atayan||d.talepEden):d.ekleyen),tx(d.kaynak?(d.yapan||d.alan):d.teslimEden),tx(d.onaylayan),dTam(d.onayTarihi)];
+    const fy=adm&&!d.kaynak?sFyRaw(d):(adm?["","","","","",""]:[]);
+    if(tl){R.push(ortak.concat([tx(d.metin),"","","","",].concat(son),fy));return}
+    if(ts){const t=kTut(d);tt+=t;R.push(ortak.concat(["Tahsilat","","","",t],son,fy));return}
+    const L=String(d.urun||"").split("\n"),ad=tx(d.urunAd||L[0]),K=Array.isArray(d.kalem)?d.kalem:Object.values(d.kalem||{});
+    if(K.length>1){K.forEach((k,i)=>{const kg=+k.kg||0,pk=+k.paket||0;tk+=kg;tp+=pk;R.push(ortak.concat([ad,tx(k.ad),kg,pk,""],i?["","","","","",""]:son,i?(adm?["","","","","",""]:[]):fy))})}
+    else{const kg=+d.kg||0,pk=+d.paket||0;tk+=kg;tp+=pk;R.push(ortak.concat([ad,tx(L.slice(1).map(x=>x.split(":")[0]).join(", ")),kg,pk,""],son,fy))}
+  });
+  if(!R.length){toast("Aktarılacak dosya yok.");return}
+  const top=Array(H.length).fill("");top[0]="TOPLAM";top[6]=tk;top[7]=tp;top[8]=tt;
+  const ws=XLSX.utils.aoa_to_sheet([H].concat(R,[Array(H.length).fill("")],[top]));
+  const W=[12,16,30,11,34,26,10,12,13,30,30,18,18,18,17].concat(adm?[12,10,8,12,12,12]:[]);
+  ws["!cols"]=W.map(w=>({wch:w}));ws["!autofilter"]={ref:"A1:"+XLSX.utils.encode_col(H.length-1)+(R.length+1)};
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Dosyalar");
+  XLSX.writeFile(wb,"dosyalar_"+bkTarih()+".xlsx");
+  toast("✓ Excel dosyası indirildi");
+  }catch(er){toast("Excel hazırlanamadı: "+errText(er))}
 };
+const sFyRaw=u=>{const f=(fyat.sevk||{})[u.id];if(!f)return Array(6).fill("");const v=sevkTop(u);return[+f.tutar||0,String(f.esas||""),+v.r||0,+v.h||0,+v.k||0,+v.t||0]};
 
 
 /* ================= İŞ EMİRLERİ (üretim takip formu) ================= */
