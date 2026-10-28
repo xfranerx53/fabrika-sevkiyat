@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v97**
+**GÜNCEL SÜRÜM: v98**
 Son güncelleme: 2026-10-27 (v93: stoka «📥 Hazır liste» toplu ekleme düğmesi, stokaktar.js); önceki: 2026-10-26 (yeni sohbette zip + 2 Excel incelendi, «GÜNCEL DURUM» bloğu Bölüm 9'a eklendi; v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
@@ -288,6 +288,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-26: Yalnız notlar (sürüm v92 kaldı, kod değişmedi) — yeni sohbette zip ve iki Excel incelendi; kontrol.js temiz; Bölüm 9'a «GÜNCEL DURUM» eklendi (404.html zip'te duruyor, israpor.js notlarda yoktu). Firebase kuralı: değişmedi.
 - 2026-10-28: v96 — **İş emri formu Sevkiyat ve Dosyalar'da birebir görünür (`app.js`).** «Hazır ürünlere aktar» artık formun kopyasını (`isFormu`, FİYAT HARİÇ — fiyat yalnız iş emrinde kalır) `urunler` kaydına yazar; Hazır ürünler / Sevk edilecek / Sevk edilen kartlarında `isForm` + aşama satırları (EKSTRUDER, KESİM…) gösterilir; Dosyalar'a taşınınca kayıtla gider. Dosyalar listesinde satır kısa kalır, tıklayınca form açılır. v96 öncesi aktarılmış kayıtlarda `isFormu` yok (iş emrini okuyabilen kullanıcıda `isEmriId` ile bulunur). Rules değişmedi. Sınanmadı (telefon).
 - 2026-10-28: v97 — **Sevkiyat/Dosyalar'daki form telefonda yarım (ölçeksiz) çıkıyordu.** `isfSigdir` kutu gizliyken (genişlik 0) ölçekleyemeden dönüyordu; artık `ResizeObserver` kutu görünür olunca yeniden ölçekler, bölüm değişiminde de tekrar çalışır. Sınanmadı (telefon).
+- 2026-10-28: v98 — **Sevkiyat kartında çok ebatlı işte her ebat ayrı kutuda** (ebat adı, AĞIRLIK, PAKET/ADET) + altında toplam; tek ebatta eski toplam kutusu (`app.js` kart()). Sınanmadı.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 

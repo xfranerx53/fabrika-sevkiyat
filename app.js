@@ -441,7 +441,7 @@ function kart(u){
   return `<div class="item ${c[0]}">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:14px;font-weight:700;color:#64748b">Tarih: ${esc(trDate(u.tarih))}</span><span class="badge ${c[1]}">${c[2]}</span></div>
   ${fotoListe(u).map(s=>`<img loading="lazy" src="${s}" alt="Etiket">`).join("")}
-  ${FK?FK+`<div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(u.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(u.paket))} Adet</b></div></div>`:mid}
+  ${FK?FK+(K2?K2.map(k=>`<div style="margin:12px 0 4px;font-weight:800;font-size:16px;color:#334155">${esc(k.ad)}</div><div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(k.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(k.paket))} Adet</b></div></div>`).join("")+`<div class="who" style="font-weight:800;margin-top:8px">Toplam: ${esc(fmt(u.kg))} kg · ${esc(fmt(u.paket))} adet</div>`:`<div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(u.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(u.paket))} Adet</b></div></div>`):mid}
   ${u.adres?`<div class="addr">📍 <b>Teslimat adresi:</b> ${esc(u.adres)}</div>`:""}
   ${u.haritaUrl||u.adres?`<button class="btn b7" data-a="map" data-id="${id}">🚀 Yol Tarifi Al</button>`:""}
   <button class="btn b3" data-a="wa" data-id="${id}">📲 WhatsApp ile paylaş</button>
