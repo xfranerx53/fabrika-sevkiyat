@@ -1623,12 +1623,12 @@ $("dList").onclick=async e=>{
   const h=e.target.closest(".dfile");
   if(h){const id=h.dataset.id;if(dAcik.has(id))dAcik.delete(id);else dAcik.add(id);dosListele()}
 };
-/* Dosyalar → PDF (doğrudan indirilir). Her sevk TEK SAYFA = iş emri formu + ebat tablosu + bilgiler + küçük fotoğraflar. Fotoğraflar TAM ÇÖZÜNÜRLÜKTE (fotoTam) küçük boyutta yerleştirilir (ikinci sayfa yok); yakınlaşınca tam kalite görünür, tıklayınca aynı sayfada o resme yakınlaşır. Talimat/tahsilat sonda tablo. Fiyat yok. */
+/* Dosyalar → PDF (doğrudan indirilir). Her sevk TEK SAYFA = iş emri formu + ebat tablosu + bilgiler + küçük fotoğraflar. Fotoğraflar TAM ÇÖZÜNÜRLÜKTE (fotoTam) küçük boyutta yerleştirilir (ikinci sayfa yok); tam kalite resimler PDF'e ayrı dosya (FileAttachment ataşı) olarak gömülür (pdf-lib); sayfada küçük önizleme görünür. Talimat/tahsilat sonda tablo. Fiyat yok. */
 var pdfYuk=null;
 function pdfHazir(){
-  if(window.html2canvas&&window.jspdf)return Promise.resolve();
+  if(window.html2canvas&&window.jspdf&&window.PDFLib)return Promise.resolve();
   if(!pdfYuk){const yukle=u=>new Promise((ok,no)=>{const sc=document.createElement("script");sc.src=u;sc.onload=ok;sc.onerror=()=>no(new Error("PDF bileşeni yüklenemedi. İnternet bağlantısını kontrol edin."));document.head.appendChild(sc)});
-    pdfYuk=Promise.all([yukle("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"),yukle("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")]).catch(er=>{pdfYuk=null;throw er})}
+    pdfYuk=Promise.all([yukle("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"),yukle("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"),yukle("https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js")]).catch(er=>{pdfYuk=null;throw er})}
   return pdfYuk}
 $("dPdf").onclick=async()=>{
   const L=dosFiltre();if(!L.length){toast("PDF için dosya yok.");return}
@@ -1653,18 +1653,22 @@ $("dPdf").onclick=async()=>{
       const K=Array.isArray(d.kalem)?d.kalem:Object.values(d.kalem||{}),L2=String(d.urun||"").split("\n"),ph=F[d.id]||[];
       const rows=K.length>1?K.map(k=>`<tr><td>${esc(k.ad)}</td><td>${esc(fmt(k.kg))}</td><td>${esc(fmt(k.paket))}</td></tr>`).join(""):`<tr><td>${esc(L2.slice(1).map(x=>x.split(":")[0]).join(", ")||"-")}</td><td>${esc(fmt(d.kg))}</td><td>${esc(fmt(d.paket))}</td></tr>`;
       let frm="";if(d.isFormu){try{frm=`<div class="pdl"><div class="isf dp">${isForm(d.isFormu,false)}</div></div>`}catch(er){}}
-      const pk=ph.slice(0,12),th=pk.length?`<div class="pdnot">📎 Ekler — küçük resme tıklayınca büyür (resimler tam kalitede PDF'in içindedir)</div><div class="pdths${pk.length>6?" s":""}">`+pk.map(x=>`<div class="pdth"><div class="pdim"></div><span>${esc(x.ad)}</span></div>`).join("")+`</div>`:"";
+      const pk=ph.slice(0,12),th=pk.length?`<div class="pdnot">📎 Ekler — resimler PDF'e ayrı dosya (ataş) olarak gömülüdür; ataşa çift tıklayınca tam boy açılır</div><div class="pdths${pk.length>6?" s":""}">`+pk.map(x=>`<div class="pdth"><div class="pdim"></div><span>${esc(x.ad)}</span></div>`).join("")+`</div>`:"";
       D.push({html:`<div class="pdfp"><div class="pdrow">${frm}<div class="pdr"><div class="pdh">${esc(d.musteri||"-")} — ${esc(d.urunAd||L2[0]||"")}</div>
       <table class="pdt eb"><tr><th>Ebat</th><th>Kg</th><th>Adet / Paket</th></tr>${rows}<tr><td><b>TOPLAM</b></td><td><b>${esc(fmt(d.kg))}</b></td><td><b>${esc(fmt(d.paket))}</b></td></tr></table>
-      <table class="pdt">${sat("İş emri",d.isEmriNo)}${sat("Sevk tarihi",trDate(d.tarih))}${sat("Adres",d.adres)}${sat("Not",d.not)}${sat("Kaydeden",d.ekleyen)}${sat("Teslim eden",d.teslimEden)}${sat("Onaylayan",(d.onaylayan||"")+(d.onayTarihi?" · "+dTam(d.onayTarihi):""))}</table>${th}</div></div></div>`,ph:pk.map(x=>x.full)})});
+      <table class="pdt">${sat("İş emri",d.isEmriNo)}${sat("Sevk tarihi",trDate(d.tarih))}${sat("Adres",d.adres)}${sat("Not",d.not)}${sat("Kaydeden",d.ekleyen)}${sat("Teslim eden",d.teslimEden)}${sat("Onaylayan",(d.onaylayan||"")+(d.onayTarihi?" · "+dTam(d.onayTarihi):""))}</table>${th}</div></div></div>`,ph:pk.map(x=>({u:x.full,ad:x.ad})),no:d.isEmriNo||d.musteri||"sevk"})});
     if(O.length){const T=r=>`<tr><td>${esc(trDate(dTarih(r)))}</td><td>${esc(turAd(r))}</td><td>${esc(r.kaynak==="tahsilat"?r.cari:String(r.metin||"").replace(/\s*\n\s*/g," / "))}</td><td>${r.kaynak==="tahsilat"?esc(fmt(kTut(r))):""}</td><td>${esc(r.kaynak==="talimat"?r.yapan:r.alan)}</td><td>${esc(r.onaylayan)}</td></tr>`;
       for(let i=0;i<O.length;i+=16)D.push({html:`<div class="pdfp"><div class="pdh">TALİMAT ve TAHSİLATLAR</div><table class="pdt"><tr><th style="width:11%">Tarih</th><th style="width:12%">Tür</th><th>Firma / Talimat</th><th style="width:12%">Tutar (₺)</th><th style="width:15%">Yapan / Alan</th><th style="width:15%">Onaylayan</th></tr>${O.slice(i,i+16).map(T).join("")}</table></div>`})}
     kutu.className="pdfk";document.body.appendChild(kutu);
-    const pdf=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true}),LK=[],MM=297/1100,PT=72/25.4;
+    const pdf=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true}),EK=[],MM=297/1100,PT=72/25.4;
     const resim=u=>new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>ok(null);im.src=u});
-    /* JPEG/PNG olduğu gibi gömülür (yeniden sıkıştırma YOK = kalite kaybı YOK); başka biçim (webp vb.) %95 JPEG'e çevrilir */
+    /* JPEG/PNG olduğu gibi (yeniden sıkıştırma YOK); başka biçim (webp vb.) %95 JPEG'e çevrilir */
     const gom=(u,im)=>{const m=/^data:image\/(jpeg|jpg|png)/i.exec(u);if(m)return{d:u,f:m[1].toLowerCase()==="png"?"PNG":"JPEG"};
       const c=document.createElement("canvas");c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);return{d:c.toDataURL("image/jpeg",.95),f:"JPEG"}};
+    /* sayfadaki küçük resim: büyükse 900px'e indirilir (dosya şişmesin); tam kalite ATAŞTA durur */
+    const kucuk=(u,im)=>{const m=Math.max(im.naturalWidth,im.naturalHeight);if(m<=900)return gom(u,im);const k=900/m,c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.imageSmoothingQuality="high";x.drawImage(im,0,0,c.width,c.height);return{d:c.toDataURL("image/jpeg",.92),f:"JPEG"}};
+    const bayt=d=>{const t=atob(d.split(",")[1]),u=new Uint8Array(t.length);for(let i=0;i<t.length;i++)u[i]=t.charCodeAt(i);return u};
+    const slug=v=>String(v||"").replace(/ı/g,"i").replace(/İ/g,"I").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z0-9._-]+/g,"_").replace(/^_+|_+$/g,"").slice(0,40)||"dosya";
     const boya=async h=>{const t=document.createElement("div");t.innerHTML=h;const el=t.firstElementChild;kutu.innerHTML="";kutu.appendChild(el);
       const c=await html2canvas(el,{scale:3,backgroundColor:"#fff",logging:false});
       const pr=el.getBoundingClientRect(),th=[...el.querySelectorAll(".pdim")].map(x=>{const r=x.getBoundingClientRect();return{x:(r.left-pr.left)*MM,y:(r.top-pr.top)*MM,w:r.width*MM,h:r.height*MM}});
@@ -1674,14 +1678,29 @@ $("dPdf").onclick=async()=>{
       if(i)pdf.addPage();const g=D[i];
       const r=await boya(g.html);
       pdf.addImage(r.c.toDataURL("image/jpeg",.95),"JPEG",0,0,297,210);
-      for(let j=0;j<r.th.length;j++){const t=r.th[j],src=(g.ph||[])[j];if(!src)continue;
-        const im=await resim(src);if(!im)continue;
-        const ins=.7,k=Math.min((t.w-2*ins)/im.naturalWidth,(t.h-2*ins)/im.naturalHeight),w=im.naturalWidth*k,h=im.naturalHeight*k,gm=gom(src,im);
-        pdf.addImage(gm.d,gm.f,t.x+(t.w-w)/2,t.y+(t.h-h)/2,w,h);
-        /* tıklayınca aynı sayfada o resme yakınlaşır (ikinci sayfa yok) */
-        LK.push({p:i+1,x:t.x,y:t.y,w:t.w,h:t.h,o:{pageNumber:i+1,magFactor:"XYZ",left:Math.max(0,t.x-6),top:Math.max(0,t.y-6),zoom:Math.max(1.5,Math.min(6,780/(t.w*PT)))}})}}
-    LK.forEach(l=>{pdf.setPage(l.p);pdf.link(l.x,l.y,l.w,l.h,l.o)});
-    pdf.save("dosyalar_"+bkTarih()+".pdf");toast("✓ PDF indirildi");
+      for(let j=0;j<r.th.length;j++){const t=r.th[j],p=(g.ph||[])[j];if(!p)continue;
+        const im=await resim(p.u);if(!im)continue;
+        const ins=.7,k=Math.min((t.w-2*ins)/im.naturalWidth,(t.h-2*ins)/im.naturalHeight),w=im.naturalWidth*k,h=im.naturalHeight*k,sm=kucuk(p.u,im);
+        pdf.addImage(sm.d,sm.f,t.x+(t.w-w)/2,t.y+(t.h-h)/2,w,h);
+        const tam=gom(p.u,im);
+        EK.push({p:i,x:t.x,y:t.y,w:t.w,h:t.h,mime:tam.f==="PNG"?"image/png":"image/jpeg",ext:tam.f==="PNG"?"png":"jpg",bytes:bayt(tam.d),ad:p.ad,no:g.no})}}
+    /* tam kalite resimleri PDF'e AYRI DOSYA (ataş) olarak göm: sayfadaki küçük resmin üstünde ataş + belge ek listesi */
+    let cikti=null;
+    try{
+      if(EK.length&&window.PDFLib){
+        const{PDFDocument,PDFName,PDFString,PDFHexString}=window.PDFLib,doc=await PDFDocument.load(pdf.output("arraybuffer")),cx=doc.context,pg=doc.getPages(),L=[];
+        EK.forEach((e,n)=>{
+          const dn=String(n+1).padStart(3,"0")+"_"+slug(e.no)+"_"+slug(e.ad)+"."+e.ext,ds=(e.no+" — "+e.ad);
+          const efr=cx.register(cx.stream(e.bytes,{Type:"EmbeddedFile",Subtype:e.mime,Params:{Size:e.bytes.length}}));
+          const fsr=cx.register(cx.obj({Type:"Filespec",F:PDFString.of(dn),UF:PDFHexString.fromText(dn),Desc:PDFHexString.fromText(ds),EF:{F:efr}}));
+          const P=pg[e.p],H=P.getHeight();
+          const an=cx.register(cx.obj({Type:"Annot",Subtype:"FileAttachment",Rect:[e.x*PT,H-(e.y+e.h)*PT,(e.x+e.w)*PT,H-e.y*PT],FS:fsr,Name:"Paperclip",Contents:PDFHexString.fromText(ds),T:PDFHexString.fromText(ds),F:4,C:[.11,.31,.85]}));
+          P.node.addAnnot(an);L.push(PDFString.of(dn),fsr)});
+        if(!doc.catalog.has(PDFName.of("Names")))doc.catalog.set(PDFName.of("Names"),cx.obj({EmbeddedFiles:cx.register(cx.obj({Names:L}))}));
+        cikti=await doc.save()}
+    }catch(er){console.error("PDF ek dosya hatası",er);cikti=null;toast("Ek dosyalar eklenemedi, PDF resimlerle birlikte indiriliyor.")}
+    if(cikti){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([cikti],{type:"application/pdf"}));a.download="dosyalar_"+bkTarih()+".pdf";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);toast("✓ PDF indirildi")}
+    else{pdf.save("dosyalar_"+bkTarih()+".pdf");toast("✓ PDF indirildi")}
   }catch(er){toast("PDF hazırlanamadı: "+errText(er))}
   finally{kutu.remove();btn.disabled=false}
 };
