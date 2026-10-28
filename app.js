@@ -1454,7 +1454,11 @@ const dZaman=d=>d.kaynak?(dOlay(d)||+d.onayTarihi||0):(+d.irsaliyeTarihi||+d.ona
 const kTut=d=>(+d.nakit||0)+(+d.cek||0);
 const dSaat=t=>t?new Date(+t).toLocaleTimeString("tr-TR",{timeZone:IST,hour:"2-digit",minute:"2-digit"}):"";
 const dTam=t=>t?new Date(+t).toLocaleString("tr-TR",{timeZone:IST,day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
-function turAd(d){if(d.kaynak==="talimat")return"Talimat";if(d.kaynak==="tahsilat")return"Tahsilat";const t=d.irsTur||"irsaliye";return t==="iade"?"İade":t==="diger"?"Diğer"+(d.irsNot?": "+d.irsNot:""):"İmzalı irsaliye"}
+const TUR_SIRA=["irsaliye","tahsilat","talimat","iade","diger"],
+  TUR_AD={irsaliye:"Üretim iş takip formu&imzalı irsaliye",tahsilat:"Tahsilat",talimat:"Talimat",iade:"İade",diger:"Diğer"},
+  TUR_SAYFA={irsaliye:"Üretim Formu&İmzalı İrsaliye",tahsilat:"Tahsilat",talimat:"Talimat",iade:"İade",diger:"Diğer"}; /* Excel sayfa adı en çok 31 karakter */
+const turKey=d=>d.kaynak||(d.irsTur||"irsaliye");
+function turAd(d){if(d.kaynak==="talimat")return"Talimat";if(d.kaynak==="tahsilat")return"Tahsilat";const t=d.irsTur||"irsaliye";return t==="iade"?"İade":t==="diger"?"Diğer"+(d.irsNot?": "+d.irsNot:""):TUR_AD.irsaliye}
 function dGun(k){return /^\d{4}-\d\d-\d\d$/.test(k)?trDate(k)+" · "+new Date(k+"T12:00:00Z").toLocaleDateString("tr-TR",{weekday:"long",timeZone:"UTC"}):"Tarihsiz"}
 function dosYukle(){
   if(dRef){dRef.off();dRef=null}
@@ -1649,16 +1653,22 @@ $("dPdf").onclick=async()=>{
         return{ad,th,full}}))}));
     /* 2) sayfa listesi (sayfa numaraları baştan hesaplanır → bağlantılar için) */
     const D=[],sat=(k,v)=>v?`<tr><th>${k}</th><td>${esc(v)}</td></tr>`:"";
-    S.forEach(d=>{
+    const sevkEkle=d=>{
       const K=Array.isArray(d.kalem)?d.kalem:Object.values(d.kalem||{}),L2=String(d.urun||"").split("\n"),ph=F[d.id]||[];
       const rows=K.length>1?K.map(k=>`<tr><td>${esc(k.ad)}</td><td>${esc(fmt(k.kg))}</td><td>${esc(fmt(k.paket))}</td></tr>`).join(""):`<tr><td>${esc(L2.slice(1).map(x=>x.split(":")[0]).join(", ")||"-")}</td><td>${esc(fmt(d.kg))}</td><td>${esc(fmt(d.paket))}</td></tr>`;
       let frm="";if(d.isFormu){try{frm=`<div class="pdl"><div class="isf dp">${isForm(d.isFormu,false)}</div></div>`}catch(er){}}
       const pk=ph,th=pk.length?`<div class="pdnot">📎 Fotoğraflar sonraki sayfada (${pk.length} adet)</div>`:"";
-      D.push({html:`<div class="pdfp"><div class="pdrow">${frm}<div class="pdr"><div class="pdh">${esc(d.musteri||"-")} — ${esc(d.urunAd||L2[0]||"")}</div>
+      D.push({html:`<div class="pdfp"><div class="pdrow">${frm}<div class="pdr"><div class="pdtag">${esc(TUR_AD[turKey(d)]||"")}</div><div class="pdh">${esc(d.musteri||"-")} — ${esc(d.urunAd||L2[0]||"")}</div>
       <table class="pdt eb"><tr><th>Ebat</th><th>Kg</th><th>Adet / Paket</th></tr>${rows}<tr><td><b>TOPLAM</b></td><td><b>${esc(fmt(d.kg))}</b></td><td><b>${esc(fmt(d.paket))}</b></td></tr></table>
-      <table class="pdt">${sat("İş emri",d.isEmriNo)}${sat("Sevk tarihi",trDate(d.tarih))}${sat("Adres",d.adres)}${sat("Not",d.not)}${sat("Kaydeden",d.ekleyen)}${sat("Teslim eden",d.teslimEden)}${sat("Onaylayan",(d.onaylayan||"")+(d.onayTarihi?" · "+dTam(d.onayTarihi):""))}</table>${th}</div></div></div>`,ph:pk.map(x=>({u:x.full,ad:x.ad})),bas:(d.musteri||"-")+" — "+(d.urunAd||L2[0]||"")})});
-    if(O.length){const T=r=>`<tr><td>${esc(trDate(dTarih(r)))}</td><td>${esc(turAd(r))}</td><td>${esc(r.kaynak==="tahsilat"?r.cari:String(r.metin||"").replace(/\s*\n\s*/g," / "))}</td><td>${r.kaynak==="tahsilat"?esc(fmt(kTut(r))):""}</td><td>${esc(r.kaynak==="talimat"?r.yapan:r.alan)}</td><td>${esc(r.onaylayan)}</td></tr>`;
-      for(let i=0;i<O.length;i+=16)D.push({html:`<div class="pdfp"><div class="pdh">TALİMAT ve TAHSİLATLAR</div><table class="pdt"><tr><th style="width:11%">Tarih</th><th style="width:12%">Tür</th><th>Firma / Talimat</th><th style="width:12%">Tutar (₺)</th><th style="width:15%">Yapan / Alan</th><th style="width:15%">Onaylayan</th></tr>${O.slice(i,i+16).map(T).join("")}</table></div>`})}
+      <table class="pdt">${sat("İş emri",d.isEmriNo)}${sat("Sevk tarihi",trDate(d.tarih))}${sat("Adres",d.adres)}${sat("Not",d.not)}${sat("Kaydeden",d.ekleyen)}${sat("Teslim eden",d.teslimEden)}${sat("Onaylayan",(d.onaylayan||"")+(d.onayTarihi?" · "+dTam(d.onayTarihi):""))}</table>${th}</div></div></div>`,ph:pk.map(x=>({u:x.full,ad:x.ad})),bas:(d.musteri||"-")+" — "+(d.urunAd||L2[0]||"")+({iade:" (İade)",diger:" (Diğer)"}[turKey(d)]||"")})};
+    const tablo=(Z,bas,kol,satir)=>{for(let i=0;i<Z.length;i+=16)D.push({html:`<div class="pdfp"><div class="pdh">${bas}${Z.length>16?" ("+(i/16+1)+"/"+Math.ceil(Z.length/16)+")":""}</div><table class="pdt"><tr>${kol}</tr>${Z.slice(i,i+16).map(satir).join("")}</table></div>`})};
+    const tahNot=r=>[r.not,r.alanNot,r.makbuzNo?"Makbuz "+r.makbuzNo:""].filter(Boolean).join(" | ");
+    /* BÖLÜM SIRASI: Üretim iş takip formu&imzalı irsaliye → Tahsilat → Talimat → İade → Diğer */
+    const sev=t=>S.filter(d=>turKey(d)===t);
+    sev("irsaliye").forEach(sevkEkle);
+    tablo(O.filter(r=>r.kaynak==="tahsilat"),"TAHSİLATLAR",'<th style="width:11%">Tarih</th><th>Firma</th><th style="width:12%">Tutar (₺)</th><th style="width:28%">Not</th><th style="width:14%">Alan</th><th style="width:14%">Onaylayan</th>',r=>`<tr><td>${esc(trDate(dTarih(r)))}</td><td>${esc(r.cari)}</td><td>${esc(fmt(kTut(r)))}</td><td>${esc(tahNot(r))}</td><td>${esc(r.alan)}</td><td>${esc(r.onaylayan)}</td></tr>`);
+    tablo(O.filter(r=>r.kaynak==="talimat"),"TALİMATLAR",'<th style="width:11%">Tarih</th><th>Talimat</th><th style="width:15%">Yapan</th><th style="width:15%">Onaylayan</th>',r=>`<tr><td>${esc(trDate(dTarih(r)))}</td><td>${esc(String(r.metin||"").replace(/\s*\n\s*/g," / "))}</td><td>${esc(r.yapan)}</td><td>${esc(r.onaylayan)}</td></tr>`);
+    sev("iade").forEach(sevkEkle);sev("diger").forEach(sevkEkle);
     kutu.className="pdfk";document.body.appendChild(kutu);
     const pdf=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true}),MM=297/1100;
     const resim=u=>new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>ok(null);im.src=u});
@@ -1695,8 +1705,8 @@ $("dPdf").onclick=async()=>{
   }catch(er){toast("PDF hazırlanamadı: "+errText(er))}
   finally{kutu.remove();btn.disabled=false}
 };
-/* Dosyalar → Excel (.xlsx), ExcelJS ile: «Dosyalar» sayfası (her ebat ayrı satır, sayılar sayı, tarih metin, filtre + toplam) + «Fotoğraflar» sayfası
-   (her sevk bir satır, resimler tam kalitede gerçek resim nesnesi olarak yan yana; Excel'de büyütülebilir/kaydedilebilir). */
+/* Dosyalar → Excel (.xlsx), ExcelJS ile: HER TÜR AYRI SAYFA (Üretim Formu&İmzalı İrsaliye, Tahsilat, Talimat, İade, Diğer). Sevk türlerinde her ebat ayrı satır,
+   resimler tam kalitede gerçek resim nesnesi olarak aynı kaydın satırında yan yana (Excel'de büyütülebilir/kaydedilebilir). */
 var exYuk=null;
 function exceljsHazir(){if(window.ExcelJS)return Promise.resolve();
   if(!exYuk)exYuk=new Promise((ok,no)=>{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";sc.onload=ok;sc.onerror=()=>{exYuk=null;no(new Error("Excel bileşeni yüklenemedi. İnternet bağlantısını kontrol edin."))};document.head.appendChild(sc)});
@@ -1704,68 +1714,66 @@ function exceljsHazir(){if(window.ExcelJS)return Promise.resolve();
 $("dCsv").onclick=async()=>{
   try{toast("Excel hazırlanıyor…");await exceljsHazir()}catch(er){toast(errText(er));return}
   try{
-  const adm=isAdmin(),R=[],tx=v=>String(v==null?"":v).replace(/\s*\n\s*/g," / ").trim();
-  const H=["Tarih","Tür","Müşteri / Firma","İş emri","Ürün / Talimat","Ebat","Kg","Adet / Paket","Tahsilat (₺)","Adres","Not","Kaydeden / Yazan","Teslim eden / Yapan","Onaylayan","Onay tarihi"].concat(adm?["Fiyat (₺)","Esas","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]);
-  let tk=0,tp=0,tt=0;
-  dosFiltre().forEach(d=>{
-    const ts=d.kaynak==="tahsilat",tl=d.kaynak==="talimat";
-    const ortak=[trDate(dTarih(d)),turAd(d),tx(ts?d.cari:d.musteri),tx(d.isEmriNo)];
-    const son=[tx(d.adres),tx(ts?[d.not,d.alanNot,d.makbuzNo?"Makbuz "+d.makbuzNo:""].filter(Boolean).join(" | "):d.not),tx(d.kaynak?(d.atayan||d.talepEden):d.ekleyen),tx(d.kaynak?(d.yapan||d.alan):d.teslimEden),tx(d.onaylayan),dTam(d.onayTarihi)];
-    const fy=adm&&!d.kaynak?sFyRaw(d):(adm?["","","","","",""]:[]);
-    if(tl){R.push(ortak.concat([tx(d.metin),"","","","",].concat(son),fy));return}
-    if(ts){const t=kTut(d);tt+=t;R.push(ortak.concat(["Tahsilat","","","",t],son,fy));return}
-    const L=String(d.urun||"").split("\n"),ad=tx(d.urunAd||L[0]),K=Array.isArray(d.kalem)?d.kalem:Object.values(d.kalem||{});
-    if(K.length>1){K.forEach((k,i)=>{const kg=+k.kg||0,pk=+k.paket||0;tk+=kg;tp+=pk;R.push(ortak.concat([ad,tx(k.ad),kg,pk,""],i?["","","","","",""]:son,i?(adm?["","","","","",""]:[]):fy))})}
-    else{const kg=+d.kg||0,pk=+d.paket||0;tk+=kg;tp+=pk;R.push(ortak.concat([ad,tx(L.slice(1).map(x=>x.split(":")[0]).join(", ")),kg,pk,""],son,fy))}
-  });
-  if(!R.length){toast("Aktarılacak dosya yok.");return}
-  const top=Array(H.length).fill("");top[0]="TOPLAM";top[6]=tk;top[7]=tp;top[8]=tt;
-  const W=[12,16,30,11,34,26,10,12,13,30,30,18,18,18,17].concat(adm?[12,10,8,12,12,12]:[]);
-  const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet("Dosyalar");
-  ws.columns=W.map(w=>({width:w}));
-  ws.addRow(H);R.forEach(r=>ws.addRow(r));ws.addRow([]);ws.addRow(top);
-  const hr=ws.getRow(1);hr.font={bold:true};hr.alignment={vertical:"middle",wrapText:true};hr.eachCell(c=>{c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFE5E7EB"}};c.border={bottom:{style:"thin"}}});
-  ws.views=[{state:"frozen",ySplit:1}];ws.autoFilter={from:{row:1,column:1},to:{row:1,column:H.length}};
-  ws.getRow(R.length+3).font={bold:true};
-  /* ---- Fotoğraflar sayfası ---- */
-  const S=dosFiltre().filter(d=>!d.kaynak),SM=60;let SS=S;
-  if(SS.length>SM){SS=SS.slice(0,SM);toast("Fotoğraflar sayfasına ilk "+SM+" sevk alınıyor (tarih aralığını daraltabilirsiniz).")}
-  const FS=[];
-  for(let i=0;i<SS.length;i+=4)await Promise.all(SS.slice(i,i+4).map(async(d,k)=>{
-    toast("Fotoğraflar alınıyor… "+Math.min(i+4,SS.length)+" / "+SS.length);
+  const adm=isAdmin(),tx=v=>String(v==null?"":v).replace(/\s*\n\s*/g," / ").trim(),tpf=$("dtp").value,L=dosFiltre();
+  if(!L.length){toast("Aktarılacak dosya yok.");return}
+  const G={};TUR_SIRA.forEach(t=>G[t]=[]);L.forEach(d=>{const k=turKey(d);if(G[k])G[k].push(d)});
+  /* fotoğraflar: sevk kayıtları (üretim formu&irsaliye, iade, diğer) — en çok 60 kayıt */
+  const SM=60,SV=[].concat(G.irsaliye,G.iade,G.diger),SS=SV.slice(0,SM),FS={};
+  if(SV.length>SM)toast("Fotoğraflar için ilk "+SM+" kayıt alınıyor (tarih aralığını daraltabilirsiniz).");
+  for(let i=0;i<SS.length;i+=4){toast("Fotoğraflar alınıyor… "+Math.min(i+4,SS.length)+" / "+SS.length);
+    await Promise.all(SS.slice(i,i+4).map(async d=>{
     let v={};try{v=(await db.ref("dosyaFoto/"+d.id).once("value")).val()||{}}catch(er){}
     const ham=[];
     [v.foto].concat(Object.values(v.fotolar||{})).map(safeImg).filter(Boolean).forEach((x,n)=>ham.push(["Etiket "+(n+1),x]));
     [v.irsaliye].concat(Object.values(v.irsEkler||{}).map(x=>typeof x==="string"?x:x&&x.f)).map(safeImg).filter(Boolean).forEach((x,n)=>ham.push(["İrsaliye "+(n+1),x]));
-    const ph=await Promise.all(ham.map(async([ad,x])=>{const m=x.match(/#([A-Za-z0-9_-]{20})$/),th=x.split("#")[0];let full=th;
+    FS[d.id]=await Promise.all(ham.map(async([ad,x])=>{const m=x.match(/#([A-Za-z0-9_-]{20})$/),th=x.split("#")[0];let full=th;
       if(m&&window.fotoTamGetir){try{full=await window.fotoTamGetir(m[1])||th}catch(er){}}
-      return{ad,full}}));
-    if(ph.length)FS[i+k]={d,ph}}));
-  const FL=FS.filter(Boolean);
-  if(FL.length){
-    const resim=u=>new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>ok(null);im.src=u});
-    /* JPEG/PNG olduğu gibi (kalite kaybı YOK); başka biçim %95 JPEG'e çevrilir */
-    const gom=(u,im)=>{const m=/^data:image\/(jpeg|jpg|png)/i.exec(u);if(m)return{d:u,e:m[1].toLowerCase()==="png"?"png":"jpeg"};
-      const c=document.createElement("canvas");c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);return{d:c.toDataURL("image/jpeg",.95),e:"jpeg"}};
-    const mx=Math.max(...FL.map(x=>x.ph.length)),CW=24,CPX=173,RH=120,RPX=160,BW=165,BH=136;
-    const wf=wb.addWorksheet("Fotoğraflar");
-    wf.columns=[{width:14},{width:30},{width:30},{width:12}].concat(Array.from({length:mx},()=>({width:CW})));
-    wf.addRow(["İş emri","Müşteri","Ürün","Sevk tarihi"].concat(Array.from({length:mx},(_,i)=>"Foto "+(i+1))));
-    const h2=wf.getRow(1);h2.font={bold:true};h2.eachCell(c=>{c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFE5E7EB"}}});
-    wf.views=[{state:"frozen",ySplit:1,xSplit:4}];
-    for(let r=0;r<FL.length;r++){
-      const{d,ph}=FL[r],L2=String(d.urun||"").split("\n");
-      toast("Excel'e resimler yerleştiriliyor… "+(r+1)+" / "+FL.length);
-      const row=wf.addRow([tx(d.isEmriNo),tx(d.musteri),tx(d.urunAd||L2[0]),trDate(d.tarih)]);
-      row.height=RH;row.alignment={vertical:"middle",wrapText:true};
-      for(let k=0;k<ph.length;k++){
-        const im=await resim(ph[k].full);
-        const c=row.getCell(5+k);c.value=ph[k].ad;c.alignment={vertical:"bottom",horizontal:"center"};c.font={size:9,bold:true};
-        if(!im)continue;
-        const g=gom(ph[k].full,im),sc=Math.min(BW/im.naturalWidth,BH/im.naturalHeight),w=im.naturalWidth*sc,h=im.naturalHeight*sc;
-        const id=wb.addImage({base64:g.d,extension:g.e});
-        wf.addImage(id,{tl:{col:4+k+(CPX-w)/2/CPX,row:r+1+(4)/RPX},ext:{width:w,height:h},editAs:"oneCell"})}}
-  }
+      return{ad,full}}))}))}
+  const resim=u=>new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>ok(null);im.src=u});
+  /* JPEG/PNG olduğu gibi (kalite kaybı YOK); başka biçim %95 JPEG'e çevrilir */
+  const gom=(u,im)=>{const m=/^data:image\/(jpeg|jpg|png)/i.exec(u);if(m)return{d:u,e:m[1].toLowerCase()==="png"?"png":"jpeg"};
+    const c=document.createElement("canvas");c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);return{d:c.toDataURL("image/jpeg",.95),e:"jpeg"}};
+  const CW=24,CPX=173,RH=120,RPX=160,BW=165,BH=136,GRI={type:"pattern",pattern:"solid",fgColor:{argb:"FFE5E7EB"}};
+  const wb=new ExcelJS.Workbook();
+  const bicim=(ws,H,W,nSon,topIdx)=>{ /* başlık stili, filtre, toplam satırı */
+    ws.columns=W.map(w=>({width:w}));
+    const h=ws.getRow(1);h.values=H;h.font={bold:true};h.alignment={vertical:"middle",wrapText:true};h.eachCell(c=>{c.fill=GRI;c.border={bottom:{style:"thin"}}});
+    ws.views=[{state:"frozen",ySplit:1}];ws.autoFilter={from:{row:1,column:1},to:{row:1,column:H.length}}};
+  const topSatir=(ws,n,deg)=>{ws.addRow([]);const r=ws.addRow(Array(n).fill(""));Object.keys(deg).forEach(k=>r.getCell(+k+1).value=deg[k]);r.font={bold:true}};
+  /* --- sevk kayıtları: Üretim iş takip formu&imzalı irsaliye / İade / Diğer (resimler aynı satırda) --- */
+  const sevkSayfa=async t=>{
+    const ws=wb.addWorksheet(TUR_SAYFA[t]),Z=G[t],mx=Math.max(0,...Z.map(d=>(FS[d.id]||[]).length)),ac=t==="diger";
+    const baz=["Tarih"].concat(ac?["Açıklama"]:[],["Müşteri / Firma","İş emri","Ürün","Ebat","Kg","Adet / Paket"]),nb=baz.length;
+    const H=baz.concat(Array.from({length:mx},(_,i)=>"Foto "+(i+1)),["Adres","Not","Kaydeden","Teslim eden","Onaylayan","Onay tarihi"],adm?["Fiyat (₺)","Esas","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]);
+    const W=[12].concat(ac?[26]:[],[30,11,34,26,10,12],Array(mx).fill(CW),[30,30,18,18,18,17],adm?[12,10,8,12,12,12]:[]);
+    bicim(ws,H,W);
+    let tk=0,tp=0;
+    for(let z=0;z<Z.length;z++){const d=Z[z];
+      toast("Excel hazırlanıyor… "+TUR_AD[t]+" "+(z+1)+" / "+Z.length);
+      const K=Array.isArray(d.kalem)?d.kalem:Object.values(d.kalem||{}),L2=String(d.urun||"").split("\n"),ad=tx(d.urunAd||L2[0]),ph=FS[d.id]||[],bos=Array(mx).fill("");
+      const ortak=[trDate(dTarih(d))].concat(ac?[tx(d.irsNot)]:[],[tx(d.musteri),tx(d.isEmriNo),ad]);
+      const son=[tx(d.adres),tx(d.not),tx(d.ekleyen),tx(d.teslimEden),tx(d.onaylayan),dTam(d.onayTarihi)],fy=adm?sFyRaw(d):[],bs=Array(son.length).fill(""),bf=adm?Array(6).fill(""):[];
+      const satirlar=K.length>1?K.map((k,i)=>{const kg=+k.kg||0,pk=+k.paket||0;tk+=kg;tp+=pk;return ortak.concat([tx(k.ad),kg,pk],bos,i?bs:son,i?bf:fy)})
+        :[(()=>{const kg=+d.kg||0,pk=+d.paket||0;tk+=kg;tp+=pk;return ortak.concat([tx(L2.slice(1).map(x=>x.split(":")[0]).join(", ")),kg,pk],bos,son,fy)})()];
+      let ilk=null;satirlar.forEach((r,i)=>{const row=ws.addRow(r);if(!i)ilk=row});
+      if(ph.length){ilk.height=RH;ilk.alignment={vertical:"middle",wrapText:true};
+        for(let k=0;k<ph.length;k++){
+          const c=ilk.getCell(nb+k+1);c.value=ph[k].ad;c.alignment={vertical:"bottom",horizontal:"center"};c.font={size:9,bold:true};
+          const im=await resim(ph[k].full);if(!im)continue;
+          const g=gom(ph[k].full,im),sc=Math.min(BW/im.naturalWidth,BH/im.naturalHeight),w=im.naturalWidth*sc,h=im.naturalHeight*sc;
+          const id=wb.addImage({base64:g.d,extension:g.e});
+          ws.addImage(id,{tl:{col:nb+k+(CPX-w)/2/CPX,row:ilk.number-1+4/RPX},ext:{width:w,height:h},editAs:"oneCell"})}}}
+    topSatir(ws,H.length,{0:"TOPLAM",[nb-2]:tk,[nb-1]:tp})};
+  const tahsilatSayfa=()=>{const ws=wb.addWorksheet(TUR_SAYFA.tahsilat),Z=G.tahsilat,H=["Tarih","Firma / Cari","Tutar (₺)","Not","Kaydeden","Alan","Onaylayan","Onay tarihi"];
+    bicim(ws,H,[12,30,14,40,18,18,18,17]);let tt=0;
+    Z.forEach(d=>{const t=kTut(d);tt+=t;ws.addRow([trDate(dTarih(d)),tx(d.cari),t,tx([d.not,d.alanNot,d.makbuzNo?"Makbuz "+d.makbuzNo:""].filter(Boolean).join(" | ")),tx(d.atayan||d.talepEden),tx(d.yapan||d.alan),tx(d.onaylayan),dTam(d.onayTarihi)])});
+    topSatir(ws,H.length,{0:"TOPLAM",2:tt})};
+  const talimatSayfa=()=>{const ws=wb.addWorksheet(TUR_SAYFA.talimat),Z=G.talimat,H=["Tarih","Talimat","Yazan","Yapan","Onaylayan","Onay tarihi"];
+    bicim(ws,H,[12,60,18,18,18,17]);
+    Z.forEach(d=>ws.addRow([trDate(dTarih(d)),tx(d.metin),tx(d.atayan||d.talepEden),tx(d.yapan||d.alan),tx(d.onaylayan),dTam(d.onayTarihi)]))};
+  /* SAYFA SIRASI: Üretim formu&İmzalı İrsaliye → Tahsilat → Talimat → İade → Diğer (tür süzgeci seçiliyse yalnız o) */
+  for(const t of TUR_SIRA){if(tpf&&tpf!==t)continue;
+    if(t==="tahsilat")tahsilatSayfa();else if(t==="talimat")talimatSayfa();else await sevkSayfa(t)}
   const buf=await wb.xlsx.writeBuffer();
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download="dosyalar_"+bkTarih()+".xlsx";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);
   toast("✓ Excel dosyası indirildi");

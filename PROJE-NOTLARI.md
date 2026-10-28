@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v106**
+**GÜNCEL SÜRÜM: v107**
 Son güncelleme: 2026-10-27 (v93: stoka «📥 Hazır liste» toplu ekleme düğmesi, stokaktar.js); önceki: 2026-10-26 (yeni sohbette zip + 2 Excel incelendi, «GÜNCEL DURUM» bloğu Bölüm 9'a eklendi; v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
@@ -297,6 +297,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-28: v104 — **PDF resimleri ATAŞ (ek dosya) oldu.** v103'teki «tıklayınca yakınlaş» kaldırıldı (kullanıcı istemedi). Sayfada küçük önizleme (en çok 900px), tam kalite orijinal resim PDF'e FileAttachment ataşı + belge ek listesi olarak gömülür (pdf-lib 1.17.1, cdnjs; jsPDF ataş desteklemez). jsPDF çıktısı pdf-lib ile açılıp ataşlar eklenir, Blob ile indirilir; hata olursa eski yola (pdf.save) düşer. Ataşı açmak Acrobat/Foxit gibi okuyucularda çalışır; Chrome'un yerleşik görüntüleyicisi açmayabilir. Sınanmadı.
 - 2026-10-28: v105 — **PDF: 1. sayfa form+tablolar, 2. sayfa TÜM fotoğraflar.** v104 ataş yöntemi kaldırıldı (Chrome gömülü dosya açmıyor, sarı kutu çıkarıyordu; pdf-lib de kaldırıldı). Fotoğraf sayfası: en çok 6 resim/sayfa (fazlası ek sayfa), resimlerin en-boy oranına göre en çok alan kaplayan sütun/satır düzeni seçilir (`duzen`), her resim tam çözünürlükte, oranı korunarak, yeniden sıkıştırmasız (JPEG/PNG), altında etiket (Etiket 1 / İrsaliye 1). Sınanmadı.
 - 2026-10-28: v106 — **Dosyalar → Excel artık fotoğraflı.** Dışa aktarma SheetJS yerine ExcelJS 4.4.0 (cdnjs; `exceljsHazir`) ile yazılır (SheetJS resim koyamaz; diğer dışa/içe aktarmalar — yedek, granül, iş raporu — SheetJS'te kaldı). «Dosyalar» sayfası aynı (başlık stili, dondurulmuş satır, filtre, toplam). Yeni «Fotoğraflar» sayfası: her sevk bir satır, resimler (fotoTam, tam kalite, JPEG/PNG yeniden sıkıştırmasız) yan yana gerçek resim nesnesi (editAs oneCell), altında etiket. En çok 60 sevk fotoğraflanır. Sınanmadı (ExcelJS bu ortamda çalıştırılamadı).
+- 2026-10-28: v107 — **Dosyalar: tür adı + Excel/PDF tür bölümleri.** «İmzalı irsaliye» tür adı → «Üretim iş takip formu&imzalı irsaliye» (`TUR_AD`, `turKey`, `turAd`, Türler listesi). **Excel:** her tür ayrı sayfa, sırayla Üretim Formu&İmzalı İrsaliye (sayfa adı 31 karakter sınırı yüzünden kısaltıldı, `TUR_SAYFA`) → Tahsilat → Talimat → İade → Diğer; tür süzgeci seçiliyse yalnız o sayfa. Sevk türlerinde (irsaliye/iade/diğer) resimler kaydın ilk satırında Ebat/Kg/Adet'ten sonra yan yana (ayrı «Fotoğraflar» sayfası kaldırıldı); en çok 60 kayıt fotoğraflanır. **PDF:** bölüm sırası aynı: Üretim formu&irsaliye sayfaları → Tahsilatlar tablosu → Talimatlar tablosu → İade sayfaları → Diğer sayfaları; sevk sayfasının üstünde tür etiketi. Sınanmadı.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
