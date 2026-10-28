@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v112**
+**GÜNCEL SÜRÜM: v113**
 Son güncelleme: 2026-10-27 (v93: stoka «📥 Hazır liste» toplu ekleme düğmesi, stokaktar.js); önceki: 2026-10-26 (yeni sohbette zip + 2 Excel incelendi, «GÜNCEL DURUM» bloğu Bölüm 9'a eklendi; v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
@@ -304,6 +304,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-28: v110 — **Raporlar yenilendi.** (1) «📊 Üretim raporları (biten işler · aşama süreleri)» düğmesi İş emirleri ve Üretim ekranlarından kaldırıldı; yalnız Raporlar ekranında (`irAc1`, `israpor.js` penceresi aynı). (2) «Raporu getir» görünümü: üstte «Rapor oluştur» kartı (dönem + Raporu getir + Excel indir), sonuçta dönem/hazırlanma başlığı ve sekmeler (Özet, Üretim, Sevk, Malzeme, Maliyet-yönetici); renkli gösterge kartları, ilk 3 müşteri/malzeme, aylık üretim çubukları, şeritli tablolar, boş durum mesajı. Hesaplama (`hesapla`) DEĞİŞMEDİ. (3) Excel: CSV yerine gerçek .xlsx (`xlsx-yaz.js`): Özet, Aylık Üretim, Müşteri Sevk, Malzeme Tüketimi, Maliyet (yönetici) sayfaları; başlık satırı, ₺ biçimi, toplam satırı, filtre. Üretim raporları Excel'i de aynı biçimde (yedek: eski SheetJS). (4) Bölüm adı «İŞ EMİRLERİ&ETİKET» (menü, üst başlık, yetki listesi, sesli asistan tanımı). Firebase kuralı DEĞİŞMEDİ. Sınanmadı: telefonda görünüm (sahte veriyle mantık + Excel dosyası denendi).
 - 2026-10-28: v111 — **Raporlar'a «📄 PDF» düğmesi** (Raporu getir'den sonra görünür, Excel'in yanında). `raporlar.js` `pdf()`: tüm bölümler (Özet, Üretim, Sevk, Malzeme, Maliyet-yönetici; müşteri/malzeme listeleri tam) ekran dışı `.rpdf` kutusunda çizilir, Dosyalar'daki `pdfHazir()` (html2canvas + jsPDF) ile A4 dikey sayfalara bölünür (satır/kart sınırından keser), sayfa numarası eklenir. Firebase kuralı DEĞİŞMEDİ. Sınanmadı: PDF üretimi (tarayıcı gerekir; telefonda ilk kullanımda denenmeli).
 - 2026-10-28: v112 — **Raporlar «Depoya giren (üretilen)» düzeltildi.** Sorun: Dosyalar toplamı 1250 kg iken rapor 5360 kg gösterdi; sebep `hesapla` adım 1'in iş emri `log.depo` kaydını koşulsuz toplamasıydı (Dosyalar/sevk kayıtları silinince veya aşama geri alınınca eski depo kaydı kalıyordu). Artık yalnız hâlâ BİTEN'de bekleyen veya aktardığı ürünlerden en az biri Hazır Ürünler/Sevk/Dosyalar'da duran işler sayılır (`gercek()`). Dosyalar: raporlar.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı DEĞİŞMEDİ. Sahte veriyle mantık sınandı; gerçek veride SINANMADI.
+- 2026-10-28: v113 — **Sesli asistan (🎤, yapay zekâ) şimdilik YALNIZ yöneticide** (`sesasistan.js` `gorBelirle`: `rec.yonetici===true`). Fotoğraftan okuma (`fotookut.js`) aynı kaldı. Firebase'deki CANLI kurallar repodaki `rules.json`'dan eskiydi (tahsilat `adres/adresAd/haritaUrl` alanları yok → adresli tahsilat kaydı reddedilir; `kullanicilar` kendi kendine kayıt kuralı hâlâ açık) → güncel `rules.json`'ın TAMAMI yayınlanmalı. Dosyalar: sesasistan.js, index.html, sw.js, PROJE-NOTLARI.md, rules.json.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
