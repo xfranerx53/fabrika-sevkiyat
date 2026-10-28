@@ -42,9 +42,21 @@
     ms.forEach(function(k){A[k]={ek:0,ba:0,ke:0,de:0,pk:0,n:0,sk:0,sat:0,tuk:0,alim:0}});
     var T={ek:0,ba:0,ke:0,de:0,pk:0,n:0,sk:0,sat:0,tuk:0,alim:0,iade:0,fysiz:0,fyli:0,mfysiz:0};
     /* 1) Üretim: iş emri aşama kayıtları */
-    Object.keys(D.is).forEach(function(id){var lg=D.is[id].log||{};
+    /* v112: «Depoya giren» yalnız GERÇEKTEN var olan işleri sayar. Dosyalar/sevk kayıtları silinince ya da aşama geri alınınca
+       iş emrindeki eski depo kaydı kalıyordu ve rapor onu hâlâ topluyordu. Artık: iş emri hâlâ BİTEN'de bekliyorsa VEYA
+       aktardığı ürünlerden en az biri Hazır Ürünler/Sevk/Dosyalar'da duruyorsa sayılır. */
+    var var_={};
+    Object.keys(D.urn).concat(Object.keys(D.dos)).forEach(function(k){var u=D.urn[k]||D.dos[k]||{};
+      if(u.isEmriId)var_["i:"+u.isEmriId]=1;if(u.isEmriNo)var_["n:"+u.isEmriNo]=1;var_["k:"+k]=1});
+    var gercek=function(id,e){if(e.aktarildi){
+        if(e.aktarKeys&&Object.keys(e.aktarKeys).some(function(k){return var_["k:"+k]}))return true;
+        return !!(var_["i:"+id]||(e.no&&var_["n:"+e.no]))}
+      return e.asama==="bitti"};
+    Object.keys(D.is).forEach(function(id){var e=D.is[id],lg=e.log||{};
       [["ekstruder","ek"],["baski","ba"],["kesim","ke"],["depo","de"]].forEach(function(s){var x=lg[s[0]];if(!x||!x.zaman)return;
-        var d=dKey(x.zaman);if(!inR(d))return;var a=A[d.slice(0,7)],kg=+x.kg||0;a[s[1]]+=kg;T[s[1]]+=kg;
+        var d=dKey(x.zaman);if(!inR(d))return;
+        if(s[0]==="depo"&&!gercek(id,e))return;
+        var a=A[d.slice(0,7)],kg=+x.kg||0;a[s[1]]+=kg;T[s[1]]+=kg;
         if(s[0]==="depo"){a.pk+=+x.paket||0;T.pk+=+x.paket||0;a.n++;T.n++}})});
     /* 2) Müşteri bazlı sevk (sevk edilmiş + dosyalanmış; iade fişleri ayrı) */
     var S={},seen={};
