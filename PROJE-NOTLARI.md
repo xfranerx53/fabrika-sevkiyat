@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v102**
+**GÜNCEL SÜRÜM: v103**
 Son güncelleme: 2026-10-27 (v93: stoka «📥 Hazır liste» toplu ekleme düğmesi, stokaktar.js); önceki: 2026-10-26 (yeni sohbette zip + 2 Excel incelendi, «GÜNCEL DURUM» bloğu Bölüm 9'a eklendi; v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
@@ -293,6 +293,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-28: v100 — **Dosyalar'a «PDF» düğmesi** (`app.js` dPdf, `style.css` #prn.dok, `index.html`). Filtrelenen sevkler: her biri 1 sayfa (iş emri formu `isFormu` + ebat/kg/paket tablosu + bilgiler), fotoğraflar (etiket/irsaliye, `dosyaFoto`'dan çekilir) sonraki sayfada; talimat/tahsilat sonda tablo. En fazla 40 sevk; fiyat yazılmaz. Yazdırma penceresinden «PDF olarak kaydet». `isfSigdir` artık `.isf.dp` hariç. Sınanmadı.
 - 2026-10-28: v101 — **Dosyalar PDF'i yazdırma yerine doğrudan indirilir (v100 düzeltildi).** v100'de `#prn .pf{width:0}` kuralı formu 0 genişliğe sıkıştırıyordu (harfler alt alta). Artık sayfalar ekran dışı `.pdfk` içinde çizilir; html2canvas 1.4.1 + jsPDF 2.5.1 (cdnjs, ilk kullanımda yüklenir) ile resme/PDF'e çevrilip indirilir. Sayfa = form + ebat tablosu + bilgiler; fotoğraf sayfaları (4'lü); talimat/tahsilat tablosu. En fazla 30 sevk, fiyat yok. Sınanmadı.
 - 2026-10-28: v102 — **PDF fotoğrafları düzeltildi.** dosyaFoto'daki fotoğraf 320px önizleme + `#anahtar` (tam boy `fotoTam/anahtar`) olarak saklanıyor; PDF önizlemeyi alıyordu (bulanık). Artık `fotoTamGetir` ile tam boy çekilir, her fotoğraf kendi sayfasında (jsPDF addImage, yeniden sıkıştırmasız), üstte «◀ Forma dön» bağlantısı. Form sayfasında tıklanabilir küçük resimler (pdf.link → ilgili sayfa). En fazla 25 sevk. Sınanmadı.
+- 2026-10-28: v103 — **PDF tek sayfaya indirildi.** Her sevk = 1 sayfa (form + tablolar + küçük resimler); ayrı büyük-resim sayfaları ve «Forma dön» kaldırıldı. Resimler tam çözünürlükte (fotoTam, JPEG/PNG yeniden sıkıştırmasız) küçük boyutta yerleştirilir, en-boy oranı korunur (kırpma yok); sayfa metni 3x ölçekle çizilir (scale 3, JPEG %95). Küçük resme tıklayınca pdf.link (XYZ + zoom) ile aynı sayfada yakınlaşır. En fazla 12 resim/sevk (7+ ise küçük kutular). Sınanmadı: bağlantı yakınlaşması görüntüleyiciye göre değişebilir.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
