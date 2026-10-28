@@ -1695,9 +1695,14 @@ $("dPdf").onclick=async()=>{
   }catch(er){toast("PDF hazırlanamadı: "+errText(er))}
   finally{kutu.remove();btn.disabled=false}
 };
-/* Dosyalar → Excel (.xlsx): her ebat ayrı satır, sayılar sayı, tarih metin (#### çıkmaz), sütun genişlikleri ayarlı, filtre + toplam satırı */
+/* Dosyalar → Excel (.xlsx), ExcelJS ile: «Dosyalar» sayfası (her ebat ayrı satır, sayılar sayı, tarih metin, filtre + toplam) + «Fotoğraflar» sayfası
+   (her sevk bir satır, resimler tam kalitede gerçek resim nesnesi olarak yan yana; Excel'de büyütülebilir/kaydedilebilir). */
+var exYuk=null;
+function exceljsHazir(){if(window.ExcelJS)return Promise.resolve();
+  if(!exYuk)exYuk=new Promise((ok,no)=>{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";sc.onload=ok;sc.onerror=()=>{exYuk=null;no(new Error("Excel bileşeni yüklenemedi. İnternet bağlantısını kontrol edin."))};document.head.appendChild(sc)});
+  return exYuk}
 $("dCsv").onclick=async()=>{
-  try{toast("Excel hazırlanıyor…");await xlsxHazir()}catch(er){toast(errText(er));return}
+  try{toast("Excel hazırlanıyor…");await exceljsHazir()}catch(er){toast(errText(er));return}
   try{
   const adm=isAdmin(),R=[],tx=v=>String(v==null?"":v).replace(/\s*\n\s*/g," / ").trim();
   const H=["Tarih","Tür","Müşteri / Firma","İş emri","Ürün / Talimat","Ebat","Kg","Adet / Paket","Tahsilat (₺)","Adres","Not","Kaydeden / Yazan","Teslim eden / Yapan","Onaylayan","Onay tarihi"].concat(adm?["Fiyat (₺)","Esas","KDV %","Tutar (₺)","KDV (₺)","Toplam (₺)"]:[]);
@@ -1715,11 +1720,54 @@ $("dCsv").onclick=async()=>{
   });
   if(!R.length){toast("Aktarılacak dosya yok.");return}
   const top=Array(H.length).fill("");top[0]="TOPLAM";top[6]=tk;top[7]=tp;top[8]=tt;
-  const ws=XLSX.utils.aoa_to_sheet([H].concat(R,[Array(H.length).fill("")],[top]));
   const W=[12,16,30,11,34,26,10,12,13,30,30,18,18,18,17].concat(adm?[12,10,8,12,12,12]:[]);
-  ws["!cols"]=W.map(w=>({wch:w}));ws["!autofilter"]={ref:"A1:"+XLSX.utils.encode_col(H.length-1)+(R.length+1)};
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Dosyalar");
-  XLSX.writeFile(wb,"dosyalar_"+bkTarih()+".xlsx");
+  const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet("Dosyalar");
+  ws.columns=W.map(w=>({width:w}));
+  ws.addRow(H);R.forEach(r=>ws.addRow(r));ws.addRow([]);ws.addRow(top);
+  const hr=ws.getRow(1);hr.font={bold:true};hr.alignment={vertical:"middle",wrapText:true};hr.eachCell(c=>{c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFE5E7EB"}};c.border={bottom:{style:"thin"}}});
+  ws.views=[{state:"frozen",ySplit:1}];ws.autoFilter={from:{row:1,column:1},to:{row:1,column:H.length}};
+  ws.getRow(R.length+3).font={bold:true};
+  /* ---- Fotoğraflar sayfası ---- */
+  const S=dosFiltre().filter(d=>!d.kaynak),SM=60;let SS=S;
+  if(SS.length>SM){SS=SS.slice(0,SM);toast("Fotoğraflar sayfasına ilk "+SM+" sevk alınıyor (tarih aralığını daraltabilirsiniz).")}
+  const FS=[];
+  for(let i=0;i<SS.length;i+=4)await Promise.all(SS.slice(i,i+4).map(async(d,k)=>{
+    toast("Fotoğraflar alınıyor… "+Math.min(i+4,SS.length)+" / "+SS.length);
+    let v={};try{v=(await db.ref("dosyaFoto/"+d.id).once("value")).val()||{}}catch(er){}
+    const ham=[];
+    [v.foto].concat(Object.values(v.fotolar||{})).map(safeImg).filter(Boolean).forEach((x,n)=>ham.push(["Etiket "+(n+1),x]));
+    [v.irsaliye].concat(Object.values(v.irsEkler||{}).map(x=>typeof x==="string"?x:x&&x.f)).map(safeImg).filter(Boolean).forEach((x,n)=>ham.push(["İrsaliye "+(n+1),x]));
+    const ph=await Promise.all(ham.map(async([ad,x])=>{const m=x.match(/#([A-Za-z0-9_-]{20})$/),th=x.split("#")[0];let full=th;
+      if(m&&window.fotoTamGetir){try{full=await window.fotoTamGetir(m[1])||th}catch(er){}}
+      return{ad,full}}));
+    if(ph.length)FS[i+k]={d,ph}}));
+  const FL=FS.filter(Boolean);
+  if(FL.length){
+    const resim=u=>new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>ok(null);im.src=u});
+    /* JPEG/PNG olduğu gibi (kalite kaybı YOK); başka biçim %95 JPEG'e çevrilir */
+    const gom=(u,im)=>{const m=/^data:image\/(jpeg|jpg|png)/i.exec(u);if(m)return{d:u,e:m[1].toLowerCase()==="png"?"png":"jpeg"};
+      const c=document.createElement("canvas");c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);return{d:c.toDataURL("image/jpeg",.95),e:"jpeg"}};
+    const mx=Math.max(...FL.map(x=>x.ph.length)),CW=24,CPX=173,RH=120,RPX=160,BW=165,BH=136;
+    const wf=wb.addWorksheet("Fotoğraflar");
+    wf.columns=[{width:14},{width:30},{width:30},{width:12}].concat(Array.from({length:mx},()=>({width:CW})));
+    wf.addRow(["İş emri","Müşteri","Ürün","Sevk tarihi"].concat(Array.from({length:mx},(_,i)=>"Foto "+(i+1))));
+    const h2=wf.getRow(1);h2.font={bold:true};h2.eachCell(c=>{c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFE5E7EB"}}});
+    wf.views=[{state:"frozen",ySplit:1,xSplit:4}];
+    for(let r=0;r<FL.length;r++){
+      const{d,ph}=FL[r],L2=String(d.urun||"").split("\n");
+      toast("Excel'e resimler yerleştiriliyor… "+(r+1)+" / "+FL.length);
+      const row=wf.addRow([tx(d.isEmriNo),tx(d.musteri),tx(d.urunAd||L2[0]),trDate(d.tarih)]);
+      row.height=RH;row.alignment={vertical:"middle",wrapText:true};
+      for(let k=0;k<ph.length;k++){
+        const im=await resim(ph[k].full);
+        const c=row.getCell(5+k);c.value=ph[k].ad;c.alignment={vertical:"bottom",horizontal:"center"};c.font={size:9,bold:true};
+        if(!im)continue;
+        const g=gom(ph[k].full,im),sc=Math.min(BW/im.naturalWidth,BH/im.naturalHeight),w=im.naturalWidth*sc,h=im.naturalHeight*sc;
+        const id=wb.addImage({base64:g.d,extension:g.e});
+        wf.addImage(id,{tl:{col:4+k+(CPX-w)/2/CPX,row:r+1+(4)/RPX},ext:{width:w,height:h},editAs:"oneCell"})}}
+  }
+  const buf=await wb.xlsx.writeBuffer();
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download="dosyalar_"+bkTarih()+".xlsx";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);
   toast("✓ Excel dosyası indirildi");
   }catch(er){toast("Excel hazırlanamadı: "+errText(er))}
 };
