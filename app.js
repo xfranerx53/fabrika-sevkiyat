@@ -434,14 +434,14 @@ function kart(u){
   const eb=!sevForm()?"":`<button class="btn b6" ${canDel?"":'style="grid-column:span 2" '}data-a="edit" data-id="${id}">✏️ Düzenle</button>`;
   const db2=canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:"";
   const onb=(u.durum==="sevk_edildi"&&mod==="sevk"&&isAdmin())?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:18px" data-a="onay" data-id="${id}">✅ ONAYLA (Dosyalara taşı)</button>`:"";
-  const K2=Array.isArray(u.kalem)&&u.kalem.length>1?u.kalem:null;
+  const K2=Array.isArray(u.kalem)&&u.kalem.length>1?u.kalem:null,FK=isFormKutu(u);
   const mid=K2?`<div class="grid" style="margin-top:8px"><div class="info"><small>Müşteri</small><b>${esc(u.musteri)}</b></div><div class="info"><small>Ürün</small><b>${esc(u.urunAd||u.urun)}</b></div></div>`+K2.map(k=>`<div style="margin:12px 0 4px;font-weight:800;font-size:16px;color:#334155">${esc(k.ad)}</div><div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(k.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(k.paket))} Adet</b></div></div>`).join(""):`  <div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(u.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(u.paket))} Adet</b></div></div>
   ${m||p?`<div class="grid" style="margin-top:8px">${m?`<div class="info full"><small>Müşteri</small><b>${esc(u.musteri)}</b></div>`:""}${p?ebatBlok(u.urun):""}</div>`:""}
 `;
   return `<div class="item ${c[0]}">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:14px;font-weight:700;color:#64748b">Tarih: ${esc(trDate(u.tarih))}</span><span class="badge ${c[1]}">${c[2]}</span></div>
   ${fotoListe(u).map(s=>`<img loading="lazy" src="${s}" alt="Etiket">`).join("")}
-  ${mid}
+  ${FK?FK+`<div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(u.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(u.paket))} Adet</b></div></div>`:mid}
   ${u.adres?`<div class="addr">📍 <b>Teslimat adresi:</b> ${esc(u.adres)}</div>`:""}
   ${u.haritaUrl||u.adres?`<button class="btn b7" data-a="map" data-id="${id}">🚀 Yol Tarifi Al</button>`:""}
   <button class="btn b3" data-a="wa" data-id="${id}">📲 WhatsApp ile paylaş</button>
@@ -466,9 +466,10 @@ function listele(){
     $("liste").innerHTML=`<div style="display:grid;grid-template-columns:repeat(${K.length},1fr);gap:6px;margin:10px 0">`+K.map(x=>`<button type="button" class="btn ${x[0]===aracTab?"b2":"b6"}" style="margin:0;padding:10px 4px;font-size:14px;line-height:1.25" data-arac="${x[0]}">${x[1]}<br><small>${x[2]} · ${x[3].length} kayıt</small></button>`).join("")+`</div>`
       +`<div style="margin:0 0 8px;font-weight:700;color:#0f766e;font-size:14px">${A.length} kayıt · ${esc(fmt(A.reduce((x,u)=>x+(+u.kg||0),0)))} kg</div>`
       +(A.length?A.map(kart).join(""):'<div class="empty">Bu araca atanmış kayıt yok.</div>');
-    return;
+    isfSigdir();return;
   }
   $("liste").innerHTML=L.length?L.map(kart).join(""):'<div class="empty">Kayıt bulunamadı.</div>';
+  isfSigdir();
 }
 $("liste").onclick=async e=>{
   const b=e.target.closest("button[data-a]");if(!b)return;
@@ -1542,10 +1543,11 @@ function dDetay(d){
   if(d.kaynak)return kDetay(d);
   const id=esc(d.id),t=d.irsTur||"irsaliye",ic={irsaliye:"📄",diger:"📝",iade:"↩️"}[t]||"📄",
     m=d.musteri&&d.musteri!=="Etikete Bakınız",p=d.urun&&d.urun!=="Etikete Bakınız",
-    tn=t==="iade"?"İade":t==="diger"?"Diğer":"İmzalı irsaliye";
+    tn=t==="iade"?"İade":t==="diger"?"Diğer":"İmzalı irsaliye",FKd=isFormKutu(d);
   return `<div class="ddet">
+    ${FKd}
     <div class="grid"><div class="hl"><small>AĞIRLIK</small><b>${esc(fmt(d.kg))} KG</b></div><div class="hl"><small>PAKET / ADET</small><b>${esc(fmt(d.paket))}</b></div></div>
-    ${m||p?`<div class="grid" style="margin-top:6px">${m?`<div class="info full"><small>Müşteri</small><b>${esc(d.musteri)}</b></div>`:""}${p?ebatBlok(d.urun):""}</div>`:""}
+    ${FKd?"":m||p?`<div class="grid" style="margin-top:6px">${m?`<div class="info full"><small>Müşteri</small><b>${esc(d.musteri)}</b></div>`:""}${p?ebatBlok(d.urun):""}</div>`:""}
     ${d.adres?`<div class="addr">📍 <b>Adres:</b> ${esc(d.adres)}</div>`:""}
     ${d.not?`<div class="note">📌 <b>Not:</b> ${esc(d.not)}</div>`:""}
     <div class="who">Sevk tarihi: ${esc(trDate(d.tarih))} · Kaydeden: ${esc(d.ekleyen||"-")}</div>
@@ -1563,6 +1565,7 @@ function dosListele(){
     oz=a=>a.length+" dosya"+(kgO(a)||!tlO(a)?" · "+fmt(kgO(a))+" kg":"")+(tlO(a)?" · "+fmt(tlO(a))+" ₺":"");
   $("dSumT").textContent=oz(L);
   $("dList").innerHTML=G.length?G.map(g=>`<div class="shd">📅 ${esc(dGun(g.k))} · ${esc(oz(g.items))}</div>`+g.items.map(dSatir).join("")).join(""):'<div class="empty">Dosya bulunamadı.</div>';
+  isfSigdir();
 }
 fbKur("dq",{d1:"dd1",d2:"dd2",sel:["dtp"],fn:()=>dosListele(),nocount:true});
 async function dosFoto(id,p){
@@ -1722,7 +1725,7 @@ const isAksiyon=async ev=>{
       const lab=P.map(x=>[x.i+1,x.c.en,x.c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - "));
       const lines=P.map((x,j)=>lab[j]+": "+[x.kg>0?fmt(x.kg)+" kg":"",x.paket>0?x.paket+" paket":""].filter(Boolean).join(" · "));
       const tkg=Math.round(P.reduce((a,x)=>a+x.kg,0)*1000)/1000,tpk=P.reduce((a,x)=>a+x.paket,0);
-      up["urunler/"+key]={musteri:e.musteri||"Etikete Bakınız",urun:((e.stok||"")+(lines.length?"\n"+lines.join("\n"):""))||"Etikete Bakınız",kg:tkg,paket:tpk,tarih:bugun(),durum:"hazir",not:"İş emri "+e.no+(e.fx?" · "+e.fx:""),adres:"",haritaUrl:"",ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:TS,isEmriNo:e.no,isEmriId:e.id,urunAd:e.stok||"",kalem:P.length>1?P.map((x,j)=>({ad:lab[j],kg:x.kg,paket:x.paket})):null};K[key]=true;
+      up["urunler/"+key]={musteri:e.musteri||"Etikete Bakınız",urun:((e.stok||"")+(lines.length?"\n"+lines.join("\n"):""))||"Etikete Bakınız",kg:tkg,paket:tpk,tarih:bugun(),durum:"hazir",not:"İş emri "+e.no+(e.fx?" · "+e.fx:""),adres:"",haritaUrl:"",ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:TS,isEmriNo:e.no,isEmriId:e.id,isFormu:isSnap(e),urunAd:e.stok||"",kalem:P.length>1?P.map((x,j)=>({ad:lab[j],kg:x.kg,paket:x.paket})):null};K[key]=true;
       up["isEmirleri/"+e.id+"/aktarildi"]=true;up["isEmirleri/"+e.id+"/aktarTarih"]=TS;up["isEmirleri/"+e.id+"/aktarKeys"]=K;
       hrkEk(up,e.id,{tur:"aktar",kg:tkg,paket:tpk});
       await db.ref().update(up);
@@ -1922,6 +1925,12 @@ function notSet(id,txt){
   (a.length?a:[""]).forEach((v,k)=>notRow(el,v,k===0?el.dataset.ph:"Madde"));
 }
 const notGet=id=>[...$(id).querySelectorAll("input")].map(i=>i.value.trim()).filter(Boolean).join("\n");
+/* ===== Sevkiyat / Dosyalar: iş emri formu birebir görünsün =====
+   Hazır ürünlere aktarırken formun kopyası (fiyat HARİÇ) urunler kaydına yazılır; Dosyalar'a taşınınca kayıtla birlikte gider. */
+function isSnap(e){const s={};["no","musteri","isAdi","stok","fx","spTarih","formul","notU","baskiVar","urunAdi","renk","notB","siparis","log"].forEach(k=>{if(e[k]!==undefined&&e[k]!==null)s[k]=e[k]});return JSON.parse(JSON.stringify(s))}
+function isFormBul(u){return u&&(u.isFormu||(u.isEmriId&&isE.find(x=>x.id===u.isEmriId)))||null}
+function isLogHtml(e){return Object.entries(e.log||{}).map(([k,v])=>`<div class="who">${esc(ASL[k]||k)}: ${v.kg!=null?esc(fmt(v.kg))+" kg":""}${v.paket?" · "+esc(fmt(v.paket))+" adet":""} — ${esc(v.kim||"")} ${esc(tarih(v.zaman))}${k==="depo"&&Array.isArray(v.kalem)?"<br>"+v.kalem.map((x,i)=>{const c=icols(e)[i]||{};return esc([i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - ")+": "+fmt(x&&x.kg)+" kg · "+fmt(x&&x.paket)+" paket")}).join("<br>"):""}</div>`).join("")}
+function isFormKutu(u){const e=isFormBul(u);if(!e)return"";let f="";try{f=`<div class="isf">${isForm(e,islemYap("fiyat"))}</div>`}catch(er){return""}return f+isLogHtml(e)}
 /* ===== YAZDIRMA: A4 yatay, yan yana 2 adet üretim iş takip formu ===== */
 function isForm(e,fy){
   const C=icols(e),L=e.log||{},bos=n=>{let r="";for(let i=0;i<n;i++)r+="<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>";return r};

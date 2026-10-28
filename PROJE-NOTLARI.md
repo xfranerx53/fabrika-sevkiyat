@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v95**
+**GÜNCEL SÜRÜM: v96**
 Son güncelleme: 2026-10-27 (v93: stoka «📥 Hazır liste» toplu ekleme düğmesi, stokaktar.js); önceki: 2026-10-26 (yeni sohbette zip + 2 Excel incelendi, «GÜNCEL DURUM» bloğu Bölüm 9'a eklendi; v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
@@ -286,6 +286,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-26: v92 — **Fotoğraftan okuma model sırası değişti (`fotookut.js`):** v91 sonrası kullanıcı hata gördü: Google'ın listesinde artık gemini-3.5…3.8-flash var; `gemini-2.5-flash` **404 (kalkmış)**; 3.7/3.8 günlük limit doldu (ücretsiz günlük limit çok düşük; v91 yarışı + çok deneme kotayı yemiş olabilir); 3.5/3.6 zaman aşımı (yeni modeller yavaş). Eski sıralama en YENİ modeli başa koyuyordu. Yeni sıra: yöneticinin yazdığı model → bu cihazda en son çalışan (`localStorage.okSon`) → **lite (hızlı) modeller (en çok 2)** → normal modeller (en çok 3); en çok 4 aday; günlük limiti dolan model `localStorage.okDolu` ile 3 saat atlanır. Sahte fetch ile sınandı, gerçek Gemini ile SINANMADI. Kullanıcıdan 🔑 penceresindeki model kutusunu BOŞALTMASI istendi (`gemini-2.5-flash` kalkmış). Firebase kuralı: değişmedi.
 
 - 2026-10-26: Yalnız notlar (sürüm v92 kaldı, kod değişmedi) — yeni sohbette zip ve iki Excel incelendi; kontrol.js temiz; Bölüm 9'a «GÜNCEL DURUM» eklendi (404.html zip'te duruyor, israpor.js notlarda yoktu). Firebase kuralı: değişmedi.
+- 2026-10-28: v96 — **İş emri formu Sevkiyat ve Dosyalar'da birebir görünür (`app.js`).** «Hazır ürünlere aktar» artık formun kopyasını (`isFormu`, FİYAT HARİÇ — fiyat yalnız iş emrinde kalır) `urunler` kaydına yazar; Hazır ürünler / Sevk edilecek / Sevk edilen kartlarında `isForm` + aşama satırları (EKSTRUDER, KESİM…) gösterilir; Dosyalar'a taşınınca kayıtla gider. Dosyalar listesinde satır kısa kalır, tıklayınca form açılır. v96 öncesi aktarılmış kayıtlarda `isFormu` yok (iş emrini okuyabilen kullanıcıda `isEmriId` ile bulunur). Rules değişmedi. Sınanmadı (telefon).
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
