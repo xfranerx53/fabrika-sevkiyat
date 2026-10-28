@@ -371,9 +371,5 @@ html.byz2 .full{grid-column:auto}
 .pdfk .pdpi{flex:0 0 calc(50% - 7px);font-size:14px}
 .pdfk .pdpi img{display:block;width:100%;height:300px;object-fit:contain;border:1px solid #888;margin-top:3px;background:#f8fafc}
 .pdfk .pdnot{font-weight:800;font-size:14px;margin:4px 0 8px;color:#1d4ed8}
-.pdfk .pdths{display:flex;flex-wrap:wrap;gap:10px}
-.pdfk .pdth{flex:0 0 148px;font-size:12px;font-weight:700;text-align:center}
-.pdfk .pdim{width:148px;height:108px;box-sizing:border-box;border:2px solid #1d4ed8;border-radius:4px;background:#f1f5f9}
-.pdfk .pdths.s{gap:8px}
-.pdfk .pdths.s .pdth{flex:0 0 108px;font-size:10px}
-.pdfk .pdths.s .pdim{width:108px;height:80px}
+.pdfk .pdim{box-sizing:border-box;border:1px solid #888;background:#f8fafc}
+.pdfk .pdcap{font-size:13px;font-weight:700;text-align:center;height:20px;line-height:20px}
