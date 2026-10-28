@@ -1634,13 +1634,13 @@ function pdfHazir(){
   if(!pdfYuk){const yukle=u=>new Promise((ok,no)=>{const sc=document.createElement("script");sc.src=u;sc.onload=ok;sc.onerror=()=>no(new Error("PDF bileşeni yüklenemedi. İnternet bağlantısını kontrol edin."));document.head.appendChild(sc)});
     pdfYuk=Promise.all([yukle("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"),yukle("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")]).catch(er=>{pdfYuk=null;throw er})}
   return pdfYuk}
-$("dPdf").onclick=async()=>{
-  const L=dosFiltre();if(!L.length){toast("PDF için dosya yok.");return}
-  let S=L.filter(d=>!d.kaynak);const O=L.filter(d=>d.kaynak),MAX=25;
-  if(S.length>MAX){S=S.slice(0,MAX);toast("İlk "+MAX+" sevk PDF'e alınıyor (tarih aralığını daraltabilirsiniz).")}else toast("PDF hazırlanıyor… ("+S.length+" sevk)");
-  const btn=$("dPdf");btn.disabled=true;const kutu=document.createElement("div");
+/* Her TÜR ayrı PDF olarak iner (sırayla: Üretim formu&imzalı irsaliye, Tahsilat, Talimat, İade, Diğer); kaydı olmayan tür atlanır. */
+const TUR_DOSYA={irsaliye:"uretim-formu-imzali-irsaliye",tahsilat:"tahsilat",talimat:"talimat",iade:"iade",diger:"diger"};
+async function pdfTur(t,Z){
+  const MAX=25;let S=(t==="irsaliye"||t==="iade"||t==="diger")?Z:[];const O=S.length?[]:Z;
+  if(S.length>MAX){S=S.slice(0,MAX);toast("«"+TUR_AD[t]+"»: ilk "+MAX+" kayıt PDF'e alınıyor (tarih aralığını daraltabilirsiniz).")}else toast("PDF hazırlanıyor… "+TUR_AD[t]+" ("+Z.length+")");
+  const kutu=document.createElement("div");
   try{
-    await pdfHazir();
     /* 1) fotoğrafları çek: önizleme (320px) + tam boy (fotoTam) */
     const F={};
     for(let i=0;i<S.length;i+=4)await Promise.all(S.slice(i,i+4).map(async d=>{
@@ -1701,9 +1701,19 @@ $("dPdf").onclick=async()=>{
         ok.forEach((x,k)=>{const t=rr.th[k];if(!t)return;
           const gm=gom(x.p.u,x.im),sc=Math.min(t.w/x.im.naturalWidth,t.h/x.im.naturalHeight),w=x.im.naturalWidth*sc,h=x.im.naturalHeight*sc;
           pdf.addImage(gm.d,gm.f,t.x+(t.w-w)/2,t.y+(t.h-h)/2,w,h)})}}
-    pdf.save("dosyalar_"+bkTarih()+".pdf");toast("✓ PDF indirildi");
+    pdf.save("dosyalar_"+TUR_DOSYA[t]+"_"+bkTarih()+".pdf");return true;
+  }catch(er){toast("«"+TUR_AD[t]+"» PDF'i hazırlanamadı: "+errText(er));return false}
+  finally{kutu.remove()}
+}
+$("dPdf").onclick=async()=>{
+  const L=dosFiltre();if(!L.length){toast("PDF için dosya yok.");return}
+  const T=TUR_SIRA.filter(t=>L.some(d=>turKey(d)===t)),btn=$("dPdf");btn.disabled=true;let n=0;
+  try{
+    await pdfHazir();
+    for(const t of T){if(await pdfTur(t,L.filter(d=>turKey(d)===t)))n++;await new Promise(r=>setTimeout(r,900))}
+    toast(n?"✓ "+n+" PDF indirildi":"PDF hazırlanamadı")
   }catch(er){toast("PDF hazırlanamadı: "+errText(er))}
-  finally{kutu.remove();btn.disabled=false}
+  finally{btn.disabled=false}
 };
 /* Dosyalar → Excel (.xlsx), ExcelJS ile: HER TÜR AYRI SAYFA (Üretim Formu&İmzalı İrsaliye, Tahsilat, Talimat, İade, Diğer). Sevk türlerinde her ebat ayrı satır,
    resimler tam kalitede gerçek resim nesnesi olarak aynı kaydın satırında yan yana (Excel'de büyütülebilir/kaydedilebilir). */
