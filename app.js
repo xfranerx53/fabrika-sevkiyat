@@ -868,7 +868,7 @@ function modSec(m){
   panel=m;if(m==="tah")vTabSet("tah");
   document.querySelectorAll("#mods button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
   $("pSevk").classList.toggle("hide",m!=="sevk"&&m!=="tah");$("pStok").classList.toggle("hide",m!=="stok");$("pIs").classList.toggle("hide",m!=="is");$("pUr").classList.toggle("hide",m!=="uretim");$("pRap").classList.toggle("hide",m!=="rap");$("pGranul").classList.toggle("hide",m!=="granul");$("pDos").classList.toggle("hide",m!=="dos");
-  $("mt").textContent=m==="sevk"?"SEVKİYAT":m==="tah"?"TAHSİLAT":m==="is"?"İŞ EMİRLERİ":m==="uretim"?"ÜRETİM":m==="rap"?"RAPORLAR":m==="granul"?"GRANÜL":m==="dos"?"DOSYALAR":"STOK";if(m==="granul"){if(window.granAc)window.granAc()}else if(window.granKapat)window.granKapat();if(m==="rap"&&window.rapAc)window.rapAc();
+  $("mt").textContent=m==="sevk"?"SEVKİYAT":m==="tah"?"TAHSİLAT":m==="is"?"İŞ EMİRLERİ":m==="uretim"?"ÜRETİM":m==="rap"?"RAPORLAR":m==="granul"?"GRANÜL":m==="dos"?"DOSYALAR":"STOK";if(m==="granul"){if(window.granAc)window.granAc()}else if(window.granKapat)window.granKapat();if(m==="rap"&&window.rapAc)window.rapAc();setTimeout(isfSigdir,60);setTimeout(isfSigdir,400);
   if(m==="stok")stokYukle();else stokKapat();if(m==="is"||m==="uretim"){isYukle();if(m!=="is"&&!isAdmin()&&yRol()){const o=yRol().asama.find(k=>URA.includes(k));if(o)uTab=o}}else isKapat();if(m==="dos"&&!window.dRef)dosYukle();$("iAdd").classList.toggle("hide",!canIsAc())}
 $("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===panel)return;modSec(m)};
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{menuOk=true;modSec(b.dataset.go);show("vApp");window.scrollTo(0,0)});
@@ -1677,8 +1677,9 @@ function isListele(){
   if(Object.keys(iSon).length>=iLimit&&(st.aktif||T==="bitti")){const bt=document.createElement("button");bt.className="btn b6";bt.id="iEski";bt.textContent="⬇️ Daha eski iş emirlerini yükle (şu an son "+iLimit+")";bt.onclick=()=>{iLimit+=300;toast("Daha eski kayıtlar yükleniyor…");isYukle()};$(u?"uList":"iList").appendChild(bt)}
 isfSigdir()}
 /* Karttaki form kutusunu genişliğe sığdır (telefonda yana kaydırma gerekmesin) */
+var isfRO=window.ResizeObserver?new ResizeObserver(es=>{if(es.some(en=>String(Math.round(en.contentRect.width))!==en.target.dataset.w))isfSigdir()}):null;
 function isfSigdir(){
-  document.querySelectorAll(".isf").forEach(b=>{const f=b.firstElementChild;if(!f)return;const w=b.clientWidth;if(w<=0)return;
+  document.querySelectorAll(".isf").forEach(b=>{const f=b.firstElementChild;if(!f)return;if(isfRO&&!b._ro){b._ro=1;isfRO.observe(b)}const w=b.clientWidth;if(w<=0)return;b.dataset.w=w;
     const s=Math.min(w/560,1.15);f.style.transform="scale("+s+")";f.style.marginLeft=Math.max(0,(w-560*s)/2)+"px";b.style.height=Math.ceil(f.offsetHeight*s)+2+"px"})}
 window.addEventListener("resize",isfSigdir);
 /* Termin: >0 gecikti, 0 bugün, <0 kalan gün; bitmiş/aktarılmış işte null */
