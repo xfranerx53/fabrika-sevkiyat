@@ -557,7 +557,7 @@ async function isGeri(u){
 /* ---------- Yönetici paneli ---------- */
 const ROLLER=Object.keys(YETKI); /* rol listesi tek yerden: YETKI tablosu */
 /* adım 4: kişiye özel izinler — rol şablonu varsayılan, kutucuklar sadece farkı kaydeder (kullanicilar/<uid>/izin/<anahtar>) */
-const IZ_GRUP=[["Bölümler",[["sevk","Sevkiyat"],["stok","Stok"],["is","İş emirleri"],["uretim","Üretim"],["rap","Raporlar"],["tah","Tahsilat & talimat"],["granul","Granül"]]],["İş emri aşamasını ilerletme",[["a_etiket","Etiket"],["a_ekstruder","Ekstruder"],["a_baski","Baskı"],["a_kesim","Kesim"],["a_depo","Depo"]]],["İşlemler",[["isAc","Yeni iş emri aç"],["isDuzenle","İş emri düzenle"],["geriAl","Aşama geri al"],["isSil","İş emri sil"],["fiyat","İş emrinde fiyat"]]]];
+const IZ_GRUP=[["Bölümler",[["sevk","Sevkiyat"],["stok","Stok"],["is","İş emirleri & etiket"],["uretim","Üretim"],["rap","Raporlar"],["tah","Tahsilat & talimat"],["granul","Granül"]]],["İş emri aşamasını ilerletme",[["a_etiket","Etiket"],["a_ekstruder","Ekstruder"],["a_baski","Baskı"],["a_kesim","Kesim"],["a_depo","Depo"]]],["İşlemler",[["isAc","Yeni iş emri aç"],["isDuzenle","İş emri düzenle"],["geriAl","Aşama geri al"],["isSil","İş emri sil"],["fiyat","İş emrinde fiyat"]]]];
 const izVarsayilan=(rol,k)=>{const y=YETKI[rol];if(!y)return false;if(k.indexOf("a_")===0)return y.asama.includes(k.slice(2));if(["sevk","stok","is","uretim","rap","tah","granul"].includes(k))return y.mod.includes(k);return !!y[k]};
 const izEtkin=(k0,k)=>{const v=k0.izin?k0.izin[k]:undefined;return typeof v==="boolean"?v:izVarsayilan(k0.rol,k)};
 const izKayit={},izAcik=new Set();
@@ -868,7 +868,7 @@ function modSec(m){
   panel=m;if(m==="tah")vTabSet("tah");
   document.querySelectorAll("#mods button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
   $("pSevk").classList.toggle("hide",m!=="sevk"&&m!=="tah");$("pStok").classList.toggle("hide",m!=="stok");$("pIs").classList.toggle("hide",m!=="is");$("pUr").classList.toggle("hide",m!=="uretim");$("pRap").classList.toggle("hide",m!=="rap");$("pGranul").classList.toggle("hide",m!=="granul");$("pDos").classList.toggle("hide",m!=="dos");
-  $("mt").textContent=m==="sevk"?"SEVKİYAT":m==="tah"?"TAHSİLAT":m==="is"?"İŞ EMİRLERİ":m==="uretim"?"ÜRETİM":m==="rap"?"RAPORLAR":m==="granul"?"GRANÜL":m==="dos"?"DOSYALAR":"STOK";if(m==="granul"){if(window.granAc)window.granAc()}else if(window.granKapat)window.granKapat();if(m==="rap"&&window.rapAc)window.rapAc();setTimeout(isfSigdir,60);setTimeout(isfSigdir,400);
+  $("mt").textContent=m==="sevk"?"SEVKİYAT":m==="tah"?"TAHSİLAT":m==="is"?"İŞ EMİRLERİ&ETİKET":m==="uretim"?"ÜRETİM":m==="rap"?"RAPORLAR":m==="granul"?"GRANÜL":m==="dos"?"DOSYALAR":"STOK";if(m==="granul"){if(window.granAc)window.granAc()}else if(window.granKapat)window.granKapat();if(m==="rap"&&window.rapAc)window.rapAc();setTimeout(isfSigdir,60);setTimeout(isfSigdir,400);
   if(m==="stok")stokYukle();else stokKapat();if(m==="is"||m==="uretim"){isYukle();if(m!=="is"&&!isAdmin()&&yRol()){const o=yRol().asama.find(k=>URA.includes(k));if(o)uTab=o}}else isKapat();if(m==="dos"&&!window.dRef)dosYukle();$("iAdd").classList.toggle("hide",!canIsAc())}
 $("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===panel)return;modSec(m)};
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{menuOk=true;modSec(b.dataset.go);show("vApp");window.scrollTo(0,0)});

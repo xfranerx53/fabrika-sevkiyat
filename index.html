@@ -16,8 +16,8 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=109">
-<script src="yazi.js?v=109"></script>
+<link rel="stylesheet" href="style.css?v=110">
+<script src="yazi.js?v=110"></script>
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -65,7 +65,7 @@
     <h2>MAG AMBALAJ</h2>
     <p>Hoş geldiniz, <b id="menuAd"></b><br>Girmek istediğiniz bölümü seçin</p>
     <button class="menuBtn hide" style="background:#1e293b" id="mPano" type="button"><span class="ic">🛡️</span><div>YÖNETİCİ PANELİ<small id="mPanoS">Günün özeti, kullanıcılar, yedekleme</small></div></button>
-    <button class="menuBtn" style="background:#c82333" data-go="is"><span class="ic">📋</span><div>İŞ EMİRLERİ<small>Yeni iş emri, etiket hazırlama</small></div></button>
+    <button class="menuBtn" style="background:#c82333" data-go="is"><span class="ic">📋</span><div>İŞ EMİRLERİ&amp;ETİKET<small>Yeni iş emri, etiket hazırlama</small></div></button>
     <button class="menuBtn" style="background:#b45309" data-go="uretim"><span class="ic">🏭</span><div>ÜRETİM<small>Ekstruder, baskı, kesim, depo, biten</small></div></button>
     <button class="menuBtn" style="background:#ff9f1c" data-go="sevk"><span class="ic">🚚</span><div>SEVKİYAT<small>Hazır ürünler, sevk listesi, adresler</small></div></button>
     <button class="menuBtn hide" style="background:#0e7490" data-go="dos"><span class="ic">📁</span><div>DOSYALAR<small>Onaylanan sevkler, tamamlanan talimat ve tahsilatlar</small></div></button>
@@ -231,7 +231,6 @@
     <div id="iAna">
     <button class="btn b2 big" style="margin:0 0 10px" id="iAdd">＋ Yeni iş emri aç</button>
     <button class="btn b7 hide" id="etNew" type="button" style="margin:0 0 10px">🏷️ Yeni etiket oluştur (iş emri olmadan)</button>
-    <button class="btn b6 hide" id="irAc1" type="button" style="margin:0 0 8px">📊 Üretim raporları (biten işler · aşama süreleri)</button>
     <input id="iq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="iTabs"></div>
     <div id="iList"></div>
@@ -254,19 +253,20 @@
   </div>
   </div>
   <div id="pUr" class="hide">
-    <button class="btn b6 hide" id="irAc2" type="button" style="margin:0 0 8px">📊 Üretim raporları (biten işler · aşama süreleri)</button>
     <input id="uq" placeholder="🔍 Seri no, müşteri, stok adı ara..." style="margin-bottom:8px">
     <div class="tabs stabs" id="uTabs"></div>
     <div id="uList"></div>
   </div>
   <div id="pRap" class="hide rp">
-    <div class="item" style="margin-bottom:10px">
-      <label style="font-size:14px;font-weight:700">Dönem</label>
+    <div class="rfilt">
+      <h3 class="rfh">📊 Rapor oluştur</h3>
+      <label for="rpS">Dönem</label>
       <select id="rpS"><option value="ay">Bu ay</option><option value="gecen">Geçen ay</option><option value="3">Son 3 ay</option><option value="6">Son 6 ay</option><option value="yil">Bu yıl</option><option value="ozel">Özel tarih aralığı…</option></select>
-      <div class="grid hide" id="rpC" style="margin-top:6px"><div><label style="font-size:13px">Başlangıç</label><input id="rpA" type="date"></div><div><label style="font-size:13px">Bitiş</label><input id="rpB" type="date"></div></div>
+      <div class="grid hide" id="rpC" style="margin-top:6px"><div><label for="rpA" style="font-size:13px">Başlangıç</label><input id="rpA" type="date"></div><div><label for="rpB" style="font-size:13px">Bitiş</label><input id="rpB" type="date"></div></div>
       <div class="err" id="rpE"></div>
-      <div style="display:flex;gap:8px"><button class="btn b3" id="rpOk" type="button" style="margin-bottom:0">📊 Raporu getir</button><button class="btn b6 hide" id="rpCsv" type="button" style="margin-bottom:0;width:auto;padding:0 14px">⬇️ Excel</button></div>
+      <div class="rbtn"><button class="btn b3" id="rpOk" type="button">📊 Raporu getir</button><button class="btn b6 hide" id="rpCsv" type="button">⬇️ Excel indir</button></div>
     </div>
+    <button class="btn b6 rprod" id="irAc1" type="button"><span>🏭</span><div><b>Üretim raporları</b><small>Biten işler · aşama süreleri</small></div></button>
     <div id="rpO"></div>
   </div>
   <div id="pStok" class="hide">
@@ -682,17 +682,18 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="raporlar.js?v=109"></script>
+<script src="xlsx-yaz.js?v=110"></script>
+<script src="raporlar.js?v=110"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=109"></script>
+<script src="app.js?v=110"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=109"></script>
-<script src="saat.js?v=109"></script>
+<script src="foto-onizleme.js?v=110"></script>
+<script src="saat.js?v=110"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=109"></script>
+<script src="diyalog.js?v=110"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -723,8 +724,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=109"></script>
-<script src="etiket.js?v=109"></script>
+<script src="qr.js?v=110"></script>
+<script src="etiket.js?v=110"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -734,18 +735,18 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="adrsec.js?v=109"></script>
-<script src="talimat.js?v=109"></script>
-<script src="tahsilat.js?v=109"></script>
-<script src="granul.js?v=109"></script>
-<script src="arama.js?v=109"></script>
-<script src="israpor.js?v=109"></script>
-<script src="fotookut.js?v=109"></script>
-<script src="sesasistan.js?v=109"></script>
-<script src="pano.js?v=109"></script>
-<script src="stokaktar.js?v=109"></script>
-<script src="baglanti.js?v=109"></script>
-<script src="hesap.js?v=109"></script>
-<script src="sw-kayit.js?v=109"></script>
+<script src="adrsec.js?v=110"></script>
+<script src="talimat.js?v=110"></script>
+<script src="tahsilat.js?v=110"></script>
+<script src="granul.js?v=110"></script>
+<script src="arama.js?v=110"></script>
+<script src="israpor.js?v=110"></script>
+<script src="fotookut.js?v=110"></script>
+<script src="sesasistan.js?v=110"></script>
+<script src="pano.js?v=110"></script>
+<script src="stokaktar.js?v=110"></script>
+<script src="baglanti.js?v=110"></script>
+<script src="hesap.js?v=110"></script>
+<script src="sw-kayit.js?v=110"></script>
 </body>
 </html>

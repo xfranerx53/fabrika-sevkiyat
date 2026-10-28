@@ -34,7 +34,7 @@
     git_talimat:{a:"Talimatlar ekranını aç",f:function(){if(!tahGor())return YOK;git(tahMod(),"tal");return"Talimatlar açıldı"}},
     git_tahsilat:{a:"Tahsilat (para tahsilatı, bekleyen/alınan) ekranını aç",f:function(){if(!tahGor())return YOK;git(tahMod(),"tah");return"Tahsilat açıldı"}},
     git_stok:{a:"Stok ekranını aç (kalemler, siparişler, tedarikçiler)",f:function(){if(!modGor("stok"))return YOK;git("stok");return"Stok açıldı"}},
-    git_isemirleri:{a:"İş emirleri ekranını aç (liste, etiket hazırlama)",f:function(){if(!modGor("is"))return YOK;git("is");return"İş emirleri açıldı"}},
+    git_isemirleri:{a:"İŞ EMİRLERİ&ETİKET ekranını aç (iş emri listesi, etiket hazırlama)",f:function(){if(!modGor("is"))return YOK;git("is");return"İş emirleri açıldı"}},
     git_uretim:{a:"Üretim ekranını aç (ekstruder, baskı, kesim aşamaları)",f:function(){if(!modGor("uretim"))return YOK;git("uretim");return"Üretim açıldı"}},
     git_raporlar:{a:"Raporlar ekranını aç",f:function(){if(!modGor("rap"))return YOK;git("rap");return"Raporlar açıldı"}},
     git_granul:{a:"Granül ekranını aç",f:function(){if(!modGor("granul"))return YOK;git("granul");return"Granül açıldı"}},

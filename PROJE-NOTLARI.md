@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v109**
+**GÜNCEL SÜRÜM: v110**
 Son güncelleme: 2026-10-27 (v93: stoka «📥 Hazır liste» toplu ekleme düğmesi, stokaktar.js); önceki: 2026-10-26 (yeni sohbette zip + 2 Excel incelendi, «GÜNCEL DURUM» bloğu Bölüm 9'a eklendi; v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
@@ -98,7 +98,8 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 | `index.html` (~520 satır) | Sadece arayüz iskeleti (giriş, menü, sevkiyat, stok, adres, dosyalar, yönetici pencereleri). Kod yok; script'leri `?v=NN` ile çağırır | GitHub |
 | `style.css` | Tüm görünüm | GitHub |
 | `app.js` (~2000 satır) | Ana kod: Firebase, giriş, yetki, sevkiyat, stok, sipariş, adres, dosyalar, iş emirleri, yönetici, yedek, WhatsApp | GitHub |
-| `raporlar.js` | Raporlar | GitHub |
+| `raporlar.js` | Raporlar (v110: «Rapor oluştur» kartı + sekmeler Özet/Üretim/Sevk/Malzeme/Maliyet; Excel çok sayfalı biçimli .xlsx; «🏭 Üretim raporları» düğmesi artık YALNIZ burada) | GitHub |
+| `xlsx-yaz.js` | **(v110)** Kütüphanesiz biçimli .xlsx yazıcı: `xlsxYaz.sayfa(...)`, `jsonSayfa(...)`, `indir(...)`. Başlık, renkli tablo başlığı, kenarlık, ₺/sayı biçimi, sütun genişliği, dondurulmuş başlık, filtre. raporlar.js ve israpor.js kullanır (SheetJS'e bağımlı değil; israpor.js yedek olarak eskisini tutar) | GitHub |
 | `israpor.js` | Üretim raporları: biten işler, aşama/operatör süreleri (`isEmirleri` + `isHareket`); yetki: yönetici veya `rap` izni; Excel için `xlsxHazir()` kullanır. (Notlarda eksikti, v92 zip'inde var.) | GitHub |
 | `etiket.js` | Etiket tasarımı/basımı | GitHub |
 | `qr.js` | QR kod üretimi (kütüphane) | GitHub |
@@ -300,6 +301,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-28: v107 — **Dosyalar: tür adı + Excel/PDF tür bölümleri.** «İmzalı irsaliye» tür adı → «Üretim iş takip formu&imzalı irsaliye» (`TUR_AD`, `turKey`, `turAd`, Türler listesi). **Excel:** her tür ayrı sayfa, sırayla Üretim Formu&İmzalı İrsaliye (sayfa adı 31 karakter sınırı yüzünden kısaltıldı, `TUR_SAYFA`) → Tahsilat → Talimat → İade → Diğer; tür süzgeci seçiliyse yalnız o sayfa. Sevk türlerinde (irsaliye/iade/diğer) resimler kaydın ilk satırında Ebat/Kg/Adet'ten sonra yan yana (ayrı «Fotoğraflar» sayfası kaldırıldı); en çok 60 kayıt fotoğraflanır. **PDF:** bölüm sırası aynı: Üretim formu&irsaliye sayfaları → Tahsilatlar tablosu → Talimatlar tablosu → İade sayfaları → Diğer sayfaları; sevk sayfasının üstünde tür etiketi. Sınanmadı.
 - 2026-10-28: v108 — **PDF her tür ayrı dosya.** «PDF indir» artık türe göre ayrı PDF indirir (`pdfTur`; sırayla üretim formu&irsaliye, tahsilat, talimat, iade, diğer; kaydı olmayan tür atlanır). Dosya adı `dosyalar_<tür>_<tarih>.pdf`. 25 kayıt sınırı artık TÜR başına. Chrome ilk seferde «birden fazla dosya indirmeye izin ver» diye sorabilir. Sınanmadı.
 - 2026-10-28: v109 — **PDF indir = tek ZIP; her TÜR klasör, her KAYIT ayrı PDF.** `pdfTur` kaldırıldı; yerine `pdfKayit(d,kutu)` (tek kaydın PDF Blob'u: sevk türlerinde 1. sayfa form + fotoğraf sayfaları, tahsilat/talimat tek sayfa), `pdfAdi(d)` (dosya adı), `dsAd` (dosya adı temizleyici), `zipHazir` (JSZip 3.10.1, cdnjs) eklendi. ZIP içi klasörler `TUR_KLASOR`. **Dosya adları:** üretim formu&irsaliye = «Müşteri - İşin adı (isFormu.isAdi) - Tarih (gg.aa.yyyy)»; iade/diğer aynı + sonuna (İade)/(Diğer); tahsilat = «Firma - Tutar TL - Tarih»; talimat = «Talimat ilk satırı (40 krk) - Tarih». Aynı ad olursa (2), (3) eklenir. Üst sınır: tek seferde 100 kayıt (önceki 25/tür sınırı kalktı). ZIP adı `dosyalar_<tarih>.zip`. Yeni dış alan yok (cdnjs zaten CSP'de). Firebase kuralı değişmedi. Sınanmadı (cihazda denenmeli: ZIP açılıyor mu, Türkçe klasör/dosya adları, 100 kayıtta bellek).
+- 2026-10-28: v110 — **Raporlar yenilendi.** (1) «📊 Üretim raporları (biten işler · aşama süreleri)» düğmesi İş emirleri ve Üretim ekranlarından kaldırıldı; yalnız Raporlar ekranında (`irAc1`, `israpor.js` penceresi aynı). (2) «Raporu getir» görünümü: üstte «Rapor oluştur» kartı (dönem + Raporu getir + Excel indir), sonuçta dönem/hazırlanma başlığı ve sekmeler (Özet, Üretim, Sevk, Malzeme, Maliyet-yönetici); renkli gösterge kartları, ilk 3 müşteri/malzeme, aylık üretim çubukları, şeritli tablolar, boş durum mesajı. Hesaplama (`hesapla`) DEĞİŞMEDİ. (3) Excel: CSV yerine gerçek .xlsx (`xlsx-yaz.js`): Özet, Aylık Üretim, Müşteri Sevk, Malzeme Tüketimi, Maliyet (yönetici) sayfaları; başlık satırı, ₺ biçimi, toplam satırı, filtre. Üretim raporları Excel'i de aynı biçimde (yedek: eski SheetJS). (4) Bölüm adı «İŞ EMİRLERİ&ETİKET» (menü, üst başlık, yetki listesi, sesli asistan tanımı). Firebase kuralı DEĞİŞMEDİ. Sınanmadı: telefonda görünüm (sahte veriyle mantık + Excel dosyası denendi).
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
