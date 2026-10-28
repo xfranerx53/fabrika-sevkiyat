@@ -639,12 +639,16 @@ async function copGeri(k){
   up["cop/"+k]=null;
   up["denetim/"+db.ref("denetim").push().key]={tur:"geri",baslik:kisalt(c.baslik||c.id,120),yol:kisalt(c.yol,140),id:kisalt(c.id,100),kim:kisalt(ad(),100),uid:user.uid,zaman:TSV()};
   await db.ref().update(up);toast("✓ Geri yüklendi")}
+/* v114: bir kaydın içindeki tüm «önizleme#fotoTamAnahtarı» anahtarlarını toplar */
+const fotoAnahtarlar=v=>{const o=new Set();if(v==null)return[];const t=JSON.stringify(v),r=/#([A-Za-z0-9_-]{20})(?=")/g;let m;while((m=r.exec(t)))o.add(m[1]);return Array.from(o)};
 $("copAc").onclick=()=>{$("dCop").showModal();copListele()};
 $("copKapat").onclick=()=>$("dCop").close();
 $("copList").onclick=async e=>{const b=e.target.closest("button[data-c]");if(!b||!isAdmin())return;
   try{
     if(b.dataset.a==="geri")await copGeri(b.dataset.c);
-    else if(confirm("Bu kayıt çöp kutusundan da kalıcı olarak silinsin mi? Geri alınamaz.")){await db.ref("cop/"+b.dataset.c).remove();denetimYaz("kalici","Çöp kutusundan kalıcı silindi",null,"cop",b.dataset.c)}
+    else if(confirm("Bu kayıt çöp kutusundan da kalıcı olarak silinsin mi? Geri alınamaz.")){
+      const cs=await db.ref("cop/"+b.dataset.c).once("value"),up={};up["cop/"+b.dataset.c]=null;
+      fotoAnahtarlar(cs.val()).forEach(k=>{up["fotoTam/"+k]=null});await db.ref().update(up);denetimYaz("kalici","Çöp kutusundan kalıcı silindi",null,"cop",b.dataset.c)}
     copListele()}catch(err){toast(errText(err))}};
 $("denAc").onclick=async()=>{$("dDen").showModal();$("denList").textContent="Yükleniyor…";
   try{const s=await db.ref("denetim").orderByChild("zaman").limitToLast(100).once("value"),v=s.val()||{},ks=Object.keys(v).sort((a,b)=>(v[b].zaman||0)-(v[a].zaman||0));
@@ -1509,6 +1513,7 @@ function kDetay(d){
     if(d.duzenlemeZaman)h+=ek("✎ Düzeltildi: "+esc(d.duzenleyen||"-")+" · "+esc(dTam(d.duzenlemeZaman))+(d.duzenlemeNot?" — "+esc(d.duzenlemeNot):""),"color:#b45309;font-weight:700");
   }
   h+=ek("📁 Dosyalara ekleyen: "+esc(d.onaylayan||"-")+(d.onayTarihi?" · "+esc(dTam(d.onayTarihi)):""),"color:#0f766e;font-weight:700");
+  if(d.fotoTemiz)h+=ek("🧹 Fotoğraflar temizlendi · "+esc(dTam(d.fotoTemiz)));
   const n=+d.fotoSayi||0;
   if(n)h+=`<div class="acts s">${Array.from({length:n},(_,i)=>`<button class="btn b4" data-a="dfoto" data-p="fotolar/${i}" data-id="${id}">🖼️ Fotoğraf ${i+1}</button>`).join("")}</div>`;
   if(isAdmin())h+=`<div class="acts"><button class="btn b6" data-a="dgeri" data-id="${id}">↩️ Dosyalardan çıkar</button><button class="btn b5" data-a="dsil" data-id="${id}">🗑️ Sil</button></div>`;
@@ -1558,6 +1563,7 @@ function dDetay(d){
     ${d.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">Teslim eden: ${esc(d.teslimEden)}${d.irsaliyeTarihi?" · "+esc(dTam(d.irsaliyeTarihi)):""}</div>`:""}
     <div class="who" style="color:#0f766e;font-weight:700">✅ Onaylayan: ${esc(d.onaylayan||"-")}${d.onayTarihi?" · "+esc(dTam(d.onayTarihi)):""}</div>
     ${isAdmin()?sFyHtml(d):""}
+    ${d.fotoTemiz?`<div class="who">🧹 Fotoğraflar temizlendi · ${esc(dTam(d.fotoTemiz))}</div>`:""}
     <div class="acts s">${d.fotoVar?`<button class="btn b6" data-a="dfoto" data-p="foto" data-id="${id}">🏷️ Etiket fotoğrafı</button>`:""}${Array.from({length:+d.fotoSayi||0},(_,i)=>`<button class="btn b6" data-a="dfoto" data-p="fotolar/${i}" data-id="${id}">🏷️ Foto ${i+2}</button>`).join("")}${d.irsVar?`<button class="btn b4" data-a="dfoto" data-p="irsaliye" data-id="${id}">${ic} ${esc(tn)} fotoğrafı</button>`:""}${(Array.isArray(d.irsEk)?d.irsEk:Object.values(d.irsEk||{})).map((m,i)=>`<button class="btn b4" data-a="dfoto" data-p="irsEkler/${i}" data-id="${id}">${{irsaliye:"📄",diger:"📝",iade:"↩️"}[m.tur]||"📄"} ${m.tur==="iade"?"İade":m.tur==="diger"?"Diğer"+(m.not?": "+esc(m.not):""):"İmzalı irsaliye"} fotoğrafı ${i+2}</button>`).join("")}</div>
     ${isAdmin()?`<div class="acts"><button class="btn b6" data-a="dgeri" data-id="${id}">↩️ Onayı kaldır</button><button class="btn b5" data-a="dsil" data-id="${id}">🗑️ Sil</button></div>`:""}
   </div>`;
@@ -1567,7 +1573,7 @@ function dosListele(){
   L.forEach(d=>{const k=dTarih(d)||"-";let g=G[G.length-1];if(!g||g.k!==k){g={k,items:[]};G.push(g)}g.items.push(d)});
   const kgO=a=>a.reduce((s,d)=>s+(d.kaynak?0:(+d.kg||0)),0),tlO=a=>a.reduce((s,d)=>s+(d.kaynak==="tahsilat"?kTut(d):0),0),
     oz=a=>a.length+" dosya"+(kgO(a)||!tlO(a)?" · "+fmt(kgO(a))+" kg":"")+(tlO(a)?" · "+fmt(tlO(a))+" ₺":"");
-  $("dSumT").textContent=oz(L);
+  $("dSumT").textContent=oz(L);$("dFt").classList.toggle("hide",!isAdmin());
   $("dList").innerHTML=G.length?G.map(g=>`<div class="shd">📅 ${esc(dGun(g.k))} · ${esc(oz(g.items))}</div>`+g.items.map(dSatir).join("")).join(""):'<div class="empty">Dosya bulunamadı.</div>';
   isfSigdir();
 }
@@ -1583,6 +1589,33 @@ async function dosFoto(id,p){
   }
   if(window.fvAc)window.fvAc(dFoto[k]);
 }
+/* v114: Eski dosyaların FOTOĞRAFLARINI siler (önizleme + tam boy); kayıt, kg, müşteri, fiyat, tarih kalır → raporlar bozulmaz */
+async function dosFotoTemizle(){
+  if(!isAdmin())return;
+  const g=prompt("Onaylanma tarihi kaç günden ESKİ dosyaların fotoğrafları silinsin?\n\nÖnce «PDF» ile indirmeyi unutmayın. Kayıtlar (kg, müşteri, fiyat) silinmez, yalnız fotoğraflar silinir.","60");
+  if(g===null)return;const gun=Math.floor(+g);if(!(gun>=1)){toast("Geçerli bir gün sayısı girin (en az 1).");return}
+  const kes=Date.now()-gun*864e5;
+  try{
+    toast("Taranıyor…");
+    const s=await db.ref("dosyalar").orderByChild("onayTarihi").endAt(kes).limitToLast(1000).once("value"),v=s.val()||{};
+    const ids=Object.keys(v).filter(k=>{const d=v[k];return !d.fotoTemiz&&(d.fotoVar||d.irsVar||+d.fotoSayi>0||(d.irsEk&&Object.keys(d.irsEk).length))});
+    if(!ids.length){toast("Temizlenecek fotoğraf yok.");return}
+    if(!confirm(ids.length+" dosyanın fotoğrafları KALICI silinecek ("+gun+" günden eski).\nKayıtlar kalır, fotoğraflar geri getirilemez.\n\nPDF'i indirdiniz mi? Devam edilsin mi?"))return;
+    let n=0,fk=0;
+    for(let i=0;i<ids.length;i+=20){
+      const grp=ids.slice(i,i+20),up={};
+      const FS=await Promise.all(grp.map(id=>db.ref("dosyaFoto/"+id).once("value").then(x=>x.val())));
+      grp.forEach((id,j)=>{
+        fotoAnahtarlar(FS[j]).forEach(k=>{up["fotoTam/"+k]=null;fk++});
+        up["dosyaFoto/"+id]=null;
+        ["fotoVar","irsVar","fotoSayi","irsEk"].forEach(a=>{up["dosyalar/"+id+"/"+a]=null});
+        up["dosyalar/"+id+"/fotoTemiz"]=TSV();n++});
+      await db.ref().update(up);
+      toast("Temizleniyor… "+n+"/"+ids.length)}
+    denetimYaz("bakim","Eski dosya fotoğrafları temizlendi",n+" dosya, "+gun+" günden eski","dosyalar","");
+    toast("✓ "+n+" dosyanın fotoğrafları silindi");
+  }catch(e){toast(errText(e))}}
+$("dFt").onclick=dosFotoTemizle;
 async function dosyayaTasi(u){
   const L=Object.assign({},u);delete L.id;delete L.foto;delete L.irsaliye;delete L.fotolar;delete L.irsEkler;
   const EK=irsListe(u).slice(1);

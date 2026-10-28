@@ -16,8 +16,8 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=113">
-<script src="yazi.js?v=113"></script>
+<link rel="stylesheet" href="style.css?v=114">
+<script src="yazi.js?v=114"></script>
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -247,7 +247,7 @@
       </div>
       <select id="dtp"><option value="">Tüm türler</option><option value="irsaliye">📄 Üretim iş takip formu&amp;imzalı irsaliye</option><option value="diger">📝 Diğer</option><option value="iade">↩️ İade</option><option value="talimat">📋 Talimat</option><option value="tahsilat">💰 Tahsilat</option></select>
     </div>
-    <div id="dSum" class="shd" style="display:flex;justify-content:space-between;align-items:center"><span id="dSumT"></span><span style="display:flex;gap:6px"><button class="btn b6 sm" id="dPdf">PDF</button><button class="btn b6 sm" id="dCsv">Excel'e aktar</button></span></div>
+    <div id="dSum" class="shd" style="display:flex;justify-content:space-between;align-items:center"><span id="dSumT"></span><span style="display:flex;gap:6px"><button class="btn b6 sm" id="dPdf">PDF</button><button class="btn b6 sm" id="dCsv">Excel'e aktar</button><button class="btn b6 sm hide" id="dFt">🧹 Foto temizle</button></span></div>
     <div id="dList"></div>
     <button class="btn b6 hide" id="dMore">Daha eski dosyaları yükle</button>
   </div>
@@ -682,18 +682,18 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="xlsx-yaz.js?v=113"></script>
-<script src="raporlar.js?v=113"></script>
+<script src="xlsx-yaz.js?v=114"></script>
+<script src="raporlar.js?v=114"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=113"></script>
+<script src="app.js?v=114"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=113"></script>
-<script src="saat.js?v=113"></script>
+<script src="foto-onizleme.js?v=114"></script>
+<script src="saat.js?v=114"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=113"></script>
+<script src="diyalog.js?v=114"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -724,8 +724,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=113"></script>
-<script src="etiket.js?v=113"></script>
+<script src="qr.js?v=114"></script>
+<script src="etiket.js?v=114"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -735,18 +735,18 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="adrsec.js?v=113"></script>
-<script src="talimat.js?v=113"></script>
-<script src="tahsilat.js?v=113"></script>
-<script src="granul.js?v=113"></script>
-<script src="arama.js?v=113"></script>
-<script src="israpor.js?v=113"></script>
-<script src="fotookut.js?v=113"></script>
-<script src="sesasistan.js?v=113"></script>
-<script src="pano.js?v=113"></script>
-<script src="stokaktar.js?v=113"></script>
-<script src="baglanti.js?v=113"></script>
-<script src="hesap.js?v=113"></script>
-<script src="sw-kayit.js?v=113"></script>
+<script src="adrsec.js?v=114"></script>
+<script src="talimat.js?v=114"></script>
+<script src="tahsilat.js?v=114"></script>
+<script src="granul.js?v=114"></script>
+<script src="arama.js?v=114"></script>
+<script src="israpor.js?v=114"></script>
+<script src="fotookut.js?v=114"></script>
+<script src="sesasistan.js?v=114"></script>
+<script src="pano.js?v=114"></script>
+<script src="stokaktar.js?v=114"></script>
+<script src="baglanti.js?v=114"></script>
+<script src="hesap.js?v=114"></script>
+<script src="sw-kayit.js?v=114"></script>
 </body>
 </html>

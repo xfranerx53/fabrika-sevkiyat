@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v113**
+**GÜNCEL SÜRÜM: v114**
 Son güncelleme: 2026-10-27 (v93: stoka «📥 Hazır liste» toplu ekleme düğmesi, stokaktar.js); önceki: 2026-10-26 (yeni sohbette zip + 2 Excel incelendi, «GÜNCEL DURUM» bloğu Bölüm 9'a eklendi; v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
@@ -305,6 +305,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-28: v111 — **Raporlar'a «📄 PDF» düğmesi** (Raporu getir'den sonra görünür, Excel'in yanında). `raporlar.js` `pdf()`: tüm bölümler (Özet, Üretim, Sevk, Malzeme, Maliyet-yönetici; müşteri/malzeme listeleri tam) ekran dışı `.rpdf` kutusunda çizilir, Dosyalar'daki `pdfHazir()` (html2canvas + jsPDF) ile A4 dikey sayfalara bölünür (satır/kart sınırından keser), sayfa numarası eklenir. Firebase kuralı DEĞİŞMEDİ. Sınanmadı: PDF üretimi (tarayıcı gerekir; telefonda ilk kullanımda denenmeli).
 - 2026-10-28: v112 — **Raporlar «Depoya giren (üretilen)» düzeltildi.** Sorun: Dosyalar toplamı 1250 kg iken rapor 5360 kg gösterdi; sebep `hesapla` adım 1'in iş emri `log.depo` kaydını koşulsuz toplamasıydı (Dosyalar/sevk kayıtları silinince veya aşama geri alınınca eski depo kaydı kalıyordu). Artık yalnız hâlâ BİTEN'de bekleyen veya aktardığı ürünlerden en az biri Hazır Ürünler/Sevk/Dosyalar'da duran işler sayılır (`gercek()`). Dosyalar: raporlar.js, index.html, sw.js, PROJE-NOTLARI.md. Firebase kuralı DEĞİŞMEDİ. Sahte veriyle mantık sınandı; gerçek veride SINANMADI.
 - 2026-10-28: v113 — **Sesli asistan (🎤, yapay zekâ) şimdilik YALNIZ yöneticide** (`sesasistan.js` `gorBelirle`: `rec.yonetici===true`). Fotoğraftan okuma (`fotookut.js`) aynı kaldı. Firebase'deki CANLI kurallar repodaki `rules.json`'dan eskiydi (tahsilat `adres/adresAd/haritaUrl` alanları yok → adresli tahsilat kaydı reddedilir; `kullanicilar` kendi kendine kayıt kuralı hâlâ açık) → güncel `rules.json`'ın TAMAMI yayınlanmalı. Dosyalar: sesasistan.js, index.html, sw.js, PROJE-NOTLARI.md, rules.json.
+- 2026-10-28: v114 — **Dosyalar «🧹 Foto temizle» (yalnız yönetici)** (`app.js` `dosFotoTemizle`, `index.html` `dFt`): «X günden eski» onaylı dosyaların fotoğraflarını (`dosyaFoto/{id}` + tüm `fotoTam/{anahtar}`) siler; kayıt (kg, müşteri, fiyat, tarih) KALIR → raporlar bozulmaz. Kayıta `fotoTemiz` zaman damgası konur, `fotoVar/irsVar/fotoSayi/irsEk` temizlenir; kartta «🧹 Fotoğraflar temizlendi». 20'şer dosya toplu yazar, denetim günlüğüne `bakim` kaydı. **Çöp kutusu «Kalıcı sil»** artık kaydın içindeki `fotoTam` tam boy fotoğraflarını da siler (`fotoAnahtarlar`; önceden yetim kalıp yer kaplıyordu). NOT: Dosyalar'dan «Sil» kaydı + fotoğrafı ÇÖP KUTUSUNA taşır (yer boşalmaz); yer için çöpten kalıcı sil gerekir. Firebase kuralı DEĞİŞMEDİ. Sınanmadı (gerçek Firebase gerekir); mantık sahte veriyle denendi.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
