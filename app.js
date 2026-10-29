@@ -1916,6 +1916,21 @@ function terminRozet(e){const g=terminGun(e);if(!e.termin)return"";const t=trDat
   if(g===0)return'<div class="note" style="font-weight:800;margin-top:6px">⚠️ Termin BUGÜN: '+t+'</div>';
   if(g>=-2)return'<div class="note" style="margin-top:6px">📅 Termin '+t+' ('+(-g)+' gün kaldı)</div>';
   return'<div class="who">📅 Termin: '+t+'</div>'}
+/* Çok ürünlü iş emri: operatör her ürünü bitirince tik koyar (v119). Veri: isEmirleri/{id}/tik/{aşama}/{sıra} = {kim,zaman} */
+const TIKAS=["ekstruder","baski","kesim"];
+const tikEt=(c,i)=>[i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" · ")+(+c.kg>0?" · "+fmt(c.kg)+" kg":"");
+const tikSay=(e,a)=>{const C=icols(e),T=((e.tik||{})[a])||{};let n=0;C.forEach((c,i)=>{if(T[i])n++});return{n,t:C.length,eksik:C.map((c,i)=>T[i]?null:tikEt(c,i)).filter(Boolean)}};
+function tikPanel(e){
+  const C=icols(e);if(C.length<2)return"";
+  const sira=asOrd(e),gecmis=TIKAS.filter(a=>sira.indexOf(a)>-1&&sira.indexOf(a)<sira.indexOf(e.asama)&&e.tik&&e.tik[a]);
+  let h="";
+  if(TIKAS.includes(e.asama)){
+    const T=(e.tik||{})[e.asama]||{},ok=asamaYap(e.asama),sy=tikSay(e,e.asama);
+    h+=`<div class="tikp"><div class="tikh"><b>${esc(ASL[e.asama])} — ürünler</b><span class="${sy.n===sy.t?"tikok":""}">${sy.n}/${sy.t} tamam</span></div>`
+      +C.map((c,i)=>{const t=T[i];return `<button type="button" class="tikr${t?" on":""}" ${ok?`data-a="tik" data-i="${i}" data-id="${esc(e.id)}"`:"disabled"}><span class="tikb">${t?"✓":""}</span><span class="tikt">${esc(tikEt(c,i))}${t?`<small>${esc(t.kim||"")} · ${esc(new Date(t.zaman).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))}</small>`:""}</span></button>`}).join("")
+      +(ok?"":`<div class="who">Tik koyma yetkisi ilgili operatördedir.</div>`)+`</div>`}
+  gecmis.forEach(a=>{const sy=tikSay(e,a);h+=`<div class="who">${esc(ASL[a])}: ${sy.n}/${sy.t} ürün tamamlandı ${sy.n===sy.t?"✓":"⚠️"}</div>`});
+  return h}
 function isKart(e){
   const id=esc(e.id),o=asOrd(e),i=o.indexOf(e.asama),nx=o[i+1],canDel=isAdmin()||(islemYap("isSil")&&e.ekleyenUid&&e.ekleyenUid===user.uid);
   const lg=Object.entries(e.log||{}).map(([k,v])=>`<div class="who">${esc(ASL[k]||k)}: ${v.kg!=null?esc(fmt(v.kg))+" kg":""}${v.paket?" · "+esc(fmt(v.paket))+" adet":""} — ${esc(v.kim||"")} ${esc(tarih(v.zaman))}${k==="depo"&&Array.isArray(v.kalem)?"<br>"+v.kalem.map((x,i)=>{const c=icols(e)[i]||{};return esc([i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - ")+": "+fmt(x&&x.kg)+" kg · "+fmt(x&&x.paket)+" paket")}).join("<br>"):""}</div>`).join("");
@@ -1926,6 +1941,7 @@ function isKart(e){
   ${frm}
   ${e.asama==="etiket"?`<div class="note" style="margin-top:6px">🏷️ ${e.etiketYapildi?"Etiket hazır ✅":"Etiket henüz yapılmadı — Ekstruder'e geçmeden önce etiket hazırlayın"}</div>`:(e.etiketsiz?`<div class="who">⚠️ Etiketsiz devam edildi</div>`:"")}
   ${lg}
+  ${tikPanel(e)}
   <div class="acts">${e.asama==="etiket"&&asamaYap("etiket")?`<button class="btn b7 big" style="grid-column:span 2" data-a="etik" data-id="${id}">🏷️ Etiket hazırla</button>`:""}${nx&&asamaYap(e.asama)?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:18px" data-a="ileri" data-id="${id}">${e.asama==="depo"?"📦 Depoya girişi kaydet → BİTEN":"✓ Bitti → "+esc(ASL[nx])}</button>`:""}
   ${i>0&&islemYap("geriAl")?`<button class="btn b6" data-a="geri" data-id="${id}">↩️ Geri al</button>`:""}${opRol()?"":`<button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button>`}${e.asama!=="etiket"&&asamaYap("etiket")?`<button class="btn b7" data-a="etik" data-id="${id}">🏷️ Etiket</button>`:""}${islemYap("isDuzenle")?`<button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>`:""}${opRol()?"":`<button class="btn b6" data-a="gecmis" data-id="${id}">🕘 Geçmiş</button><button class="btn b6" data-a="qr" data-id="${id}">📱 QR</button>`}${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div>
   ${e.asama==="bitti"&&e.bekleAktar&&!e.aktarildi&&modGor("sevk")?`<button class="btn b4" style="width:100%;margin-top:8px;padding:14px;font-size:18px" data-a="aktar" data-id="${id}">📦 Hazır ürünlere aktar</button>`:""}${e.aktarildi?`<div class="note" style="margin-top:8px">✅ Hazır ürünlere aktarıldı</div>`:""}</div>`;
@@ -1933,6 +1949,13 @@ function isKart(e){
 const isAksiyon=async ev=>{
   const b=ev.target.closest("button[data-a]");if(!b)return;const e=isBulId(b.dataset.id);if(!e)return;
   const a=b.dataset.a,o=asOrd(e),i=o.indexOf(e.asama),TS=firebase.database.ServerValue.TIMESTAMP;
+  if(a==="tik"){
+    if(!asamaYap(e.asama)||!TIKAS.includes(e.asama)){toast("Bu aşamada tik koyma yetkiniz yok.");return}
+    const ix=+b.dataset.i,yol="isEmirleri/"+e.id+"/tik/"+e.asama+"/"+ix,var_=((e.tik||{})[e.asama]||{})[ix];
+    if(var_&&!confirm("Bu ürünün tiki kaldırılsın mı?"))return;
+    b.disabled=true;
+    try{await db.ref(yol).set(var_?null:{kim:ad(),zaman:firebase.database.ServerValue.TIMESTAMP})}catch(er){toast(errText(er))}
+    return}
   const gec=a==="ileri"||a==="geri";
   /* Çift basma / başkası zaten ilerletmiş mi: işlemden önce sunucudaki güncel aşamayı kontrol et */
   if(gec){if(isKilit.has(e.id))return;isKilit.add(e.id);
@@ -1972,7 +1995,8 @@ const isAksiyon=async ev=>{
     else if(a==="ileri"&&i>=0&&i<o.length-1){
       if(!asamaYap(e.asama)){toast("Bu aşamayı ilerletme yetkiniz yok.");return}
       if(e.asama==="etiket"){etiketIleri(e);return}else if(e.asama==="depo"){depoAc(e);return}else{
-        if(!confirm(e.no+" ("+(e.musteri||"-")+")\n"+(ASL[e.asama]||e.asama)+" → "+(ASL[o[i+1]]||o[i+1])+"\nBu aşama tamamlandı, bir sonrakine geçirilsin mi?"))return;
+        {const sy=(TIKAS.includes(e.asama)&&icols(e).length>1)?tikSay(e,e.asama):null,uy=sy&&sy.eksik.length?"\n\n⚠️ TİK KOYULMAYAN ÜRÜN VAR:\n"+sy.eksik.join("\n")+"\n\nYine de geçirilsin mi?":"";
+        if(!confirm(e.no+" ("+(e.musteri||"-")+")\n"+(ASL[e.asama]||e.asama)+" → "+(ASL[o[i+1]]||o[i+1])+"\nBu aşama tamamlandı, bir sonrakine geçirilsin mi?"+uy))return}
         const up={};up["isEmirleri/"+e.id+"/asama"]=o[i+1];up["isEmirleri/"+e.id+"/log/"+e.asama]={kg:null,kim:ad(),zaman:TS};
         hrkEk(up,e.id,{tur:"ileri",kimden:e.asama,kime:o[i+1],kg:null});await db.ref().update(up);
       }

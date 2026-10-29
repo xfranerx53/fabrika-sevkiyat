@@ -403,6 +403,26 @@
             ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('a_depo').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('a_depo').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Depo Görevlisi'))))) && root.child('isEmirleri').child($id).child('asama').val() === 'depo'"
           }
         },
+        "tik": {
+          "ekstruder": {
+            "$i": {
+              ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('a_ekstruder').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('a_ekstruder').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Ekstruder Operatörü'))))) && root.child('isEmirleri').child($id).child('asama').val() === 'ekstruder'",
+              ".validate": "newData.hasChildren(['kim','zaman']) && newData.child('kim').isString() && newData.child('kim').val().length <= 80 && newData.child('zaman').val() === now"
+            }
+          },
+          "baski": {
+            "$i": {
+              ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('a_baski').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('a_baski').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Matbaa Operatörü'))))) && root.child('isEmirleri').child($id).child('asama').val() === 'baski'",
+              ".validate": "newData.hasChildren(['kim','zaman']) && newData.child('kim').isString() && newData.child('kim').val().length <= 80 && newData.child('zaman').val() === now"
+            }
+          },
+          "kesim": {
+            "$i": {
+              ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('a_kesim').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('a_kesim').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Kesim Operatörü'))))) && root.child('isEmirleri').child($id).child('asama').val() === 'kesim'",
+              ".validate": "newData.hasChildren(['kim','zaman']) && newData.child('kim').isString() && newData.child('kim').val().length <= 80 && newData.child('zaman').val() === now"
+            }
+          }
+        },
         "fiyat": {
           ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('fiyat').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('fiyat').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Muhasebe')))))"
         },
