@@ -1,6 +1,8 @@
 /* ===================== FOTOĞRAFTAN İŞ EMRİ DOLDURMA =====================
    Mikro'dan yazdırılan «Üretim İş Takip Formu» fotoğrafı yüklenir, Google Gemini (ücretsiz anahtar)
    formu okur, «Yeni iş emri» penceresindeki alanlar doldurulur. Kullanıcı kontrol edip Kaydet der.
+   v115: AYNI düğmelerle Mikro «Çok Dövizli Alınan Sipariş Fişi» ekranı (ekran görüntüsü / ekran fotoğrafı) da okunur;
+   belge türünü Gemini ayırt eder (`belge`: takip | mikro). Mikro fişinde seri no DEĞİŞMEZ (otomatik sıradaki kalır).
    Veritabanına yalnız `okumaAyar` yolundan ANAHTAR okunur (yazma: sadece yönetici). Fotoğraf kaydedilmez.
    Kullanılan genel işlevler (app.js): $, toast, db, isE, isAdmin, notSet, errText, bugun, iAc. */
 (function(){
@@ -11,9 +13,11 @@
   var mesgul=false;
 
   var PROMPT=[
-    "Bu fotoğraf bir plastik ambalaj fabrikasının «ÜRETİM İŞ TAKİP FORMU» kâğıdıdır (MAG AMBALAJ).",
-    "Formdaki YAZILANLARI aynen oku. Cevabın SADECE geçerli bir JSON nesnesi olsun, başka hiçbir metin yazma.",
-    "Kurallar:",
+    "Bu fotoğraf iki türden biri olabilir: (A) plastik ambalaj fabrikasının (MAG AMBALAJ) «ÜRETİM İŞ TAKİP FORMU» kâğıdı, veya (B) Mikro muhasebe programının «Çok Dövizli Alınan Sipariş Fişi» ekranı (ekran görüntüsü ya da ekranın fotoğrafı).",
+    "Önce türü belirle: \"belge\" alanına A için \"takip\", B için \"mikro\" yaz. Yalnız o türün alanlarını doldur, diğerini boş bırak.",
+    "Yazılanları aynen oku. Cevabın SADECE geçerli bir JSON nesnesi olsun, başka hiçbir metin yazma.",
+    "(B) MİKRO FİŞİ kuralları: üstte evrak no, tarih, C/H kodu, C/H ismi, ödeme planı, proje; ortadaki tabloda her SATIR bir kalemdir (sütunlar: Cinsi, Kodu, İsmi, Döviz cinsi, Miktar, Br(birim), Birim fiyat, Tutarı, Tesl. tarihi, Açıklama). Kalemleri yukarıdan aşağı en çok 6 satır oku. Sayıları ve tarihleri ekranda yazıldığı gibi yaz (örn. 600,00 ; 14.10.2026). Satırdaki «Döviz cinsi» ve «Birim fiyat» değerini kullan (alttaki toplam kutularını değil). kdvOrani: soldaki «KDV (%)» kutusundaki sayı. Açıklama sütunundaki yazıyı aynen ver (örn. 55 X 95). Görünmeyen/kesik/okunamayan şeyi UYDURMA, boş bırak. Boş satırları alma.",
+    "(A) TAKİP FORMU kuralları:",
     "- Formda 3 sütun vardır (soldan sağa 1., 2., 3.). SİPARİŞ MİKTARI, EN, MİKRON, KORONA, NOT (üretim), ÜRÜN ADI, BOY/KAZAN, BASKI RENGİ ve alttaki NOT (baskı-kesim) satırları sütun sütun okunur.",
     "- Kâğıda elle çizilmiş çarpı (X), çizgi veya karalama olabilir: bunları YOK SAY, altındaki basılı yazıyı normal oku.",
     "- Hücre boşsa ya da '-' yazıyorsa \"\" (boş metin) yaz. Görünmeyen veya okunamayan bir şeyi UYDURMA, boş bırak.",
@@ -21,9 +25,9 @@
     "- kg: yalnızca sayı (birim yazma). mikron: yalnızca sayı (µ işareti yazma, virgül varsa koru: 3,5). en: formda yazıldığı gibi (örn. 22*7*7).",
     "- fiyat: formda «FİYAT :» hücresi varsa içindeki yazıyı aynen yaz (örn. 120₺ veya 3,5 $ +KDV). Hücre yoksa, boşsa ya da '-' ise \"\" yaz.",
     "- spTarihi: formda yazıldığı gibi (örn. 20.10.26). fx: formda yazıldığı gibi (örn. X-PEŞİN).",
-    "JSON şeması (sutunlar tam 3 elemanlı, formdaki sütun sırasıyla):",
+    "JSON şeması (sutunlar tam 3 elemanlı, formdaki sütun sırasıyla; mikro.kalemler fişteki satır sayısı kadar):",
     "{\"seriNo\":\"\",\"musteri\":\"\",\"isAdi\":\"\",\"stokAdi\":\"\",\"spTarihi\":\"\",\"fx\":\"\",\"spNo\":\"\",\"formul\":\"\",\"fiyat\":\"\",",
-    "\"sutunlar\":[{\"kg\":\"\",\"en\":\"\",\"mikron\":\"\",\"korona\":\"\",\"uretimNotu\":\"\",\"urunAdi\":\"\",\"boy\":\"\",\"baskiRengi\":\"\",\"baskiNotu\":\"\"},{...},{...}]}"
+    "\"sutunlar\":[{\"kg\":\"\",\"en\":\"\",\"mikron\":\"\",\"korona\":\"\",\"uretimNotu\":\"\",\"urunAdi\":\"\",\"boy\":\"\",\"baskiRengi\":\"\",\"baskiNotu\":\"\"},{...},{...}],\"belge\":\"\",\"mikro\":{\"evrakNo\":\"\",\"tarih\":\"\",\"cariKodu\":\"\",\"cariIsmi\":\"\",\"proje\":\"\",\"odemePlani\":\"\",\"kdvOrani\":\"\",\"kalemler\":[{\"kod\":\"\",\"isim\":\"\",\"doviz\":\"\",\"miktar\":\"\",\"birim\":\"\",\"birimFiyat\":\"\",\"teslimTarihi\":\"\",\"aciklama\":\"\"}]}}"
   ].join("\n");
 
   function durum(m,hata){var d=g("iFotoD");if(!d)return;d.textContent=m||"";d.style.color=hata?"#c1121f":"#475569"}
@@ -175,8 +179,75 @@
     r.kdv=/\+\s*KDV|KDV\s*HAR[İI]?[ÇC]/i.test(m);
     return r}
 
+  /* ---- MİKRO «Çok Dövizli Alınan Sipariş Fişi» → iş emri alanları (v115) ---- */
+  function ust(v){return temiz(v).toLocaleUpperCase("tr-TR")}
+  function fxAyarla(fx){var sx=g("iFx");if(!sx||!fx)return;var bul=null;
+    [].forEach.call(sx.options,function(op){if(fold(op.value)===fold(fx))bul=op});
+    if(!bul){bul=document.createElement("option");bul.value=bul.textContent=fx;bul.dataset.ek="1";sx.appendChild(bul)}
+    sx.value=bul.value;sx.dispatchEvent(new Event("change"))}
+  /* Açıklama: "55 X 95" → en 55 / boy 95 · "42*14*14" → en 42*14*14 · "30 MİKRON" → mikron 30 · kalan yazı üretim notuna */
+  function aciklamaCoz(a){
+    var rest=temiz(a),r={en:"",boy:"",mikron:"",kalan:""};if(!rest)return r;
+    var N="(\\d+(?:[.,]\\d+)?)",X="\\s*[xX*×]\\s*";
+    var mk=rest.match(new RegExp(N+"\\s*(?:[Mm][İIiı][Kk][Rr][Oo][Nn]|[Mm][İIiı][Cc]|[µμ])"));
+    if(mk){r.mikron=mk[1];rest=rest.replace(mk[0]," ")}
+    var e3=rest.match(new RegExp(N+X+N+X+N)),e2=!e3&&rest.match(new RegExp(N+X+N));
+    if(e3){r.en=e3[1]+"*"+e3[2]+"*"+e3[3];rest=rest.replace(e3[0]," ")}
+    else if(e2){r.en=e2[1];r.boy=e2[2];rest=rest.replace(e2[0]," ")}
+    r.kalan=rest.replace(/\s+/g," ").replace(/^[\s,;:\-–]+|[\s,;:\-–]+$/g,"");
+    return r}
+  function mikroDoldur(m){
+    var set=function(id,v){var e=g(id);if(e)e.value=v==null?"":v},uy=[];
+    var K=(Array.isArray(m.kalemler)?m.kalemler:[]).filter(function(k){return k&&(temiz(k.isim)||temiz(k.kod)||sayi(k.miktar))});
+    var K1=K[0]||{};
+    if(K.length>3)uy.push("Fişte "+K.length+" kalem var, formda 3 sütun olduğu için ilk 3'ü alındı");
+    /* üst alanlar (seri no'ya DOKUNULMAZ: uygulamanın verdiği sıradaki numara kalır) */
+    set("iMu",ust(m.cariIsmi));set("iAdi",ust(m.proje));set("iSt",ust(K1.isim));set("iFo","");
+    var tr=tarih(m.tarih);if(tr)set("iTr",tr);
+    var tm=tarih(K1.teslimTarihi);set("iTermin",(tm&&tr&&tm>tr)?tm:""); /* teslim tarihi sipariş tarihiyle aynıysa Mikro'nun varsayılanıdır → termin yazılmaz (yoksa iş hemen «geciken» görünür) */
+    /* F/X + fiyat */
+    var kdvO=parseFloat(sayi(m.kdvOrani))||0,fatura=kdvO>0;
+    var pl=temiz(m.odemePlani),pn=parseFloat(sayi(pl)),plan=pl?(/^\d+$/.test(pl)?(pn>0?pn+" GÜN":"PEŞİN"):ust(pl)):"PEŞİN";
+    fxAyarla((fatura?"F-":"X-")+plan);
+    var kgBirim=function(b){b=temiz(b);return!b||/^k\s*\.?\s*g/i.test(b)||/^kilo/i.test(b)};
+    var fyE=g("iFy");
+    if(fyE){
+      var fiy=temiz(K1.birimFiyat);
+      if(fiy&&kgBirim(K1.birim)){var fy=fiyatCoz(fiy+" "+(temiz(K1.doviz)||"TL"));
+        if(fy.sayi!=null){fyE.value=fy.sayi;var pbE=g("iPb");if(pbE)pbE.value=fy.pb;var kdE=g("iKd");if(kdE)kdE.checked=fatura}
+        var fark=K.slice(0,3).some(function(k){return sayi(k.birimFiyat)&&sayi(k.birimFiyat)!==sayi(K1.birimFiyat)});
+        if(fark)uy.push("Kalemlerin fiyatları farklı, yalnız 1. kalemin fiyatı yazıldı")}
+      else{fyE.value="";if(fiy)uy.push("1. kalemin birimi kg değil, fiyat yazılmadı")}}
+    /* sütunlar: her kalem bir sütun */
+    var notlar=[];
+    [0,1,2].forEach(function(n){var k=K[n],c={kg:"",en:"",mikron:"",korona:"",boy:""};
+      if(k){
+        var a=aciklamaCoz(k.aciklama),on=K.length>1?(n+1)+". SÜTUN — ":"";
+        if(kgBirim(k.birim))c.kg=sayi(k.miktar);
+        else if(sayi(k.miktar))notlar.push(on+"SİPARİŞ MİKTARI: "+temiz(k.miktar)+" "+ust(k.birim));
+        if(!temiz(k.birim)&&sayi(k.miktar))uy.push("birim okunamadı, kg varsayıldı");
+        c.en=a.en;c.boy=a.boy;c.mikron=a.mikron;
+        if(a.kalan)notlar.push(on+"AÇIKLAMA: "+a.kalan);
+        if(n>0&&ust(k.isim)&&ust(k.isim)!==ust(K1.isim))notlar.push(on+"ÜRÜN: "+ust(k.isim))}
+      document.querySelectorAll('#iCols [data-c="'+n+'"]').forEach(function(i){i.value=c[i.dataset.f]||""})});
+    notSet("iNtU",notlar.join("\n"));notSet("iNtB","");
+    /* baskı-kesim bölümü: «OR. LDPE. BASKILI TORBA» → ürün adı TORBA; BASKILI ise baskılı iş (BASKISIZ değil) */
+    var st=ust(K1.isim),son=(st.split(/\s+/).pop()||"").replace(/[^A-ZÇĞİÖŞÜ]/g,"");
+    set("iBU",son.length>=3?son:"");set("iRenk","");
+    g("iBv").checked=/BASKILI/.test(fold(st));
+    var q=g("iNo");if(q)q.dispatchEvent(new Event("input"));
+    var yok=[];if(!ust(m.cariIsmi))yok.push("müşteri");
+    if(!K.length)yok.push("kalem");
+    else if(![0,1,2].some(function(n){return K[n]&&kgBirim(K[n].birim)&&sayi(K[n].miktar)}))yok.push("kg");
+    g("iE").textContent="";
+    var ref=temiz(m.evrakNo);
+    durum("✓ Mikro fişi okundu"+(ref?" ("+ref+")":"")+". Seri no sıradaki numara; iş adı, formül, mikron fişte olmadığından boş. Lütfen kontrol edip Kaydet'e basın."+(yok.length?" Okunamayanlar: "+yok.join(", ")+".":"")+(uy.length?" ⚠️ "+benzersiz(uy).join("; ")+".":""),yok.length>0)}
+
   /* ---- alanları doldur ---- */
   function doldur(o){
+    o=o||{};
+    var mkOk=o.mikro&&Array.isArray(o.mikro.kalemler)&&o.mikro.kalemler.length;
+    if(o.belge==="mikro"||(mkOk&&!temiz(o.musteri)&&!temiz(o.seriNo)))return mikroDoldur(o.mikro||{});
     var S=Array.isArray(o.sutunlar)?o.sutunlar:[],set=function(id,v){var e=g(id);if(e)e.value=v==null?"":v};
     var no=seriNo(o.seriNo);if(no)set("iNo",no);
     set("iMu",temiz(o.musteri));set("iAdi",temiz(o.isAdi));set("iSt",temiz(o.stokAdi));set("iFo",temiz(o.formul));
@@ -254,6 +325,6 @@
       var r=eski.apply(this,arguments);
       g("iFotoW").style.display=e?"none":"flex";
       g("iFotoAyar").style.display=(typeof isAdmin==="function"&&isAdmin())?"":"none";
-      durum("");return r}}
+      durum("Mikro «Çok Dövizli Alınan Sipariş Fişi» ekranını ya da iş takip formunu okutabilirsiniz.");return r}}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",kur);else kur();
 })();
