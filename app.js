@@ -2116,7 +2116,7 @@ function iNext(){
 function isVarMesaj(no,haric){
   no=String(no||"").trim().toUpperCase();if(!no)return "";
   const L=isE.filter(x=>String(x.no||"").trim().toUpperCase()===no&&x.id!==haric);if(!L.length)return "";
-  return "Bu seri no ("+no+") zaten kayıtlı: "+L.map(e=>(e.musteri||"-")+" · aşama: "+(ASL[e.asama]||e.asama||"?")+(e.spTarih?" · "+e.spTarih:"")+(e.ekleyen?" · ekleyen: "+e.ekleyen:"")).join(" || ")+". (İş emirleri sekmesi yalnız ETİKET aşamasındakileri gösterir; diğerleri 🏭 Üretim bölümündedir.)"}
+  return "Bu seri no ("+no+") zaten kayıtlı: "+L.map(e=>(e.musteri||"-")+" · aşama: "+(ASL[e.asama]||e.asama||"?")+(e.aktarildi?" · HAZIR ÜRÜNLERE AKTARILMIŞ (listelerde gizli)":"")+(e.spTarih?" · "+e.spTarih:"")+(e.ekleyen?" · ekleyen: "+e.ekleyen:"")).join(" || ")+". Bulmak için İş emirleri / Üretim sayfasındaki arama kutusuna «"+no+"» yazın (aktarılmış kayıtlar yalnız aramada görünür); silmek için kartındaki 🗑️ Sil'e basın."}
 /* Geçmiş girişlerden öneri listeleri (yazdıkça filtrelenir) */
 function iDL(){
   const uniq=a=>{const s=new Set(),o=[];a.forEach(v=>{v=String(v==null?"":v).trim();const k=v.toLowerCase();if(v&&!s.has(k)){s.add(k);o.push(v)}});return o};
