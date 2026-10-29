@@ -487,7 +487,7 @@ $("liste").onclick=async e=>{
     else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edilecek"&&u.durum==="hazir"){if(!sevForm()){toast("Sevkiyat sorumluları sevk listesine alamaz.");return}aracAc(u)}
     else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edildi"){turAc(u)}
     else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;if(mod==="sevk"&&b.dataset.to==="hazir"&&sevForm()){up.arac=null;up.sevkSorumlu=null;up.sevkSorumluUid=null}await db.ref(M().yol+"/"+u.id).update(up)}
-    else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?")){await silCop(M().yol,u.id,(u.musteri||"")+" / "+(u.urun||""),isAdmin()?["fiyatlar/sevk/"+u.id]:[]);toast("Silindi (Çöp kutusuna alındı)")}
+    else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?"+(u.isEmriId?"\nBağlı iş emri ("+(u.isEmriNo||"")+") de silinecek.":""))){await silCop(M().yol,u.id,(u.musteri||"")+" / "+(u.urun||""),isAdmin()?["fiyatlar/sevk/"+u.id]:[]);const bn=await bagliIsEmriSil(u.isEmriId,u.id);toast("Silindi (Çöp kutusuna alındı)"+(bn?" · iş emri "+bn+" de silindi":""))}
   }catch(err){toast(errText(err))}
 };
 /* ---------- Sevk listesine al: sevkiyat sorumlusu + araç seçimi ---------- */
@@ -619,6 +619,18 @@ async function silCop(yol,id,baslik,ek){
   up["cop/"+k]=c;up[yol+"/"+id]=null;
   up["denetim/"+db.ref("denetim").push().key]={tur:"sil",baslik:kisalt(baslik||id,120),yol:kisalt(yol,140),id:kisalt(id,100),kim:kisalt(ad(),100),uid:user.uid,zaman:TSV()};
   await db.ref().update(up);return true}
+/* v118: Hazır ürün / Dosya kaydı silinince ona bağlı iş emri de gitsin (yoksa «aktarıldı» işaretiyle gizli kalıyordu).
+   Başka parçası hâlâ sürüyorsa iş emri kalır, yalnız bu parça listeden çıkar. Yetki yoksa sessizce atlanır, ana silme bozulmaz. */
+async function bagliIsEmriSil(isEmriId,urunKey){
+  if(!isEmriId)return "";
+  try{
+    const s=await db.ref("isEmirleri/"+isEmriId).once("value");if(!s.exists())return "";
+    const e=s.val(),no=e.no||"İş emri",K=e.aktarKeys?Object.keys(e.aktarKeys).filter(k=>k!==urunKey):[],kal=[];
+    for(const k of K){const [a,d]=await Promise.all([db.ref("urunler/"+k).once("value"),db.ref("dosyalar/"+k).once("value")]);if(a.exists()||d.exists())kal.push(k)}
+    if(kal.length){const up={};up["isEmirleri/"+isEmriId+"/aktarKeys/"+urunKey]=null;await db.ref().update(up);return ""}
+    await silCop("isEmirleri",isEmriId,no,isAdmin()?["isHareket/"+isEmriId,"etiketGecmis/"+isEmriId]:[]);
+    return no}
+  catch(err){return ""}}
 const COP_YOL=/^(urunler|stokKalem|tedarikciler|siparisler|sevkAdresleri|isEmirleri|dosyalar|tahsilatlar|granulKayit|granulcular|etiketSablon\/[^\/.$#\[\]]+)$/,
   COP_EK=/^(fiyatlar\/(sevk|stok|siparis)|isHareket|etiketGecmis|dosyaFoto)\/[^\/.$#\[\]]+$/,COP_ID=/^[^\/.$#\[\]]+$/;
 const zamanTR=t=>t?new Date(t).toLocaleString("tr-TR",{timeZone:TRZ,day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
@@ -1650,9 +1662,10 @@ $("dList").onclick=async e=>{
       else if(a==="dharita")haritaAc(safeUrl(d.haritaUrl||""),d.adres||d.adresAd||"");
       else if(a==="dgeri"&&isAdmin()&&d.kaynak){if(confirm("Bu kayıt Dosyalar'dan çıkarılıp "+(d.kaynak==="talimat"?"Tamamlanan talimatlara":"Alınanlara")+" geri alınsın mı?"))await kayitDosyadanCik(d)}
       else if(a==="dgeri"&&isAdmin()&&confirm("Onay kaldırılsın ve sevk 'Sevk Edilenler' bölümüne geri alınsın mı?"))await dosyaGeri(d);
-      else if(a==="dsil"&&isAdmin()&&confirm("Bu dosya kalıcı olarak silinsin mi?")){
+      else if(a==="dsil"&&isAdmin()&&confirm("Bu dosya kalıcı olarak silinsin mi?"+(d.isEmriId?"\nBağlı iş emri ("+(d.isEmriNo||"")+") de silinecek.":""))){
         await silCop("dosyalar",d.id,(d.musteri||d.cari||"")+" / "+(d.urun||d.metin||"Dosya"),["dosyaFoto/"+d.id,"fiyatlar/sevk/"+d.id]);
-        dAcik.delete(d.id);toast("Silindi");
+        const bn=await bagliIsEmriSil(d.isEmriId,d.id);
+        dAcik.delete(d.id);toast("Silindi"+(bn?" · iş emri "+bn+" de silindi":""));
       }
     }catch(err){toast(errText(err))}
     return;
@@ -1949,7 +1962,13 @@ const isAksiyon=async ev=>{
     else if(a==="edit"){if(!islemYap("isDuzenle")){toast("İş emrini düzenleme yetkiniz yok.");return}iAc(e)}
     else if(a==="gecmis")hrkAc(e);
     else if(a==="geri"&&i>0){if(!islemYap("geriAl")){toast("Geri alma yetkiniz yok.");return}if(!confirm(e.no+" ("+(e.musteri||"-")+")\n"+(ASL[e.asama]||e.asama)+" → "+(ASL[o[i-1]]||o[i-1])+"\nGERİ alınsın mı?"))return;const up={};up["isEmirleri/"+e.id+"/asama"]=o[i-1];hrkEk(up,e.id,{tur:"geri",kimden:e.asama,kime:o[i-1]});await db.ref().update(up)}
-    else if(a==="del"){if(!(isAdmin()||(islemYap("isSil")&&e.ekleyenUid===user.uid))){toast("Silme yetkiniz yok.");return}if(confirm(e.no+" silinsin mi?"))await silCop("isEmirleri",e.id,e.no||"İş emri",isAdmin()?["isHareket/"+e.id,"etiketGecmis/"+e.id]:[])}
+    else if(a==="del"){if(!(isAdmin()||(islemYap("isSil")&&e.ekleyenUid===user.uid))){toast("Silme yetkiniz yok.");return}if(confirm(e.no+" silinsin mi?"+(e.aktarildi?"\nHazır ürünlerdeki kaydı da silinir (sevk sürecine girmişse o kayıt kalır).":""))){
+      await silCop("isEmirleri",e.id,e.no||"İş emri",isAdmin()?["isHareket/"+e.id,"etiketGecmis/"+e.id]:[]);
+      if(e.aktarildi){let sk=0,kal=0;
+        for(const k of Object.keys(e.aktarKeys||{})){try{const x=await db.ref("urunler/"+k).once("value");
+          if(x.exists()&&x.val().durum==="hazir"){await silCop("urunler",k,(x.val().musteri||"")+" / "+(x.val().urun||""),isAdmin()?["fiyatlar/sevk/"+k]:[]);sk++}
+          else if(x.exists())kal++}catch(er){kal++}}
+        toast("Silindi"+(sk?" · hazır ürün kaydı da silindi":"")+(kal?" · ⚠️ sevk sürecindeki ürün kaydı silinmedi":""))}}}
     else if(a==="ileri"&&i>=0&&i<o.length-1){
       if(!asamaYap(e.asama)){toast("Bu aşamayı ilerletme yetkiniz yok.");return}
       if(e.asama==="etiket"){etiketIleri(e);return}else if(e.asama==="depo"){depoAc(e);return}else{
