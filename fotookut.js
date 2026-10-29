@@ -269,9 +269,9 @@
     var q=g("iNo");if(q)q.dispatchEvent(new Event("input")); /* QR güncellensin */
     var yok=[];if(!no)yok.push("seri no");if(!temiz(o.musteri))yok.push("müşteri");
     if(!S.some(function(c){return c&&sayi(c.kg)}))yok.push("kg");
-    var dup=no&&typeof isE!=="undefined"&&isE.some(function(x){return x.no===no});
-    g("iE").textContent=dup?"Bu seri no ("+no+") zaten kayıtlı. Aynı iş emrini tekrar eklemeyin.":"";
-    durum(dup?"⚠️ Okundu ama bu seri no zaten kayıtlı.":"✓ Okundu. Lütfen alanları kontrol edip Kaydet'e basın."+(yok.length?" Okunamayanlar: "+yok.join(", ")+".":""),dup)}
+    var dupM=no&&typeof isVarMesaj==="function"?isVarMesaj(no):"",dup=!!dupM;
+    g("iE").textContent=dupM;
+    durum(dup?"⚠️ Okundu ama bu seri no zaten kayıtlı (ayrıntı aşağıda).":"✓ Okundu. Lütfen alanları kontrol edip Kaydet'e basın."+(yok.length?" Okunamayanlar: "+yok.join(", ")+".":""),dup)}
 
   /* ---- anahtar ---- */
   async function ayarYukle(zorla){

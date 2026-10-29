@@ -2112,6 +2112,11 @@ function iNext(){
   let n=+m[2];const mk=x=>m[1]+String(x).padStart(m[2].length,"0");
   while(isE.some(x=>x.no===mk(n+1)))n++;return mk(n+1);
 }
+/* Aynı seri no'lu kayıt var mı? Varsa NEREDE olduğunu söyler (aşama, müşteri, tarih) — «silmiştim» şaşkınlığını çözmek için (v116) */
+function isVarMesaj(no,haric){
+  no=String(no||"").trim().toUpperCase();if(!no)return "";
+  const L=isE.filter(x=>String(x.no||"").trim().toUpperCase()===no&&x.id!==haric);if(!L.length)return "";
+  return "Bu seri no ("+no+") zaten kayıtlı: "+L.map(e=>(e.musteri||"-")+" · aşama: "+(ASL[e.asama]||e.asama||"?")+(e.spTarih?" · "+e.spTarih:"")+(e.ekleyen?" · ekleyen: "+e.ekleyen:"")).join(" || ")+". (İş emirleri sekmesi yalnız ETİKET aşamasındakileri gösterir; diğerleri 🏭 Üretim bölümündedir.)"}
 /* Geçmiş girişlerden öneri listeleri (yazdıkça filtrelenir) */
 function iDL(){
   const uniq=a=>{const s=new Set(),o=[];a.forEach(v=>{v=String(v==null?"":v).trim();const k=v.toLowerCase();if(v&&!s.has(k)){s.add(k);o.push(v)}});return o};
@@ -2222,7 +2227,7 @@ $("iOk").onclick=async()=>{
   if(!g("iMu"))return err("Müşteri adı gerekli.");
   const S=[];[0,1,2].forEach(n=>{const c={};document.querySelectorAll(`#iCols [data-c="${n}"]`).forEach(i=>c[i.dataset.f]=i.value.trim());c.kg=parseFloat(c.kg)||0;if(c.kg>0||c.en)S.push(c)});
   if(!S.length)return err("En az bir ebat için kg veya en girin.");
-  if((!iEdit||iEdit.no!==no)&&isE.some(x=>x.no===no))return err("Bu seri no zaten kayıtlı.");
+  {const vm=(!iEdit||iEdit.no!==no)?isVarMesaj(no,iEdit&&iEdit.id):"";if(vm)return err(vm)}
   const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:notGet("iNtU"),baskiVar:$("iBv").checked,urunAdi:g("iBU"),renk:g("iRenk"),notB:notGet("iNtB"),siparis:S};
   {const tm=g("iTermin");if(iEdit?tm!==(iEdit.termin||""):tm)d.termin=tm} /* termin yalnızca değiştiyse yazılır (eski kurallarla uyum) */
   if(islemYap("fiyat")){const fy=parseFloat(g("iFy").replace(",","."));d.fiyat=fy>0?fy:null;d.kdvDahil=!$("iKd").checked;d.paraBirimi=$("iPb").value}
