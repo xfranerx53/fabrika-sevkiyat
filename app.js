@@ -1918,6 +1918,17 @@ function terminRozet(e){const g=terminGun(e);if(!e.termin)return"";const t=trDat
   return'<div class="who">📅 Termin: '+t+'</div>'}
 /* Çok ürünlü iş emri: operatör her ürünü bitirince tik koyar (v119). Veri: isEmirleri/{id}/tik/{aşama}/{sıra} = {kim,zaman} */
 const TIKAS=["ekstruder","baski","kesim"];
+var tikBek=null;
+$("tikX").onclick=()=>{tikBek=null;$("dTik").close()};
+$("tikOk").onclick=async()=>{
+  const t=tikBek;if(!t)return;const b=$("tikOk");if(b.disabled)return;b.disabled=true;
+  try{
+    const s=await db.ref("isEmirleri/"+t.id+"/asama").once("value");
+    if(s.val()!==t.asama){toast("⚠️ İş artık başka aşamada; tik konulmadı.");return}
+    await db.ref("isEmirleri/"+t.id+"/tik/"+t.asama+"/"+t.ix).set(t.sil?null:{kim:ad(),zaman:firebase.database.ServerValue.TIMESTAMP});
+    toast(t.sil?"Tik kaldırıldı":"✓ Ürün tamamlandı olarak işaretlendi")
+  }catch(er){toast(errText(er))}
+  finally{b.disabled=false;tikBek=null;$("dTik").close()}};
 const tikEt=(c,i)=>[i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" · ")+(+c.kg>0?" · "+fmt(c.kg)+" kg":"");
 const tikSay=(e,a)=>{const C=icols(e),T=((e.tik||{})[a])||{};let n=0;C.forEach((c,i)=>{if(T[i])n++});return{n,t:C.length,eksik:C.map((c,i)=>T[i]?null:tikEt(c,i)).filter(Boolean)}};
 function tikPanel(e){
@@ -1925,16 +1936,14 @@ function tikPanel(e){
   const sira=asOrd(e),gecmis=TIKAS.filter(a=>sira.indexOf(a)>-1&&sira.indexOf(a)<sira.indexOf(e.asama)&&e.tik&&e.tik[a]);
   let h="";
   if(TIKAS.includes(e.asama)){
-    const T=(e.tik||{})[e.asama]||{},ok=asamaYap(e.asama),sy=tikSay(e,e.asama);
-    h+=`<div class="tikp"><div class="tikh"><b>${esc(ASL[e.asama])} — ürünler</b><span class="${sy.n===sy.t?"tikok":""}">${sy.n}/${sy.t} tamam</span></div>`
-      +C.map((c,i)=>{const t=T[i];return `<button type="button" class="tikr${t?" on":""}" ${ok?`data-a="tik" data-i="${i}" data-id="${esc(e.id)}"`:"disabled"}><span class="tikb">${t?"✓":""}</span><span class="tikt">${esc(tikEt(c,i))}${t?`<small>${esc(t.kim||"")} · ${esc(new Date(t.zaman).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))}</small>`:""}</span></button>`}).join("")
-      +(ok?"":`<div class="who">Tik koyma yetkisi ilgili operatördedir.</div>`)+`</div>`}
+    const sy=tikSay(e,e.asama),T=(e.tik||{})[e.asama]||{},kim=Object.values(T).map(t=>t&&t.kim).filter(Boolean).filter((v,i,A)=>A.indexOf(v)===i).join(", ");
+    h+=`<div class="tikd${sy.n===sy.t?" ok":""}"><b>${sy.n===sy.t?"✅":"☑️"} ${esc(ASL[e.asama])}: ${sy.n}/${sy.t} ürün tamam</b>${kim?` <span>— ${esc(kim)}</span>`:""}${asamaYap(e.asama)&&sy.n<sy.t?`<small>Biten ürünün kg kutusuna (formda) dokunup tik koyun.</small>`:""}</div>`}
   gecmis.forEach(a=>{const sy=tikSay(e,a);h+=`<div class="who">${esc(ASL[a])}: ${sy.n}/${sy.t} ürün tamamlandı ${sy.n===sy.t?"✓":"⚠️"}</div>`});
   return h}
 function isKart(e){
   const id=esc(e.id),o=asOrd(e),i=o.indexOf(e.asama),nx=o[i+1],canDel=isAdmin()||(islemYap("isSil")&&e.ekleyenUid&&e.ekleyenUid===user.uid);
   const lg=Object.entries(e.log||{}).map(([k,v])=>`<div class="who">${esc(ASL[k]||k)}: ${v.kg!=null?esc(fmt(v.kg))+" kg":""}${v.paket?" · "+esc(fmt(v.paket))+" adet":""} — ${esc(v.kim||"")} ${esc(tarih(v.zaman))}${k==="depo"&&Array.isArray(v.kalem)?"<br>"+v.kalem.map((x,i)=>{const c=icols(e)[i]||{};return esc([i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - ")+": "+fmt(x&&x.kg)+" kg · "+fmt(x&&x.paket)+" paket")}).join("<br>"):""}</div>`).join("");
-  let frm="";try{frm=`<div class="isf">${isForm(e,islemYap("fiyat"))}</div>`}catch(er){frm=""}
+  let frm="";try{frm=`<div class="isf">${isForm(e,islemYap("fiyat"),true)}</div>`}catch(er){frm=""}
   return `<div class="item sevk-border">
   <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:19px">${esc(e.no)}</b><span class="badge badge-sevk">${esc(ASL[e.asama]||e.asama)}</span></div>
   ${terminRozet(e)}
@@ -1951,11 +1960,13 @@ const isAksiyon=async ev=>{
   const a=b.dataset.a,o=asOrd(e),i=o.indexOf(e.asama),TS=firebase.database.ServerValue.TIMESTAMP;
   if(a==="tik"){
     if(!asamaYap(e.asama)||!TIKAS.includes(e.asama)){toast("Bu aşamada tik koyma yetkiniz yok.");return}
-    const ix=+b.dataset.i,yol="isEmirleri/"+e.id+"/tik/"+e.asama+"/"+ix,var_=((e.tik||{})[e.asama]||{})[ix];
-    if(var_&&!confirm("Bu ürünün tiki kaldırılsın mı?"))return;
-    b.disabled=true;
-    try{await db.ref(yol).set(var_?null:{kim:ad(),zaman:firebase.database.ServerValue.TIMESTAMP})}catch(er){toast(errText(er))}
-    return}
+    const ix=+b.dataset.i,var_=!!((e.tik||{})[e.asama]||{})[ix],c=icols(e)[ix]||{};
+    tikBek={id:e.id,asama:e.asama,ix,sil:var_};
+    $("tikH").textContent=var_?"↩️ Tik kaldırılsın mı?":"✓ Ürün bitti mi?";
+    $("tikMetin").textContent=e.no+" · "+(ASL[e.asama]||e.asama)+"\n"+tikEt(c,ix);$("tikMetin").style.whiteSpace="pre-line";
+    $("tikAlt").textContent=var_?"Onaylarsanız bu ürünün tiki kaldırılır.":"Onaylarsanız bu ürün tamamlandı olarak işaretlenir; adınız ve saat kaydedilir.";
+    $("tikOk").textContent=var_?"✓ ONAYLA (tiki kaldır)":"✓ ONAYLA";
+    $("dTik").showModal();return}
   const gec=a==="ileri"||a==="geri";
   /* Çift basma / başkası zaten ilerletmiş mi: işlemden önce sunucudaki güncel aşamayı kontrol et */
   if(gec){if(isKilit.has(e.id))return;isKilit.add(e.id);
@@ -2194,13 +2205,15 @@ function isFormBul(u){return u&&(u.isFormu||(u.isEmriId&&isE.find(x=>x.id===u.is
 function isLogHtml(e){return Object.entries(e.log||{}).map(([k,v])=>`<div class="who">${esc(ASL[k]||k)}: ${v.kg!=null?esc(fmt(v.kg))+" kg":""}${v.paket?" · "+esc(fmt(v.paket))+" adet":""} — ${esc(v.kim||"")} ${esc(tarih(v.zaman))}${k==="depo"&&Array.isArray(v.kalem)?"<br>"+v.kalem.map((x,i)=>{const c=icols(e)[i]||{};return esc([i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - ")+": "+fmt(x&&x.kg)+" kg · "+fmt(x&&x.paket)+" paket")}).join("<br>"):""}</div>`).join("")}
 function isFormKutu(u){const e=isFormBul(u);if(!e)return"";let f="";try{f=`<div class="isf">${isForm(e,islemYap("fiyat"))}</div>`}catch(er){return""}return f+isLogHtml(e)}
 /* ===== YAZDIRMA: A4 yatay, yan yana 2 adet üretim iş takip formu ===== */
-function isForm(e,fy){
+function isForm(e,fy,tk){
   const C=icols(e),L=e.log||{},bos=n=>{let r="";for(let i=0;i<n;i++)r+="<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>";return r};
   const satir=(k,ad)=>{if(k==="depo"){const R=(C.length?C:[{}]).map((c,i)=>`<tr><th>${esc([i+1,c.en,c.boy].filter(x=>x!==undefined&&x!==null&&String(x).trim()!=="").join(" - "))}</th><td></td><td></td></tr>`).join("");return `<tr><th>DEPO</th><td colspan="3" style="padding:0"><table class="pd"><tr><th>Ebat</th><th>Çıkan Kg</th><th>Paket Sayısı</th></tr>${R}</table></td></tr>`}const g=L[k]||{};return `<tr><th>${ad}</th><td></td><td></td><td></td></tr>`};
   const st=[["ekstruder","EKSTRUDER"]].concat(e.baskiVar?[["baski","BASKI"]]:[]).concat([["kesim","KESİM"],["depo","DEPO"]]);
   const cr=C.map((c,i)=>`<tr><td>${i+1}</td><td><b>${esc(fmt(c.kg))}</b></td><td>${esc(c.en||"")}</td><td>${esc(c.mikron||"")}</td><td>${esc(c.korona||"")}</td><td>${esc(c.boy||"")}</td></tr>`).join("");
   const U=v=>esc(v||"-"),X=i=>C[i]||null,k3=(fn,cl)=>[0,1,2].map(i=>`<td colspan="2" class="v">${fn(X(i),i)}</td>`).join(""),
-    pair=(f,u)=>[0,1,2].map(i=>{const c=X(i),v=c&&c[f]?(f==="kg"?fmt(c.kg):c[f]):"";return `<td class="v">${v?esc(v):"-"}</td><td class="u">${u}</td>`}).join(""),
+    tkOn=!!tk&&TIKAS.includes(e.asama)&&C.length>1,tkT=(e.tik&&e.tik[e.asama])||{},tkOk=tkOn&&asamaYap(e.asama),
+    kutu=i=>{if(!tkOn||!X(i))return"";const t=tkT[i];return `<button type="button" class="ftk${t?" on":""}" ${tkOk?`data-a="tik" data-i="${i}" data-id="${esc(e.id)}"`:"disabled"} title="${t?esc((t.kim||"")+" ✓"):"Bitti ise tik koy"}">${t?"✓":""}</button>`},
+    pair=(f,u)=>[0,1,2].map(i=>{const c=X(i),v=c&&c[f]?(f==="kg"?fmt(c.kg):c[f]):"";return `<td class="v">${v?esc(v):"-"}${f==="kg"?kutu(i):""}</td><td class="u">${u}</td>`}).join(""),
     fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ${PB[e.paraBirimi]||"₺"} <small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:"",
     logo='<svg viewBox="0 0 60 30"><ellipse cx="30" cy="15" rx="28" ry="12" fill="none" stroke="#000" stroke-width="3"/><path d="M10 19L24 6L30 17L36 6L50 19" fill="none" stroke="#000" stroke-width="3.5"/></svg>';
   return `<div class="pf">

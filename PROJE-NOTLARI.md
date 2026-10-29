@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v119**
+**GÜNCEL SÜRÜM: v121**
 Son güncelleme: 2026-10-27 (v93: stoka «📥 Hazır liste» toplu ekleme düğmesi, stokaktar.js); önceki: 2026-10-26 (yeni sohbette zip + 2 Excel incelendi, «GÜNCEL DURUM» bloğu Bölüm 9'a eklendi; v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
 
 ---
@@ -236,7 +236,7 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
 - **GRANÜL (v78, `granul.js`, panel `pGranul`, menüde ♻️ GRANÜL, izin `granul`; varsayılan: yönetici + Muhasebe):** Üstte granülcü sekmeleri (＋ Granülcü ekle; ad değiştirme; silme yalnız yönetici ve kaydı yoksa). Seçili granülcünün defteri Excel'deki gibi tablo: TARİH, Ş N, GİDEN KİLO, GELEN KİLO, SATIŞ, FİRE, FİYAT, TOPLAM FİYAT, KDV, SATIŞ FİYAT, ÖDEME, AÇIKLAMA. Formüller Excel'den çıkarıldı ve ekranda yazar: TOPLAM FİYAT = gelen × fiyat; SATIŞ FİYAT = satış × fiyat; KALAN KG = Σgiden − Σgelen − Σfire; BAKİYE = Σtoplam fiyat + ΣKDV − Σsatış fiyat − Σödeme (kullanıcının Excel görüntüsüyle birebir tuttu: 7607 kg / 46.607 ₺). KDV ve FİRE elle girilen alanlardır (Excel'de de elle). «Ş N» sütunu = **FİŞ NO** (kullanıcı söyledi; Excel'de daraltılmış olduğundan görünmüyordu); alan adı `sn`, ekranda «FİŞ NO», Excel içe aktarmada «Ş N» veya «FİŞ NO» başlığı kabul edilir. Kayıt silme çöp kutusuna gider (`silCop`), düzeltmeler `denetim`'e düşer. «📥 Excel'den al»: Excel'deki TARİH başlıklı tabloyu okur, aynı satırı ikinci kez eklemez, onay sorar. «📤 Excel'e aktar» aynı düzende .xlsx indirir. Yedeğe (`BK_DUGUM`) dahil.
 - **Stok modülü:** KALEMLER (giriş/çıkış, geçmiş, yazdır), SİPARİŞLER (kategoriye göre / liste),
   TEDARİKÇİLER.
-- **Ürün bazlı tik (v119):** 2-3 ebatlı (çok sütunlu) iş emrinde Ekstruder/Baskı/Kesim operatörü her ürünün karşısına tik koyar (`isEmirleri/{id}/tik/{aşama}/{sıra}` = `{kim,zaman}`; `tikPanel`, `tikSay`, `data-a="tik"` app.js; `.tikp` style.css). Tek ürünlü işte panel görünmez. Tik eksikken «Bitti →» uyarı verir ama geçişe izin verir. `rules.json`: `isEmirleri/$id/tik/{ekstruder,baski,kesim}/$i` (aşamanın operatörü + iş o aşamadayken). Sınanmadı (telefon/Firebase).
+- **Ürün bazlı tik (v119):** 2-3 ebatlı (çok sütunlu) iş emrinde Ekstruder/Baskı/Kesim operatörü her ürünün karşısına tik koyar (`isEmirleri/{id}/tik/{aşama}/{sıra}` = `{kim,zaman}`; `tikPanel`, `tikSay`, `data-a="tik"` app.js; `isForm(e,fy,tk)` 3. parametre: formda SİPARİŞ MİKTARI satırında her kg yanında `.ftk` kutusu (yalnız kartta, yazdırmada yok)). Tek ürünlü işte panel görünmez. Tik koymadan ve kaldırmadan önce ONAYLA penceresi (`dTik`) açılır. Tik eksikken «Bitti →» uyarı verir ama geçişe izin verir. `rules.json`: `isEmirleri/$id/tik/{ekstruder,baski,kesim}/$i` (aşamanın operatörü + iş o aşamadayken). Sınanmadı (telefon/Firebase).
 - **İş emirleri aşama akışı:** `etiket → ekstruder → (baskı varsa baski) → kesim → depo → bitti`.
   Her aşamayı ilgili rol/izin ilerletir; `geriAl` izni olanlar bir aşama geri alabilir. Biten iş
   "HAZIR ÜRÜNLER"e aktarılabilir (`bekleAktar`, `aktarildi`). İş emri seri no biçimi: `MG-0945`.
