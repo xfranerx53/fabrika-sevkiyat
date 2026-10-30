@@ -140,7 +140,7 @@ const modGor0=m=>yAcik()||(iz(m)!==undefined?iz(m):!!(yRol()&&yRol().mod.include
 /* bölümü görebilir mi. "dos" (Dosyalar) ayrı izin değildir: okuma yetkisi rules.json ile aynı → sevk veya raporlar */
 /* v127: Sevkiyat Sorumlusu (şoför) Dosyalar'ı görmez (onaylı arşiv ofisin işi); yönetici ona özel «Sevkiyat» iznini elle açarsa yine görmez, «Raporlar» izni verilirse görür */
 const sofor=()=>!isAdmin()&&!!rec&&rec.rol==="Sevkiyat Sorumlusu";
-const modGor=m=>m==="dos"?((modGor0("sevk")&&!sofor())||modGor0("rap")):modGor0(m);
+const modGor=m=>m==="mal"?isAdmin():m==="dos"?((modGor0("sevk")&&!sofor())||modGor0("rap")):modGor0(m);
 /* Tahsilat + Talimatlar: sevkiyat yetkisi olan VEYA ayrı "tah" izni olan (örn. Muhasebe) görür. rules.json ile aynı */
 const tahGor=()=>modGor("sevk")||modGor("tah"); /* TALİMATLAR görünür mü (sevkiyat ekibi + muhasebe) */
 /* v128: TAHSİLAT (para) yalnız muhasebe («tah» izni), Sevkiyat Sorumlusu (sahada tahsil eden) ve yönetici. Depo Görevlisi artık görmez.
@@ -887,7 +887,7 @@ const ust=(v,m)=>v<=0?"no":(m>0&&v<=m)?"lo":"ok";
 const dur=k=>{const n=norm(k),ks=Object.keys(n.mik);if(!ks.length||ks.every(u=>!(n.mik[u]>0)))return"no";return ks.some(u=>n.min[u]>0&&n.mik[u]<=n.min[u])?"lo":"ok"};
 const fmtQ=(o,z)=>UN.filter(([u])=>o&&u in o&&(z||+o[u]>0)).map(([u,l])=>fmt(o[u])+" "+l).join(", ")||"-";
 /* ---- adım 3: rolün göremediği bölümleri gizle ---- */
-const BOLUMLER=["sevk","stok","is","uretim","rap","tah","granul","dos"],ilkBolum=()=>BOLUMLER.find(modGor)||null;
+const BOLUMLER=["sevk","stok","is","uretim","rap","tah","granul","dos","mal"],ilkBolum=()=>BOLUMLER.find(modGor)||null;
 function menuUygula(){
   document.querySelectorAll("[data-go]").forEach(b=>b.classList.toggle("hide",!modGor(b.dataset.go)));
   const is=isVeriGor();{const el=$("mQr");if(el)el.classList.toggle("hide",!is)} /* 🔔 zil artık herkeste görünür (v122) */
@@ -903,8 +903,8 @@ function modSec(m){
   if(!modGor(m)){const f=ilkBolum();if(!f){toast("Bu bölüm için yetkiniz yok.");menuOk=false;show("vMenu");return}m=f}
   panel=m;if(m==="tah")vTabSet("tah");
   document.querySelectorAll("#mods button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
-  $("pSevk").classList.toggle("hide",m!=="sevk"&&m!=="tah");$("pStok").classList.toggle("hide",m!=="stok");$("pIs").classList.toggle("hide",m!=="is");$("pUr").classList.toggle("hide",m!=="uretim");$("pRap").classList.toggle("hide",m!=="rap");$("pGranul").classList.toggle("hide",m!=="granul");$("pDos").classList.toggle("hide",m!=="dos");
-  $("mt").textContent=m==="sevk"?"SEVKİYAT":m==="tah"?"TAHSİLAT":m==="is"?"İŞ EMİRLERİ&ETİKET":m==="uretim"?"ÜRETİM":m==="rap"?"RAPORLAR":m==="granul"?"GRANÜL":m==="dos"?"DOSYALAR":"STOK";if(m==="granul"){if(window.granAc)window.granAc()}else if(window.granKapat)window.granKapat();if(m==="rap"&&window.rapAc)window.rapAc();setTimeout(isfSigdir,60);setTimeout(isfSigdir,400);
+  $("pSevk").classList.toggle("hide",m!=="sevk"&&m!=="tah");$("pStok").classList.toggle("hide",m!=="stok");$("pMal").classList.toggle("hide",m!=="mal");if(m==="mal"){if(window.malAc)window.malAc()}else if(window.malKapat)window.malKapat();$("pIs").classList.toggle("hide",m!=="is");$("pUr").classList.toggle("hide",m!=="uretim");$("pRap").classList.toggle("hide",m!=="rap");$("pGranul").classList.toggle("hide",m!=="granul");$("pDos").classList.toggle("hide",m!=="dos");
+  $("mt").textContent=m==="sevk"?"SEVKİYAT":m==="tah"?"TAHSİLAT":m==="is"?"İŞ EMİRLERİ&ETİKET":m==="uretim"?"ÜRETİM":m==="rap"?"RAPORLAR":m==="mal"?"ADET & MALİYET":m==="granul"?"GRANÜL":m==="dos"?"DOSYALAR":"STOK";if(m==="granul"){if(window.granAc)window.granAc()}else if(window.granKapat)window.granKapat();if(m==="rap"&&window.rapAc)window.rapAc();setTimeout(isfSigdir,60);setTimeout(isfSigdir,400);
   if(m==="stok")stokYukle();else stokKapat();if(m==="is"||m==="uretim"){isYukle();if(m!=="is"&&!isAdmin()&&yRol()){const o=yRol().asama.find(k=>URA.includes(k));if(o)uTab=o}}else isKapat();if(m==="dos"&&!window.dRef)dosYukle();$("iAdd").classList.toggle("hide",!canIsAc())}
 $("mods").onclick=e=>{const m=e.target.dataset.m;if(!m||m===panel)return;modSec(m)};
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{menuOk=true;modSec(b.dataset.go);show("vApp");window.scrollTo(0,0)});

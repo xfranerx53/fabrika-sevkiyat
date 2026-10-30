@@ -1,5 +1,5 @@
 /* =====================================================================================
-   MAG AMBALAJ — TELEFON BİLDİRİM SUNUCUSU (Cloudflare Worker, ücretsiz plan)  · v125
+   MAG AMBALAJ — TELEFON BİLDİRİM SUNUCUSU (Cloudflare Worker, ücretsiz plan)  · v129
    -------------------------------------------------------------------------------------
    Ne yapar: Uygulama KAPALIYKEN de telefona bildirim gönderir (standart Web Push; Firebase
    Blaze / FCM gerekmez). Bu dosyanın TAMAMI Cloudflare > Worker > «Edit code» ekranına yapıştırılır.
@@ -10,6 +10,7 @@
    Uç noktalar (uygulama bildirim.js çağırır):
      GET  /          -> "çalışıyor" yazısı (kurulumu denemek için tarayıcıda açın)
      GET  /vapid     -> herkese açık imza anahtarı (telefon abone olurken kullanır)
+     GET  /kur       -> (v129) TCMB günlük kur (USD, EUR; döviz + efektif satış), 1 saat önbellekli — Adet & Maliyet bölümü kullanır
      POST /abone     -> bu telefonu kaydet   {sub, cihaz, kapat:[...]}       (Firebase giriş jetonu gerekir)
      POST /sil       -> bu telefonun kaydını sil {endpoint}                  (Firebase giriş jetonu gerekir)
      POST /gonder    -> bildirimi ilgili telefonlara gönder {kanallar:[...], b, m, ik, git, key, t}
@@ -160,6 +161,31 @@ async function dagit(env, liste, veri, kok) {
   return n;
 }
 
+/* ---------------- TCMB kuru (v129) ---------------- */
+function tcmbCoz(xml) {
+  const t = (xml.match(/Tarih="([^"]+)"/) || [])[1] || "";
+  const al = kod => { const m = xml.match(new RegExp('<Currency[^>]*Kod="' + kod + '"[\\s\\S]*?</Currency>')); if (!m) return null;
+    const v = ad => { const x = m[0].match(new RegExp("<" + ad + ">([^<]*)</" + ad + ">")); const s = x ? x[1].trim() : ""; return s ? parseFloat(s.replace(",", ".")) : 0; };
+    return { doviz: v("ForexSelling"), efektif: v("BanknoteSelling") || v("ForexSelling") }; };
+  const USD = al("USD"), EUR = al("EUR");
+  if (!USD || !EUR || !USD.doviz || !EUR.doviz) throw new Error("TCMB yanıtı çözülemedi");
+  return { ok: true, tarih: t, USD, EUR };
+}
+async function tcmbKur(env) {
+  const c = await env.KV.get("kur", "json");
+  if (c && Date.now() - c.z < 3600e3) return c.v;
+  try {
+    const r = await fetch("https://www.tcmb.gov.tr/kurlar/today.xml", { headers: { "User-Agent": "Mozilla/5.0 (MAG AMBALAJ)" }, cf: { cacheTtl: 600 } });
+    if (!r.ok) throw new Error("TCMB " + r.status);
+    const v = tcmbCoz(await r.text());
+    await env.KV.put("kur", JSON.stringify({ z: Date.now(), v }));
+    return v;
+  } catch (e) {
+    if (c) return Object.assign({}, c.v, { eski: true });
+    return { ok: false, hata: String(e.message || e) };
+  }
+}
+
 export default {
   async fetch(req, env, ctx) {
     const origin = req.headers.get("Origin") || "", url = new URL(req.url), yol = url.pathname.replace(/\/+$/, "") || "/";
@@ -168,6 +194,7 @@ export default {
       if (!env.KV) return cevap("KV bağlı değil: Worker > Settings > Bindings > KV namespace ekleyin, değişken adı: KV", 500, origin);
       if (req.method === "GET" && yol === "/") { const A = await aboneOku(env); return cevap("MAG AMBALAJ bildirim sunucusu çalışıyor ✓ (kayıtlı telefon: " + Object.keys(A).length + ")", 200, origin); }
       if (req.method === "GET" && yol === "/vapid") return cevap({ pub: (await vapid(env)).pub }, 200, origin);
+      if (req.method === "GET" && yol === "/kur") return cevap(await tcmbKur(env), 200, origin);
       if (req.method !== "POST") return cevap("bulunamadı", 404, origin);
       if (yol === "/alindi") {
         /* telefonun sw.js'i bildirimi gösterince çağırır. Yalnız kayıtlı aboneliklerin zamanı yazılır; KV yazma sınırı için

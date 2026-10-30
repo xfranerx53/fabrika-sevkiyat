@@ -489,3 +489,13 @@ html.byz2 .full{grid-column:auto}
 #surumBan button{background:#fff;color:#1d4ed8;border:0;border-radius:8px;padding:10px 12px;font-weight:800;font-size:15px;min-height:44px;cursor:pointer}
 #surumBan button.sn{background:transparent;color:#dbeafe;border:1.5px solid #93c5fd}
 #dBild label{text-transform:none;letter-spacing:0}
+/* ===== Adet & Maliyet (v129, maliyet.js) ===== */
+.mlTabs{flex-wrap:wrap}.mlTabs button{font-size:13px;padding:9px 4px;flex:1 1 30%}.mlTabs button.on{background:#0f172a;color:#fff}
+.mlKur{font-size:13px;background:#f1f5f9;border-radius:8px;padding:8px 10px;margin:8px 0;line-height:1.5}
+.mlU{display:flex;flex-direction:column;gap:3px;width:100%;text-align:left;background:#fff;border:1.5px solid #e2e8f0;border-left:5px solid #0f172a;border-radius:10px;padding:10px;margin:0 0 7px;font:inherit;color:#0f172a;cursor:pointer;min-height:44px}
+.mlU span{font-size:14px;color:#334155}.mlU em{font-size:13px;color:#b91c1c;font-style:normal}
+.mlTw{overflow-x:auto;margin-bottom:6px}.mlT{border-collapse:collapse;font-size:13px;min-width:860px;width:100%}.mlT th,.mlT td{border:1px solid #e2e8f0;padding:6px;text-align:right;white-space:nowrap}.mlT th{background:#0f172a;color:#fff;position:sticky;top:0}.mlT td:first-child,.mlT th:first-child{text-align:left;white-space:normal;min-width:180px}.mlT tr.g td{background:#e2e8f0;font-weight:800;text-align:left}
+.mlK{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}.mlK td{padding:5px 6px;border-bottom:1px solid #e2e8f0}.mlK td:last-child{text-align:right;white-space:nowrap}.mlK tr.t td{font-weight:900;font-size:16px;border-top:2px solid #0f172a}
+.mlFy{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.mlFy>div{background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:8px}.mlFy small{display:block;font-size:12px;color:#166534}.mlFy b{display:block;font-size:15px;color:#14532d}
+#dMal .grid{grid-template-columns:1fr 1fr}
+#dMal label,#pMal label{text-transform:none;letter-spacing:0}

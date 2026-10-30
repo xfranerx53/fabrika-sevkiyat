@@ -925,6 +925,10 @@
           ".validate": "false"
         }
       }
+    },
+    "maliyet": {
+      ".read": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true)",
+      ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true)"
     }
   }
 }
