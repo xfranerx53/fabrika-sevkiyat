@@ -157,7 +157,7 @@ window.yetkiOzet=()=>({rol:rec&&rec.rol,yonetici:isAdmin(),uygula:YETKI_UYGULA,m
 /* ---------- Oturum ---------- */
 auth.onAuthStateChanged(u=>{
   window.__st.auth=1;bildDurdur();
-  if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null} if(window.tRef){tRef.off();tRef=null} if(window.oRef){oRef.off();oRef=null} if(window.aRef){aRef.off();aRef=null} if(window.dRef){dRef.off();dRef=null} dosya=[]; if(window.fRef){fRef.off();fRef=null} if(window.iRef){iRef.off();iRef=null} fyat={sevk:{},stok:{},siparis:{}};
+  if(recRef){recRef.off();recRef=null} if(uRef){uRef.off();uRef=null} if(window.sRef){sRef.off();sRef=null} if(window.tRef){tRef.off();tRef=null} if(window.oRef){oRef.off();oRef=null} if(window.aRef){aRef.off();aRef=null} if(window.dRef){dRef.off();dRef=null} if(window.dPdfRef){dPdfRef.off();window.dPdfRef=null} dosya=[]; if(window.fRef){fRef.off();fRef=null} if(window.iRef){iRef.off();iRef=null} fyat={sevk:{},stok:{},siparis:{}};
   started=false;menuOk=false;urunler=[];rec=null;user=u;
   if(!u){show("vLogin");return}
   recRef=db.ref("kullanicilar/"+u.uid);
@@ -746,7 +746,7 @@ $("fgBtn").onclick=async()=>{
   $("fgBtn").disabled=false};
 
 /* ---------- Yedekleme: tüm veriyi JSON / Excel olarak indir (sadece yönetici) ---------- */
-const BK_DUGUM=[["kullanicilar",1],["urunler",1],["dosyalar",1],["dosyaFoto",1],["stokKalem",1],["stokHareket",1],["tedarikciler",1],["siparisler",1],["sevkAdresleri",1],["sevkTalimat",1],["tahsilatlar",1],["granulcular",1],["granulKayit",1],["fiyatlar",2],["isEmirleri",1],["isHareket",2],["etiketGecmis",2],["etiketSablon",2],["ayarlar",1],["cop",1],["denetim",1],["fotoTam",1]];
+const BK_DUGUM=[["kullanicilar",1],["urunler",1],["dosyalar",1],["dosyaPdf",1],["dosyaFoto",1],["stokKalem",1],["stokHareket",1],["tedarikciler",1],["siparisler",1],["sevkAdresleri",1],["sevkTalimat",1],["tahsilatlar",1],["granulcular",1],["granulKayit",1],["fiyatlar",2],["isEmirleri",1],["isHareket",2],["etiketGecmis",2],["etiketSablon",2],["ayarlar",1],["cop",1],["denetim",1],["fotoTam",1]];
 const bkFotoMu=v=>typeof v==="string"&&(v.slice(0,5)==="data:"||v.length>5000);
 function bkTemizle(v,yerine){ // fotoğraf (base64) alanlarını çıkar/yer tutucu koy
   if(bkFotoMu(v))return yerine;
@@ -1497,7 +1497,10 @@ function dosYukle(){
     dosya=Object.keys(v).map(k=>Object.assign({id:k},v[k]));
     $("dMore").classList.toggle("hide",dosya.length<dLimit);dosListele()},
     e=>toast("Dosyalar okunamadı: "+errText(e)+" (Firebase kurallarını güncellediniz mi?)"));
+  /* v126: hangi dosyanın PDF'i indirildi (dosyaPdf/{id} = {z, kim, uid}) */
+  if(!window.dPdfRef){window.dPdfRef=db.ref("dosyaPdf");dPdfRef.on("value",s=>{dPdfM=s.val()||{};dosListele()},()=>{dPdfM={};window.dPdfRef=null})}
 }
+var dPdfM={};
 $("dMore").onclick=()=>{dLimit+=200;dosYukle()};
 function dosFiltre(){
   const st=fbDurum("dq"),tp=$("dtp").value;
@@ -1572,7 +1575,7 @@ function dSatir(d){
     m=d.musteri&&d.musteri!=="Etikete Bakınız",p=d.urun&&d.urun!=="Etikete Bakınız",
     pf=p?String(d.urun).split("\n")[0]:"",bas=m&&p?d.musteri+" — "+pf:m?d.musteri:p?pf:"Etikete bakınız",
     cls={irsaliye:"",diger:"dg",iade:"di"}[t]||"",ic={irsaliye:"📄",diger:"📝",iade:"↩️"}[t]||"📄",sa=dSaat(d.irsaliyeTarihi);
-  return `<button type="button" class="dfile ${cls}" data-id="${id}"><span class="dz">${ic}</span><div class="dm"><div class="dn">${esc(bas)}</div><div class="dd">${esc(fmt(d.kg))} kg · ${esc(fmt(d.paket))} adet · ${esc(turAd(d))}${sa?" · "+esc(sa):""}</div></div><span class="chev">${open?"▲":"▼"}</span></button>${open?dDetay(d):""}`;
+  return `<button type="button" class="dfile ${cls}" data-id="${id}"><span class="dz">${ic}</span><div class="dm"><div class="dn">${esc(bas)}</div><div class="dd">${esc(fmt(d.kg))} kg · ${esc(fmt(d.paket))} adet · ${esc(turAd(d))}${sa?" · "+esc(sa):""}${dPdfM[d.id]?" · 📄✓":""}</div></div><span class="chev">${open?"▲":"▼"}</span></button>${open?dDetay(d):""}`;
 }
 function dDetay(d){
   if(d.kaynak)return kDetay(d);
@@ -1590,6 +1593,7 @@ function dDetay(d){
     <div class="who" style="color:#0f766e;font-weight:700">✅ Onaylayan: ${esc(d.onaylayan||"-")}${d.onayTarihi?" · "+esc(dTam(d.onayTarihi)):""}</div>
     ${isAdmin()?sFyHtml(d):""}
     ${d.fotoTemiz?`<div class="who">🧹 Fotoğraflar temizlendi · ${esc(dTam(d.fotoTemiz))}</div>`:""}
+    <div class="who">${dPdfM[d.id]?`📄 PDF indirildi · ${esc(dTam(dPdfM[d.id].z))} · ${esc(dPdfM[d.id].kim||"")}`:"📄 PDF henüz indirilmedi"}</div>
     <div class="acts s">${d.fotoVar?`<button class="btn b6" data-a="dfoto" data-p="foto" data-id="${id}">🏷️ Etiket fotoğrafı</button>`:""}${Array.from({length:+d.fotoSayi||0},(_,i)=>`<button class="btn b6" data-a="dfoto" data-p="fotolar/${i}" data-id="${id}">🏷️ Foto ${i+2}</button>`).join("")}${d.irsVar?`<button class="btn b4" data-a="dfoto" data-p="irsaliye" data-id="${id}">${ic} ${esc(tn)} fotoğrafı</button>`:""}${(Array.isArray(d.irsEk)?d.irsEk:Object.values(d.irsEk||{})).map((m,i)=>`<button class="btn b4" data-a="dfoto" data-p="irsEkler/${i}" data-id="${id}">${{irsaliye:"📄",diger:"📝",iade:"↩️"}[m.tur]||"📄"} ${m.tur==="iade"?"İade":m.tur==="diger"?"Diğer"+(m.not?": "+esc(m.not):""):"İmzalı irsaliye"} fotoğrafı ${i+2}</button>`).join("")}</div>
     ${isAdmin()?`<div class="acts"><button class="btn b6" data-a="dgeri" data-id="${id}">↩️ Onayı kaldır</button><button class="btn b5" data-a="dsil" data-id="${id}">🗑️ Sil</button></div>`:""}
   </div>`;
@@ -1618,7 +1622,7 @@ async function dosFoto(id,p){
 /* v114: Eski dosyaların FOTOĞRAFLARINI siler (önizleme + tam boy); kayıt, kg, müşteri, fiyat, tarih kalır → raporlar bozulmaz */
 async function dosFotoTemizle(){
   if(!isAdmin())return;
-  const g=prompt("Onaylanma tarihi kaç günden ESKİ dosyaların fotoğrafları silinsin?\n\nÖnce «PDF» ile indirmeyi unutmayın. Kayıtlar (kg, müşteri, fiyat) silinmez, yalnız fotoğraflar silinir.","60");
+  const g=prompt("Onaylanma tarihi kaç günden ESKİ dosyaların fotoğrafları silinsin?\n\nKayıtlar (kg, müşteri, fiyat) silinmez, yalnız fotoğraflar silinir. PDF'i indirilmemiş dosya varsa ayrıca uyarılırsınız.","60");
   if(g===null)return;const gun=Math.floor(+g);if(!(gun>=1)){toast("Geçerli bir gün sayısı girin (en az 1).");return}
   const kes=Date.now()-gun*864e5;
   try{
@@ -1626,7 +1630,15 @@ async function dosFotoTemizle(){
     const s=await db.ref("dosyalar").orderByChild("onayTarihi").endAt(kes).limitToLast(1000).once("value"),v=s.val()||{};
     const ids=Object.keys(v).filter(k=>{const d=v[k];return !d.fotoTemiz&&(d.fotoVar||d.irsVar||+d.fotoSayi>0||(d.irsEk&&Object.keys(d.irsEk).length))});
     if(!ids.length){toast("Temizlenecek fotoğraf yok.");return}
-    if(!confirm(ids.length+" dosyanın fotoğrafları KALICI silinecek ("+gun+" günden eski).\nKayıtlar kalır, fotoğraflar geri getirilemez.\n\nPDF'i indirdiniz mi? Devam edilsin mi?"))return;
+    /* v126: PDF'i indirilmemiş dosya varsa uyar ve seçenek sun */
+    let P={};try{P=(await db.ref("dosyaPdf").once("value")).val()||{}}catch(e){}
+    const yok=ids.filter(id=>!P[id]),var_=ids.filter(id=>P[id]);
+    const sec=await ftSor(ids.length,yok.map(id=>Object.assign({id},v[id])),var_.length,gun);
+    if(sec==="pdf"){const n0=await pdfZipIndir(yok.map(id=>Object.assign({id},v[id])));if(n0)toast("✓ "+n0+" dosyanın PDF'i indirildi. ZIP'i bilgisayarınıza kaydettikten sonra «🧹 Foto temizle»yi tekrar çalıştırın.");return}
+    if(sec==="indirilen")ids.splice(0,ids.length,...var_);
+    else if(sec!=="hepsi")return;
+    if(!ids.length){toast("Temizlenecek dosya yok.");return}
+    if(!confirm(ids.length+" dosyanın fotoğrafları KALICI silinecek ("+gun+" günden eski).\nKayıtlar kalır, fotoğraflar geri getirilemez.\n\nDevam edilsin mi?"))return;
     let n=0,fk=0;
     for(let i=0;i<ids.length;i+=20){
       const grp=ids.slice(i,i+20),up={};
@@ -1642,6 +1654,19 @@ async function dosFotoTemizle(){
     toast("✓ "+n+" dosyanın fotoğrafları silindi");
   }catch(e){toast(errText(e))}}
 $("dFt").onclick=dosFotoTemizle;
+/* Foto temizle uyarı penceresi (dFtU): sonuç "pdf" | "indirilen" | "hepsi" | null */
+function ftSor(top,yok,varN,gun){return new Promise(ok=>{
+  if(!yok.length){ok("hepsi");return}
+  const d=$("dFtU");
+  $("ftuB").textContent="⚠️ "+yok.length+" dosyanın PDF'i hiç indirilmemiş";
+  $("ftuM").textContent=gun+" günden eski, fotoğrafı olan "+top+" dosya bulundu. Bunlardan "+yok.length+" tanesinin PDF'i indirilmedi. Fotoğrafları silinirse irsaliye ve etiket fotoğrafları KALICI olarak kaybolur.";
+  $("ftuL").innerHTML=yok.slice(0,30).map(x=>'<div class="sub">• '+esc((x.musteri&&x.musteri!=="Etikete Bakınız"?x.musteri:x.cari||String(x.metin||"").slice(0,40)||"Dosya")+" · "+(x.onayTarihi?new Date(x.onayTarihi).toLocaleDateString("tr-TR"):""))+'</div>').join("")+(yok.length>30?'<div class="sub">… ve '+(yok.length-30)+' dosya daha</div>':"");
+  $("ftuI").textContent="🧹 Yalnız PDF'i indirilmiş "+varN+" dosyayı temizle";$("ftuI").classList.toggle("hide",!varN);
+  const bit=s=>{d.close();ok(s)};
+  $("ftuP").onclick=()=>bit("pdf");$("ftuI").onclick=()=>bit("indirilen");
+  $("ftuH").onclick=()=>{if(confirm("PDF'i İNDİRİLMEMİŞ "+yok.length+" dosyanın fotoğrafları da silinecek. Emin misiniz?"))bit("hepsi")};
+  $("ftuX").onclick=()=>bit(null);d.onclose=()=>ok(null);
+  d.showModal()})}
 async function dosyayaTasi(u){
   const L=Object.assign({},u);delete L.id;delete L.foto;delete L.irsaliye;delete L.fotolar;delete L.irsEkler;
   const EK=irsListe(u).slice(1);
@@ -1766,9 +1791,10 @@ async function pdfKayit(d,kutu){
         const gm=gom(x.p.u,x.im),sc=Math.min(tt.w/x.im.naturalWidth,tt.h/x.im.naturalHeight),w=x.im.naturalWidth*sc,h=x.im.naturalHeight*sc;
         pdf.addImage(gm.d,gm.f,tt.x+(tt.w-w)/2,tt.y+(tt.h-h)/2,w,h)})}}
   return pdf.output("blob")}
-$("dPdf").onclick=async()=>{
-  const L=dosFiltre();if(!L.length){toast("PDF için dosya yok.");return}
-  const MAX=100,btn=$("dPdf"),kutu=document.createElement("div");btn.disabled=true;
+$("dPdf").onclick=()=>{const L=dosFiltre();if(!L.length){toast("PDF için dosya yok.");return}return pdfZipIndir(L)};
+/* v126: verilen dosyaları PDF'leyip ZIP indirir; başarıyla PDF'lenenler dosyaPdf/{id}'ye «indirildi» olarak yazılır */
+async function pdfZipIndir(L){
+  const MAX=100,btn=$("dPdf"),kutu=document.createElement("div");btn.disabled=true;const tamam=[];
   let K=[];TUR_SIRA.forEach(t=>L.filter(d=>turKey(d)===t).forEach(d=>K.push(d)));
   try{
     if(K.length>MAX){K=K.slice(0,MAX);toast("İlk "+MAX+" kayıt alınıyor. Hepsini almak için tarih aralığını daraltın.");await new Promise(r=>setTimeout(r,2500))}
@@ -1782,7 +1808,7 @@ $("dPdf").onclick=async()=>{
         const blob=await pdfKayit(d,kutu),ad=pdfAdi(d);let x=ad,s=2;
         while(kul[t+"|"+x.toLowerCase()]){x=ad+" ("+s+")";s++}
         kul[t+"|"+x.toLowerCase()]=1;
-        zip.file(TUR_KLASOR[t]+"/"+x+".pdf",blob,{compression:"STORE"});n++;
+        zip.file(TUR_KLASOR[t]+"/"+x+".pdf",blob,{compression:"STORE"});n++;tamam.push(d.id);
       }catch(er){hata++}
     }
     if(!n){toast("PDF hazırlanamadı");return}
@@ -1790,10 +1816,13 @@ $("dPdf").onclick=async()=>{
     const zb=await zip.generateAsync({type:"blob",compression:"STORE"});
     const a=document.createElement("a");a.href=URL.createObjectURL(zb);a.download="dosyalar_"+bkTarih()+".zip";document.body.appendChild(a);a.click();
     setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},60000);
-    toast("✓ "+n+" PDF zip içinde indirildi"+(hata?" ("+hata+" kayıt hazırlanamadı)":""))
-  }catch(er){toast("PDF hazırlanamadı: "+errText(er))}
+    toast("✓ "+n+" PDF zip içinde indirildi"+(hata?" ("+hata+" kayıt hazırlanamadı)":""));
+    {const up={},TSn=firebase.database.ServerValue.TIMESTAMP;tamam.forEach(id=>{up["dosyaPdf/"+id]={z:TSn,kim:kisalt((rec&&rec.ad)||"?",100),uid:user.uid}});
+     if(tamam.length)db.ref().update(up).catch(()=>{})}
+    return tamam.length
+  }catch(er){toast("PDF hazırlanamadı: "+errText(er));return 0}
   finally{kutu.remove();btn.disabled=false}
-};
+}
 /* Dosyalar → Excel (.xlsx), ExcelJS ile: HER TÜR AYRI SAYFA (Üretim Formu&İmzalı İrsaliye, Tahsilat, Talimat, İade, Diğer). Sevk türlerinde her ebat ayrı satır,
    resimler tam kalitede gerçek resim nesnesi olarak aynı kaydın satırında yan yana (Excel'de büyütülebilir/kaydedilebilir). */
 var exYuk=null;

@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v125**
+**GÜNCEL SÜRÜM: v126**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -181,6 +181,7 @@ Satır içi `<script>` yazma; kodu `.js` dosyasına koy.
 
 Fotoğraflar `data:image/jpeg;base64,...` metni olarak tutulur (300.000 karakter sınırı).
 | `bildirim/{kanal}/{id}` | **(v122)** Bildirimler: `t` (tür: is/asama/sevk/talimat/tahsilat/stok/granul/hesap/duyuru), `b` başlık ≤120, `m` metin ≤400, `ik`, `git` (is/sev:durum/tal/tah/stok/sip/granul/dos/hes), `r` (iş emri no vb.), `k` kimden adı, `ku` kimden uid (= auth.uid), `z` (= now). Kanallar: `u_{uid}`, `genel`, `yon`, `as_etiket…as_depo`, `sevk`, `sor`, `muh`, `stok`, `granul`; okuma izni kanala göre (rules). Yazma: onaylı herkes yalnız YENİ kayıt; silme yönetici/sahip. `z` indeksli. Yedeğe KONMADI (geçici veri) |
+| `dosyaPdf/{id}` | **(v126)** Dosyanın PDF'i indirildi işareti: `z` (zaman), `kim`, `uid`. Dosyalar'ı okuyabilen (sevk/rap/yönetici) okur-yazar. «PDF» düğmesi (`pdfZipIndir`) başarıyla PDF'lediği her kayıt için yazar. Yedeğe dahil |
 | `ayarlar/push` | **(v123)** `url`: Cloudflare bildirim sunucusu adresi (https). Onaylı herkes okur, yönetici yazar (🔔 > ⚙️ > «Bildirim sunucusu adresi») |
 | `bildirimOku/{uid}` | **(v122)** `son` (son okunan zaman), `kapat/{tür}` (kapatılan konular). Yalnız kişinin kendisi okur/yazar |
 
@@ -339,6 +340,8 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-30: v124 — Cloudflare kuruldu: https://mag-bildirim.xfranerxx.workers.dev («çalışıyor ✓»), yönetici adresi uygulamaya girdi. Düzeltme: `toast()` mesajı açık pencerelerin ARKASINDA kalıyordu (görünmüyordu) → `popover` ile üst katmanda gösterilir, uzun mesaj daha uzun kalır (`app.js`, `style.css`). 🔔 ⚙️ «Bana deneme bildirimi gönder» sonucu pencere içinde de yazılır (gönderilen/kayıtlı cihaz); adres Kaydet sonrası abonelik hemen yenilenir (`bildirim.js`). Kullanıcı bildirdi: PC'de deneme bildirimi gelmedi (sebep araştırılıyor: Windows bildirim ayarı / kayıt yok olabilir); telefonda PWA kurulunca uygulama görünmüyor (Xiaomi vb. «Ana ekran kısayolu» izni olabilir). Firebase kuralı: değişmedi. Dosyalar: app.js, bildirim.js, style.css, index.html, sw.js, README.md, PROJE-NOTLARI.md.
 
 - 2026-10-30: v125 — Telefonda kapalıyken bildirim ÇALIŞTI (kullanıcı doğruladı). PC'de deneme gelmedi: sunucu «1/1 gönderildi» dedi, Windows ayarları açık; sebep büyük olasılıkla uygulama ekrandayken bildirimin `silent` gösterilmesi → deneme bildirimi artık her zaman sesli. **«Herkeste çalışıyor mu?» için:** telefon bildirimi gösterince `sw.js` sunucuya `POST /alindi` (endpoint, test) yollar; worker `son:<sha256 kısa>` KV anahtarına zamanı yazar (deneme her zaman, diğerleri 6 saatte bir — KV yazma sınırı). Yönetici 🔔 > ⚙️ > «📋 Kimlerde çalışıyor?» (`dKim`, worker `POST /liste`, yalnız yönetici): onaylı her kullanıcı için kayıtlı cihazlar (Android/iPhone/Windows), kayıt zamanı, «son ulaşan» zamanı; kaydı olmayanlar kırmızı. «📣 Herkese deneme bildirimi» (`/sina` {herkes:true}, yalnız yönetici). Push yüküne `cb` (sunucu adresi) ve `test` eklendi. **Cloudflare'deki kod GÜNCELLENMELİ** (bildirim-worker.js v125 yeniden yapıştır + Deploy). Worker node testi 23/23, panel Chromium'da sahte veriyle denendi. Firebase kuralı: değişmedi. Dosyalar: bildirim.js, sw.js, index.html, cloudflare/bildirim-worker.js, README.md, PROJE-NOTLARI.md.
+
+- 2026-10-30: v126 — **Foto temizle, PDF'i indirilmemiş dosyalar için uyarır** (kullanıcı isteği). `dosyaPdf/{id}` yeni yol (rules + yedek `BK_DUGUM`). `$("dPdf")` mantığı `pdfZipIndir(L)` fonksiyonuna taşındı; başarıyla PDF'lenen kayıtlar `dosyaPdf`'e yazılır. Dosyalar satırında «📄✓», detayda «📄 PDF indirildi · tarih · kim / henüz indirilmedi». `dosFotoTemizle`: gün sorusundan sonra PDF'i olmayanlar varsa `dFtU` penceresi (liste ilk 30) — «📄 Önce bunların PDF'ini indir» (yalnız onları ZIP'ler, işaretler; temizlemez), «🧹 Yalnız PDF'i indirilmiş N dosyayı temizle», «⚠️ Yine de hepsini temizle» (ikinci onay), «Vazgeç». Not: v126'dan ÖNCE indirilen PDF'ler işaretli değil → ilk kullanımda hepsi «indirilmemiş» görünür (kullanıcıya söylendi). **Firebase kuralı: DEĞİŞTİ** (`dosyaPdf`). Dosyalar: app.js, index.html, sw.js, rules.json, README.md, PROJE-NOTLARI.md.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 

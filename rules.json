@@ -906,6 +906,25 @@
           ".validate": "false"
         }
       }
+    },
+    "dosyaPdf": {
+      ".read": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Depo Görevlisi' || root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Sevkiyat Sorumlusu'))) || (root.child('kullanicilar/' + auth.uid).child('izin').child('rap').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('rap').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Muhasebe')))))",
+      "$id": {
+        ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Depo Görevlisi' || root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Sevkiyat Sorumlusu'))) || (root.child('kullanicilar/' + auth.uid).child('izin').child('rap').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('rap').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Muhasebe')))))",
+        ".validate": "newData.hasChildren(['z', 'kim'])",
+        "z": {
+          ".validate": "newData.isNumber() && newData.val() <= now + 600000"
+        },
+        "kim": {
+          ".validate": "newData.isString() && newData.val().length <= 100"
+        },
+        "uid": {
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        },
+        "$other": {
+          ".validate": "false"
+        }
+      }
     }
   }
 }
