@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v126**
+**GÜNCEL SÜRÜM: v127**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -342,6 +342,8 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-30: v125 — Telefonda kapalıyken bildirim ÇALIŞTI (kullanıcı doğruladı). PC'de deneme gelmedi: sunucu «1/1 gönderildi» dedi, Windows ayarları açık; sebep büyük olasılıkla uygulama ekrandayken bildirimin `silent` gösterilmesi → deneme bildirimi artık her zaman sesli. **«Herkeste çalışıyor mu?» için:** telefon bildirimi gösterince `sw.js` sunucuya `POST /alindi` (endpoint, test) yollar; worker `son:<sha256 kısa>` KV anahtarına zamanı yazar (deneme her zaman, diğerleri 6 saatte bir — KV yazma sınırı). Yönetici 🔔 > ⚙️ > «📋 Kimlerde çalışıyor?» (`dKim`, worker `POST /liste`, yalnız yönetici): onaylı her kullanıcı için kayıtlı cihazlar (Android/iPhone/Windows), kayıt zamanı, «son ulaşan» zamanı; kaydı olmayanlar kırmızı. «📣 Herkese deneme bildirimi» (`/sina` {herkes:true}, yalnız yönetici). Push yüküne `cb` (sunucu adresi) ve `test` eklendi. **Cloudflare'deki kod GÜNCELLENMELİ** (bildirim-worker.js v125 yeniden yapıştır + Deploy). Worker node testi 23/23, panel Chromium'da sahte veriyle denendi. Firebase kuralı: değişmedi. Dosyalar: bildirim.js, sw.js, index.html, cloudflare/bildirim-worker.js, README.md, PROJE-NOTLARI.md.
 
 - 2026-10-30: v126 — **Foto temizle, PDF'i indirilmemiş dosyalar için uyarır** (kullanıcı isteği). `dosyaPdf/{id}` yeni yol (rules + yedek `BK_DUGUM`). `$("dPdf")` mantığı `pdfZipIndir(L)` fonksiyonuna taşındı; başarıyla PDF'lenen kayıtlar `dosyaPdf`'e yazılır. Dosyalar satırında «📄✓», detayda «📄 PDF indirildi · tarih · kim / henüz indirilmedi». `dosFotoTemizle`: gün sorusundan sonra PDF'i olmayanlar varsa `dFtU` penceresi (liste ilk 30) — «📄 Önce bunların PDF'ini indir» (yalnız onları ZIP'ler, işaretler; temizlemez), «🧹 Yalnız PDF'i indirilmiş N dosyayı temizle», «⚠️ Yine de hepsini temizle» (ikinci onay), «Vazgeç». Not: v126'dan ÖNCE indirilen PDF'ler işaretli değil → ilk kullanımda hepsi «indirilmemiş» görünür (kullanıcıya söylendi). **Firebase kuralı: DEĞİŞTİ** (`dosyaPdf`). Dosyalar: app.js, index.html, sw.js, rules.json, README.md, PROJE-NOTLARI.md.
+
+- 2026-10-30: v127 — Kullanıcı sordu: «sevkiyatçıda neden Dosyalar görünüyor?» (v89'dan beri `modGor("dos")` = sevk VEYA rap, şoförün sevk izni olduğu için görünüyordu). Artık Sevkiyat Sorumlusu rolü Dosyalar'ı görmez (`sofor()`); Depo Görevlisi, Muhasebe (rap), yönetici görmeye devam eder; şoföre «Raporlar» izni verilirse görür. Yalnız ekran (menü) gizlendi; Firebase kuralı DEĞİŞMEDİ. Dosyalar: app.js, index.html, sw.js, README.md, PROJE-NOTLARI.md.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 

@@ -138,7 +138,9 @@ const yAcik=()=>isAdmin()||!YETKI_UYGULA;                       /* kısıtlama k
 const iz=k=>{const v=rec&&rec.izin?rec.izin[k]:undefined;return typeof v==="boolean"?v:undefined}; /* adım 4: kişiye özel izin (yoksa rol şablonu geçerli) */
 const modGor0=m=>yAcik()||(iz(m)!==undefined?iz(m):!!(yRol()&&yRol().mod.includes(m)));
 /* bölümü görebilir mi. "dos" (Dosyalar) ayrı izin değildir: okuma yetkisi rules.json ile aynı → sevk veya raporlar */
-const modGor=m=>m==="dos"?(modGor0("sevk")||modGor0("rap")):modGor0(m);
+/* v127: Sevkiyat Sorumlusu (şoför) Dosyalar'ı görmez (onaylı arşiv ofisin işi); yönetici ona özel «Sevkiyat» iznini elle açarsa yine görmez, «Raporlar» izni verilirse görür */
+const sofor=()=>!isAdmin()&&!!rec&&rec.rol==="Sevkiyat Sorumlusu";
+const modGor=m=>m==="dos"?((modGor0("sevk")&&!sofor())||modGor0("rap")):modGor0(m);
 /* Tahsilat + Talimatlar: sevkiyat yetkisi olan VEYA ayrı "tah" izni olan (örn. Muhasebe) görür. rules.json ile aynı */
 const tahGor=()=>modGor("sevk")||modGor("tah");
 const isVeriGor=()=>modGor("is")||modGor("uretim"); /* iş emri verisini okuyabilir mi (İş emirleri veya Üretim) */
