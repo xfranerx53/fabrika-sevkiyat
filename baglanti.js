@@ -139,7 +139,7 @@
   try{var cn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;if(cn&&cn.addEventListener)cn.addEventListener("change",function(){dene=0;cevir(true);setTimeout(cevir,3000)})}catch(e){}
 
   /* --- kayıt işlemlerini izle --- */
-  function sessiz(ref){try{return /\/ayarlar\/yedek$/.test(String(ref.toString()))}catch(e){return false}}
+  function sessiz(ref){try{return /\/ayarlar\/yedek$|\/bildirim(Oku)?\//.test(String(ref.toString()))}catch(e){return false}} /* v122: bildirim yazımı hata uyarısı vermez */
   function izle(ref,p){
     if(!p||typeof p.then!=="function")return p;
     var bitti=false,geciktiMi=false;bekle++;

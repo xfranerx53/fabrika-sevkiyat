@@ -16,8 +16,8 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=121">
-<script src="yazi.js?v=121"></script>
+<link rel="stylesheet" href="style.css?v=122">
+<script src="yazi.js?v=122"></script>
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -75,6 +75,7 @@
     <button class="menuBtn" style="background:#7c3aed" data-go="rap"><span class="ic">📊</span><div>RAPORLAR<small>Üretim, müşteri sevki, malzeme tüketimi, maliyet</small></div></button>
     <button class="menuBtn" style="background:#475569" id="mQr" type="button"><span class="ic">📷</span><div>QR OKUT<small>Etiketteki QR ile iş emrini aç</small></div></button>
     <div id="menuYok" class="hide" style="background:#fff3cd;color:#664d03;border-radius:10px;padding:12px;font-size:14px;margin:10px 0">Hesabınıza henüz bir bölüm tanımlanmamış. Lütfen yöneticiye başvurun.</div>
+    <button class="btn b6 bell" id="mBell" type="button">🔔 Bildirimler<span class="bn hide" id="mBellN"></span></button>
     <button class="btn b6" data-hes type="button">👤 Hesabım (isim, şifre, yazı boyutu)</button>
     <button class="btn b6" data-out>Çıkış</button>
   </div>
@@ -644,17 +645,39 @@
   <div class="err" id="iE" style="margin-top:8px"></div>
   <div style="display:flex;gap:8px"><button class="btn b6" id="iNo2">Vazgeç</button><button class="btn b1" id="iOk">Kaydet</button></div>
 </dialog>
-<dialog id="dBild">
-  <h3 style="margin-bottom:8px">🔔 Bildirimler</h3>
+<dialog id="dBild" style="width:min(480px,96vw)">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><h3 style="margin:0">🔔 Bildirimler</h3><button class="btn b6 sm" id="bdOku" type="button" style="width:auto;margin:0">✓ Tümü okundu</button></div>
+  <button class="btn b2 hide" id="bdTelTop" type="button" style="margin:0 0 8px">📳 Telefon bildirimlerini aç</button>
+  <div id="bdUy"></div>
+  <div class="tabs" id="bdTabs" style="margin:0 0 8px"><button data-s="tum" type="button" class="on">Tümü</button><button data-s="yeni" type="button" id="bdTY">Okunmamış</button></div>
   <div id="bdL"></div>
-  <button class="btn b3" id="bdAll" style="width:100%;margin:8px 0">📲 Hepsini özet olarak WhatsApp'a gönder</button>
-  <div style="border-top:1px solid #e2e8f0;padding-top:8px">
-    <label style="font-size:13px">WhatsApp numarası (boş bırakırsanız kişiyi/grubu WhatsApp'ta seçersiniz)</label>
-    <input id="bdTel" type="tel" inputmode="tel" placeholder="05xx xxx xx xx">
-    <label style="display:flex;gap:8px;align-items:center;font-size:14px;margin-top:6px"><input id="bdOner" type="checkbox" style="width:auto;margin:0"> İşlem sonrası WhatsApp önerisi göster</label>
-    <div class="mut" style="font-size:12px;margin-top:4px">Bu ayarlar sadece bu cihazda saklanır.</div>
-  </div>
-  <button class="btn b6" id="bdNo" style="width:100%;margin-top:8px">Kapat</button>
+  <div id="bdH"></div>
+  <button class="btn b7 hide" id="bdDuy" type="button" style="margin-top:8px">📢 Duyuru gönder (herkese / bir kişiye)</button>
+  <details id="bdAyar" style="border-top:1px solid #e2e8f0;margin-top:10px;padding-top:8px"><summary style="font-weight:800;cursor:pointer;font-size:15px">⚙️ Bildirim ayarları</summary>
+    <div style="margin-top:8px;font-size:15px">📳 Telefon bildirimi: <b id="bdTelD"></b></div>
+    <button class="btn b2 sm hide" id="bdTelAc" type="button" style="width:auto;margin:6px 0">📳 Telefon bildirimlerini aç</button>
+    <div class="mut" id="bdTelUy" style="font-size:13px;margin:4px 0 8px"></div>
+    <label style="display:flex;gap:8px;align-items:center;font-size:15px;margin:6px 0"><input id="bdSes" type="checkbox" style="width:auto;margin:0"> Uygulama açıkken sesli uyarı (bu cihazda)</label>
+    <div style="font-size:14px;font-weight:700;margin-top:8px">Bu konularda bildirim al:</div>
+    <div id="bdKat"></div>
+    <div class="mut" style="font-size:12px;margin:2px 0 10px">Kapattığınız konular zilde sayılmaz ve uyarı vermez (tüm cihazlarınızda geçerli).</div>
+    <div style="border-top:1px solid #e2e8f0;padding-top:8px">
+      <button class="btn b3" id="bdAll" type="button" style="width:100%;margin:0 0 8px">📲 Son 24 saatin özetini WhatsApp'a gönder</button>
+      <label style="font-size:13px">WhatsApp numarası (boş bırakırsanız kişiyi/grubu WhatsApp'ta seçersiniz)</label>
+      <input id="bdTel" type="tel" inputmode="tel" placeholder="05xx xxx xx xx">
+      <label style="display:flex;gap:8px;align-items:center;font-size:14px;margin-top:6px"><input id="bdOner" type="checkbox" style="width:auto;margin:0"> İşlem sonrası WhatsApp önerisi göster</label>
+      <div class="mut" style="font-size:12px;margin-top:4px">WhatsApp ayarları sadece bu cihazda saklanır.</div>
+    </div>
+  </details>
+  <button class="btn b6" id="bdNo" type="button" style="width:100%;margin-top:8px">Kapat</button>
+</dialog>
+<dialog id="dDuy" style="width:min(420px,94vw)">
+  <h3 style="margin-bottom:6px">📢 Duyuru gönder</h3>
+  <label for="duyH">Kime</label><select id="duyH"></select>
+  <label for="duyB" style="margin-top:8px">Başlık</label><input id="duyB" maxlength="100" placeholder="Örn: Cumartesi mesai var">
+  <label for="duyM" style="margin-top:8px">Açıklama (isteğe bağlı)</label><textarea id="duyM" rows="3" maxlength="380" style="width:100%;font:inherit;padding:8px;border:1.5px solid #cbd5e1;border-radius:8px"></textarea>
+  <div class="err" id="duyE"></div>
+  <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="duyX" type="button">Vazgeç</button><button class="btn b2" id="duyOk" type="button">📢 Gönder</button></div>
 </dialog>
 <dialog id="dWo">
   <h3 id="woT" style="margin-bottom:6px">WhatsApp</h3>
@@ -688,18 +711,18 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="xlsx-yaz.js?v=121"></script>
-<script src="raporlar.js?v=121"></script>
+<script src="xlsx-yaz.js?v=122"></script>
+<script src="raporlar.js?v=122"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=121"></script>
+<script src="app.js?v=122"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=121"></script>
-<script src="saat.js?v=121"></script>
+<script src="foto-onizleme.js?v=122"></script>
+<script src="saat.js?v=122"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=121"></script>
+<script src="diyalog.js?v=122"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -730,8 +753,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=121"></script>
-<script src="etiket.js?v=121"></script>
+<script src="qr.js?v=122"></script>
+<script src="etiket.js?v=122"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -741,18 +764,20 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="adrsec.js?v=121"></script>
-<script src="talimat.js?v=121"></script>
-<script src="tahsilat.js?v=121"></script>
-<script src="granul.js?v=121"></script>
-<script src="arama.js?v=121"></script>
-<script src="israpor.js?v=121"></script>
-<script src="fotookut.js?v=121"></script>
-<script src="sesasistan.js?v=121"></script>
-<script src="pano.js?v=121"></script>
-<script src="stokaktar.js?v=121"></script>
-<script src="baglanti.js?v=121"></script>
-<script src="hesap.js?v=121"></script>
-<script src="sw-kayit.js?v=121"></script>
+<script src="adrsec.js?v=122"></script>
+<script src="talimat.js?v=122"></script>
+<script src="tahsilat.js?v=122"></script>
+<script src="bildirim.js?v=122"></script>
+<script src="surum.js?v=122"></script>
+<script src="granul.js?v=122"></script>
+<script src="arama.js?v=122"></script>
+<script src="israpor.js?v=122"></script>
+<script src="fotookut.js?v=122"></script>
+<script src="sesasistan.js?v=122"></script>
+<script src="pano.js?v=122"></script>
+<script src="stokaktar.js?v=122"></script>
+<script src="baglanti.js?v=122"></script>
+<script src="hesap.js?v=122"></script>
+<script src="sw-kayit.js?v=122"></script>
 </body>
 </html>

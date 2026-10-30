@@ -275,6 +275,7 @@
         ALAN.forEach(function(a){if(o[a[0]]!==0)n[a[0]]=o[a[0]]});
         await db.ref("granulKayit").push(n);
         toast("✓ Kayıt eklendi");
+        if(window.bil)bil(["granul","yon"],{t:"granul",ik:"♻️",b:"♻️ Granül kaydı: "+g.ad+" · "+(TIP[tip]&&TIP[tip].b||""),m:ALAN.filter(function(a){return n[a[0]]}).map(function(a){return ({giden:"Giden",gelen:"Gelen",satis:"Satış",fire:"Fire",fiyat:"Fiyat",kdv:"KDV",odeme:"Ödeme"})[a[0]]+" "+fmt(n[a[0]])+(["fiyat","kdv","odeme"].indexOf(a[0])>=0?" ₺":" kg")}).join(" · ")+(n.aciklama?" · "+n.aciklama:""),git:"granul"});
       }
       $("dGr").close();
     }catch(err){$("grE").textContent=errText(err)}

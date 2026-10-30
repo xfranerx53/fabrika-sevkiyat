@@ -4,8 +4,8 @@ Stok ve Sevkiyat Takip (MAG AMBALAJ) — https://xfranerx53.github.io/fabrika-se
 **CLAUDE / yeni sohbet: önce `00-ONCE-BUNU-OKU.md`, sonra `PROJE-NOTLARI.md` dosyasını okuyun.**
 
 ## Dosyalar
-- `index.html` (sayfa yapısı), `style.css` (görünüm), `*.js` (app, pano, baglanti, raporlar, etiket, qr, talimat, tahsilat, arama, saat, diyalog, foto-onizleme, sw-kayit, yazi, hesap), `sw.js`, `manifest.webmanifest`, ikonlar: siteye yüklenen dosyalar (GitHub)
-- Dosya değiştirince `index.html` ve `sw.js` içindeki `?v=111` ile `fabrika-v111` sayısı birlikte artırılır (tarayıcı önbelleği için). Bunu `node kontrol.js --artir` yapar.
+- `index.html` (sayfa yapısı), `style.css` (görünüm), `*.js` (app, pano, baglanti, raporlar, etiket, qr, talimat, tahsilat, arama, saat, diyalog, foto-onizleme, sw-kayit, yazi, hesap, bildirim, surum), `sw.js`, `manifest.webmanifest`, ikonlar: siteye yüklenen dosyalar (GitHub)
+- Dosya değiştirince `index.html` ve `sw.js` içindeki `?v=122` ile `fabrika-v122` sayısı birlikte artırılır (tarayıcı önbelleği için). Bunu `node kontrol.js --artir` yapar.
 - `firebase.json` + `.github/workflows/yayinla.yml`: siteyi Firebase Hosting'de otomatik yayınlar (bkz. PROJE-NOTLARI.md 1.1)
 - `kontrol.js`: teslim öncesi otomatik kontrol aracı (siteyi etkilemez)
 - `rules.json`: Firebase **Realtime Database > Kurallar** sekmesine yapıştırılır

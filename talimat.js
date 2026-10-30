@@ -74,8 +74,12 @@
       }else if(b.dataset.a==="geri"){
         var g={};g["sevkTalimat/"+id+"/durum"]="bekliyor";g["sevkTalimat/"+id+"/yapan"]=null;g["sevkTalimat/"+id+"/yapanUid"]=null;g["sevkTalimat/"+id+"/yapilmaZaman"]=null;
         await db.ref().update(g);
-      }else if(b.dataset.a==="sil"&&confirm("Bu talimat silinsin mi?")){
-        await db.ref("sevkTalimat/"+id).remove();toast("Talimat silindi");
+        if(window.bil)bil(["u_"+(x.atayanUid||"")],{t:"talimat",ik:"↩️",b:"↩️ Talimat tekrar bekliyor (geri alındı)",m:String(x.metin||"").slice(0,200),git:"tal"});
+      }else if(b.dataset.a==="sil"&&confirm("Bu talimat silinsin mi?\n(Çöp kutusuna taşınır; yönetici geri yükleyebilir)")){
+        /* v122: talimat da çöp kutusuna gider (önceden doğrudan siliniyordu) */
+        var cp=false;try{cp=await silCop("sevkTalimat",id,"📋 "+String(x.metin||"").split("\n")[0].slice(0,100))}catch(er){await db.ref("sevkTalimat/"+id).remove()} /* kural yayınlanmadıysa eski yol */
+        toast(cp?"Talimat silindi (Çöp kutusuna alındı)":"Talimat silindi");
+        if(x.durum!=="yapildi")if(window.bil)bil(["sor"],{t:"talimat",ik:"🗑️",b:"🗑️ Talimat iptal edildi",m:String(x.metin||"").slice(0,200),git:"tal"});
       }
     }catch(err){toast(errText(err))}
   };
@@ -91,6 +95,7 @@
       var u={};u["sevkTalimat/"+id+"/durum"]="yapildi";u["sevkTalimat/"+id+"/yapan"]=String((rec&&rec.ad)||"?").slice(0,100);u["sevkTalimat/"+id+"/yapanUid"]=user.uid;u["sevkTalimat/"+id+"/yapilmaZaman"]=firebase.database.ServerValue.TIMESTAMP; /* sunucu saati */
       await db.ref().update(u);
       yapId=null;$("dTalOn").close();toast("✓ Talimat yapıldı olarak işaretlendi");
+      if(window.bil)bil(["u_"+(x.atayanUid||""),"yon"],{t:"talimat",ik:"✅",b:"✅ Talimat yapıldı — "+String((rec&&rec.ad)||""),m:String(x.metin||"").slice(0,200),git:"tal"});
     }catch(err){toast(errText(err))}
     bt.disabled=false;
   };
@@ -135,6 +140,7 @@
         ["adres","haritaUrl","adresAd"].forEach(function(f){u[p+f]=adr[f]!==undefined?adr[f]:null});
         if(m===mevcut.metin&&["adres","haritaUrl","adresAd"].every(function(f){return (adr[f]||"")===(mevcut[f]||"")})){$("talE").textContent="Değişiklik yapmadınız.";b.disabled=false;return}
         await db.ref().update(u);
+        if(mevcut.durum!=="yapildi")if(window.bil)bil(["sor"],{t:"talimat",ik:"✏️",b:"✏️ Talimat değişti",m:m.slice(0,200)+(adr.adresAd||adr.adres?" · 📍 "+(adr.adresAd||adr.adres):""),git:"tal"});
         $("dTal").close();toast("✓ Talimat düzeltildi");b.disabled=false;return;
       }
       var o={metin:m.slice(0,500),hedefUid:"*",hedefAd:"Tümü",atayanUid:user.uid,atayan:String((rec&&rec.ad)||"?").slice(0,100),zaman:firebase.database.ServerValue.TIMESTAMP,durum:"bekliyor"}; /* sunucu saati: telefon saati yanlış olsa da doğru güne düşer */
@@ -143,6 +149,7 @@
       Object.assign(o,adr);
       await db.ref("sevkTalimat").push(o);
       $("dTal").close();toast("✓ Talimat verildi");
+      if(window.bil)bil(["sor"],{t:"talimat",ik:"📋",b:"📋 Yeni talimat",m:m.slice(0,200)+(o.adresAd||o.adres?" · 📍 "+(o.adresAd||o.adres):"")+(TF.length?" · 📷 "+TF.length+" fotoğraf":""),git:"tal"});
     }catch(err){$("talE").textContent=errText(err)}
     b.disabled=false;
   };

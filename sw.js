@@ -1,8 +1,8 @@
-const CACHE = 'fabrika-v121';
-const V = '?v=121';
+const CACHE = 'fabrika-v122';
+const V = '?v=122';
 const ASSETS = ['./', './index.html', './manifest.webmanifest',
   './style.css'+V, './raporlar.js'+V, './xlsx-yaz.js'+V, './app.js'+V, './foto-onizleme.js'+V, './saat.js'+V, './diyalog.js'+V,
-  './qr.js'+V, './etiket.js'+V, './arama.js'+V, './israpor.js'+V, './fotookut.js'+V, './sesasistan.js'+V, './adrsec.js'+V, './talimat.js'+V, './tahsilat.js'+V, './granul.js'+V, './pano.js'+V, './stokaktar.js'+V, './baglanti.js'+V, './sw-kayit.js'+V, './yazi.js'+V, './hesap.js'+V,
+  './qr.js'+V, './etiket.js'+V, './arama.js'+V, './israpor.js'+V, './fotookut.js'+V, './sesasistan.js'+V, './adrsec.js'+V, './talimat.js'+V, './tahsilat.js'+V, './bildirim.js'+V, './surum.js'+V, './granul.js'+V, './pano.js'+V, './stokaktar.js'+V, './baglanti.js'+V, './sw-kayit.js'+V, './yazi.js'+V, './hesap.js'+V,
   './icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon-32.png'];
 
 self.addEventListener('install', e => {
@@ -30,4 +30,16 @@ self.addEventListener('fetch', e => {
       return res;
     }).catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
   );
+});
+
+// Telefon bildirimine dokununca: açık uygulama penceresini öne getir (yoksa aç) ve hangi bildirime dokunulduğunu bildir
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const k = (e.notification.data && e.notification.data.k) || '';
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+    for (const c of cs) {
+      if ('focus' in c) { try { c.postMessage({ bil: k }); } catch (x) {} return c.focus(); }
+    }
+    return self.clients.openWindow(self.registration.scope + '#bil=' + encodeURIComponent(k));
+  }));
 });

@@ -459,3 +459,32 @@ html.byz2 .full{grid-column:auto}
 .tikd{margin-top:6px;padding:8px 10px;border:1px solid #cfe8e4;background:#f4fbfa;border-radius:10px;font-size:14px;color:#0f5f58}
 .tikd.ok{background:#e8f8ee;border-color:#16a34a;color:#166534}
 .tikd small{display:block;margin-top:2px;font-size:12px;color:#5b6b7a}
+
+/* ===== Bildirimler (v122, bildirim.js) ===== */
+.bli{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:#fff;border:1.5px solid #e2e8f0;border-left:5px solid #cbd5e1;border-radius:10px;padding:10px;margin:0 0 7px;cursor:pointer;font:inherit;color:#0f172a;min-height:44px;position:relative}
+.bli.yeni{background:#eff6ff;border-color:#bfdbfe;border-left-color:#2563eb}
+.bli.hat{background:#fffbeb;border-color:#fde68a;border-left-color:#f59e0b}
+.bli .bik{font-size:22px;line-height:1.1;flex:0 0 auto}
+.bli .bim{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.bli .bim b{font-size:15px;line-height:1.3}
+.bli .bim .sub{font-size:14px;color:#334155;line-height:1.35;word-break:break-word}
+.bli .bim .who{font-size:12px;color:#64748b}
+.bli .bnk{width:10px;height:10px;border-radius:50%;background:#2563eb;flex:0 0 auto;margin-top:6px}
+#bdTabs button{font-size:14px;padding:9px 4px}
+#bdTabs button.on{background:#2563eb;color:#fff}
+#mBell{position:relative}
+#mBell .bn{top:4px;right:8px}
+#bilPop{position:fixed;top:10px;left:50%;transform:translate(-50%,-140%);width:min(460px,94vw);margin:0;inset:auto;top:10px;left:50%;display:flex;gap:10px;align-items:flex-start;background:#0f172a;color:#fff;border:0;border-radius:12px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:100000;cursor:pointer;transition:transform .25s ease,visibility .25s;overflow:visible}
+#bilPop.on{transform:translate(-50%,0)}
+#bilPop .bpi{font-size:24px;line-height:1}
+#bilPop .bpm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+#bilPop .bpm b{font-size:16px;line-height:1.3}
+#bilPop .bpm small{font-size:14px;color:#cbd5e1;line-height:1.35;white-space:pre-line}
+#bilPop .bpx{font-size:16px;color:#94a3b8;padding:0 2px}
+#bilPop:not(.on){visibility:hidden;pointer-events:none}
+/* Yeni sürüm şeridi (v122, surum.js) */
+#surumBan{position:fixed;inset:auto;left:50%;bottom:58px;transform:translateX(-50%);margin:0;width:min(480px,94vw);display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#1d4ed8;color:#fff;border:0;border-radius:12px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:100001;font-size:15px;font-weight:700}
+#surumBan span{flex:1 1 180px}
+#surumBan button{background:#fff;color:#1d4ed8;border:0;border-radius:8px;padding:10px 12px;font-weight:800;font-size:15px;min-height:44px;cursor:pointer}
+#surumBan button.sn{background:transparent;color:#dbeafe;border:1.5px solid #93c5fd}
+#dBild label{text-transform:none;letter-spacing:0}

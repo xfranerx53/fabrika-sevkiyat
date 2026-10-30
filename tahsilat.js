@@ -127,9 +127,11 @@
         ["nakit","cek","makbuzNo","alan","alanUid","alinmaZaman","alanNot","fotolar","duzenleyen","duzenleyenUid","duzenlemeZaman","duzenlemeNot"].forEach(function(f){g[p+f]=null});
         g[p+"durum"]="bekliyor";
         await db.ref().update(g);toast("Tekrar bekliyor durumuna alındı");
+        if(window.bil)bil(["u_"+(x.alanUid||""),"u_"+(x.talepUid||""),"muh"],{t:"tahsilat",ik:"↩️",b:"↩️ Tahsilat geri alındı: "+x.cari,m:"Kayıt tekrar «bekliyor» oldu (önceki: "+oz(x)+")",git:"tah"});
       }else if(b.dataset.a==="sil"&&confirm("Bu tahsilat kaydı silinsin mi?\n(Çöp kutusuna taşınır ve denetim günlüğüne yazılır; yönetici geri yükleyebilir)")){
         var bs=(x.durum==="alindi"?"💰 ":"⏳ ")+x.cari+(x.durum==="alindi"?" · "+para(tutar(x)):"");
-        if(await silCop("tahsilatlar",id,bs))toast("Kayıt çöp kutusuna taşındı");
+        if(await silCop("tahsilatlar",id,bs)){toast("Kayıt çöp kutusuna taşındı");
+          if(window.bil)bil([x.durum==="alindi"?"muh":"sor","u_"+(x.talepUid||"")],{t:"tahsilat",ik:"🗑️",b:"🗑️ Tahsilat kaydı silindi: "+x.cari,m:x.durum==="alindi"?oz(x):(x.not||"Bekleyen talep iptal edildi"),git:"tah"})}
       }
     }catch(err){toast(errText(err))}
   };
@@ -199,6 +201,7 @@
         var pt="tahsilatlar/"+mevcut.id+"/",ut={};
         ut[pt+"cari"]=cr;ut[pt+"not"]=nt2?nt2.slice(0,300):null;adrYaz(ut,pt,adr);
         await db.ref().update(ut);
+        if(window.bil)bil(["sor"],{t:"tahsilat",ik:"✏️",b:"✏️ Tahsilat talebi değişti: "+cr,m:(nt2||"")+(adr.adresAd||adr.adres?" · 📍 "+(adr.adresAd||adr.adres):""),git:"tah"});
         $("dTah").close();toast("✓ Talep düzeltildi");b.disabled=false;return;
       }
       if(mod==="talep"){
@@ -207,6 +210,7 @@
         Object.assign(o,adr);
         await db.ref("tahsilatlar").push(o);
         $("dTah").close();toast("✓ Tahsilat talebi açıldı");
+        if(window.bil)bil(["sor"],{t:"tahsilat",ik:"💰",b:"💰 Tahsilat talebi: "+o.cari,m:(o.not||"")+(o.adresAd||o.adres?" · 📍 "+(o.adresAd||o.adres):""),git:"tah"});
       }else{
         var n=sayi($("tahNakit").value),c=sayi($("tahCek").value),mk=$("tahMak").value.trim();
         if(!(n>0)&&!(c>0)){$("tahE").textContent="Nakit veya çek tutarından en az birini yazın.";b.disabled=false;return}
@@ -226,7 +230,8 @@
           u[p0+"duzenleyen"]=ad;u[p0+"duzenleyenUid"]=user.uid;u[p0+"duzenlemeZaman"]=ts;u[p0+"duzenlemeNot"]=dz;
           u["denetim/"+db.ref("denetim").push().key]={tur:"tahsilat-duzenle",baslik:String(E.cari).slice(0,120),detay:dz,yol:"tahsilatlar",id:String(E.id).slice(0,100),kim:ad,uid:user.uid,zaman:ts};
           await db.ref().update(u);
-          $("dTah").close();toast("✓ Tahsilat düzeltildi");return;
+          if(window.bil)bil(["muh","yon","u_"+(E.talepUid||""),"u_"+(E.alanUid||"")],{t:"tahsilat",ik:"✏️",b:"✏️ Tahsilat düzeltildi: "+E.cari,m:dz,git:"tah"});
+          $("dTah").close();toast("✓ Tahsilat düzeltildi");b.disabled=false;return; /* v122: düğme kilitli kalıyordu */
         }
         /* fotoğraflar: liste için küçük önizleme kayıtta, tam boy fotoğraf fotoTam'da (Sevkiyat ile aynı) */
         var fh=TF.length?await fotoHazirla(TF.slice(0,FM)):[];
@@ -237,12 +242,14 @@
           adrYaz(u,p,adr);
           fh.forEach(function(f,i){u[p+"fotolar/"+i]=f});
           await db.ref().update(u);
+          if(window.bil)bil(["u_"+(mevcut.talepUid||""),"muh","yon"],{t:"tahsilat",ik:"💰",b:"💰 Tahsil edildi: "+mevcut.cari+" · "+para((n>0?n:0)+(c>0?c:0)),m:[n>0?"Nakit "+para(n):"",c>0?"Çek "+para(c):"",mk?"Makbuz "+mk:"",ad,an].filter(Boolean).join(" · "),git:"tah"});
         }else{
           var o2={cari:cari.slice(0,100),talepUid:user.uid,talepEden:ad,zaman:TS(),durum:"alindi",talepTur:"dogrudan",
             alan:ad,alanUid:user.uid,alinmaZaman:TS()};
           if(n>0)o2.nakit=n;if(c>0)o2.cek=c;if(mk)o2.makbuzNo=mk.slice(0,30);if(an)o2.alanNot=an.slice(0,300);
           if(fh.length)o2.fotolar=fh;Object.assign(o2,adr);
           await db.ref("tahsilatlar").push(o2);
+          if(window.bil)bil(["muh","yon"],{t:"tahsilat",ik:"💰",b:"💰 Tahsilat alındı: "+o2.cari+" · "+para((n>0?n:0)+(c>0?c:0)),m:[n>0?"Nakit "+para(n):"",c>0?"Çek "+para(c):"",mk?"Makbuz "+mk:"",ad,an].filter(Boolean).join(" · "),git:"tah"});
         }
         $("dTah").close();toast("✓ Tahsilat kaydedildi");sek="alin";don="bugun";$("tahDon").value="bugun";ciz();
       }

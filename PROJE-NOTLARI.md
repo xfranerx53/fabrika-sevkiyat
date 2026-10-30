@@ -5,8 +5,8 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v121**
-Son güncelleme: 2026-10-27 (v93: stoka «📥 Hazır liste» toplu ekleme düğmesi, stokaktar.js); önceki: 2026-10-26 (yeni sohbette zip + 2 Excel incelendi, «GÜNCEL DURUM» bloğu Bölüm 9'a eklendi; v92: model sırası; v91: fotoğraftan okuma hızlandırıldı; hosting geçişi: web.app yayında; v90: hesapları yönetici açar; 👤 Hesabım menüsü; 44px dokunma alanı + büyük yazı kipi)
+**GÜNCEL SÜRÜM: v122**
+Son güncelleme: 2026-10-30 (v122: kişiye özel bildirim sistemi — bildirim.js; yeni sürüm uyarısı — surum.js; tahsilat düzenleme düğmesi kilitlenme hatası; talimat silme çöp kutusuna; Muhasebe Dosyalar fotoğrafları). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
 
@@ -91,7 +91,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 - Hosting yapılandırması site davranışını değiştirmediği için sürüm numarası artmadı.
 - **Durum (2026-10-26):** web.app yayında ve çalışıyor; depoyu özel yapma + yönlendirme deposu adımları Bölüm 9 «Yarım kalan iş»te.
 
-## 2. Dosyalar (zip'teki gerçek durum, sürüm v93)
+## 2. Dosyalar (zip'teki gerçek durum, sürüm v122)
 
 | Dosya | Ne işe yarar | Nereye gider |
 |---|---|---|
@@ -114,6 +114,8 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 | `baglanti.js` | **Bağlantı durumu + kayıt güvenliği (v81):** sol altta ● Çevrimiçi/Bağlantı yok/Gönderiliyor etiketi, kopunca kırmızı şerit, kayıt 8 sn'de gitmezse turuncu şerit, reddedilen kayıtta «⚠ Kaydedilemedi», bekleyen kayıt varken sayfa kapanırsa uyarı. Firebase `set/update/remove/transaction` işlemlerini sarar | GitHub |
 | `yazi.js` | **(v90)** Yazı boyutu ayarı (Normal/Büyük/Çok büyük; `localStorage.yaziBoyut`). `<head>`te yüklenir, `<html>`e `byz1`/`byz2` sınıfı koyar; kurallar `style.css` sonundaki «Büyük yazı kipleri» bölümünde | GitHub |
 | `hesap.js` | **(v90)** 👤 Hesabım penceresi (`dHes`: isim, şifre, yazı boyutu, çıkış) ve yönetici «＋ Yeni kullanıcı hesabı aç» (`dYeni`, `uYeni`). Hesap, ikinci geçici Firebase uygulamasıyla (`hesapAc`) açılır ki yönetici oturumdan çıkmasın; sonra `kullanicilar/{uid}` `onay:true` yazılır | GitHub |
+| `bildirim.js` | **(v122) Kişiye özel bildirimler.** `bil(kanallar,{t,b,m,ik,git,r})` gönderir (aynı anahtar her kanala ayrı `set`, hata sessiz). İş emri olayları `hrkEk` → `bilHrk(up,id,o)` ile kaydedilir; `Reference.prototype.update` sarılıdır, bildirim kayıt BAŞARILI olunca gider (WeakMap). Okuma: `kanallarim()` (role/izne göre) her kanalı `limitToLast(40)` dinler, anahtarla tekilleştirir, kendi işlemini göstermez; okunmamış = `z > bildirimOku/{uid}/son` ve konu kapalı değil. 🔔 rozeti (üst çubuk `bBellN` + menü `mBellN` + uygulama ikonu `setAppBadge`), yeni gelende üstte `#bilPop` + titreşim + bip, ekran gizliyse telefon bildirimi (`showNotification`, sw.js `notificationclick` → `#bil=anahtar`). Panel `dBild`: Tümü/Okunmamış, 📌 Hatırlatmalar (geciken/bugün termin, bekleyen talimat/tahsilat, size verilen sevk, kritik stok, yedek — anlık hesaplanır), ⚙️ ayarlar (telefon izni, ses, konu aç/kapat, WhatsApp). Yönetici «📢 Duyuru» (`dDuy`; herkes/kişi) ve günde bir 45 günden eski bildirim temizliği. `bilHesap(uid,txt)`: yetki değişikliklerini 15 sn toplayıp tek bildirim. Günde bir açılış hatırlatması (`bilHat_uid`). | GitHub |
+| `surum.js` | **(v122) Yeni sürüm uyarısı:** 10 dk'da bir ve uygulamaya dönünce `index.html`'deki `app.js?v=NN`'e bakar; büyükse altta «🆕 Yeni sürüm hazır — ⟳ Şimdi yenile / Sonra» (`#surumBan`); bekleyen kayıt varsa sorar | GitHub |
 | `arama.js`, `saat.js`, `diyalog.js`, `foto-onizleme.js`, `sw-kayit.js` | Küçük yardımcılar | GitHub |
 | `sw.js` | Çevrimdışı önbellek. `CACHE='fabrika-vNN'` ve `V='?v=NN'` | GitHub |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `favicon-32.png` | Telefona kurulum ve ikonlar | GitHub |
@@ -177,7 +179,10 @@ Satır içi `<script>` yazma; kodu `.js` dosyasına koy.
 | `denetim/{id}` | Denetim günlüğü (kim ne yaptı), sadece yönetici okur |
 
 Fotoğraflar `data:image/jpeg;base64,...` metni olarak tutulur (300.000 karakter sınırı).
-`rules.json` içinde 24 ana yol vardır ve yukarıdaki listeyle aynıdır.
+| `bildirim/{kanal}/{id}` | **(v122)** Bildirimler: `t` (tür: is/asama/sevk/talimat/tahsilat/stok/granul/hesap/duyuru), `b` başlık ≤120, `m` metin ≤400, `ik`, `git` (is/sev:durum/tal/tah/stok/sip/granul/dos/hes), `r` (iş emri no vb.), `k` kimden adı, `ku` kimden uid (= auth.uid), `z` (= now). Kanallar: `u_{uid}`, `genel`, `yon`, `as_etiket…as_depo`, `sevk`, `sor`, `muh`, `stok`, `granul`; okuma izni kanala göre (rules). Yazma: onaylı herkes yalnız YENİ kayıt; silme yönetici/sahip. `z` indeksli. Yedeğe KONMADI (geçici veri) |
+| `bildirimOku/{uid}` | **(v122)** `son` (son okunan zaman), `kapat/{tür}` (kapatılan konular). Yalnız kişinin kendisi okur/yazar |
+
+`rules.json` içinde 26 ana yol vardır ve yukarıdaki listeyle aynıdır.
 Yeni bir yol eklenirse: rules'a ekle; yedekleme (`bkIndir`/`bkCalistir`) ve silme/çöp (`silCop`)
 akışlarına eklenmesi gerekip gerekmediğini düşün.
 
@@ -248,6 +253,19 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
 - **Şifre sıfırlama:** Cloud Function `sifreSifirla` (Blaze planı gerekir). Deploy durumu bilinmiyor
   (Bölüm 9).
 
+- **Bildirimler (v122, `bildirim.js`):** Kim neyi alır (kanal → olay):
+  - `as_<aşama>` (o aşamayı ilerletebilen): iş o aşamaya geldi (📥), geri alındı (↩️), iş emri düzenlendi (✏️), silindi (🗑️); `as_etiket` + `yon`: yeni iş emri (🆕).
+  - `sevk` (Depo, Sevkiyat Sorumlusu): üretim bitti/depoya girdi (✅), hazır ürünlere aktarıldı (📦), elle hazır ürün eklendi.
+  - `u_<sevkSorumluUid>`: size sevkiyat verildi / aracı değişti / sizden alındı / iptal-geri alındı / silindi.
+  - `sor` (Sevkiyat Sorumluları): yeni/değişen/iptal talimat, yeni/değişen/iptal tahsilat talebi.
+  - `u_<atayanUid>` + `yon`: talimat yapıldı / geri alındı. `u_<talepUid>` + `muh` + `yon`: tahsil edildi, düzeltildi, geri alındı.
+  - `stok` + `yon`: stok azaldı/tükendi (çıkışla eşik geçilince), yeni sipariş; `u_<siparişi açan>` + `stok`: sipariş teslim alındı.
+  - `granul` + `yon`: yeni granül kaydı. `yon` + `muh` + `u_<kaydı açan>`: sevk teslim edildi. `u_<kişi>`: rol/izin/onay değişti (`hesap`).
+  - `genel`/`u_`: yönetici duyurusu. Yönetici TÜM kanalları dinler (aşamaları istemezse ⚙️'den «Üretim aşamaları» konusunu kapatır).
+  - **Yeni bir işlem eklenirse** (kayıt yazan yeni düğme): etkilenen kişiyi düşün, işlem başarılı olduktan sonra `if(window.bil)bil([...],{t,ik,b,m,git})` ekle; iş emri hareketleri `hrkEk` ile otomatik.
+  - Telefonda: uygulama açık/arka plandayken telefon bildirimi düşer; **uygulama tamamen kapalıyken bildirim GELMEZ** (sunucu gerekir, Bölüm 9).
+- **Zil herkeste (v122):** önceden yalnız iş emri görenlerde vardı (Sevkiyat Sorumlusu'nda zil yoktu); menüye de «🔔 Bildirimler» düğmesi eklendi. Eski «son açılıştan beri» türetilen bildirimler (`bOlaylar`, `bAsamaUyar`, `isEmirleri` limit 30 dinleyicisi) kaldırıldı.
+
 ### Kod haritası (app.js'te aranacak yorum başlıkları)
 
 Satır numaraları kayar; bu başlıkları ara:
@@ -312,6 +330,8 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-29: v117 — **Duplicate (seri no) tanısı netleşti:** kullanıcının MG-0968 kaydı `asama:"bitti"` + `aktarildi:true` idi; Biten/diğer listeler `!e.aktarildi` ile bu kayıtları GİZLER (yalnız aramada görünür), bu yüzden «sildim» sanıldı (Hazır ürün kaydı silinmiş olabilir, iş emri kalır). `isVarMesaj` artık «HAZIR ÜRÜNLERE AKTARILMIŞ (listelerde gizli)» + arama ipucu yazar. Olası sonraki iş (istenmedi): duplicate mesajında «Kaydı bul/sil» düğmesi; aktarılmış iş emrini silince Hazır ürün kaydıyla ilişki. Firebase kuralı: değişmedi. Dosyalar: app.js, index.html, sw.js, PROJE-NOTLARI.md.
 - 2026-10-29: v118 — **Silme artık bağlı kaydı da götürür (gizli yetim kalmaz).** (1) Hazır ürün (Sevkiyat) veya Dosyalar kaydı silinince `isEmriId`'li bağlı iş emri de silinir (`bagliIsEmriSil`, çöp kutusuna; o iş emrinin başka parçası hâlâ urunler/dosyalar'da sürüyorsa iş emri kalır, yalnız `aktarKeys`ten bu parça çıkar). (2) Aktarılmış iş emri silinince `aktarKeys`'teki Hazır ürün kaydı da silinir — yalnız `durum:"hazir"` olanlar; sevk listesine/sevk edildiye girmiş ya da Dosyalar'a taşınmış kayıt SİLİNMEZ (uyarı çıkar). Onay pencereleri bunu yazar. Yetki yoksa (rules: iş emri silme = yönetici ya da kendi kaydı+isSil; urunler silme = yönetici ya da kendi kaydı) ek silme sessizce atlanır, ana silme bozulmaz. Önceden yetim kalmış kayıtlar (ör. MG-0968) otomatik silinmez: aramada bulunup elle silinir. Mantık sahte db ile sınandı; gerçek Firebase'de SINANMADI. Firebase kuralı: değişmedi. Dosyalar: app.js, index.html, sw.js, PROJE-NOTLARI.md.
 
+- 2026-10-30: v122 — **Kişiye özel bildirim sistemi + kullanıcı gözüyle inceleme düzeltmeleri.** (1) Yeni `bildirim.js` (Bölüm 2, 5, 7): her işlem etkilenen kişiye/role veritabanında bildirim yazar; zil rozeti, okunmamış, telefon bildirimi (izinle), üstte açılan uyarı, ses/titreşim, konu aç/kapat, hatırlatmalar, yönetici duyurusu. Bağlanan yerler: `app.js` (hrkEk, hazır ürün ekle, sevk listesine al/araç, teslim edildi, geri al, sevk sil, iş emri sil, stok kritik, sipariş ver/teslim al, kullanıcı rol/izin/onay), `talimat.js`, `tahsilat.js`, `granul.js`. (2) Zil artık herkeste (Sevkiyat Sorumlusu'nda yoktu) + menüde 🔔 düğmesi. (3) Yeni `surum.js`: yeni sürüm şeridi. (4) **Hata:** tahsilat «✏ Düzenle» kaydedince «Kaydet» düğmesi kilitli kalıyordu (sayfa yenilenene kadar başka tahsilat kaydedilemiyordu) — düzeltildi. (5) Talimat silme artık çöp kutusuna (`silCop`, `COP_YOL`+`sevkTalimat`; kural yayınlanmadıysa eski doğrudan silme). (6) Muhasebe (rap) Dosyalar'daki fotoğrafları da görür (`dosyaFoto` okuma kuralı). (7) `sw.js`: `notificationclick`. (8) **Gizli açılış hatası:** giriş, sonraki .js dosyaları (talimat/tahsilat/pano/bildirim) yüklenmeden biterse onların dinleyicileri hiç başlamıyordu (tarayıcı sınamasında görüldü) → `app.js` sayfa `load` olunca oturum açıksa `bildBaslat()`'ı bir kez daha çağırır. (9) `baglanti.js` `sessiz()`: bildirim yazımı reddedilse de «Kaydedilemedi» uyarısı çıkmaz. Dosyalar: bildirim.js (yeni), surum.js (yeni), app.js, baglanti.js, talimat.js, tahsilat.js, granul.js, index.html, style.css, sw.js, rules.json, README.md, PROJE-NOTLARI.md. **Firebase kuralı: DEĞİŞTİ** (yeni `bildirim`, `bildirimOku`; `dosyaFoto` okuma + rap; `cop/yol` + sevkTalimat). Yayınlanmazsa: bildirimler gitmez/okunamaz (zil panelinde uyarı çıkar), uygulamanın geri kalanı ÇALIŞIR. Bildirim mantığı sahte Firebase/DOM ile (node) ve Chromium'da sahte Firebase ile (menü, zil, panel, açılır uyarı, bildirime dokununca ekran, yönetici duyurusu; JS hatası yok) sınandı; **gerçek Firebase kuralları, telefon bildirimi ve görünüm SINANMADI** (npm/emülatör bu ortamda erişilemedi).
+
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
 1. **Uzun-sorgu (`forceLongPolling`) bu sitede ASLA kullanılmaz.** `index.html` CSP'si `script-src`te firebaseio.com'a izin vermez; Firebase uzun-sorgu script yükler, engellenir, bağlantı kalıcı kopar (v85-v87 yaşandı). Takılmada: `forceWebSockets()` + `db.goOffline()` → `goOnline()`.
@@ -329,12 +349,16 @@ Satır numaraları kayar; bu başlıkları ara:
 
 12. **Yönlendirme dosyaları (index.html, 404.html, sw.js) iki ayrı depodadır; ana depoya YÜKLENMEZ.** 26 Ekim'de ana depoya yüklenince web.app kendi kendine yönlendi (döngü). Kullanıcıya her seferinde hangi dosyanın HANGİ depoya gideceğini adıyla yaz. Ana depoda 404.html olmaz. Hosting izin hatasında çözüm: Google Cloud IAM'de `firebase-adminsdk-fbsvc@...` hesabına Service Usage Consumer + Firebase Hosting Admin.
 
+13. **Bildirim yazımı asıl işlemi ASLA bozmamalı:** `bil()` her kanala ayrı `set` yapar, hatayı yutar; `baglanti.js` `sessiz()` listesinde `bildirim` yolları var (kural yoksa «Kaydedilemedi» uyarısı çıkmaz). Bildirimi `db.ref().update(up)` içine KOYMA (kural yayınlanmamışsa tüm işlem reddedilir).
+
 ## 9. Yapılacaklar / yarım kalan / alınan kararlar
 
 **Yapılacaklar (kullanıcı isteklerini buraya yaz, bitenleri günlüğe taşı):**
 - **v90 cihazda denenmeli:** yönetici ile yeni kullanıcı aç → o hesapla giriş; Hesabım menüsü (isim, şifre, çıkış); yazı boyutu Büyük/Çok büyük ile ana ekranlar (sevkiyat kartı, iş emri, tahsilat, granül tablosu) taşma yapıyor mu; rules yayınlandı mı.
-- **Önerilenlerden kalanlar (kullanıcı sırayla isteyecek):** yeni sürüm uyarısı, operatör «Benim işlerim» ekranı, test Firebase projesi, taslak kaydı, hata günlüğü, Gemini anahtarı kısıtlama, şifre sıfırlama fonksiyonunun deploy testi.
+- **Önerilenlerden kalanlar (kullanıcı sırayla isteyecek):** ~~yeni sürüm uyarısı~~ (v122 yapıldı), operatör «Benim işlerim» ekranı, test Firebase projesi, taslak kaydı, hata günlüğü, Gemini anahtarı kısıtlama, şifre sıfırlama fonksiyonunun deploy testi.
 - **v81 cihazda denenmeli:** pano kartları, bağlantı şeridi (uçak modu ile), yedek zamanının panoda görünmesi. Rules yayınlandı mı sorulmalı.
+- **v122 cihazda denenmeli:** rules yayınlandı mı; iki telefonla: Depo iş emrini ilerletir → Ekstruder operatörüne 🔔 + telefon bildirimi; talimat/tahsilat talebi → Sevkiyat Sorumlusu; «Sevk listesine al» → seçilen sorumlu; tahsil edildi → talebi açan + Muhasebe; zil rozeti, okunmamış, «Telefon bildirimlerini aç», bildirime dokununca doğru ekran; yeni sürüm şeridi (bir sonraki sürüm yüklenince görünmeli).
+- **KULLANICIYA SORULDU (v122): Uygulama KAPALIYKEN bildirim** — iki yol: (a) Firebase Blaze planı (kart ister; bu kullanımda aylık ücret beklenmez, bütçe uyarısı 1 $ konabilir) → `index.js`'e bildirim/{kanal} onCreate fonksiyonu + istemcide FCM jetonu (`fcmJeton/{uid}`) + sw.js push; (b) kartsız: Cloudflare Workers ücretsiz hesabı, dakikada bir kontrol (kurulumu daha uzun). Cevap gelince yapılacak.
 - **[ERTELENDİ] Telefona gerçek bildirim (push, FCM):** FCM ücretsiz ama gönderen sunucu kodu (Cloud Functions) **Blaze planı** (kart bilgisi) ister; kullanıcı «ücretsizse ekle» dedi → eklenmedi. Blaze'e geçilirse: istemci FCM token + `sw.js` push dinleyicisi + `index.js`'e `sevkTalimat`/`tahsilatlar` onCreate ve zamanlanmış geciken-iş fonksiyonları. iPhone'da yalnız ana ekrana eklenmiş PWA (iOS 16.4+) alır.
 - Olası ek: Cloud Function ile zamanlanmış otomatik yedek (Blaze), pano kartlarını rol bazlı diğer kullanıcılara açma, bağlantısız kayıtlar için kalıcı kuyruk.
 - v63'te eklenenler (rapor, termin, bildirim, hata önleme) cihazda denenmeli; kullanıcı geri bildirimine göre düzeltilecek. Olası ek: termine göre filtre, raporda operatör filtresi, geciken işi zilde gösterme.
