@@ -326,6 +326,28 @@
     if(!isAdmin())return;var u=$("bdPushU").value.trim().replace(/\/+$/,"");
     if(u&&!/^https:\/\/[^\s\/]+(\/[^\s]*)?$/.test(u))return toast("Adres https:// ile başlamalı (örn. https://mag-bildirim.xxx.workers.dev)");
     db.ref("ayarlar/push").set(u?{url:u.slice(0,200)}:null).then(function(){toast(u?"✓ Sunucu adresi kaydedildi":"Sunucu adresi silindi");if(u)fetch(u+"/").then(function(r){return r.text()}).then(function(t){toast(t.slice(0,90));setTimeout(function(){pushKur(true)},500)}).catch(function(){toast("⚠️ Sunucuya ulaşılamadı, adresi kontrol edin")})}).catch(function(er){toast("⚠️ Kaydedilemedi: "+errText(er)+" (Firebase kuralları yayınlandı mı?)")})};
+  /* yönetici: herkese deneme + «kimlerde çalışıyor» listesi (v125) */
+  $("bdHerkes").onclick=function(){if(!isAdmin())return;if(!confirm("Kayıtlı TÜM telefonlara «Deneme bildirimi» gönderilsin mi?"))return;
+    pushIstek("/sina",{herkes:true}).then(function(j){toast(j.ok?"✓ "+j.gonderilen+"/"+j.kayitli+" cihaza gönderildi. 1-2 dk sonra «Kimlerde çalışıyor?» listesine bakın.":"⚠️ "+(j.hata||"gönderilemedi"))}).catch(function(e){toast("⚠️ "+e.message)})};
+  var cihazAd=function(u){u=String(u||"");return /iPhone|iPad/.test(u)?"📱 iPhone":/Android/.test(u)?"📱 Android":/Windows/.test(u)?"💻 Windows":/Mac/.test(u)?"💻 Mac":"🖥️ Cihaz"};
+  var zk=function(t){return t?new Date(+t).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""};
+  async function kimCiz(){
+    var L=$("kimL");L.innerHTML='<p class="mut">Yükleniyor…</p>';$("kimOz").textContent="";
+    try{
+      var x=await Promise.all([pushIstek("/liste",{}),db.ref("kullanicilar").once("value")]),A=x[0].liste||[],K=x[1].val()||{};
+      var U=Object.keys(K).filter(function(u){return K[u]&&K[u].onay===true}).map(function(u){var C=A.filter(function(a){return a.uid===u});
+        return{u:u,ad:K[u].ad||K[u].kullanici||"?",rol:K[u].yonetici?"Yönetici":(K[u].rol||""),C:C,ok:C.some(function(c){return c.son>0})}});
+      U.sort(function(a,b){return(a.ok-b.ok)||((a.C.length>0)-(b.C.length>0))||a.ad.localeCompare(b.ad,"tr")});
+      var hazir=U.filter(function(z){return z.ok}).length,kayitli=U.filter(function(z){return z.C.length}).length;
+      $("kimOz").textContent="✅ "+hazir+" kişide çalıştığı görüldü · 📲 "+kayitli+" kişi kayıtlı · 👥 "+U.length+" kişi";
+      L.innerHTML=U.map(function(z){
+        var d=z.C.length?z.C.map(function(c){return '<div class="sub">'+(c.son?"✅":"⏳")+" "+esc(cihazAd(c.cihaz))+" · kayıt "+esc(zk(c.z))+(c.son?" · <b>son ulaşan: "+esc(zk(c.son))+"</b>":" · henüz bildirim ulaştığı görülmedi")+'</div>'}).join("")
+          :'<div class="sub" style="color:#b91c1c">❌ Telefon kaydı yok — kişi kendi telefonunda 🔔 > «Telefon bildirimlerini aç» > İzin ver demeli</div>';
+        return '<div class="item" style="padding:8px 10px;margin-bottom:6px;border-left:5px solid '+(z.ok?"#16a34a":z.C.length?"#f59e0b":"#dc2626")+'"><b>'+esc(z.ad)+'</b> <span class="mut" style="font-size:13px">'+esc(z.rol)+'</span>'+d+'</div>'}).join("")||'<p class="mut">Kullanıcı yok.</p>';
+    }catch(e){L.innerHTML='<p class="err">'+esc(e.message)+' — Cloudflare\'deki kod son sürüm mü? (bildirim-worker.js v125)</p>'}}
+  $("bdKim").onclick=function(){if(!isAdmin())return;$("dKim").showModal();kimCiz()};
+  $("kimX").onclick=function(){$("dKim").close()};
+  $("kimY").onclick=kimCiz;
   $("bdSina").onclick=function(){var u=$("bdTelUy"),yaz=function(t){toast(t);if(u)u.textContent=t};yaz("Gönderiliyor…");
     pushIstek("/sina",{}).then(function(j){yaz(j.ok?"✓ Deneme bildirimi gönderildi ("+j.gonderilen+"/"+j.kayitli+" cihaz). Gelmediyse: Windows/telefon bildirim ayarlarında Chrome'a izin verildiğini kontrol edin.":"⚠️ "+(j.hata||"gönderilemedi")+(j.kayitli?" ("+j.kayitli+" kayıtlı cihaz, hiçbirine ulaşılamadı)":""))}).catch(function(e){yaz("⚠️ "+e.message)})};
   {var tt=$("bdTelTop");if(tt)tt.onclick=izinIste}

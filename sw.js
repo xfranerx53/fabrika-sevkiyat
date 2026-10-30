@@ -1,5 +1,5 @@
-const CACHE = 'fabrika-v124';
-const V = '?v=124';
+const CACHE = 'fabrika-v125';
+const V = '?v=125';
 const ASSETS = ['./', './index.html', './manifest.webmanifest',
   './style.css'+V, './raporlar.js'+V, './xlsx-yaz.js'+V, './app.js'+V, './foto-onizleme.js'+V, './saat.js'+V, './diyalog.js'+V,
   './qr.js'+V, './etiket.js'+V, './arama.js'+V, './israpor.js'+V, './fotookut.js'+V, './sesasistan.js'+V, './adrsec.js'+V, './talimat.js'+V, './tahsilat.js'+V, './bildirim.js'+V, './surum.js'+V, './granul.js'+V, './pano.js'+V, './stokaktar.js'+V, './baglanti.js'+V, './sw-kayit.js'+V, './yazi.js'+V, './hesap.js'+V,
@@ -45,14 +45,18 @@ self.addEventListener('notificationclick', e => {
 });
 
 // v123: Uygulama KAPALIYKEN gelen bildirim (Cloudflare bildirim sunucusu -> standart Web Push)
+// v125: bildirim gösterilince sunucuya «aldım» haberi gider (yönetici «Kimlerde çalışıyor?» listesinde görür)
 self.addEventListener('push', e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (x) { d = { b: e.data ? e.data.text() : '' }; }
   const o = { body: d.m || '', icon: 'icon-192.png', badge: 'icon-192.png', tag: d.key || 'fabrika', renotify: true, data: { k: d.key || '' }, vibrate: [200, 100, 200] };
-  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
-    // uygulama şu an ekranda açıksa sessiz göster (uygulama kendi uyarısını zaten çıkarıyor)
-    if (cs.some(c => c.visibilityState === 'visible')) o.silent = true;
+  const goster = self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+    // uygulama ekranda açıksa sessiz göster (uygulama kendi uyarısını çıkarıyor); deneme bildirimi her zaman sesli
+    if (!d.test && cs.some(c => c.visibilityState === 'visible')) o.silent = true;
     return self.registration.showNotification(d.b || 'MAG AMBALAJ', o);
-  }));
+  });
+  const haber = (typeof d.cb === 'string' && /^https:\/\/[^\s]+$/.test(d.cb))
+    ? self.registration.pushManager.getSubscription().then(s => s && fetch(d.cb + '/alindi', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ endpoint: s.endpoint, test: !!d.test }) })).catch(() => {})
+    : Promise.resolve();
+  e.waitUntil(Promise.all([goster, haber]));
 });
-
