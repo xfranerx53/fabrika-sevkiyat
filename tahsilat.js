@@ -12,7 +12,9 @@
   var TS=function(){return firebase.database.ServerValue.TIMESTAMP}; /* kayıt saati: sunucu saati */
   var simdi=function(){return Date.now()+off}; /* "bugün / son 7 gün" hesabı da sunucu saatine göre */
   var TRZ="Europe/Istanbul";
-  var canTah=function(){return !!(rec&&rec.onay&&tahGor())}; /* sevkiyat yetkisi olan VEYA "tah" izni olan (Muhasebe) görür; rules.json ile aynı */
+  var canTah=function(){return !!(rec&&rec.onay&&tahsilatGor())}; /* v128: muhasebe («tah»), Sevkiyat Sorumlusu, yönetici; rules.json ile aynı */
+  /* v128: şoför «Alınanlar»da yalnız KENDİ tahsil ettiklerini görür (şirketin toplam tahsilatı ona görünmez) */
+  var sadeceBenim=function(){return !isAdmin()&&!!rec&&rec.rol==="Sevkiyat Sorumlusu"&&!modGor("tah")};
   var benimMi=function(x){return !!(user&&x.talepUid===user.uid)};
   var silebilir=function(x){return isAdmin()||benimMi(x)};
   var geriAlabilir=function(x){return isAdmin()||(user&&x.alanUid===user.uid)};
@@ -68,7 +70,7 @@
   function ciz(){
     var k=$("tahList");if(!k)return;
     var q=trn(ara).trim().split(/\s+/).filter(Boolean);
-    var V=L.filter(function(x){var h=trn([x.cari,x.not,x.makbuzNo,x.talepEden,x.alan,x.alanNot,x.adres,x.adresAd].join(" "));return q.every(function(t){return h.indexOf(t)>=0})});
+    var V=L.filter(function(x){if(x.durum==="alindi"&&sadeceBenim()&&x.alanUid!==(user&&user.uid))return false;var h=trn([x.cari,x.not,x.makbuzNo,x.talepEden,x.alan,x.alanNot,x.adres,x.adresAd].join(" "));return q.every(function(t){return h.indexOf(t)>=0})});
     var bek=V.filter(function(x){return x.durum!=="alindi"}).sort(function(a,b){return a.zaman-b.zaman});
     var uyar=donemSinir();
     var bit=V.filter(function(x){return x.durum==="alindi"&&uyar(x.alinmaZaman||x.zaman)}).sort(function(a,b){return (b.alinmaZaman||b.zaman)-(a.alinmaZaman||a.zaman)});

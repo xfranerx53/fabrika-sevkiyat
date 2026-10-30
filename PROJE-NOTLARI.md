@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v127**
+**GÜNCEL SÜRÜM: v128**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -202,6 +202,26 @@ varsayılanını kapat, yoksa rol varsayılanı geçerli):
 `isAc`, `isDuzenle`, `geriAl`, `isSil`, `fiyat`.
 (**`tah` = Tahsilat & talimat (v47).** Tahsilat ve Talimatlar Sevkiyat içinde sekmedir; `sevk` yetkisi olan görür. `tah` izni olan ama `sevk`'i olmayan kişi (varsayılan: **Muhasebe**) ana menüde ayrı 💰 TAHSİLAT düğmesi görür; içinde yalnız TAHSİLAT ve TALİMATLAR sekmeleri vardır. Muhasebe tahsilat talebi açabilir, tahsil edildi diyebilir; talimatları yalnız okur. Kodda `tahGor()=modGor("sevk")||modGor("tah")`.)
 
+**ROL ERİŞİM TABLOSU (v128, kullanıcıyla kararlaştırıldı — değişiklikte BURAYI, `app.js` YETKI/`tahsilatGor`/`sofor`, `rules.json`, `cloudflare/bildirim-worker.js` YETKI'yi birlikte güncelle):**
+
+| Bölüm / işlem | Yönetici | Depo Görevlisi | Sevkiyat Sorumlusu (şoför) | Ekstruder/Matbaa/Kesim Op. | Muhasebe |
+|---|---|---|---|---|---|
+| Yönetici paneli, kullanıcılar, yedek, çöp, denetim, fiyatlar, sesli asistan | ✔ | – | – | – | – |
+| İş emirleri & etiket (aç, düzenle, etiket bas) | ✔ | ✔ | – | – | ✔ (+fiyat görür) |
+| Üretim (tüm aşamaları görür) | ✔ | ✔ (Depo aşaması) | – | ✔ yalnız KENDİ aşamasını ilerletir | ✔ (görür) |
+| Sevkiyat: hazır ürün ekle, sevk listesine al (araç/şoför), iptal | ✔ | ✔ | – | – | – |
+| Sevkiyat: teslim edildi (fotoğraf) | ✔ | ✔ | ✔ yalnız KENDİNE verilen/atanmamış | – | – |
+| Talimatlar: yaz | ✔ | ✔ | – | – | – (okur) |
+| Talimatlar: «Yaptım» | ✔ | – | ✔ | – | – |
+| Tahsilat (para) | ✔ hepsi | **– (v128'de kaldırıldı)** | ✔ bekleyenler + yalnız KENDİ aldıkları | – | ✔ hepsi |
+| Sevk adresleri | ✔ | ✔ | ✔ | – | – |
+| Dosyalar (onaylı arşiv, PDF, Excel) | ✔ | ✔ (tahsilat kayıtları hariç) | **– (v127)** | – | ✔ |
+| Stok, sipariş, tedarikçi | ✔ (+fiyat) | ✔ | – | – | ✔ |
+| Granül | ✔ | – | – | – | ✔ |
+| Raporlar | ✔ (+maliyet) | – | – | – | ✔ |
+| QR okut | ✔ | ✔ | – | ✔ | ✔ |
+Kişiye özel izin (Yönetici > Kullanıcılar > 🔔 Kişiye özel izinler) rol varsayılanını açar/kapatır; «Tahsilat & talimat» izni Depo'ya tahsilatı yeniden açar, şoföre kapatır. Sunucu (rules.json) aynı kuralları zorlar.
+
 **Rol varsayılanları tek yerde:** `app.js` içindeki `YETKI` tablosu ("YETKİ TABLOSU" yorumu).
 Özet:
 - Depo Görevlisi: iş emirleri + stok + sevkiyat; etiket/depo aşaması; iş açar/düzenler.
@@ -344,6 +364,8 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-10-30: v126 — **Foto temizle, PDF'i indirilmemiş dosyalar için uyarır** (kullanıcı isteği). `dosyaPdf/{id}` yeni yol (rules + yedek `BK_DUGUM`). `$("dPdf")` mantığı `pdfZipIndir(L)` fonksiyonuna taşındı; başarıyla PDF'lenen kayıtlar `dosyaPdf`'e yazılır. Dosyalar satırında «📄✓», detayda «📄 PDF indirildi · tarih · kim / henüz indirilmedi». `dosFotoTemizle`: gün sorusundan sonra PDF'i olmayanlar varsa `dFtU` penceresi (liste ilk 30) — «📄 Önce bunların PDF'ini indir» (yalnız onları ZIP'ler, işaretler; temizlemez), «🧹 Yalnız PDF'i indirilmiş N dosyayı temizle», «⚠️ Yine de hepsini temizle» (ikinci onay), «Vazgeç». Not: v126'dan ÖNCE indirilen PDF'ler işaretli değil → ilk kullanımda hepsi «indirilmemiş» görünür (kullanıcıya söylendi). **Firebase kuralı: DEĞİŞTİ** (`dosyaPdf`). Dosyalar: app.js, index.html, sw.js, rules.json, README.md, PROJE-NOTLARI.md.
 
 - 2026-10-30: v127 — Kullanıcı sordu: «sevkiyatçıda neden Dosyalar görünüyor?» (v89'dan beri `modGor("dos")` = sevk VEYA rap, şoförün sevk izni olduğu için görünüyordu). Artık Sevkiyat Sorumlusu rolü Dosyalar'ı görmez (`sofor()`); Depo Görevlisi, Muhasebe (rap), yönetici görmeye devam eder; şoföre «Raporlar» izni verilirse görür. Yalnız ekran (menü) gizlendi; Firebase kuralı DEĞİŞMEDİ. Dosyalar: app.js, index.html, sw.js, README.md, PROJE-NOTLARI.md.
+
+- 2026-10-30: v128 — **Rol erişimleri baştan gözden geçirildi** (kullanıcı: «kimin neye erişebildiğini mantıklı kur»). Bölüm 6'daki ROL ERİŞİM TABLOSU eklendi. Değişenler: (1) Tahsilat (para) Depo Görevlisi'nden kaldırıldı: yeni `tahsilatGor()` = «tah» izni veya rol Sevkiyat Sorumlusu (izin tah ≠ false); `tahGor()` artık yalnız TALİMATLAR için. rules.json `tahsilatlar` içindeki 18 «sevk izni» ifadesi «SS rolü && izin tah ≠ false» ile değişti. (2) Şoför «Alınanlar»da yalnız kendi tahsilatlarını görür (`sadeceBenim`, yalnız ekran). (3) Şoför sevki «Hazır ürünlere geri al» yapamaz (ekran + rules `urunler/$id/durum` 'hazir' yasağı), başka şoföre verilmiş sevki «Teslim edildi» yapamaz (ekran), Sevkiyat «Excel'e aktar» şoförde gizli. (4) Dosyalar okuma kuralı (`dosyalar`, `dosyaFoto`, `dosyaPdf`) şoförü dışlar (v127 ekranla uyumlu). Dosyalar'da tahsilat kayıtları yalnız tahsilatı görebilene. (5) «Üretim bitti» bildirimi `sevk` yerine `as_depo` kanalına (şoföre gereksizdi). Chromium'da 7 rol için menü/sekme/düğme sınandı. **Firebase kuralı: DEĞİŞTİ.** Cloudflare: değişmedi. Dosyalar: app.js, bildirim.js, tahsilat.js, sesasistan.js, index.html, sw.js, rules.json, README.md, PROJE-NOTLARI.md.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 

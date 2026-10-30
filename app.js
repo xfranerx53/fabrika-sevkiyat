@@ -142,7 +142,10 @@ const modGor0=m=>yAcik()||(iz(m)!==undefined?iz(m):!!(yRol()&&yRol().mod.include
 const sofor=()=>!isAdmin()&&!!rec&&rec.rol==="Sevkiyat Sorumlusu";
 const modGor=m=>m==="dos"?((modGor0("sevk")&&!sofor())||modGor0("rap")):modGor0(m);
 /* Tahsilat + Talimatlar: sevkiyat yetkisi olan VEYA ayrı "tah" izni olan (örn. Muhasebe) görür. rules.json ile aynı */
-const tahGor=()=>modGor("sevk")||modGor("tah");
+const tahGor=()=>modGor("sevk")||modGor("tah"); /* TALİMATLAR görünür mü (sevkiyat ekibi + muhasebe) */
+/* v128: TAHSİLAT (para) yalnız muhasebe («tah» izni), Sevkiyat Sorumlusu (sahada tahsil eden) ve yönetici. Depo Görevlisi artık görmez.
+   Bir kişiye ayrıca açmak için: Yönetici > Kullanıcılar > Kişiye özel izinler > «Tahsilat & talimat». rules.json tahsilatlar ile aynı. */
+const tahsilatGor=()=>modGor("tah")||(!!rec&&rec.onay===true&&rec.rol==="Sevkiyat Sorumlusu"&&iz("tah")!==false);
 const isVeriGor=()=>modGor("is")||modGor("uretim"); /* iş emri verisini okuyabilir mi (İş emirleri veya Üretim) */
 const asamaYap=a=>yAcik()||(iz("a_"+a)!==undefined?iz("a_"+a):!!(yRol()&&yRol().asama.includes(a))); /* aşamayı ilerletebilir mi */
 const islemYap=k=>yAcik()||(iz(k)!==undefined?iz(k):!!(yRol()&&yRol()[k]));                /* isDuzenle, geriAl, isSil, fiyat */
@@ -434,8 +437,10 @@ function kart(u){
   const R=M().rozet,c={hazir:["hazir-border","badge-hazir",R[0]],sevk_edilecek:["sevk-border","badge-sevk",R[1]],sevk_edildi:["tamam-border","badge-tamam",R[2]]}[u.durum]||["","",""];
   const m=u.musteri&&u.musteri!=="Etikete Bakınız",p=u.urun&&u.urun!=="Etikete Bakınız",id=esc(u.id);
   const bt=(to,t,cl,span)=>`<button class="btn ${cl}" ${span?'style="grid-column:span 2" ':''}data-a="durum" data-to="${to}" data-id="${id}">${t}</button>`;
-  const geri=u.durum==="sevk_edilecek"?["hazir",M().geri[0],"b6"]:u.durum==="sevk_edildi"?["sevk_edilecek",M().geri[1],"b2"]:null;
-  const ileri=u.durum==="hazir"?((mod==="sevk"&&!sevForm())?null:["sevk_edilecek",M().ileri[0],"b2"]):u.durum==="sevk_edilecek"?["sevk_edildi",M().ileri[1],"b4"]:null;
+  /* v128: şoför (Sevkiyat Sorumlusu) sevki iptal edip Hazır ürünlere geri alamaz; başka şoföre verilmiş sevki «Teslim edildi» yapamaz, kendi teslimini geri alabilir */
+  const sof=mod==="sevk"&&!sevForm(),benim=!u.sevkSorumluUid||u.sevkSorumluUid===user.uid;
+  const geri=u.durum==="sevk_edilecek"?(sof?null:["hazir",M().geri[0],"b6"]):u.durum==="sevk_edildi"?((sof&&!(benim||(u.teslimEden&&u.teslimEden===ad())))?null:["sevk_edilecek",M().geri[1],"b2"]):null;
+  const ileri=u.durum==="hazir"?(sof?null:["sevk_edilecek",M().ileri[0],"b2"]):u.durum==="sevk_edilecek"?((sof&&!benim)?null:["sevk_edildi",M().ileri[1],"b4"]):null;
   const both=geri&&ileri,canDel=sevForm()&&(isAdmin()||(u.ekleyenUid&&u.ekleyenUid===user.uid));
   const nx=(geri?bt(geri[0],geri[1],geri[2],!both):"")+(ileri?bt(ileri[0],ileri[1],ileri[2],!both):"");
   const eb=!sevForm()?"":`<button class="btn b6" ${canDel?"":'style="grid-column:span 2" '}data-a="edit" data-id="${id}">✏️ Düzenle</button>`;
@@ -492,7 +497,8 @@ $("liste").onclick=async e=>{
     else if(b.dataset.a==="map")haritaAc(u.haritaUrl,u.adres);
     else if(b.dataset.a==="arac"){if(sevForm())aracAc(u)}
     else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edilecek"&&u.durum==="hazir"){if(!sevForm()){toast("Sevkiyat sorumluları sevk listesine alamaz.");return}aracAc(u)}
-    else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edildi"){turAc(u)}
+    else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="sevk_edildi"){if(!sevForm()&&u.sevkSorumluUid&&u.sevkSorumluUid!==user.uid){toast("Bu sevk başka sorumluya verilmiş.");return}turAc(u)}
+    else if(b.dataset.a==="durum"&&mod==="sevk"&&b.dataset.to==="hazir"&&!sevForm()){toast("Sevki iptal etmeyi yalnız ofis yapabilir.");return}
     else if(b.dataset.a==="durum"){const up={durum:b.dataset.to};up.teslimEden=b.dataset.to==="sevk_edildi"?ad():null;if(mod==="sevk"&&b.dataset.to==="hazir"&&sevForm()){up.arac=null;up.sevkSorumlu=null;up.sevkSorumluUid=null}await db.ref(M().yol+"/"+u.id).update(up);
       if(mod==="sevk"&&window.bil&&u.sevkSorumluUid&&(b.dataset.to==="hazir"||b.dataset.to==="sevk_edilecek"))bil(["u_"+u.sevkSorumluUid,"yon"],{t:"sevk",ik:"↩️",b:b.dataset.to==="hazir"?"↩️ Sevkiyat iptal edildi (hazır ürünlere döndü): "+(u.musteri||"-"):"↩️ Teslim geri alındı: "+(u.musteri||"-"),m:fmt(u.kg)+" kg · "+fmt(u.paket)+" adet",git:"sev:"+b.dataset.to})}
     else if(b.dataset.a==="del"&&confirm("Bu kayıt silinsin mi?"+(u.isEmriId?"\nBağlı iş emri ("+(u.isEmriNo||"")+") de silinecek.":""))){await silCop(M().yol,u.id,(u.musteri||"")+" / "+(u.urun||""),isAdmin()?["fiyatlar/sevk/"+u.id]:[]);if(mod==="sevk"&&window.bil&&u.durum!=="hazir")bil(["u_"+(u.sevkSorumluUid||""),"yon"],{t:"sevk",ik:"🗑️",b:"🗑️ Sevkiyat kaydı silindi: "+(u.musteri||"-"),m:fmt(u.kg)+" kg · "+fmt(u.paket)+" adet"});const bn=await bagliIsEmriSil(u.isEmriId,u.id);toast("Silindi (Çöp kutusuna alındı)"+(bn?" · iş emri "+bn+" de silindi":""))}
@@ -890,7 +896,8 @@ function menuUygula(){
   {const f=$("sevForm");if(f)f.classList.toggle("hide",!sevForm())}
   /* "Tahsilat" menü düğmesi yalnız sevkiyat yetkisi OLMAYANLARA görünür (sevkiyatı olanlar zaten Sevkiyat içindeki sekmeden girer) */
   {const t=document.querySelector('[data-go="tah"]');if(t)t.classList.toggle("hide",!(modGor("tah")&&!modGor("sevk")))}
-  {const sv=modGor("sevk"),th=tahGor();document.querySelectorAll("#vtabs button").forEach(b=>{const v=b.dataset.v;b.classList.toggle("hide",(v==="sev"||v==="adr")?!sv:!th)})}
+  {const sv=modGor("sevk"),th=tahGor(),tp=tahsilatGor();document.querySelectorAll("#vtabs button").forEach(b=>{const v=b.dataset.v;b.classList.toggle("hide",(v==="sev"||v==="adr")?!sv:v==="tah"?!tp:!th)})}
+  {const c=$("bCsv");if(c)c.classList.toggle("hide",!sevForm())} /* şoför Excel almaz */
 }
 function modSec(m){
   if(!modGor(m)){const f=ilkBolum();if(!f){toast("Bu bölüm için yetkiniz yok.");menuOk=false;show("vMenu");return}m=f}
@@ -1506,7 +1513,7 @@ var dPdfM={};
 $("dMore").onclick=()=>{dLimit+=200;dosYukle()};
 function dosFiltre(){
   const st=fbDurum("dq"),tp=$("dtp").value;
-  const R=dosya.filter(d=>fbEsles(st,[d.musteri,d.urun,d.adres,d.not,d.irsNot,d.ekleyen,d.teslimEden,d.onaylayan,turAd(d),d.metin,d.cari,d.makbuzNo,d.alanNot,d.atayan,d.yapan,d.talepEden,d.alan,d.adresAd],dTarih(d))&&(!tp||(tp==="talimat"||tp==="tahsilat"?d.kaynak===tp:(!d.kaynak&&(d.irsTur||"irsaliye")===tp))))
+  const R=dosya.filter(d=>(d.kaynak!=="tahsilat"||tahsilatGor())&&fbEsles(st,[d.musteri,d.urun,d.adres,d.not,d.irsNot,d.ekleyen,d.teslimEden,d.onaylayan,turAd(d),d.metin,d.cari,d.makbuzNo,d.alanNot,d.atayan,d.yapan,d.talepEden,d.alan,d.adresAd],dTarih(d))&&(!tp||(tp==="talimat"||tp==="tahsilat"?d.kaynak===tp:(!d.kaynak&&(d.irsTur||"irsaliye")===tp))))
     .sort((x,y)=>(dTarih(y)>dTarih(x)?1:dTarih(y)<dTarih(x)?-1:0)||dZaman(y)-dZaman(x));
   fbSay("dq",R.length,dosya.length);return R;
 }

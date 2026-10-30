@@ -32,7 +32,7 @@
     git_sevkiyat:{a:"Sevkiyatlar ekranını aç (hazır ürünler, sevk edilecekler, sevk edilenler)",f:function(){if(!modGor("sevk"))return YOK;git("sevk","sev");return"Sevkiyat açıldı"}},
     git_adresler:{a:"Sevk adresleri listesini aç",f:function(){if(!modGor("sevk"))return YOK;git("sevk","adr");return"Sevk adresleri açıldı"}},
     git_talimat:{a:"Talimatlar ekranını aç",f:function(){if(!tahGor())return YOK;git(tahMod(),"tal");return"Talimatlar açıldı"}},
-    git_tahsilat:{a:"Tahsilat (para tahsilatı, bekleyen/alınan) ekranını aç",f:function(){if(!tahGor())return YOK;git(tahMod(),"tah");return"Tahsilat açıldı"}},
+    git_tahsilat:{a:"Tahsilat (para tahsilatı, bekleyen/alınan) ekranını aç",f:function(){if(!tahsilatGor())return YOK;git(tahMod(),"tah");return"Tahsilat açıldı"}},
     git_stok:{a:"Stok ekranını aç (kalemler, siparişler, tedarikçiler)",f:function(){if(!modGor("stok"))return YOK;git("stok");return"Stok açıldı"}},
     git_isemirleri:{a:"İŞ EMİRLERİ&ETİKET ekranını aç (iş emri listesi, etiket hazırlama)",f:function(){if(!modGor("is"))return YOK;git("is");return"İş emirleri açıldı"}},
     git_uretim:{a:"Üretim ekranını aç (ekstruder, baskı, kesim aşamaları)",f:function(){if(!modGor("uretim"))return YOK;git("uretim");return"Üretim açıldı"}},

@@ -68,7 +68,7 @@
       var t=o.tur;
       if(t==="olustur")L.push([["as_etiket","yon"],{t:"is",ik:"🆕",b:"🆕 Yeni iş emri "+no,m:oz+(e.baskiVar?" · 🖨️ Baskılı":"")+(e.termin?" · Termin "+trTarih(e.termin):"")}]);
       else if(t==="ileri"||t==="etiketsiz"){
-        if(o.kime==="bitti")L.push([["sevk","yon",eu],{t:"asama",ik:"✅",b:"✅ "+no+" üretimi bitti — depoya girdi",m:[e.musteri,(o.kg!=null?fmt(o.kg)+" kg":""),(o.paket?fmt(o.paket)+" paket":"")].filter(Boolean).join(" · ")+" · Hazır ürünlere aktarılmayı bekliyor"}]);
+        if(o.kime==="bitti")L.push([["as_depo","yon",eu],{t:"asama",ik:"✅",b:"✅ "+no+" üretimi bitti — depoya girdi",m:[e.musteri,(o.kg!=null?fmt(o.kg)+" kg":""),(o.paket?fmt(o.paket)+" paket":"")].filter(Boolean).join(" · ")+" · Hazır ürünlere aktarılmayı bekliyor"}]);
         else if(ASAMALAR.indexOf(o.kime)>=0){
           L.push([["as_"+o.kime],{t:"asama",ik:"📥",b:"📥 "+no+" → "+asAd(o.kime)+" aşamasına geldi",m:oz+(o.kimden?" · "+asAd(o.kimden)+" tamamlandı":"")+(t==="etiketsiz"?" · ⚠️ etiketsiz geçti":"")}]);
           if(t==="etiketsiz")L.push([["yon"],{t:"asama",ik:"⚠️",b:"⚠️ "+no+" etiket yapılmadan "+asAd(o.kime)+"'e geçti",m:oz}]);
@@ -240,7 +240,7 @@
       if(g==="is"&&x.r){if(isVeriGor())qrIsle(x.r);else toast("İş emirlerine erişim yetkiniz yok.");return}
       if(g.indexOf("sev")===0){if(!modGor("sevk"))return toast("Sevkiyat bölümüne erişim yetkiniz yok.");ac("sevk");vTabSet("sev");
         var t=g.split(":")[1];if(t){var b=document.querySelector('#tabs button[data-t="'+t+'"]');if(b)b.click()}return}
-      if(g==="tal"||g==="tah"){if(!tahGor())return toast("Bu bölüme erişim yetkiniz yok.");ac(modGor("sevk")?"sevk":"tah");vTabSet(g);return}
+      if(g==="tal"||g==="tah"){if(!(g==="tah"?tahsilatGor():tahGor()))return toast("Bu bölüme erişim yetkiniz yok.");ac(modGor("sevk")?"sevk":"tah");vTabSet(g);return}
       if(g==="stok"||g==="sip"){if(!modGor("stok"))return toast("Stok bölümüne erişim yetkiniz yok.");ac("stok");if(g==="sip"&&typeof sTabSet==="function")sTabSet("sip");return}
       if(g==="granul"){if(!modGor("granul"))return toast("Granül bölümüne erişim yetkiniz yok.");ac("granul");return}
       if(g==="dos"){if(!modGor("dos"))return toast("Dosyalar bölümüne erişim yetkiniz yok.");ac("dos");return}
