@@ -83,6 +83,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #vDos .hl{padding:5px}#vDos .hl b{font-size:22px}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99999;max-width:90vw;text-align:center}
 #toast.on{opacity:1}
+#toast[popover]{inset:auto;width:max-content;max-width:90vw;bottom:16px;left:50%;margin:0;border:0;color:#fff;background:#1e293b;overflow:visible} /* v124 */
 #fGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
 .fth{position:relative}.fth img{width:100%;height:110px;object-fit:cover;border-radius:8px;background:#0f172a;cursor:zoom-in}
 .fth .fx{position:absolute;top:4px;right:4px;width:28px;height:28px;border:0;border-radius:50%;background:#e71d36;color:#fff;font-size:17px;font-weight:900;cursor:pointer;line-height:1}

@@ -46,7 +46,10 @@ function fbSay(q,n,top,ad){const f=FB[q];if(!f)return;const st=fbDurum(q);$(q+"X
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=n=>Number(n||0).toLocaleString("tr-TR",{maximumFractionDigits:2});
 const trDate=s=>{const p=(s||"").split("-");return p.length===3?`${p[2]}.${p[1]}.${p[0]}`:"-"};
-function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),2800)}
+/* v124: mesaj açık pencerelerin (dialog) ÜSTÜNDE görünsün diye «popover» (üst katman) kullanılır; uzun mesaj daha uzun kalır */
+function toast(m){const t=$("toast");t.textContent=m;
+  try{if(t.showPopover){if(!t.hasAttribute("popover"))t.setAttribute("popover","manual");if(t.matches(":popover-open"))t.hidePopover();t.showPopover()}}catch(e){}
+  t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>{t.classList.remove("on");setTimeout(()=>{try{if(!t.classList.contains("on")&&t.matches(":popover-open"))t.hidePopover()}catch(e){}},250)},Math.max(2800,String(m).length*70))}
 function safeUrl(s){try{const u=new URL(s);return(u.protocol==="http:"||u.protocol==="https:")?u.href:""}catch(e){return""}}
 function errText(e){const m={"auth/email-already-in-use":"Bu kullanıcı adı zaten alınmış.","auth/wrong-password":"Kullanıcı adı veya şifre hatalı.","auth/user-not-found":"Kullanıcı adı veya şifre hatalı.","auth/invalid-credential":"Kullanıcı adı veya şifre hatalı.","auth/weak-password":"Şifre en az 6 karakter olmalı.","auth/too-many-requests":"Çok fazla deneme. Biraz bekleyin.","auth/network-request-failed":"İnternet bağlantısı yok.","PERMISSION_DENIED":"Bu işlem için yetkiniz yok."};const ms=e.message||"";
   if(/EMAIL_EXISTS/.test(ms)||e.code==="auth/email-already-in-use")return "Bu kullanıcı adı zaten alınmış.";

@@ -325,8 +325,9 @@
   $("bdPushK").onclick=function(){
     if(!isAdmin())return;var u=$("bdPushU").value.trim().replace(/\/+$/,"");
     if(u&&!/^https:\/\/[^\s\/]+(\/[^\s]*)?$/.test(u))return toast("Adres https:// ile başlamalı (örn. https://mag-bildirim.xxx.workers.dev)");
-    db.ref("ayarlar/push").set(u?{url:u.slice(0,200)}:null).then(function(){toast(u?"✓ Sunucu adresi kaydedildi":"Sunucu adresi silindi");if(u)fetch(u+"/").then(function(r){return r.text()}).then(function(t){toast(t.slice(0,90))}).catch(function(){toast("⚠️ Sunucuya ulaşılamadı, adresi kontrol edin")})}).catch(function(er){toast(errText(er))})};
-  $("bdSina").onclick=function(){pushIstek("/sina",{}).then(function(j){toast(j.ok?"✓ Deneme bildirimi gönderildi ("+j.kayitli+" telefon). Uygulamayı kapatıp da deneyebilirsiniz.":"⚠️ "+(j.hata||"gönderilemedi"))}).catch(function(e){toast("⚠️ "+e.message)})};
+    db.ref("ayarlar/push").set(u?{url:u.slice(0,200)}:null).then(function(){toast(u?"✓ Sunucu adresi kaydedildi":"Sunucu adresi silindi");if(u)fetch(u+"/").then(function(r){return r.text()}).then(function(t){toast(t.slice(0,90));setTimeout(function(){pushKur(true)},500)}).catch(function(){toast("⚠️ Sunucuya ulaşılamadı, adresi kontrol edin")})}).catch(function(er){toast("⚠️ Kaydedilemedi: "+errText(er)+" (Firebase kuralları yayınlandı mı?)")})};
+  $("bdSina").onclick=function(){var u=$("bdTelUy"),yaz=function(t){toast(t);if(u)u.textContent=t};yaz("Gönderiliyor…");
+    pushIstek("/sina",{}).then(function(j){yaz(j.ok?"✓ Deneme bildirimi gönderildi ("+j.gonderilen+"/"+j.kayitli+" cihaz). Gelmediyse: Windows/telefon bildirim ayarlarında Chrome'a izin verildiğini kontrol edin.":"⚠️ "+(j.hata||"gönderilemedi")+(j.kayitli?" ("+j.kayitli+" kayıtlı cihaz, hiçbirine ulaşılamadı)":""))}).catch(function(e){yaz("⚠️ "+e.message)})};
   {var tt=$("bdTelTop");if(tt)tt.onclick=izinIste}
 
   /* ---------------- HATIRLATMALAR (anlık hesaplanır, kayıt tutulmaz) ---------------- */
