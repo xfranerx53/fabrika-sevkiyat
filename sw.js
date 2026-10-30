@@ -1,5 +1,5 @@
-const CACHE = 'fabrika-v122';
-const V = '?v=122';
+const CACHE = 'fabrika-v123';
+const V = '?v=123';
 const ASSETS = ['./', './index.html', './manifest.webmanifest',
   './style.css'+V, './raporlar.js'+V, './xlsx-yaz.js'+V, './app.js'+V, './foto-onizleme.js'+V, './saat.js'+V, './diyalog.js'+V,
   './qr.js'+V, './etiket.js'+V, './arama.js'+V, './israpor.js'+V, './fotookut.js'+V, './sesasistan.js'+V, './adrsec.js'+V, './talimat.js'+V, './tahsilat.js'+V, './bildirim.js'+V, './surum.js'+V, './granul.js'+V, './pano.js'+V, './stokaktar.js'+V, './baglanti.js'+V, './sw-kayit.js'+V, './yazi.js'+V, './hesap.js'+V,
@@ -43,3 +43,16 @@ self.addEventListener('notificationclick', e => {
     return self.clients.openWindow(self.registration.scope + '#bil=' + encodeURIComponent(k));
   }));
 });
+
+// v123: Uygulama KAPALIYKEN gelen bildirim (Cloudflare bildirim sunucusu -> standart Web Push)
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (x) { d = { b: e.data ? e.data.text() : '' }; }
+  const o = { body: d.m || '', icon: 'icon-192.png', badge: 'icon-192.png', tag: d.key || 'fabrika', renotify: true, data: { k: d.key || '' }, vibrate: [200, 100, 200] };
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+    // uygulama şu an ekranda açıksa sessiz göster (uygulama kendi uyarısını zaten çıkarıyor)
+    if (cs.some(c => c.visibilityState === 'visible')) o.silent = true;
+    return self.registration.showNotification(d.b || 'MAG AMBALAJ', o);
+  }));
+});
+

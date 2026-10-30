@@ -5,7 +5,7 @@ Stok ve Sevkiyat Takip (MAG AMBALAJ) — https://xfranerx53.github.io/fabrika-se
 
 ## Dosyalar
 - `index.html` (sayfa yapısı), `style.css` (görünüm), `*.js` (app, pano, baglanti, raporlar, etiket, qr, talimat, tahsilat, arama, saat, diyalog, foto-onizleme, sw-kayit, yazi, hesap, bildirim, surum), `sw.js`, `manifest.webmanifest`, ikonlar: siteye yüklenen dosyalar (GitHub)
-- Dosya değiştirince `index.html` ve `sw.js` içindeki `?v=122` ile `fabrika-v122` sayısı birlikte artırılır (tarayıcı önbelleği için). Bunu `node kontrol.js --artir` yapar.
+- Dosya değiştirince `index.html` ve `sw.js` içindeki `?v=123` ile `fabrika-v123` sayısı birlikte artırılır (tarayıcı önbelleği için). Bunu `node kontrol.js --artir` yapar.
 - `firebase.json` + `.github/workflows/yayinla.yml`: siteyi Firebase Hosting'de otomatik yayınlar (bkz. PROJE-NOTLARI.md 1.1)
 - `kontrol.js`: teslim öncesi otomatik kontrol aracı (siteyi etkilemez)
 - `rules.json`: Firebase **Realtime Database > Kurallar** sekmesine yapıştırılır
@@ -14,3 +14,6 @@ Stok ve Sevkiyat Takip (MAG AMBALAJ) — https://xfranerx53.github.io/fabrika-se
 ## Yedek
 Yönetici > Yedekleme: JSON / Excel indirme. Ayrıca Firebase > Realtime Database > Backups (Blaze planı) ile günlük otomatik yedek açın.
 JSON yedeği Firebase Konsolu > Realtime Database > ⋮ > "JSON'u içe aktar" ile geri yüklenir.
+
+## Kapalıyken bildirim (v123)
+`cloudflare/bildirim-worker.js` siteye yüklenmez; Cloudflare Workers'a yapıştırılır (kurulum: PROJE-NOTLARI.md Bölüm 9).

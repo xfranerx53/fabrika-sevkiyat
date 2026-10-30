@@ -40,6 +40,7 @@
       var key=db.ref("bildirim").push().key,v={t:ks(o.t||"genel",12),b:ks(o.b,120),k:ks((rec&&rec.ad)||"?",100),ku:me(),z:TS()};
       if(o.m)v.m=ks(o.m,400);if(o.ik)v.ik=ks(o.ik,8);if(o.git)v.git=ks(o.git,20);if(o.r)v.r=ks(o.r,100);
       L.forEach(function(c){try{db.ref("bildirim/"+c+"/"+key).set(v).catch(function(){})}catch(e){}});
+      pushYolla(L,{t:v.t,b:v.b,m:v.m||"",ik:v.ik||"",git:v.git||"",r:v.r||"",key:key});
     }catch(e){}
   }
   window.bil=bil;
@@ -107,7 +108,7 @@
   var refs=[],D={},hazir={},hata={},okRef=null,son=0,kapat={},okVar=false,imza="",goruldu={},ilkTm=null,bekleyenKey=null,basladi=false,okHata="";
   var LISTE=[];
   function durdur(){refs.forEach(function(r){try{r.off()}catch(e){}});refs=[];D={};hazir={};hata={};LISTE=[];goruldu={};
-    if(okRef){okRef.off();okRef=null}son=0;kapat={};okVar=false;imza="";basladi=false;okHata="";ilkTm=null;rozet()}
+    if(okRef){okRef.off();okRef=null}if(pushRef){pushRef.off();pushRef=null}son=0;kapat={};okVar=false;imza="";basladi=false;okHata="";ilkTm=null;rozet()}
   window.bilDurdur=durdur;
   function baslat(){
     durdur();if(!user||!rec||rec.onay!==true)return;basladi=true;
@@ -122,6 +123,7 @@
       r.on("value",function(s){D[c]=s.val()||{};var ilk=!hazir[c];hazir[c]=true;delete hata[c];birles(ilk?c:null)},
         function(e){hata[c]=errText(e);hazir[c]=true;birles()});
       refs.push(r)});
+    pushBaslat();
     if(isAdmin())setTimeout(temizle,30000);
     setTimeout(gunlukHatirlat,9000);
     if(!localStorage.getItem("bilIpucu")&&"Notification" in window&&Notification.permission==="default")
@@ -129,7 +131,7 @@
   }
   window.bilBaslat=baslat;
   /* yetki/rol değişince kanallar değişir: yeniden abone ol */
-  window.bilKanalKontrol=function(){if(!basladi)return;var K=kanallarim().join(",");if(K!==imza)baslat()};
+  window.bilKanalKontrol=function(){if(!basladi)return;var K=kanallarim().join(",");if(K!==imza){baslat();setTimeout(function(){pushKur(false)},4000)}};
 
   function birles(ilkKanal){
     var M={};
@@ -155,6 +157,53 @@
     try{if(navigator.setAppBadge){if(n)navigator.setAppBadge(n).catch(function(){});else navigator.clearAppBadge().catch(function(){})}}catch(e){}
   }
 
+  /* ---------------- KAPALIYKEN BİLDİRİM: Cloudflare sunucusu (v123, cloudflare/bildirim-worker.js) ----------------
+     Sunucu adresi ayarlar/push/url (yönetici 🔔 > ⚙️'den girer). Telefon izin verince tarayıcının push aboneliği
+     sunucuya kaydedilir; her bildirim bil() ile sunucuya da gönderilir, sunucu ilgili telefonlara iletir (sw.js «push»). */
+  var PUSH="",pushRef=null,pushDurum="";
+  var pjDec=function(s){s=String(s).replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";var t=atob(s),o=new Uint8Array(t.length);for(var i=0;i<t.length;i++)o[i]=t.charCodeAt(i);return o};
+  var pjEnc=function(b){b=new Uint8Array(b);var s="";for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")};
+  function pushDestek(){return !!(window.PushManager&&navigator.serviceWorker&&"Notification" in window)}
+  function pushAktif(){try{return localStorage.getItem("pushOk")==="1"&&localStorage.getItem("pushUid")===me()}catch(e){return false}}
+  async function pushIstek(yol,govde){
+    if(!PUSH||!auth.currentUser)throw new Error("sunucu yok");
+    var t=await auth.currentUser.getIdToken();
+    var r=await fetch(PUSH+yol,{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify(govde||{})});
+    var j={};try{j=await r.json()}catch(e){}
+    if(!r.ok)throw new Error(j.hata||("sunucu hatası "+r.status));return j}
+  function pushYolla(L,o){if(!PUSH)return;try{var g=Object.assign({kanallar:L},o);pushIstek("/gonder",g).catch(function(){})}catch(e){}}
+  var pushMesgul=false;
+  async function pushKur(zorla){
+    if(pushMesgul||!PUSH||!user||!pushDestek()||Notification.permission!=="granted")return;
+    pushMesgul=true;
+    try{
+      var reg=await navigator.serviceWorker.ready;
+      var vr=await fetch(PUSH+"/vapid");if(!vr.ok)throw new Error("sunucuya ulaşılamadı");
+      var pub=(await vr.json()).pub;
+      var sub=await reg.pushManager.getSubscription();
+      if(sub&&sub.options&&sub.options.applicationServerKey&&pjEnc(sub.options.applicationServerKey)!==pub){try{await sub.unsubscribe()}catch(e){}sub=null}
+      if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:pjDec(pub)});
+      var j=sub.toJSON(),im=[j.endpoint,me(),kanallarim().join(","),Object.keys(kapat).sort().join(","),PUSH].join("|"),gun=new Date().toISOString().slice(0,10);
+      var eski="";try{eski=localStorage.getItem("pushImza")||""}catch(e){}
+      if(zorla||eski!==im+"|"+gun.slice(0,8)){
+        await pushIstek("/abone",{sub:j,cihaz:(navigator.userAgent||"").replace(/^Mozilla\/5.0 /,"").slice(0,80),kapat:Object.keys(kapat)});
+        try{localStorage.setItem("pushImza",im+"|"+gun.slice(0,8));localStorage.setItem("pushOk","1");localStorage.setItem("pushUid",me())}catch(e){}
+      }
+      pushDurum="ok";
+    }catch(e){pushDurum="hata: "+((e&&e.message)||e);try{localStorage.setItem("pushOk","0")}catch(x){}}
+    pushMesgul=false;telDurum()}
+  /* çıkışta bu telefonun aboneliği kaldırılır (başkası girerse eski kişinin bildirimi gelmesin) */
+  document.addEventListener("click",function(e){
+    if(!e.target.closest||!e.target.closest("[data-out]"))return;
+    try{localStorage.removeItem("pushImza");localStorage.setItem("pushOk","0")}catch(x){}
+    try{var ep="";if(navigator.serviceWorker)navigator.serviceWorker.getRegistration().then(function(r){return r&&r.pushManager.getSubscription()}).then(function(s){if(!s)return;ep=s.endpoint;
+      if(PUSH)pushIstek("/sil",{endpoint:ep}).catch(function(){});return s.unsubscribe()}).catch(function(){})}catch(x){}},true);
+  function pushBaslat(){
+    if(pushRef){pushRef.off();pushRef=null}
+    pushRef=db.ref("ayarlar/push/url");
+    pushRef.on("value",function(s){var u=String(s.val()||"").trim().replace(/\/+$/,"");PUSH=/^https:\/\//.test(u)?u:"";var i=$("bdPushU");if(i&&document.activeElement!==i)i.value=PUSH;
+      if(PUSH)setTimeout(function(){pushKur(false)},3000);else pushDurum="";telDurum()},function(){PUSH="";telDurum()})}
+
   /* ---------------- UYARI (ekranda + telefonda) ---------------- */
   function sesAcik(){try{return localStorage.getItem("bilSes")!=="0"}catch(e){return true}}
   function bip(){try{var C=window.AudioContext||window.webkitAudioContext;if(!C)return;var a=bip.c||(bip.c=new C());if(a.state==="suspended")a.resume();
@@ -178,7 +227,8 @@
     popEl.classList.add("on");clearTimeout(popTm);popTm=setTimeout(kapatPop,7000)}
   function kapatPop(){if(!popEl)return;popEl.classList.remove("on");try{if(popEl.hidePopover&&popEl.matches(":popover-open"))popEl.hidePopover()}catch(e){}}
   function uyar(x){
-    if(document.hidden){if(!telBildir(x))try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
+    if(document.hidden){if(pushAktif())return; /* sunucu bu bildirimi telefona zaten gönderiyor (sw.js) */
+      if(!telBildir(x))try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
     else{pop(x);try{navigator.vibrate&&navigator.vibrate([150,80,150])}catch(e){}if(sesAcik())bip()}
   }
 
@@ -250,7 +300,8 @@
     $("bdKat").innerHTML=TUR.map(function(x){return '<label class="chip" style="display:flex;padding:6px 10px;font-size:14px;margin:4px 0"><input type="checkbox" data-kt="'+x[0]+'"'+(kapat[x[0]]?"":" checked")+' style="width:auto;margin:0 8px 0 0"> '+esc(x[1])+'</label>'}).join("")}
   $("bdKat").onchange=function(e){var c=e.target.closest("input[data-kt]");if(!c||!user)return;var t=c.dataset.kt;
     if(c.checked)delete kapat[t];else kapat[t]=true;rozet();ciz();
-    db.ref("bildirimOku/"+me()+"/kapat/"+t).set(c.checked?null:true).catch(function(er){toast(errText(er))})};
+    db.ref("bildirimOku/"+me()+"/kapat/"+t).set(c.checked?null:true).catch(function(er){toast(errText(er))});
+    if(PUSH)setTimeout(function(){pushKur(false)},500)};
   /* telefon bildirimi izni */
   function telDurum(){
     var el=$("bdTelD"),bt=$("bdTelAc"),uy=$("bdTelUy");if(!el)return;
@@ -259,13 +310,23 @@
     bt.classList.toggle("hide",st!=="default");
     uy.innerHTML=st==="denied"?"Telefon ayarlarından izin verin: Chrome > ⋮ > Ayarlar > Site ayarları > Bildirimler > bu site > İzin ver. (Ana ekrandaki uygulama ise: uzun basın > Uygulama bilgisi > Bildirimler.)"
       :st==="yok"?"iPhone'da: siteyi Safari'den «Ana Ekrana Ekle» ile kurup oradan açınca desteklenir (iOS 16.4+)."
-      :st==="granted"?"Uygulama açıkken veya arka plandayken bildirim telefonun üst çubuğuna düşer. Uygulama tamamen kapalıyken gelmez (bkz. not).":"";
+      :st==="granted"?(!PUSH?"Uygulama açıkken veya arka plandayken bildirim telefonun üst çubuğuna düşer. Kapalıyken gelmesi için yöneticinin bildirim sunucusu adresini girmesi gerekir."
+        :!pushDestek()?"Bu tarayıcı kapalıyken bildirimi desteklemiyor (iPhone'da ana ekrana ekleyip oradan açın)."
+        :pushDurum==="ok"?"✅ Uygulama KAPALIYKEN de bildirim gelir (bu telefon sunucuya kayıtlı).":pushDurum?"⚠️ Kapalıyken bildirim kurulamadı: "+esc(pushDurum):"Sunucuya kaydediliyor…"):"";
+    var sb=$("bdSina");if(sb)sb.classList.toggle("hide",!(PUSH&&st==="granted"&&pushDurum==="ok"));
+    var pw=$("bdPushW");if(pw)pw.classList.toggle("hide",!isAdmin());
     var top=$("bdTelTop");if(top)top.classList.toggle("hide",st!=="default");
   }
   function izinIste(){
     if(!("Notification" in window))return toast("Bu tarayıcı bildirim desteklemiyor.");
-    Notification.requestPermission().then(function(p){telDurum();if(p==="granted"){toast("✓ Telefon bildirimleri açıldı");telBildir({b:"🔔 Bildirimler açık",m:"Size gelen işler burada görünecek.",key:""})}else toast("Bildirim izni verilmedi.")})}
+    Notification.requestPermission().then(function(p){telDurum();if(p==="granted"){toast("✓ Telefon bildirimleri açıldı");telBildir({b:"🔔 Bildirimler açık",m:"Size gelen işler burada görünecek.",key:""});pushKur(true)}else toast("Bildirim izni verilmedi.")})}
   $("bdTelAc").onclick=izinIste;
+  /* yönetici: sunucu adresi */
+  $("bdPushK").onclick=function(){
+    if(!isAdmin())return;var u=$("bdPushU").value.trim().replace(/\/+$/,"");
+    if(u&&!/^https:\/\/[^\s\/]+(\/[^\s]*)?$/.test(u))return toast("Adres https:// ile başlamalı (örn. https://mag-bildirim.xxx.workers.dev)");
+    db.ref("ayarlar/push").set(u?{url:u.slice(0,200)}:null).then(function(){toast(u?"✓ Sunucu adresi kaydedildi":"Sunucu adresi silindi");if(u)fetch(u+"/").then(function(r){return r.text()}).then(function(t){toast(t.slice(0,90))}).catch(function(){toast("⚠️ Sunucuya ulaşılamadı, adresi kontrol edin")})}).catch(function(er){toast(errText(er))})};
+  $("bdSina").onclick=function(){pushIstek("/sina",{}).then(function(j){toast(j.ok?"✓ Deneme bildirimi gönderildi ("+j.kayitli+" telefon). Uygulamayı kapatıp da deneyebilirsiniz.":"⚠️ "+(j.hata||"gönderilemedi"))}).catch(function(e){toast("⚠️ "+e.message)})};
   {var tt=$("bdTelTop");if(tt)tt.onclick=izinIste}
 
   /* ---------------- HATIRLATMALAR (anlık hesaplanır, kayıt tutulmaz) ---------------- */

@@ -10,13 +10,17 @@
       "index.js",
       "package.json",
       "package-lock.json",
-      "rules.json"
+      "rules.json",
+      "cloudflare/**"
     ],
     "headers": [
       {
         "source": "**",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache" }
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
         ]
       }
     ]

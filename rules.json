@@ -678,6 +678,17 @@
         "$other": {
           ".validate": "false"
         }
+      },
+      "push": {
+        ".read": "auth != null && root.child('kullanicilar/' + auth.uid).child('onay').val() === true",
+        ".write": "auth != null && root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true",
+        ".validate": "newData.hasChildren(['url'])",
+        "url": {
+          ".validate": "newData.isString() && newData.val().length <= 200 && newData.val().matches(/^https:\\/\\/[^ ]+$/)"
+        },
+        "$other": {
+          ".validate": "false"
+        }
       }
     },
     "cop": {

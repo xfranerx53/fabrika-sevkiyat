@@ -16,8 +16,8 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="style.css?v=122">
-<script src="yazi.js?v=122"></script>
+<link rel="stylesheet" href="style.css?v=123">
+<script src="yazi.js?v=123"></script>
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -657,6 +657,12 @@
     <div style="margin-top:8px;font-size:15px">📳 Telefon bildirimi: <b id="bdTelD"></b></div>
     <button class="btn b2 sm hide" id="bdTelAc" type="button" style="width:auto;margin:6px 0">📳 Telefon bildirimlerini aç</button>
     <div class="mut" id="bdTelUy" style="font-size:13px;margin:4px 0 8px"></div>
+    <button class="btn b3 sm hide" id="bdSina" type="button" style="width:auto;margin:0 0 8px">🔔 Bana deneme bildirimi gönder</button>
+    <div id="bdPushW" class="hide" style="background:#f1f5f9;border-radius:10px;padding:8px;margin:4px 0 10px">
+      <div style="font-size:14px;font-weight:700">📡 Bildirim sunucusu adresi (Cloudflare) · yalnız yönetici</div>
+      <div class="mut" style="font-size:12px;margin:2px 0 6px">Uygulama kapalıyken bildirim gitmesi için. Boş bırakılırsa yalnız uygulama açıkken bildirim gelir.</div>
+      <div style="display:flex;gap:6px"><input id="bdPushU" type="url" inputmode="url" autocapitalize="none" spellcheck="false" placeholder="https://mag-bildirim.xxx.workers.dev" style="margin:0"><button class="btn b2" id="bdPushK" type="button" style="width:auto;margin:0;white-space:nowrap">Kaydet</button></div>
+    </div>
     <label style="display:flex;gap:8px;align-items:center;font-size:15px;margin:6px 0"><input id="bdSes" type="checkbox" style="width:auto;margin:0"> Uygulama açıkken sesli uyarı (bu cihazda)</label>
     <div style="font-size:14px;font-weight:700;margin-top:8px">Bu konularda bildirim al:</div>
     <div id="bdKat"></div>
@@ -711,18 +717,18 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="xlsx-yaz.js?v=122"></script>
-<script src="raporlar.js?v=122"></script>
+<script src="xlsx-yaz.js?v=123"></script>
+<script src="raporlar.js?v=123"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=122"></script>
+<script src="app.js?v=123"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=122"></script>
-<script src="saat.js?v=122"></script>
+<script src="foto-onizleme.js?v=123"></script>
+<script src="saat.js?v=123"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=122"></script>
+<script src="diyalog.js?v=123"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -753,8 +759,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=122"></script>
-<script src="etiket.js?v=122"></script>
+<script src="qr.js?v=123"></script>
+<script src="etiket.js?v=123"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -764,20 +770,20 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="adrsec.js?v=122"></script>
-<script src="talimat.js?v=122"></script>
-<script src="tahsilat.js?v=122"></script>
-<script src="bildirim.js?v=122"></script>
-<script src="surum.js?v=122"></script>
-<script src="granul.js?v=122"></script>
-<script src="arama.js?v=122"></script>
-<script src="israpor.js?v=122"></script>
-<script src="fotookut.js?v=122"></script>
-<script src="sesasistan.js?v=122"></script>
-<script src="pano.js?v=122"></script>
-<script src="stokaktar.js?v=122"></script>
-<script src="baglanti.js?v=122"></script>
-<script src="hesap.js?v=122"></script>
-<script src="sw-kayit.js?v=122"></script>
+<script src="adrsec.js?v=123"></script>
+<script src="talimat.js?v=123"></script>
+<script src="tahsilat.js?v=123"></script>
+<script src="bildirim.js?v=123"></script>
+<script src="surum.js?v=123"></script>
+<script src="granul.js?v=123"></script>
+<script src="arama.js?v=123"></script>
+<script src="israpor.js?v=123"></script>
+<script src="fotookut.js?v=123"></script>
+<script src="sesasistan.js?v=123"></script>
+<script src="pano.js?v=123"></script>
+<script src="stokaktar.js?v=123"></script>
+<script src="baglanti.js?v=123"></script>
+<script src="hesap.js?v=123"></script>
+<script src="sw-kayit.js?v=123"></script>
 </body>
 </html>
