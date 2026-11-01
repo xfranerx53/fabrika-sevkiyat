@@ -51,7 +51,7 @@
     if(!bit)b+='<button class="btn b3 sm" style="width:auto;margin:6px 6px 0 0" data-a="al" data-id="'+esc(x.id)+'">✓ Tahsil ettim</button>';
     if(!bit&&silebilir(x))b+='<button class="btn b7 sm" style="width:auto;margin:6px 6px 0 0" data-a="tduzenle" data-id="'+esc(x.id)+'">✏ Düzenle</button>';
     if(bit&&duzenleyebilir(x))b+='<button class="btn b7 sm" style="width:auto;margin:6px 6px 0 0" data-a="duzenle" data-id="'+esc(x.id)+'">✏ Düzenle</button>';
-    if(bit&&geriAlabilir(x))b+='<button class="btn b6 sm" style="width:auto;margin:6px 6px 0 0" data-a="geri" data-id="'+esc(x.id)+'">↩ Geri al</button>';
+    if(bit&&geriAlabilir(x))b+='<button class="btn bgeri sm" style="width:auto;margin:6px 6px 0 0" data-a="geri" data-id="'+esc(x.id)+'">↩ Geri al</button>';
     if(bit&&isAdmin())b+='<button class="btn b4 sm" style="width:auto;margin:6px 6px 0 0" data-a="dosya" data-id="'+esc(x.id)+'">📁 Dosyalara ekle</button>';
     if(silebilir(x))b+='<button class="btn b5 sm" style="width:auto;margin:6px 0 0" data-a="sil" data-id="'+esc(x.id)+'">🗑 Sil</button>';
     var tut="";

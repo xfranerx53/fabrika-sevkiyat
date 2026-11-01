@@ -19,6 +19,8 @@ input:focus,textarea:focus,select:focus{border-color:#2563eb}
 .btn{width:100%;padding:12px;border-radius:8px;font-weight:700;font-size:16px;border:0;cursor:pointer;color:#fff;margin-top:6px}
 .btn:disabled{opacity:.5}
 .b1{background:#2563eb}.b2{background:#ff9f1c}.b3{background:#2ec4b6}.b4{background:#3b82f6}.b5{background:#e71d36}.b6{background:#64748b}.b7{background:#0f766e}
+/* v130: tüm «geri al» düğmeleri her bölümde aynı renk */
+.bgeri{background:#7c3aed}
 .big{padding:16px!important;font-size:18px!important}
 .kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
 .kgrid .fth img{height:90px}.b8{background:#c82333}

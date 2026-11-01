@@ -439,7 +439,7 @@ function kart(u){
   const bt=(to,t,cl,span)=>`<button class="btn ${cl}" ${span?'style="grid-column:span 2" ':''}data-a="durum" data-to="${to}" data-id="${id}">${t}</button>`;
   /* v128: şoför (Sevkiyat Sorumlusu) sevki iptal edip Hazır ürünlere geri alamaz; başka şoföre verilmiş sevki «Teslim edildi» yapamaz, kendi teslimini geri alabilir */
   const sof=mod==="sevk"&&!sevForm(),benim=!u.sevkSorumluUid||u.sevkSorumluUid===user.uid;
-  const geri=u.durum==="sevk_edilecek"?(sof?null:["hazir",M().geri[0],"b6"]):u.durum==="sevk_edildi"?((sof&&!(benim||(u.teslimEden&&u.teslimEden===ad())))?null:["sevk_edilecek",M().geri[1],"b2"]):null;
+  const geri=u.durum==="sevk_edilecek"?(sof?null:["hazir",M().geri[0],"bgeri"]):u.durum==="sevk_edildi"?((sof&&!(benim||(u.teslimEden&&u.teslimEden===ad())))?null:["sevk_edilecek",M().geri[1],"bgeri"]):null;
   const ileri=u.durum==="hazir"?(sof?null:["sevk_edilecek",M().ileri[0],"b2"]):u.durum==="sevk_edilecek"?((sof&&!benim)?null:["sevk_edildi",M().ileri[1],"b4"]):null;
   const both=geri&&ileri,canDel=sevForm()&&(isAdmin()||(u.ekleyenUid&&u.ekleyenUid===user.uid));
   const nx=(geri?bt(geri[0],geri[1],geri[2],!both):"")+(ileri?bt(ileri[0],ileri[1],ileri[2],!both):"");
@@ -462,7 +462,7 @@ function kart(u){
   ${mod==="sevk"&&u.durum!=="hazir"&&ARACLAR[u.arac]?`<div class="who" style="color:#0f766e;font-weight:700">🚚 ${esc(ARACLAR[u.arac])}${u.sevkSorumlu?" · Sevk sorumlusu: "+esc(u.sevkSorumlu):""}</div>`:""}
   ${u.teslimEden?`<div class="who" style="color:#2563eb;font-weight:700">${M().teslim}: ${esc(u.teslimEden)}</div>`:""}
   ${irsHtml(u)}
-  <div class="acts">${onb}${mod==="sevk"&&u.durum==="sevk_edilecek"&&sevForm()?`<button class="btn b6" style="grid-column:span 2" data-a="arac" data-id="${id}">🚚 Araç / sorumlu değiştir</button>`:""}${u.isEmriNo&&u.durum==="hazir"&&mod==="sevk"&&sevForm()?`<button class="btn b2" style="grid-column:span 2" data-a="isgeri" data-id="${id}">↩️ İş emrine geri al (Biten)</button>`:""}${nx}${eb}${db2}</div></div>`;
+  <div class="acts">${onb}${mod==="sevk"&&u.durum==="sevk_edilecek"&&sevForm()?`<button class="btn b6" style="grid-column:span 2" data-a="arac" data-id="${id}">🚚 Araç / sorumlu değiştir</button>`:""}${u.isEmriNo&&u.durum==="hazir"&&mod==="sevk"&&sevForm()?`<button class="btn bgeri" style="grid-column:span 2" data-a="isgeri" data-id="${id}">↩️ İş emrine geri al (Biten)</button>`:""}${nx}${eb}${db2}</div></div>`;
 }
 let aracTab="isuzu";
 $("liste").addEventListener("click",e=>{const b=e.target.closest("button[data-arac]");if(!b)return;aracTab=b.dataset.arac;listele()});
@@ -658,7 +658,7 @@ async function copListele(){
   try{
     const s=await db.ref("cop").orderByChild("zaman").limitToLast(50).once("value"),v=s.val()||{},ks=Object.keys(v).sort((a,b)=>(v[b].zaman||0)-(v[a].zaman||0));
     $("copList").innerHTML=ks.map(k=>{const c=v[k];return `<div class="urow"><div><b>${esc(c.baslik||c.id)}</b><br><small>${esc(TURAD[c.tur]||c.tur||"")} · ${esc(c.kim||"")} · ${esc(zamanTR(c.zaman))}</small></div>
-      <div style="display:flex;gap:4px"><button class="btn sm b3" data-c="${esc(k)}" data-a="geri">Geri yükle</button><button class="btn sm b5" data-c="${esc(k)}" data-a="sil">Kalıcı sil</button></div></div>`}).join("")||"<p>Çöp kutusu boş.</p>";
+      <div style="display:flex;gap:4px"><button class="btn sm bgeri" data-c="${esc(k)}" data-a="geri">♻️ Geri yükle</button><button class="btn sm b5" data-c="${esc(k)}" data-a="sil">Kalıcı sil</button></div></div>`}).join("")||"<p>Çöp kutusu boş.</p>";
   }catch(e){toast(errText(e))}}
 async function copGeri(k){
   const s=await db.ref("cop/"+k).once("value");if(!s.exists())return;const c=s.val();
@@ -1554,7 +1554,7 @@ function kDetay(d){
   if(d.fotoTemiz)h+=ek("🧹 Fotoğraflar temizlendi · "+esc(dTam(d.fotoTemiz)));
   const n=+d.fotoSayi||0;
   if(n)h+=`<div class="acts s">${Array.from({length:n},(_,i)=>`<button class="btn b4" data-a="dfoto" data-p="fotolar/${i}" data-id="${id}">🖼️ Fotoğraf ${i+1}</button>`).join("")}</div>`;
-  if(isAdmin())h+=`<div class="acts"><button class="btn b6" data-a="dgeri" data-id="${id}">↩️ Dosyalardan çıkar</button><button class="btn b5" data-a="dsil" data-id="${id}">🗑️ Sil</button></div>`;
+  if(isAdmin())h+=`<div class="acts"><button class="btn bgeri" data-a="dgeri" data-id="${id}">↩️ Dosyalardan çıkar</button><button class="btn b5" data-a="dsil" data-id="${id}">🗑️ Sil</button></div>`;
   return h+"</div>";
 }
 /* Yönetici: tamamlanan talimat / alınan tahsilatı Dosyalar bölümüne taşır (kaynak kayıt silinir, fotoğraflar dosyaFoto'ya gider) */
@@ -1604,7 +1604,7 @@ function dDetay(d){
     ${d.fotoTemiz?`<div class="who">🧹 Fotoğraflar temizlendi · ${esc(dTam(d.fotoTemiz))}</div>`:""}
     <div class="who">${dPdfM[d.id]?`📄 PDF indirildi · ${esc(dTam(dPdfM[d.id].z))} · ${esc(dPdfM[d.id].kim||"")}`:"📄 PDF henüz indirilmedi"}</div>
     <div class="acts s">${d.fotoVar?`<button class="btn b6" data-a="dfoto" data-p="foto" data-id="${id}">🏷️ Etiket fotoğrafı</button>`:""}${Array.from({length:+d.fotoSayi||0},(_,i)=>`<button class="btn b6" data-a="dfoto" data-p="fotolar/${i}" data-id="${id}">🏷️ Foto ${i+2}</button>`).join("")}${d.irsVar?`<button class="btn b4" data-a="dfoto" data-p="irsaliye" data-id="${id}">${ic} ${esc(tn)} fotoğrafı</button>`:""}${(Array.isArray(d.irsEk)?d.irsEk:Object.values(d.irsEk||{})).map((m,i)=>`<button class="btn b4" data-a="dfoto" data-p="irsEkler/${i}" data-id="${id}">${{irsaliye:"📄",diger:"📝",iade:"↩️"}[m.tur]||"📄"} ${m.tur==="iade"?"İade":m.tur==="diger"?"Diğer"+(m.not?": "+esc(m.not):""):"İmzalı irsaliye"} fotoğrafı ${i+2}</button>`).join("")}</div>
-    ${isAdmin()?`<div class="acts"><button class="btn b6" data-a="dgeri" data-id="${id}">↩️ Onayı kaldır</button><button class="btn b5" data-a="dsil" data-id="${id}">🗑️ Sil</button></div>`:""}
+    ${isAdmin()?`<div class="acts"><button class="btn bgeri" data-a="dgeri" data-id="${id}">↩️ Onayı kaldır</button><button class="btn b5" data-a="dsil" data-id="${id}">🗑️ Sil</button></div>`:""}
   </div>`;
 }
 function dosListele(){
@@ -2004,7 +2004,7 @@ function isKart(e){
   ${lg}
   ${tikPanel(e)}
   <div class="acts">${e.asama==="etiket"&&asamaYap("etiket")?`<button class="btn b7 big" style="grid-column:span 2" data-a="etik" data-id="${id}">🏷️ Etiket hazırla</button>`:""}${nx&&asamaYap(e.asama)?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:18px" data-a="ileri" data-id="${id}">${e.asama==="depo"?"📦 Depoya girişi kaydet → BİTEN":"✓ Bitti → "+esc(ASL[nx])}</button>`:""}
-  ${i>0&&islemYap("geriAl")?`<button class="btn b6" data-a="geri" data-id="${id}">↩️ Geri al</button>`:""}${opRol()?"":`<button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button>`}${e.asama!=="etiket"&&asamaYap("etiket")?`<button class="btn b7" data-a="etik" data-id="${id}">🏷️ Etiket</button>`:""}${islemYap("isDuzenle")?`<button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>`:""}${opRol()?"":`<button class="btn b6" data-a="gecmis" data-id="${id}">🕘 Geçmiş</button><button class="btn b6" data-a="qr" data-id="${id}">📱 QR</button>`}${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div>
+  ${i>0&&islemYap("geriAl")?`<button class="btn bgeri" data-a="geri" data-id="${id}">↩️ Geri al</button>`:""}${opRol()?"":`<button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button>`}${e.asama!=="etiket"&&asamaYap("etiket")?`<button class="btn b7" data-a="etik" data-id="${id}">🏷️ Etiket</button>`:""}${islemYap("isDuzenle")?`<button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>`:""}${opRol()?"":`<button class="btn b6" data-a="gecmis" data-id="${id}">🕘 Geçmiş</button><button class="btn b6" data-a="qr" data-id="${id}">📱 QR</button>`}${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div>
   ${e.asama==="bitti"&&e.bekleAktar&&!e.aktarildi&&modGor("sevk")?`<button class="btn b4" style="width:100%;margin-top:8px;padding:14px;font-size:18px" data-a="aktar" data-id="${id}">📦 Hazır ürünlere aktar</button>`:""}${e.aktarildi?`<div class="note" style="margin-top:8px">✅ Hazır ürünlere aktarıldı</div>`:""}</div>`;
 }
 const isAksiyon=async ev=>{
