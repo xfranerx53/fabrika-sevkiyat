@@ -929,6 +929,17 @@
     "maliyet": {
       ".read": "((root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true) || (root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('kullanici').val() === 'magajan'))",
       ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true)"
+    },
+    "hata": {
+      ".read": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true)",
+      ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true)",
+      ".indexOn": [
+        "t"
+      ],
+      "$k": {
+        ".write": "auth != null && !data.exists()",
+        ".validate": "newData.hasChildren(['t','m']) && newData.child('m').isString() && newData.child('m').val().length <= 400 && newData.child('u').val() === auth.uid"
+      }
     }
   }
 }
