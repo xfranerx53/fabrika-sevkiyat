@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v131**
+**GÜNCEL SÜRÜM: v132**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -97,6 +97,7 @@ Kullanıcıyla Türkçe, sade, teknik terimsiz konuş.
 |---|---|---|
 | `index.html` (~520 satır) | Sadece arayüz iskeleti (giriş, menü, sevkiyat, stok, adres, dosyalar, yönetici pencereleri). Kod yok; script'leri `?v=NN` ile çağırır | GitHub |
 | `hatakayit.js` | (v131) Otomatik hata kaydı → `hata/` (firebase-database'den hemen sonra yüklenir) | GitHub |
+| `yz.js` | (v132) 🤖 YAPAY ZEKÂ ekranı: `ai/` (Mag Pazar gece ajanı yazar) — rol bazlı iş sırası, sevkiyat rotası, iş yükü, stok uyarısı; yalnız okur | GitHub |
 | `style.css` | Tüm görünüm | GitHub |
 | `app.js` (~2000 satır) | Ana kod: Firebase, giriş, yetki, sevkiyat, stok, sipariş, adres, dosyalar, iş emirleri, yönetici, yedek, WhatsApp | GitHub |
 | `raporlar.js` | Raporlar (v110: «Rapor oluştur» kartı + sekmeler Özet/Üretim/Sevk/Malzeme/Maliyet; Excel çok sayfalı biçimli .xlsx; «🏭 Üretim raporları» düğmesi artık YALNIZ burada) | GitHub |
@@ -187,6 +188,7 @@ Fotoğraflar `data:image/jpeg;base64,...` metni olarak tutulur (300.000 karakter
 | `maliyet/…` | **(v129)** `ayar` {kurTur, kdv, kdvYuk, elektrik, genel, giderKaynak, giderAy} · `kur` {USD/EUR:{doviz,efektif}, tarih, kaynak, z} · `hammadde/{id}` {ad, fiyat, pb, kdvDahil, yog, sira} · `recete/{id}` {ad, b:{hammaddeId:oran%}} · `gider/{YYYY-MM}` {k:{elektrik,dogalgaz,personel,kira,nakliye,bakim,diger}, kgOto, kgElle} · `urun/{id}` {grup, ad, tur:adet|paket, recete, en, boy, koruk, mikron, kat, duz, paketAdet, paketKg, koli, masura, bicak, pDiger, boya, baski, ekDiger, fire, elektrik?, genel?, marjF, marjX, not}. YALNIZ yönetici okur/yazar; **ek okuma (2026-11-02, yalnız kural):** kullanıcı adı `magajan` olan onaylı hesap (Mag Pazar gece ajanı) okuyabilir. Yedeğe henüz KONMADI (`BK_DUGUM`'a eklenebilir) |
 | `ayarlar/push` | **(v123)** `url`: Cloudflare bildirim sunucusu adresi (https). Onaylı herkes okur, yönetici yazar (🔔 > ⚙️ > «Bildirim sunucusu adresi») |
 | `hata/{id}` | **(v131)** Otomatik hata kaydı (`hatakayit.js`): `t`, `tur` (hata/uyari/mesaj), `m` ≤400, `s` (yığın ≤800), `v` sürüm, `ekran`, `cihaz`, `u` (= auth.uid), `n` (tekrar sayısı). Giriş yapmış herkes YALNIZ ekler; yalnız yönetici okur/siler. `t` indeksli. Claude yönetim iş akışıyla okur ve 30 günden eskileri temizler. Yedeğe gerek yok |
+| `ai` | **(v132)** Mag Pazar gece ajanının ürettiği plan: `t`, `kuyruk/{aşama}[]` {no, musteri, urun, kg, formul, renk, baski, gun}, `yuk/{ekstruder,baski,kesim}` {kg, saat, vardiya}, `gecGun[]`, `rota` {duraklar[], url}, `stok[]`. Onaylı herkes okur; yazan yönetici veya `magajan`. Fiyat/kârlılık YAZILMAZ |
 | `bildirimOku/{uid}` | **(v122)** `son` (son okunan zaman), `kapat/{tür}` (kapatılan konular). Yalnız kişinin kendisi okur/yazar |
 
 `rules.json` içinde 26 ana yol vardır ve yukarıdaki listeyle aynıdır.
@@ -381,6 +383,8 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-02: (uygulama kodu değişmedi) **Yönetim iş akışı** — `.github/workflows/yonetim.yml` + `.github/yonetim.mjs`: sağlık kontrolü (yalnız sayılar; depo herkese açık, kişi bilgisi yazdırılmaz), Firebase kural kontrolü/yayını (`rules.json` ↔ yayındaki kural, firebase-admin `getRulesJSON/setRules`; secret `FIREBASE_SERVICE_ACCOUNT` hizmet hesabına «Firebase Realtime Database Admin» rolü verildi), Cloudflare kontrolü (secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`). Elle: Actions → Yönetim → Run workflow (islem: saglik | kural-kontrol | kural-yayinla); ya da `.github/yonetim-istek.txt` ilk satırı değiştirilip main'e gönderilir.
 
 - 2026-11-02: v131 — **Otomatik hata kaydı** (kullanıcı: «hatayı anlatmama gerek kalmadan Claude görsün»). Yeni `hatakayit.js` (firebase-database'den hemen sonra, app.js'ten ÖNCE yüklenir; sw.js önbellek listesinde): `window.onerror`, `unhandledrejection`, `alert` ve app.js `errText` (kullanıcıya gösterilen hata metni) sessizce telefonda biriktirilir, girişten sonra `hata/` altına gönderilir. rules.json'a `hata` eklendi. Uygulamanın davranışı değişmedi.
+
+- 2026-11-02: v132 — **🤖 YAPAY ZEKÂ ekranı** (`yz.js`, menüde İş Emirleri'nin üstünde, herkes görür). Mag Pazar gece ajanı her mesai turunda `ai/`'ye yazar: aşama kuyrukları (ekstruderde aynı formül/renk art arda), vardiya yükü (kg/saat varsayımları Mag Pazar `ayar.otonom.hiz`: ekstruder 60, baskı 80, kesim 25), 10+ gün bekleyenler, sevkiyat günü rotası (sevk edilecekler + bekleyen talimat + bekleyen tahsilat; haritaUrl koordinatı varsa en yakından sıralı), son 60 günlük çıkışa göre ≤14 gün yetecek stok. Rol bazlı: şoför rotayı, operatör kendi aşamasını, yönetici/depo/muhasebe hepsini görür. rules: `ai` eklendi; `denetim` okuması `magajan`'a açıldı (denetim bekçisi Mag Pazar'da yalnız sahibe gösterir).
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
