@@ -376,6 +376,8 @@ Satır numaraları kayar; bu başlıkları ara:
 
 - 2026-11-02: (kod değişmedi, sürüm aynı) **Mag Pazar köprüsü** — Mag Pazar programının gece ajanı (xfranerx53/mag-pazar-analiz, `ajan-gece.mjs`) bu veritabanına ayrı bir hesapla (ad «🤖 Ajan», kullanıcı adı `magajan`, rol Muhasebe + kişiye özel **Sevkiyat** izni) REST ile girer ve YALNIZCA OKUR: `urunler` (durum=sevk_edildi), `dosyalar` (onayTarihi artımlı), `tahsilatlar` (son 30 gün), `isEmirleri` (son 120 gün), `maliyet` (hammadde fiyatı + ürün maliyeti). Tek kural değişikliği: `maliyet/.read` sonuna `magajan` okuması eklendi (rules.json). Bu hesabın adı/rolü/izni değiştirilirse Mag Pazar köprüsü durur.
 
+- 2026-11-02: (uygulama kodu değişmedi) **Yönetim iş akışı** — `.github/workflows/yonetim.yml` + `.github/yonetim.mjs`: sağlık kontrolü (yalnız sayılar; depo herkese açık, kişi bilgisi yazdırılmaz), Firebase kural kontrolü/yayını (`rules.json` ↔ yayındaki kural, firebase-admin `getRulesJSON/setRules`; secret `FIREBASE_SERVICE_ACCOUNT` hizmet hesabına «Firebase Realtime Database Admin» rolü verildi), Cloudflare kontrolü (secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`). Elle: Actions → Yönetim → Run workflow (islem: saglik | kural-kontrol | kural-yayinla); ya da `.github/yonetim-istek.txt` ilk satırı değiştirilip main'e gönderilir.
+
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
 1. **Uzun-sorgu (`forceLongPolling`) bu sitede ASLA kullanılmaz.** `index.html` CSP'si `script-src`te firebaseio.com'a izin vermez; Firebase uzun-sorgu script yükler, engellenir, bağlantı kalıcı kopar (v85-v87 yaşandı). Takılmada: `forceWebSockets()` + `db.goOffline()` → `goOnline()`.
