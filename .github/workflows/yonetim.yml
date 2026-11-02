@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       islem:
-        description: "saglik | teshis | kural-kontrol | kural-yayinla"
+        description: "saglik | teshis | kural-kontrol | kural-yayinla | ajan-izin"
         default: saglik
   push:
     branches: [main]
@@ -40,6 +40,7 @@ jobs:
           DB_URL: https://sevkiyat-fc22b-default-rtdb.firebaseio.com
           KOK: ""
           KURAL_DOSYA: rules.json
+          AJAN_KUL: magajan
           HARIC: "fotoTam,fotolar,dosyaFoto,okumaAyar,foto,irsaliye,irsEkler,anahtar,sifre"
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

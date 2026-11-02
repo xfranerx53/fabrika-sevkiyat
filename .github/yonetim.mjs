@@ -23,6 +23,18 @@ if (env("SA")) {
     if (islem === "saglik") for (const k of ust) { try { const n = Object.keys(await sig(kok + k)).length; log(`   • ${k}: ${n} kayıt`); } catch (e) { log(`   • ${k}: okunamadı`); } }
   } catch (e) { hata++; log("❌ Veritabanı okunamadı:", e.message, "— hizmet hesabının 'Firebase Realtime Database Admin' rolü var mı?"); }
 
+  /* 🔐 ajan hesabının izinlerini en aza indir (yalnız Fabrika Sevkiyat): rol Muhasebe + yalnız "sevk" izni */
+  if (islem === "ajan-izin" && env("AJAN_KUL")) {
+    const K = (await admin.database().ref("kullanicilar").once("value")).val() || {};
+    const e = Object.entries(K).find(([, u]) => u && u.kullanici === env("AJAN_KUL"));
+    if (!e) { hata++; log("❌ Ajan hesabı bulunamadı"); }
+    else { const [uid, u] = e, once = Object.keys(u.izin || {}).filter(k => u.izin[k]).join(", ") || "-";
+      await admin.database().ref("kullanicilar/" + uid + "/izin").set({ sevk: true });
+      if (u.rol !== "Muhasebe") await admin.database().ref("kullanicilar/" + uid + "/rol").set("Muhasebe");
+      await admin.database().ref("denetim").push({ tur: "izin", baslik: "Ajan hesabı izinleri azaltıldı: " + env("AJAN_KUL"), detay: (once + " → sevk").slice(0, 200), kim: "Claude (yönetim)", uid: "claude", yol: "kullanicilar/" + uid + "/izin", zaman: admin.database.ServerValue.TIMESTAMP }).catch(() => { });
+      log(`✅ Ajan hesabı izinleri: ${once} → sevk (rol: Muhasebe)`); }
+  }
+
   /* 🩺 teşhis: tüm veriyi (fotoğraf ve gizli anahtarlar HARİÇ) ./teshis/ klasörüne yazar; iş akışı bunu ÖZEL depoya (mag-yonetim) gönderir.
      Herkese açık kayda (log) yalnız sayılar yazılır. 30 günden eski hata kayıtları silinir. */
   if (islem === "teshis") {
