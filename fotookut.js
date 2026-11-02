@@ -12,9 +12,22 @@
   var ayar=null;           /* {anahtar, model} */
   var mesgul=false;
 
+  /* v134: müşteri mesajı (yazı, sesli not dökümü, ekran görüntüsü) → takip formu alanları */
+  var MESAJ_KURAL=[
+    "MESAJ kuralları (belge=mesaj): Müşteri günlük dille yazar: «50 kilo 30x50 şeffaf atlet, 3 renk baskı, cuma lazım» gibi.",
+    "- Her farklı ürün/ölçü bir sütundur (en çok 3). kg: miktar kilo ise sayı; adet/koli/paket ise kg BOŞ kalsın ve miktarı uretimNotu'na yaz (örn. «10.000 ADET»).",
+    "- en: ölçünün ilk sayısı ya da yazıldığı gibi (30x50 → en 30, boy 50; 42*14*14 → en 42*14*14). mikron: «30 mikron», «30µ» → 30.",
+    "- urunAdi: ATLET, TORBA, HIŞIR, ÇÖP TORBASI, JELATİN gibi BÜYÜK harfle. baskiRengi: baskı varsa renk/renk sayısı (örn. «2 RENK KIRMIZI-MAVİ»), yoksa boş. stokAdi: ürünün kısa tanımı (örn. «ŞEFFAF LDPE ATLET»); baskılıysa BASKILI kelimesi geçsin.",
+    "- korona: yalnız mesajda geçerse. formul: yalnız mesajda malzeme/renk yazıyorsa (örn. «HD BEYAZ», «LDPE ŞEFFAF»).",
+    "- musteri: mesajı yazan firma adı yazıyorsa onu, yoksa boş. spTarihi: bugünün tarihi değil, mesajda sipariş tarihi yoksa boş. termin: «cuma», «15'inde», «haftaya» gibi teslim isteğini GG.AA.YYYY olarak (bugün: "+new Date().toLocaleDateString("tr-TR")+"), yoksa boş.",
+    "- Mesajdaki diğer önemli şeyleri (teslim adresi, paketleme, ödeme, özel istek) kısa ve BÜYÜK harfle ilk sütunun uretimNotu'na ekle. Seri no, fiyat ve fx yazma (boş bırak).",
+    "- Emin olmadığın şeyi UYDURMA; anlaşılmayanları \"eksik\" alanına kısa liste olarak yaz (örn. [\"mikron\",\"renk\"])."
+  ].join("\n");
   var PROMPT=[
     "Bu fotoğraf iki türden biri olabilir: (A) plastik ambalaj fabrikasının (MAG AMBALAJ) «ÜRETİM İŞ TAKİP FORMU» kâğıdı, veya (B) Mikro muhasebe programının «Çok Dövizli Alınan Sipariş Fişi» ekranı (ekran görüntüsü ya da ekranın fotoğrafı).",
-    "Önce türü belirle: \"belge\" alanına A için \"takip\", B için \"mikro\" yaz. Yalnız o türün alanlarını doldur, diğerini boş bırak.",
+    "(C) türü de olabilir: müşterinin sipariş MESAJI (WhatsApp/SMS/e-posta ekran görüntüsü ya da el yazısı not). Bu durumda belge=\"mesaj\" yaz ve (A)'daki alanları mesajdan çıkar (aşağıdaki MESAJ kuralları).",
+    "Önce türü belirle: \"belge\" alanına A için \"takip\", B için \"mikro\", C için \"mesaj\" yaz. Yalnız o türün alanlarını doldur, diğerini boş bırak.",
+    MESAJ_KURAL,
     "Yazılanları aynen oku. Cevabın SADECE geçerli bir JSON nesnesi olsun, başka hiçbir metin yazma.",
     "(B) MİKRO FİŞİ kuralları: üstte evrak no, tarih, C/H kodu, C/H ismi, ödeme planı, proje; ortadaki tabloda her SATIR bir kalemdir (sütunlar: Cinsi, Kodu, İsmi, Döviz cinsi, Miktar, Br(birim), Birim fiyat, Tutarı, Tesl. tarihi, Açıklama). Kalemleri yukarıdan aşağı en çok 6 satır oku. Sayıları ve tarihleri ekranda yazıldığı gibi yaz (örn. 600,00 ; 14.10.2026). Satırdaki «Döviz cinsi» ve «Birim fiyat» değerini kullan (alttaki toplam kutularını değil). kdvOrani: soldaki «KDV (%)» kutusundaki sayı. Açıklama sütunundaki yazıyı aynen ver (örn. 55 X 95). Görünmeyen/kesik/okunamayan şeyi UYDURMA, boş bırak. Boş satırları alma.",
     "(A) TAKİP FORMU kuralları:",
@@ -26,7 +39,7 @@
     "- fiyat: formda «FİYAT :» hücresi varsa içindeki yazıyı aynen yaz (örn. 120₺ veya 3,5 $ +KDV). Hücre yoksa, boşsa ya da '-' ise \"\" yaz.",
     "- spTarihi: formda yazıldığı gibi (örn. 20.10.26). fx: formda yazıldığı gibi (örn. X-PEŞİN).",
     "JSON şeması (sutunlar tam 3 elemanlı, formdaki sütun sırasıyla; mikro.kalemler fişteki satır sayısı kadar):",
-    "{\"seriNo\":\"\",\"musteri\":\"\",\"isAdi\":\"\",\"stokAdi\":\"\",\"spTarihi\":\"\",\"fx\":\"\",\"spNo\":\"\",\"formul\":\"\",\"fiyat\":\"\",",
+    "{\"seriNo\":\"\",\"musteri\":\"\",\"termin\":\"\",\"eksik\":[],\"isAdi\":\"\",\"stokAdi\":\"\",\"spTarihi\":\"\",\"fx\":\"\",\"spNo\":\"\",\"formul\":\"\",\"fiyat\":\"\",",
     "\"sutunlar\":[{\"kg\":\"\",\"en\":\"\",\"mikron\":\"\",\"korona\":\"\",\"uretimNotu\":\"\",\"urunAdi\":\"\",\"boy\":\"\",\"baskiRengi\":\"\",\"baskiNotu\":\"\"},{...},{...}],\"belge\":\"\",\"mikro\":{\"evrakNo\":\"\",\"tarih\":\"\",\"cariKodu\":\"\",\"cariIsmi\":\"\",\"proje\":\"\",\"odemePlani\":\"\",\"kdvOrani\":\"\",\"kalemler\":[{\"kod\":\"\",\"isim\":\"\",\"doviz\":\"\",\"miktar\":\"\",\"birim\":\"\",\"birimFiyat\":\"\",\"teslimTarihi\":\"\",\"aciklama\":\"\"}]}}"
   ].join("\n");
 
@@ -94,7 +107,7 @@
       var r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{
         method:"POST",signal:ac.signal,
         headers:{"Content-Type":"application/json","x-goog-api-key":ayar.anahtar},
-        body:JSON.stringify({contents:[{parts:[{text:PROMPT},{inline_data:{mime_type:"image/jpeg",data:b64}}]}],generationConfig:gc})});
+        body:JSON.stringify({contents:[{parts:Array.isArray(b64)?b64:[{text:PROMPT},{inline_data:{mime_type:"image/jpeg",data:b64}}]}],generationConfig:gc})});
       if(r.ok){var j=await r.json();clearTimeout(zt);
         var p=j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts;
         return{ok:1,tx:(p||[]).map(function(x){return x.text||""}).join("").trim()}}
@@ -249,7 +262,9 @@
     var mkOk=o.mikro&&Array.isArray(o.mikro.kalemler)&&o.mikro.kalemler.length;
     if(o.belge==="mikro"||(mkOk&&!temiz(o.musteri)&&!temiz(o.seriNo)))return mikroDoldur(o.mikro||{});
     var S=Array.isArray(o.sutunlar)?o.sutunlar:[],set=function(id,v){var e=g(id);if(e)e.value=v==null?"":v};
-    var no=seriNo(o.seriNo);if(no)set("iNo",no);
+    var mesaj=o.belge==="mesaj";
+    var no=mesaj?"":seriNo(o.seriNo);if(no)set("iNo",no);
+    if(mesaj){var tm=tarih(o.termin);if(tm)set("iTermin",tm)}
     set("iMu",temiz(o.musteri));set("iAdi",temiz(o.isAdi));set("iSt",temiz(o.stokAdi));set("iFo",temiz(o.formul));
     var t=tarih(o.spTarihi);if(t)set("iTr",t);
     var fy=fiyatCoz(o.fiyat);   /* kâğıtta fiyat yoksa (fiyatsız imalat nüshası) mevcut değere dokunma */
@@ -267,11 +282,12 @@
     set("iBU",ad);set("iRenk",renk);
     g("iBv").checked=/BASKILI/i.test(temiz(o.stokAdi))||!!renk;
     var q=g("iNo");if(q)q.dispatchEvent(new Event("input")); /* QR güncellensin */
-    var yok=[];if(!no)yok.push("seri no");if(!temiz(o.musteri))yok.push("müşteri");
+    var yok=[];if(!no&&!mesaj)yok.push("seri no");if(!temiz(o.musteri))yok.push("müşteri");
+    if(mesaj&&Array.isArray(o.eksik))o.eksik.forEach(function(x){x=temiz(x);if(x&&yok.indexOf(x)<0)yok.push(x)});
     if(!S.some(function(c){return c&&sayi(c.kg)}))yok.push("kg");
     var dupM=no&&typeof isVarMesaj==="function"?isVarMesaj(no):"",dup=!!dupM;
     g("iE").textContent=dupM;
-    durum(dup?"⚠️ Okundu ama bu seri no zaten kayıtlı (ayrıntı aşağıda).":"✓ Okundu. Lütfen alanları kontrol edip Kaydet'e basın."+(yok.length?" Okunamayanlar: "+yok.join(", ")+".":""),dup)}
+    durum(dup?"⚠️ Okundu ama bu seri no zaten kayıtlı (ayrıntı aşağıda).":(mesaj?"✓ Mesajdan dolduruldu (seri no sıradaki numara). ":"✓ Okundu. ")+"Lütfen alanları kontrol edip Kaydet'e basın."+(yok.length?(mesaj?" Mesajda olmayan/belirsiz: ":" Okunamayanlar: ")+yok.join(", ")+".":""),dup)}
 
   /* ---- anahtar ---- */
   async function ayarYukle(zorla){
@@ -302,8 +318,80 @@
     catch(e){clearInterval(tmr);durum("✖ "+(e&&e.message?e.message:String(e)),true)}
     mesgul=false;g("iFoto").disabled=false;g("iFotoGal").disabled=false}
 
+  /* ===================== v134: 💬 MESAJDAN / 🎤 SESTEN İŞ EMRİ + 📥 GELEN SİPARİŞLER =====================
+     WhatsApp yazısı yapıştırılır ya da konuşularak söylenir → aynı Gemini anahtarıyla (okumaAyar) form doldurulur.
+     «Gelen siparişler»: Mag Pazar gece ajanının `aiTaslak/` altına koyduğu müşteri portalı / e-posta / web sitesi siparişleri.
+     Hiçbir şey kendiliğinden kaydedilmez: form dolar, kişi kontrol edip Kaydet'e basar. */
+  async function okuMetin(metin,ust){
+    try{await ayarYukle(false)}catch(e){throw new Error("Ayar okunamadı: "+errText(e))}
+    if(!ayar)throw new Error("Yapay zekâ okuma anahtarı girilmemiş. Yönetici 🔑 düğmesinden girsin.");
+    var o=await gemini([{text:PROMPT+"\n\nŞu an fotoğraf YOK. Aşağıdaki MESAJ metnini (C) türü olarak işle: belge=\"mesaj\".\nMESAJ:\n"+String(metin).slice(0,6000)}]);
+    o=o||{};o.belge="mesaj";if(ust&&ust.musteri&&!temiz(o.musteri))o.musteri=ust.musteri;
+    doldur(o);return o}
+  window.okuAI=async function(parcalar){await ayarYukle(false);if(!ayar)throw new Error("Yapay zekâ okuma anahtarı girilmemiş (yönetici 🔑).");return gemini(parcalar)};
+  window.okuKucult=kucult;
+
+  var tanima=null;
+  function msjDlg(){var d=g("dMsj");if(d)return d;d=document.createElement("dialog");d.id="dMsj";d.style.width="min(520px,96vw)";
+    d.innerHTML='<h3 style="margin-bottom:4px">💬 Mesajdan iş emri</h3><div class="mut" style="font-size:13px;margin-bottom:6px">Müşterinin WhatsApp / SMS / e-posta mesajını yapıştırın ya da 🎤 ile siparişi söyleyin. Yapay zekâ formu doldurur, siz kontrol edip Kaydet dersiniz.</div>'+
+      '<textarea id="msjT" rows="7" style="width:100%;font-size:16px" placeholder="Örn: Selam, 50 kilo 30x50 şeffaf atlet, 2 renk baskı logolu, cumaya lazım. Doku Ambalaj"></textarea>'+
+      '<div style="display:flex;gap:6px;margin:6px 0"><button type="button" class="btn b7" id="msjMik" style="flex:1;margin:0">🎤 Konuşarak yaz</button><button type="button" class="btn b3" id="msjYap" style="flex:1;margin:0">📋 Panodan yapıştır</button></div>'+
+      '<div id="msjD" style="font-size:14px;color:#475569;min-height:18px"></div>'+
+      '<div style="display:flex;gap:8px;margin-top:6px"><button type="button" class="btn b6" id="msjNo">Vazgeç</button><button type="button" class="btn b1" id="msjOk">✨ Oku ve formu doldur</button></div>';
+    document.body.appendChild(d);
+    var D=function(m,h){var x=g("msjD");x.textContent=m||"";x.style.color=h?"#c1121f":"#475569"};
+    var dur=function(){if(tanima){try{tanima.stop()}catch(e){}tanima=null}g("msjMik").textContent="🎤 Konuşarak yaz"};
+    g("msjNo").onclick=function(){dur();d.close()};
+    d.addEventListener("close",dur);
+    g("msjYap").onclick=async function(){try{var t=await navigator.clipboard.readText();if(t){var a=g("msjT");a.value=(a.value?a.value+"\n":"")+t;D("✓ Yapıştırıldı")}else D("Panoda yazı yok.",1)}catch(e){D("Telefon panoya erişime izin vermedi: kutuya basılı tutup «Yapıştır» deyin.",1)}};
+    g("msjMik").onclick=function(){
+      if(tanima)return dur();
+      var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+      if(!SR)return D("Bu telefonda uygulama içi sesli yazma yok. Kutuya dokunup klavyedeki 🎤 tuşuyla konuşabilirsiniz.",1);
+      var r=new SR(),a=g("msjT"),bas=a.value?a.value.replace(/\s*$/," "):"";r.lang="tr-TR";r.continuous=true;r.interimResults=true;
+      r.onresult=function(ev){var son="",ara="";for(var i=0;i<ev.results.length;i++){var t=ev.results[i][0].transcript;if(ev.results[i].isFinal)son+=t+" ";else ara+=t}a.value=bas+son+ara};
+      r.onerror=function(ev){D(ev.error==="not-allowed"?"Mikrofon izni verilmedi.":"Ses alınamadı ("+ev.error+").",1);dur()};
+      r.onend=function(){if(tanima===r)dur()};
+      try{r.start();tanima=r;g("msjMik").textContent="⏹ Bitir";D("🎙 Dinliyorum… siparişi söyleyin, bitince ⏹ Bitir'e basın.")}catch(e){D("Mikrofon açılamadı.",1)}};
+    g("msjOk").onclick=async function(){
+      dur();var t=g("msjT").value.trim();if(t.length<4)return D("Önce mesajı yazın ya da söyleyin.",1);
+      g("msjOk").disabled=true;var t0=Date.now(),tm=setInterval(function(){D("⏳ "+(asamaM||"Okunuyor")+"… "+Math.round((Date.now()-t0)/1000)+" sn")},500);
+      try{await okuMetin(t);clearInterval(tm);d.close()}catch(e){clearInterval(tm);D("✖ "+(e&&e.message||e),1)}
+      g("msjOk").disabled=false};
+    return d}
+
+  /* ---- 📥 gelen siparişler (aiTaslak) ---- */
+  var gelenL=[];
+  var KYN={portal:"🛒 Müşteri portalı",eposta:"📧 E-posta",site:"🌐 Web sitesi"};
+  async function gelenSay(){var b=g("iGelen");if(!b)return;
+    try{var v=(await db.ref("aiTaslak").orderByChild("durum").equalTo("yeni").once("value")).val()||{};
+      gelenL=Object.keys(v).map(function(k){return Object.assign({id:k},v[k])}).sort(function(a,b){return(b.t||0)-(a.t||0)});
+      b.style.display=gelenL.length?"":"none";b.textContent="📥 Gelen siparişler ("+gelenL.length+")"}catch(e){b.style.display="none"}}
+  function taslakMetin(x){return[(x.firma?"Firma: "+x.firma:""),(x.kalem||[]).map(function(k){return"- "+[k.urun,k.mik?k.mik+" "+(k.birim||""):"",k.olcu||""].filter(Boolean).join(" ")}).join("\n"),x.not||""].filter(Boolean).join("\n")}
+  function gelenAc(){var d=g("dGelen");
+    if(!d){d=document.createElement("dialog");d.id="dGelen";d.style.width="min(520px,96vw)";
+      d.innerHTML='<h3 style="margin-bottom:6px">📥 Gelen siparişler</h3><div class="mut" style="font-size:13px;margin-bottom:8px">Müşteri portalından, e-postadan ya da web sitesinden gelen talepler. «Forma aktar» deyince yapay zekâ iş emri formunu doldurur; kontrol edip Kaydet dersiniz.</div><div id="glL"></div><button type="button" class="btn b6" id="glNo" style="margin-top:8px">Kapat</button>';
+      document.body.appendChild(d);g("glNo").onclick=function(){d.close()};
+      g("glL").onclick=async function(ev){var b=ev.target.closest("button[data-gl]");if(!b)return;var x=gelenL.find(function(y){return y.id===b.dataset.id});if(!x)return;
+        var isle=function(dr){return db.ref("aiTaslak/"+x.id).update({durum:dr,kim:(typeof ad==="function"?ad():""),zaman:firebase.database.ServerValue.TIMESTAMP}).catch(function(){})};
+        if(b.dataset.gl==="gec"){if(!confirm((x.firma||"Bu talep")+" listeden kaldırılsın mı? (iş emri açılmaz)"))return;await isle("gec");gelenSay();b.closest(".glk").remove();return}
+        b.disabled=true;b.textContent="⏳ Okunuyor…";
+        try{await okuMetin(taslakMetin(x),{musteri:x.firma});await isle("forma");d.close();gelenSay()}
+        catch(e){b.disabled=false;b.textContent="✨ Forma aktar";
+          /* yapay zekâ yoksa en azından müşteri ve not yazılsın */
+          var mu=g("iMu");if(mu&&!mu.value)mu.value=x.firma||"";if(typeof notSet==="function")notSet("iNtU",taslakMetin(x).toLocaleUpperCase("tr-TR"));
+          alert("Yapay zekâ okuyamadı: "+(e&&e.message||e)+"\n\nMüşteri adı ve sipariş metni not alanına yazıldı; ölçüleri elle girin.");await isle("forma");d.close();gelenSay()}}}
+    var esc2=function(t){return String(t==null?"":t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+    g("glL").innerHTML=gelenL.length?gelenL.map(function(x){return'<div class="glk" style="border:1px solid #e2e8f0;border-radius:10px;padding:8px;margin-bottom:8px"><div style="font-weight:800">'+esc2(x.firma||"Müşteri")+'</div><div class="mut" style="font-size:13px">'+(KYN[x.kaynak]||"📥")+" · "+new Date(x.t||0).toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+'</div><div style="white-space:pre-wrap;font-size:14px;margin:4px 0">'+esc2(taslakMetin(x).replace(/^Firma: .*\n?/,""))+'</div><div style="display:flex;gap:6px"><button type="button" class="btn b6 sm" data-gl="gec" data-id="'+esc2(x.id)+'" style="flex:1;margin:0">✖ Gerekmez</button><button type="button" class="btn b1 sm" data-gl="al" data-id="'+esc2(x.id)+'" style="flex:2;margin:0">✨ Forma aktar</button></div></div>'}).join(""):'<p class="mut">Bekleyen talep yok.</p>';
+    d.showModal()}
+
   function kur(){
     if(!g("iFoto"))return;
+    if(!g("iYzW")){var w=document.createElement("div");w.id="iYzW";w.style.cssText="display:flex;gap:8px;margin-bottom:6px";
+      w.innerHTML='<button type="button" class="btn b7" id="iMsj" style="flex:1;margin:0;font-size:16px">💬 Mesajdan / 🎤 sesten</button><button type="button" class="btn b2" id="iGelen" style="flex:1;margin:0;font-size:16px;display:none">📥 Gelen siparişler</button>';
+      g("iFotoW").insertAdjacentElement("afterend",w);
+      g("iMsj").onclick=function(){var d=msjDlg();g("msjT").value="";g("msjD").textContent="";d.showModal()};
+      g("iGelen").onclick=gelenAc}
     g("iFoto").onclick=function(){tikla(true)};g("iFotoGal").onclick=function(){tikla(false)};
     g("iFotoKam").onchange=secildi;g("iFotoDosya").onchange=secildi;
     g("iFotoAyar").onclick=async function(){try{await ayarYukle(true)}catch(e){}ayarAc()};
@@ -324,6 +412,7 @@
     if(typeof eski==="function")window.iAc=function(e){
       var r=eski.apply(this,arguments);
       g("iFotoW").style.display=e?"none":"flex";
+      var yw=g("iYzW");if(yw)yw.style.display=e?"none":"flex";if(!e)gelenSay();
       g("iFotoAyar").style.display=(typeof isAdmin==="function"&&isAdmin())?"":"none";
       durum("Mikro «Çok Dövizli Alınan Sipariş Fişi» ekranını ya da iş takip formunu okutabilirsiniz.");return r}}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",kur);else kur();

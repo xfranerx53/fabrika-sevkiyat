@@ -1,7 +1,7 @@
-const CACHE = 'fabrika-v133';
-const V = '?v=133';
+const CACHE = 'fabrika-v134';
+const V = '?v=134';
 const ASSETS = ['./', './index.html', './manifest.webmanifest',
-  './style.css'+V, './raporlar.js'+V, './xlsx-yaz.js'+V, './app.js'+V, './hatakayit.js'+V, './yz.js'+V, './foto-onizleme.js'+V, './saat.js'+V, './diyalog.js'+V,
+  './style.css'+V, './raporlar.js'+V, './xlsx-yaz.js'+V, './app.js'+V, './hatakayit.js'+V, './yz.js'+V, './fire.js'+V, './yzcek.js'+V, './foto-onizleme.js'+V, './saat.js'+V, './diyalog.js'+V,
   './qr.js'+V, './etiket.js'+V, './arama.js'+V, './israpor.js'+V, './fotookut.js'+V, './sesasistan.js'+V, './adrsec.js'+V, './talimat.js'+V, './tahsilat.js'+V, './bildirim.js'+V, './surum.js'+V, './maliyet.js'+V, './granul.js'+V, './pano.js'+V, './stokaktar.js'+V, './baglanti.js'+V, './sw-kayit.js'+V, './yazi.js'+V, './hesap.js'+V,
   './icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon-32.png'];
 
