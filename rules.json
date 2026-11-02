@@ -927,7 +927,7 @@
       }
     },
     "maliyet": {
-      ".read": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true)",
+      ".read": "((root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true) || (root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('kullanici').val() === 'magajan'))",
       ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true)"
     }
   }
