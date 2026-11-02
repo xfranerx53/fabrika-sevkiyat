@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v132**
+**GÜNCEL SÜRÜM: v133**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -385,6 +385,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-02: v131 — **Otomatik hata kaydı** (kullanıcı: «hatayı anlatmama gerek kalmadan Claude görsün»). Yeni `hatakayit.js` (firebase-database'den hemen sonra, app.js'ten ÖNCE yüklenir; sw.js önbellek listesinde): `window.onerror`, `unhandledrejection`, `alert` ve app.js `errText` (kullanıcıya gösterilen hata metni) sessizce telefonda biriktirilir, girişten sonra `hata/` altına gönderilir. rules.json'a `hata` eklendi. Uygulamanın davranışı değişmedi.
 
 - 2026-11-02: v132 — **🤖 YAPAY ZEKÂ ekranı** (`yz.js`, menüde İş Emirleri'nin üstünde, herkes görür). Mag Pazar gece ajanı her mesai turunda `ai/`'ye yazar: aşama kuyrukları (ekstruderde aynı formül/renk art arda), vardiya yükü (kg/saat varsayımları Mag Pazar `ayar.otonom.hiz`: ekstruder 60, baskı 80, kesim 25), 10+ gün bekleyenler, sevkiyat günü rotası (sevk edilecekler + bekleyen talimat + bekleyen tahsilat; haritaUrl koordinatı varsa en yakından sıralı), son 60 günlük çıkışa göre ≤14 gün yetecek stok. Rol bazlı: şoför rotayı, operatör kendi aşamasını, yönetici/depo/muhasebe hepsini görür. rules: `ai` eklendi; `denetim` okuması `magajan`'a açıldı (denetim bekçisi Mag Pazar'da yalnız sahibe gösterir).
+- 2026-11-03: v133 — **Arka plana dokununca HER pencere kapanır** (`diyalog.js`). Önceden yalnız «Vazgeç» düğmeli pencereler ve birkaç üst çubuk penceresi kapanıyordu; 🤖 Yapay Zekâ (✕), Pano, Hesabım, Kapat'lı tüm pencereler kapanmıyordu. Artık sırayla Vazgeç → İptal → Kapat → ✕ → Geç düğmesine basılmış gibi davranır; hiçbiri yoksa pencere doğrudan kapatılır. Pencerenin içine dokunmak kapatmaz.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 
