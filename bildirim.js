@@ -288,6 +288,7 @@
     hepsiOku();hatirlatCiz();
   }
   window.bilPanelAc=panelAc;
+  window.bilIstek=function(yol,govde){return pushIstek(yol,govde)};
   $("bBell").onclick=panelAc;
   {var mb=$("mBell");if(mb)mb.onclick=panelAc}
   $("bdNo").onclick=function(){$("dBild").close()};

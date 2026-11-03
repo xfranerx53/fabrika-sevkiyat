@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v134**
+**GÜNCEL SÜRÜM: v135**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -284,7 +284,7 @@ Kişiye özel izin (Yönetici > Kullanıcılar > 🔔 Kişiye özel izinler) rol
 - **Bağlantı göstergesi (v81, `baglanti.js`):** bkz. Dosyalar. Firebase web SDK'sı bağlantı yokken yazılan kayıtları yalnız telefonun belleğinde tutar; uygulama KAPANIRSA bu kayıtlar kaybolur (kalıcı çevrimdışı kuyruk YOK, yapılmadı). `ayarlar/yedek` yazımı hata toast'ı vermez (sessiz liste `sessiz()`).
 - **Yönetici:** yedekleme (JSON/Excel indirme), çöp kutusu (geri yükle/kalıcı sil), denetim günlüğü,
   kullanıcı yönetimi (onay, rol, izin), fiyatlar, KDV ayarı.
-- **Şifre sıfırlama:** Cloud Function `sifreSifirla` (Blaze planı gerekir). Deploy durumu bilinmiyor
+- **Şifre sıfırlama:** (v135) Cloudflare bildirim sunucusu `POST /sifre` — yönetici jetonu + kullanıcı kaydı (yonetici, onay) sunucuda doğrulanır, Firebase hizmet hesabıyla (gizli değişken `FB_SA`) Identity Toolkit `accounts:update` çağrılır, eski oturumlar kapanır. Cloud Function `sifreSifirla` (Blaze gerekir) hiç kurulmamıştı, artık KULLANILMIYOR (index.js yalnız arşiv). Sunucu yayını: GitHub «Yönetim» → `bildirim-yayinla`
   (Bölüm 9).
 
 - **Bildirimler (v122, `bildirim.js`):** Kim neyi alır (kanal → olay):
@@ -390,6 +390,7 @@ Satır numaraları kayar; bu başlıkları ara:
 
 - 2026-11-02: v132 — **🤖 YAPAY ZEKÂ ekranı** (`yz.js`, menüde İş Emirleri'nin üstünde, herkes görür). Mag Pazar gece ajanı her mesai turunda `ai/`'ye yazar: aşama kuyrukları (ekstruderde aynı formül/renk art arda), vardiya yükü (kg/saat varsayımları Mag Pazar `ayar.otonom.hiz`: ekstruder 60, baskı 80, kesim 25), 10+ gün bekleyenler, sevkiyat günü rotası (sevk edilecekler + bekleyen talimat + bekleyen tahsilat; haritaUrl koordinatı varsa en yakından sıralı), son 60 günlük çıkışa göre ≤14 gün yetecek stok. Rol bazlı: şoför rotayı, operatör kendi aşamasını, yönetici/depo/muhasebe hepsini görür. rules: `ai` eklendi; `denetim` okuması `magajan`'a açıldı (denetim bekçisi Mag Pazar'da yalnız sahibe gösterir).
 - 2026-11-03: v133 — **Arka plana dokununca HER pencere kapanır** (`diyalog.js`). Önceden yalnız «Vazgeç» düğmeli pencereler ve birkaç üst çubuk penceresi kapanıyordu; 🤖 Yapay Zekâ (✕), Pano, Hesabım, Kapat'lı tüm pencereler kapanmıyordu. Artık sırayla Vazgeç → İptal → Kapat → ✕ → Geç düğmesine basılmış gibi davranır; hiçbiri yoksa pencere doğrudan kapatılır. Pencerenin içine dokunmak kapatmaz.
+- 2026-11-03: v135 — **Yöneticinin şifre sıfırlaması «internal» hatası veriyordu** (Cloud Function hiç kurulmamıştı; ücretli plan ister). Ücretsiz yol: `cloudflare/bildirim-worker.js` v134'e `/sifre` eklendi (yönetici doğrulaması sunucuda, hizmet hesabı jetonu WebCrypto ile), `bildirim.js` `window.bilIstek`, `app.js` sfOk artık bunu çağırır. Yayın `.github/yonetim.mjs` `bildirim-yayinla` (yayındaki sürüm daha yeniyse ya da KV bağlantısı yoksa durur; KV ve gizli değişkenler korunur; FB_SA'yı GitHub secret'ından koyar). **Firebase kuralı: DEĞİŞMEDİ. Cloudflare: bildirim sunucusu DEĞİŞTİ.** Dosyalar: app.js, bildirim.js, cloudflare/bildirim-worker.js, .github/yonetim.mjs, index.html, sw.js, PROJE-NOTLARI.md.
 - 2026-11-03: v134 — **Yapay zekâ ikinci tur.** (1) İş emri penceresinde «💬 Mesajdan / 🎤 sesten»: WhatsApp/SMS/e-posta yazısı yapıştırılır ya da söylenir (tarayıcının Türkçe ses tanıma; yoksa klavye 🎤), Gemini (okumaAyar anahtarı) formu doldurur; seri no sıradaki kalır, termin «cuma» gibi ifadeden hesaplanır, mesajda olmayanlar «eksik» diye yazılır. Fotoğraf okuma artık WhatsApp ekran görüntüsünü de tanır (belge=mesaj). (2) «📥 Gelen siparişler (n)»: Mag Pazar gece ajanının `aiTaslak/`'a koyduğu portal/e-posta/site siparişleri; «Forma aktar» yapay zekâyla formu doldurur, «Gerekmez» listeden kaldırır; hiçbir şey kendiliğinden kaydedilmez. (3) `fire.js` ⚠️ FİRE / ARIZA menüsü. (4) `yzcek.js` tahsilatta çek/makbuz okuma; bunun için `okumaAyar/.read` tahsilat görenlere (şoför dahil) açıldı — anahtar ücretsiz Gemini anahtarıdır, faturalı değildir. (5) yz.js: rol algılama düzeltildi (`window.rec` yerine `rec`; operatör/şoför artık kendi bölümünü görüyor), yöneticiye/operatöre son 7 gün fire-arıza özeti. **Firebase kuralı: DEĞİŞTİ** (`uretimOlay`, `aiTaslak` eklendi; `okumaAyar` okuması genişledi). Dosyalar: fotookut.js, fire.js (yeni), yzcek.js (yeni), yz.js, rules.json, index.html, sw.js, PROJE-NOTLARI.md.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)

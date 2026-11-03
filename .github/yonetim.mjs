@@ -88,3 +88,33 @@ if (env("CF_TOKEN")) {
   } catch (e) { hata++; log("❌ Cloudflare:", e.message); }
 }
 process.exit(hata ? 1 : 0);
+
+/* ---------------- 🔔 Bildirim sunucusu (mag-bildirim) yayını + Firebase hizmet anahtarı (v134: /sifre için) ----------------
+   Yayındaki kodun sürümüne bakar: depodakinden YENİ bir sürüm yayındaysa (biri elle güncellemiş) üzerine YAZMAZ.
+   Bağlı KV ve gizli değişkenler korunur (keep_bindings). FB_SA = GitHub'daki FIREBASE_SERVICE_ACCOUNT; log'a yazılmaz. */
+if (islem === "bildirim-yayinla") {
+  const A = env("CF_ACCOUNT"), CT = env("CF_TOKEN");
+  if (!A || !CT || !env("SA")) { log("❌ Cloudflare anahtarları ya da Firebase anahtarı yok"); process.exit(1); }
+  const u = `https://api.cloudflare.com/client/v4/accounts/${A}/workers/scripts/mag-bildirim`, H = { Authorization: "Bearer " + CT };
+  const yeni = fs.readFileSync("cloudflare/bildirim-worker.js", "utf8"), sv = s => +((String(s).match(/BİLDİRİM SUNUCUSU[^\n]*·\s*v(\d+)/) || [])[1] || 0);
+  let r = await fetch(u + "/content/v2", { headers: H }); let eski = r.ok ? await r.text() : "";
+  if (!eski) { r = await fetch(u, { headers: H }); eski = r.ok ? await r.text() : ""; }
+  const ys = sv(eski), ds = sv(yeni);
+  log(`ℹ Yayındaki bildirim sunucusu: ${ys ? "v" + ys : "sürümü okunamadı"} • depodaki: v${ds}`);
+  if (ys > ds) { log("❌ Yayındaki sürüm depodakinden yeni — üzerine yazılmadı"); process.exit(1); }
+  if (eski && !/KV/.test(eski)) { log("❌ Yayındaki kod beklenen bildirim sunucusuna benzemiyor — üzerine yazılmadı"); process.exit(1); }
+  r = await fetch(u + "/settings", { headers: H }); const st = ((await r.json().catch(() => ({}))).result) || {};
+  log("ℹ Bağlantılar:", (st.bindings || []).map(b => b.type + ":" + b.name).join(", ") || "-");
+  if (!(st.bindings || []).some(b => b.type === "kv_namespace" && b.name === "KV")) { log("❌ KV bağlantısı bulunamadı — yayın durduruldu"); process.exit(1); }
+  const fd = new FormData();
+  fd.append("metadata", new Blob([JSON.stringify({ main_module: "worker.js", compatibility_date: st.compatibility_date || "2024-09-01", keep_bindings: ["kv_namespace", "secret_text", "plain_text"] })], { type: "application/json" }));
+  fd.append("worker.js", new Blob([yeni], { type: "application/javascript+module" }), "worker.js");
+  r = await fetch(u, { method: "PUT", headers: H, body: fd }); let j = await r.json().catch(() => ({}));
+  if (!j.success) { log("❌ Bildirim sunucusu yüklenemedi:", JSON.stringify(j.errors || r.status).slice(0, 300)); process.exit(1); }
+  r = await fetch(u + "/secrets", { method: "PUT", headers: { ...H, "Content-Type": "application/json" }, body: JSON.stringify({ name: "FB_SA", text: env("SA"), type: "secret_text" }) }); j = await r.json().catch(() => ({}));
+  if (!j.success) { log("❌ Hizmet anahtarı sunucuya konamadı:", JSON.stringify(j.errors || r.status).slice(0, 200)); process.exit(1); }
+  r = await fetch(u + "/settings", { headers: H }); const st2 = ((await r.json().catch(() => ({}))).result) || {};
+  log("✅ Bildirim sunucusu v" + ds + " yayında • bağlantılar: " + (st2.bindings || []).map(b => b.type + ":" + b.name).join(", "));
+  const sd = await fetch(`https://api.cloudflare.com/client/v4/accounts/${A}/workers/subdomain`, { headers: H }).then(x => x.json()).catch(() => ({}));
+  if (sd.result && sd.result.subdomain) { const t = await fetch(`https://mag-bildirim.${sd.result.subdomain}.workers.dev/`).then(x => x.text()).catch(e => "ulaşılamadı"); log("ℹ Sunucu cevabı:", String(t).replace(/\d+\)/, "…)").slice(0, 80)); }
+}

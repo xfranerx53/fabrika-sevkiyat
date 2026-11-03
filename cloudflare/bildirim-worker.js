@@ -1,5 +1,5 @@
 /* =====================================================================================
-   MAG AMBALAJ — TELEFON BİLDİRİM SUNUCUSU (Cloudflare Worker, ücretsiz plan)  · v129
+   MAG AMBALAJ — TELEFON BİLDİRİM SUNUCUSU (Cloudflare Worker, ücretsiz plan)  · v134
    -------------------------------------------------------------------------------------
    Ne yapar: Uygulama KAPALIYKEN de telefona bildirim gönderir (standart Web Push; Firebase
    Blaze / FCM gerekmez). Bu dosyanın TAMAMI Cloudflare > Worker > «Edit code» ekranına yapıştırılır.
@@ -17,6 +17,8 @@
      POST /sina      -> kendi telefonlarıma deneme bildirimi; yönetici {herkes:true} ile TÜM telefonlara
      POST /alindi    -> (giriş gerekmez) telefon bildirimi aldığında haber verir {endpoint, test}; «ulaştı» zamanı tutulur
      POST /liste     -> (yalnız yönetici) kimin kaç telefonu kayıtlı, son bildirim ne zaman ulaştı
+     POST /sifre     -> (v134, yalnız yönetici) başka kullanıcının şifresini sıfırlar {uid, sifre}; eski oturumlarını kapatır.
+                        Gizli değişken FB_SA = Firebase hizmet hesabı JSON'u (GitHub «Yönetim» → bildirim-yayinla koyar). Ücretli Cloud Functions GEREKMEZ.
    Güvenlik: her istekte Firebase giriş jetonu (ID token) Google'ın açık anahtarlarıyla doğrulanır;
    kişinin hangi kanalları alabileceği SUNUCUDA, kişinin kendi kullanıcı kaydı okunarak hesaplanır
    (uygulamadaki YETKI tablosu ve rules.json ile aynı mantık). Onaysız/engelli hesap gönderemez, alamaz.
@@ -68,6 +70,20 @@ async function jetonDogrula(jeton) {
   const simdi = Math.floor(Date.now() / 1000);
   if (!ok || yuk.aud !== PROJE || yuk.iss !== "https://securetoken.google.com/" + PROJE || !(yuk.exp > simdi) || yuk.iat > simdi + 300 || !yuk.sub) throw new Error("jeton geçersiz");
   return yuk.sub;
+}
+/* v134: Firebase hizmet hesabıyla Google erişim jetonu (yalnız /sifre için; 50 dk önbellek) */
+let SA_JETON = null, SA_T = 0;
+async function saJeton(env) {
+  if (SA_JETON && Date.now() - SA_T < 50 * 60e3) return SA_JETON;
+  const sa = JSON.parse(env.FB_SA), simdi = Math.floor(Date.now() / 1000);
+  const pem = String(sa.private_key).replace(/-----[^-]+-----/g, "").replace(/\s+/g, "");
+  const k = await crypto.subtle.importKey("pkcs8", b64uDec(pem.replace(/\+/g, "-").replace(/\//g, "_")), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const bas = b64u(enc.encode(JSON.stringify({ alg: "RS256", typ: "JWT" }))), yuk = b64u(enc.encode(JSON.stringify({ iss: sa.client_email, scope: "https://www.googleapis.com/auth/identitytoolkit https://www.googleapis.com/auth/cloud-platform", aud: "https://oauth2.googleapis.com/token", iat: simdi, exp: simdi + 3600 })));
+  const imza = b64u(await crypto.subtle.sign("RSASSA-PKCS1-v1_5", k, enc.encode(bas + "." + yuk)));
+  const r = await fetch("https://oauth2.googleapis.com/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "grant_type=" + encodeURIComponent("urn:ietf:params:oauth:grant-type:jwt-bearer") + "&assertion=" + bas + "." + yuk + "." + imza });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.access_token) throw new Error("Google erişim jetonu alınamadı");
+  SA_JETON = j.access_token; SA_T = Date.now(); return SA_JETON;
 }
 /* kişinin kendi kaydı, kendi jetonuyla okunur (rules: kullanicilar/$uid kendisi okuyabilir) */
 async function kayitOku(uid, jeton) {
@@ -212,6 +228,18 @@ export default {
       const kayit = await kayitOku(uid, jeton);
       if (!kayit || kayit.onay !== true) return cevap({ hata: "hesap onaylı değil" }, 403, origin);
       const g = await req.json().catch(() => ({}));
+      if (yol === "/sifre") {
+        if (kayit.yonetici !== true) return cevap({ hata: "Bu işlem için yönetici olmalısınız." }, 403, origin);
+        const hedef = String(g.uid || ""), sifre = String(g.sifre || "");
+        if (!/^[\w-]{10,128}$/.test(hedef) || sifre.length < 6 || sifre.length > 128) return cevap({ hata: "Geçersiz bilgi (şifre en az 6 karakter)." }, 400, origin);
+        if (hedef === uid) return cevap({ hata: "Kendi şifrenizi «Şifremi değiştir» ile değiştirin." }, 400, origin);
+        if (!env.FB_SA) return cevap({ hata: "Sunucuda Firebase hizmet anahtarı yok (FB_SA)." }, 501, origin);
+        const t = await saJeton(env);
+        const r = await fetch("https://identitytoolkit.googleapis.com/v1/projects/" + PROJE + "/accounts:update", { method: "POST", headers: { Authorization: "Bearer " + t, "Content-Type": "application/json" },
+          body: JSON.stringify({ localId: hedef, password: sifre, validSince: String(Math.floor(Date.now() / 1000)) }) });
+        if (!r.ok) { const m = ((await r.json().catch(() => ({}))).error || {}).message || r.status; return cevap({ hata: /USER_NOT_FOUND/.test(m) ? "Kullanıcı bulunamadı." : /WEAK_PASSWORD/.test(m) ? "Şifre çok zayıf (en az 6 karakter)." : "Şifre değiştirilemedi (" + m + ")" }, 400, origin); }
+        return cevap({ ok: true }, 200, origin);
+      }
 
       if (yol === "/abone") {
         if (!gecerliSub(g.sub)) return cevap({ hata: "abonelik bilgisi hatalı" }, 400, origin);

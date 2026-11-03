@@ -709,8 +709,10 @@ $("sfOk").onclick=async()=>{
   try{
     if(sfHedef){
       if(!isAdmin())throw new Error("Bu işlem için yönetici olmalısınız.");
-      const fx=await fnYukle();
-      await fx.httpsCallable("sifreSifirla")({uid:sfHedef.uid,sifre:sifreHz(y)});
+      /* v134: ücretsiz yol — Cloudflare bildirim sunucusu (/sifre) yönetici jetonunu doğrulayıp şifreyi değiştirir (Cloud Functions/Blaze gerekmez) */
+      if(!window.bilIstek)throw new Error("Bildirim modülü yüklenmedi, sayfayı yenileyin.");
+      try{await window.bilIstek("/sifre",{uid:sfHedef.uid,sifre:sifreHz(y)})}
+      catch(er){throw new Error(/sunucu yok/.test(er.message)?"Bildirim sunucusu adresi girilmemiş (🔔 Bildirimler → ⚙️ ayarlar).":er.message)}
       denetimYaz("sifre",sfHedef.adi,"Yönetici şifreyi sıfırladı","kullanicilar",sfHedef.uid);toast("✓ Şifre sıfırlandı. Kullanıcıya yeni şifreyi iletin.");
     }else{
       const eski=$("sfEski").value;if(!eski){e.textContent="Mevcut şifrenizi yazın.";$("sfOk").disabled=false;return}
