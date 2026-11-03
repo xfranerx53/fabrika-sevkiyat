@@ -44,6 +44,7 @@ jobs:
           HARIC: "fotoTam,fotolar,dosyaFoto,okumaAyar,foto,irsaliye,irsEkler,anahtar,sifre"
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          YONETIM_TOKEN: ${{ secrets.YONETIM_TOKEN }}
       - name: Teşhisi özel depoya yaz
         if: env.ISLEM == 'teshis'
         env:

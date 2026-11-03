@@ -117,4 +117,30 @@ if (islem === "bildirim-yayinla") {
   if (sd.result && sd.result.subdomain) { const t = await fetch(`https://mag-bildirim.${sd.result.subdomain}.workers.dev/`).then(x => x.text()).catch(e => "ulaşılamadı"); log("ℹ Sunucu cevabı:", String(t).replace(/\d+\)/, "…)").slice(0, 80)); }
 }
 
+/* ---------------- 🧪 Granül defteri: Excel aktarımı (veri ÖZEL depo mag-yonetim/aktar/'tan okunur, log'a sayıdan başka bir şey yazılmaz) ---------------- */
+if (islem === "granul-aktar") {
+  const T = env("YONETIM_TOKEN"); if (!T || !env("SA")) { log("❌ YONETIM_TOKEN ya da Firebase anahtarı yok"); process.exit(1); }
+  const r = await fetch("https://api.github.com/repos/xfranerx53/mag-yonetim/contents/aktar/granul-zekeriya.json", { headers: { Authorization: "Bearer " + T, Accept: "application/vnd.github.raw", "User-Agent": "mag-yonetim" } });
+  if (!r.ok) { log("❌ Aktarım dosyası okunamadı:", r.status); process.exit(1); }
+  const A = await r.json(), D = admin.database(), trn = s => String(s || "").toLocaleUpperCase("tr").replace(/\s+/g, "");
+  const G = (await D.ref("granulcular").once("value")).val() || {}, gid = Object.keys(G).find(k => trn(G[k].ad) === trn(A.granulcu));
+  if (!gid) { log("❌ Granülcü bulunamadı"); process.exit(1); }
+  const K = (await D.ref("granulKayit").orderByChild("gid").equalTo(gid).once("value")).val() || {};
+  const anah = x => [x.tarih, +x.giden || 0, +x.gelen || 0, +x.satis || 0, +x.fire || 0, +x.fiyat || 0, +x.kdv || 0, +x.odeme || 0, (x.aciklama || "").trim()].join("|");
+  const var_ = new Set(Object.values(K).map(anah)), yeni = A.satirlar.filter(x => !var_.has(anah(x)));
+  const U = (await D.ref("kullanicilar").once("value")).val() || {}, aj = Object.keys(U).find(k => U[k] && U[k].kullanici === "magajan") || "magajan";
+  const up = {};
+  for (const x of yeni) { const k = D.ref("granulKayit").push().key, n = { gid, tarih: x.tarih, ekleyen: "🤖 Claude (Excel aktarımı)", ekleyenUid: aj, zaman: admin.database.ServerValue.TIMESTAMP };
+    if (x.sn) n.sn = String(x.sn).slice(0, 20); if (x.aciklama) n.aciklama = String(x.aciklama).slice(0, 200);
+    for (const a of ["giden", "gelen", "satis", "fire", "fiyat", "kdv", "odeme"]) if (+x[a]) n[a] = +x[a];
+    up["granulKayit/" + k] = n; }
+  if (yeni.length) { up["denetim/" + D.ref("denetim").push().key] = { tur: "granul-aktar", baslik: A.granulcu, detay: yeni.length + " satır Excel'den alındı", yol: "granulKayit", id: "", kim: "🤖 Claude (Excel aktarımı)", uid: aj, zaman: admin.database.ServerValue.TIMESTAMP }; await D.ref().update(up); }
+  const H = Object.values((await D.ref("granulKayit").orderByChild("gid").equalTo(gid).once("value")).val() || {}), S = k => Math.round(H.reduce((a, x) => a + (+x[k] || 0), 0) * 100) / 100;
+  const top = H.reduce((a, x) => a + (+x.gelen || 0) * (+x.fiyat || 0), 0), sfy = H.reduce((a, x) => a + (+x.satis || 0) * (+x.fiyat || 0), 0);
+  const kalan = Math.round((S("giden") - S("gelen") - S("fire")) * 100) / 100, bakiye = Math.round((top + S("kdv") - sfy - S("odeme")) * 100) / 100;
+  log(`✅ Granül aktarımı: ${yeni.length} yeni satır (${A.satirlar.length - yeni.length} zaten vardı) • defterde ${H.length} satır • kalan ${kalan} kg • bakiye ${bakiye} ₺`);
+  if (kalan !== A.beklenen.kalan || bakiye !== A.beklenen.bakiye) { hata++; log(`❌ Excel'le uyuşmuyor (beklenen kalan ${A.beklenen.kalan}, bakiye ${A.beklenen.bakiye})`); }
+  else log("✅ Excel'deki TOPLAM satırıyla birebir aynı");
+}
+
 process.exit(hata ? 1 : 0);

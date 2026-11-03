@@ -353,8 +353,9 @@
   function tarihCoz(v){
     if(v==null||v==="")return "";
     if(typeof v==="number"&&v>20000&&v<80000){var d=new Date(Math.round((v-25569)*864e5));return d.getUTCFullYear()+"-"+("0"+(d.getUTCMonth()+1)).slice(-2)+"-"+("0"+d.getUTCDate()).slice(-2)}
-    var s=String(v).trim(),m=/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/.exec(s);
-    if(m)return m[3]+"-"+("0"+m[2]).slice(-2)+"-"+("0"+m[1]).slice(-2);
+    /* v136: "11,12,2021", "11 12 2021", "11.12.21" gibi yazımlar da (Excel'de elle girilmiş tarihler) */
+    var s=String(v).trim(),m=/^(\d{1,2})\s*[.\/,\- ]\s*(\d{1,2})\s*[.\/,\- ]\s*(\d{2}|\d{4})$/.exec(s);
+    if(m&&+m[2]>=1&&+m[2]<=12&&+m[1]>=1&&+m[1]<=31){var y=m[3].length===2?"20"+m[3]:m[3];return y+"-"+("0"+m[2]).slice(-2)+"-"+("0"+m[1]).slice(-2)}
     m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s);return m?m[1]+"-"+m[2]+"-"+m[3]:"";
   }
   var oku=function(v){return typeof v==="number"?r2(v):sayi(v)};
@@ -368,7 +369,7 @@
     var H=rows[hs],ad2={"tarih":"tarih","s n":"sn","fis no":"sn","fis":"sn","giden kilo":"giden","gelen kilo":"gelen","satis":"satis","fire":"fire","fiyat":"fiyat","toplam fiyat":"top","kdv":"kdv","satis fiyat":"sfy","odeme":"odeme","aciklama":"aciklama"};
     H.forEach(function(h,j){var k=ad2[bas(h)];if(k&&kol[k]==null)kol[k]=j});
     if(kol.giden==null&&kol.gelen==null)return {hata:"GİDEN KİLO / GELEN KİLO sütunları bulunamadı."};
-    var out=[],atla=0;
+    var out=[],atla=0,tahmin=0,onceki="";
     for(var i2=hs+1;i2<rows.length;i2++){
       var r2_=rows[i2]||[],g=function(k){return kol[k]==null?undefined:r2_[kol[k]]};
       var t=tarihCoz(g("tarih"));
@@ -377,11 +378,14 @@
       if(!o.fiyat&&o.gelen>0&&top>0)o.fiyat=r2(top/o.gelen); /* fiyat sütunu boş ama toplam fiyat varsa fiyatı geri hesapla */
       var bosS=!Object.keys(o).some(function(k){return o[k]!==0})&&!ac3;
       if(bosS)continue;
+      /* v136: tarihi boş ama dolu satır: bir önceki satırın tarihi verilir, açıklamaya not düşülür (toplamlar Excel'le aynı kalsın) */
+      if(!t&&onceki){t=onceki;ac3=(ac3?ac3+" · ":"")+"(Excel'de tarih yoktu, önceki satırın tarihi verildi)";tahmin++}
       if(!t){atla++;continue}
+      onceki=t;
       o.tarih=t;o.sn=String(g("sn")==null?"":g("sn")).trim().slice(0,20);o.aciklama=ac3.slice(0,200);
       out.push(o);
     }
-    return {satirlar:out,atla:atla};
+    return {satirlar:out,atla:atla,tahmin:tahmin};
   }
   $("grIce").onclick=function(){if(secili())$("grDosya").click()};
   $("grDosya").onchange=async function(){
@@ -398,7 +402,7 @@
       var ayni=c.satirlar.length-yeni.length;
       if(!yeni.length){alert("Alınacak yeni satır yok"+(ayni?" ("+ayni+" satır zaten kayıtlı).":"."));return}
       var tt=topla(yeni);
-      if(!confirm(g.ad+" defterine "+yeni.length+" satır eklenecek"+(ayni?" ("+ayni+" satır zaten kayıtlı, atlanacak)":"")+(c.atla?" ("+c.atla+" satır tarihsiz, atlanacak)":"")+".\n\nGiden: "+fmt(tt.giden)+" kg · Gelen: "+fmt(tt.gelen)+" kg · Fire: "+fmt(tt.fire)+" kg\nToplam fiyat: "+fmt(tt.top)+" ₺ · KDV: "+fmt(tt.kdv)+" ₺ · Ödeme: "+fmt(tt.odeme)+" ₺\n\nDevam edilsin mi?"))return;
+      if(!confirm(g.ad+" defterine "+yeni.length+" satır eklenecek"+(ayni?" ("+ayni+" satır zaten kayıtlı, atlanacak)":"")+(c.atla?" ("+c.atla+" satır tarihsiz, atlanacak)":"")+(c.tahmin?" ("+c.tahmin+" satırda tarih yoktu: önceki satırın tarihi verildi, açıklamada yazıyor)":"")+".\n\nGiden: "+fmt(tt.giden)+" kg · Gelen: "+fmt(tt.gelen)+" kg · Fire: "+fmt(tt.fire)+" kg\nToplam fiyat: "+fmt(tt.top)+" ₺ · KDV: "+fmt(tt.kdv)+" ₺ · Ödeme: "+fmt(tt.odeme)+" ₺\n\nDevam edilsin mi?"))return;
       var kimlik=kim().slice(0,100),say=0;
       for(var i=0;i<yeni.length;i+=200){
         var u={};
