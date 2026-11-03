@@ -87,8 +87,6 @@ if (env("CF_TOKEN")) {
     }
   } catch (e) { hata++; log("❌ Cloudflare:", e.message); }
 }
-process.exit(hata ? 1 : 0);
-
 /* ---------------- 🔔 Bildirim sunucusu (mag-bildirim) yayını + Firebase hizmet anahtarı (v134: /sifre için) ----------------
    Yayındaki kodun sürümüne bakar: depodakinden YENİ bir sürüm yayındaysa (biri elle güncellemiş) üzerine YAZMAZ.
    Bağlı KV ve gizli değişkenler korunur (keep_bindings). FB_SA = GitHub'daki FIREBASE_SERVICE_ACCOUNT; log'a yazılmaz. */
@@ -118,3 +116,5 @@ if (islem === "bildirim-yayinla") {
   const sd = await fetch(`https://api.cloudflare.com/client/v4/accounts/${A}/workers/subdomain`, { headers: H }).then(x => x.json()).catch(() => ({}));
   if (sd.result && sd.result.subdomain) { const t = await fetch(`https://mag-bildirim.${sd.result.subdomain}.workers.dev/`).then(x => x.text()).catch(e => "ulaşılamadı"); log("ℹ Sunucu cevabı:", String(t).replace(/\d+\)/, "…)").slice(0, 80)); }
 }
+
+process.exit(hata ? 1 : 0);
