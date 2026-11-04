@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       islem:
-        description: "saglik | teshis | kural-kontrol | kural-yayinla | ajan-izin"
+        description: "saglik | teshis | kural-kontrol | kural-yayinla | ajan-izin | komut | bildirim-yayinla | granul-aktar"
         default: saglik
   push:
     branches: [main]
@@ -45,6 +45,7 @@ jobs:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           YONETIM_TOKEN: ${{ secrets.YONETIM_TOKEN }}
+          PROJE_AD: fabrika
       - name: Teşhisi özel depoya yaz
         if: env.ISLEM == 'teshis'
         env:
