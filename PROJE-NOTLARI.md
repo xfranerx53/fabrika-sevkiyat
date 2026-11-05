@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v140**
+**GÜNCEL SÜRÜM: v141**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -414,6 +414,8 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-05: v140 — Kullanıcı kararları: (1) SADE ANA EKRAN YAPILMAYACAK («iş yürüyüşüne uygun değil»); (2) ŞOFÖRÜN TESLİMDE FOTOĞRAF/KONUM KANITI YAPILMAYACAK («teslim edildi dediği yer farklı olabilir»); (3) mesajdan sevk DENENECEK, beğenmezse kaldırılacak → sevkmesaj.js (Bölüm 2). Ayrıca Adres tamamlama › WhatsApp'tan sekmesine «✓ Konumu belli N öneriyi toplu kaydet» (benzer adı kayıtlı olanlar ve adsızlar atlanır; not alanına «WhatsApp Adresler grubundan (tarih)»). Kullanıcı «WhatsApp adreslerini ekledin mi» diye sordu: öneri olarak aktarıldı (312, 98 konumlu), adres defterine yazılmadı — toplu kaydet düğmesi ve tek tek onay onda. yzmesaj.js `window.yzMesaj` (adaylar/gemini/dinle/nrm/cek) dışa açıldı. Firebase kuralı: değişmedi. Cloudflare: değişmedi.
 
 - 2026-11-05: (v140, sürüm değişmedi) SAHİBİN TALİMATIYLA («WhatsApp'tan tamamını ekle, geri kalanlara ben bakarım») WhatsApp «Mag Adresler» + «Mag Sevkiyat» gruplarındaki konum linkleri (tekil 433; adlar temizlendi: telefon numarası silindi, «konumu» eki atıldı, gürültü cümleler adsız sayıldı) → `oneri-aktar` (431 öneri, 186 konumlu) → yeni yönetim işlemi `oneri-kaydet`: **300 adres adres defterine eklendi** (128 konumlu, 17 Mikro carisine bağlı; ekleyen «🤖 Claude», ekleyenUid «claude», not «WhatsApp … grubundan (tarih)»), 49'u zaten kayıtlıydı (eklenmedi), 46 adsız öneri Adres tamamlama › WhatsApp'tan'da kaldı. Rapor ÖZEL depoda teshis/oneri-kaydet.json. Bazı adlar mesaj cümlesi gibi (ör. «… buraya bırakılacak») — kullanıcı gözden geçirecek. 172 eklenen adresin konumu yok (Google yer linki) → Adres tamamlama › Konumu olmayan adresler.
+
+- 2026-11-05: v141 — adrtam.js eşleşme puanı iyileştirildi (ilk ayırt edici kelime + Türkçe ek için baş eşleşme; «Sebersan» ↔ «SEBERSAN TIBBİ…» artık eşleşiyor). Teşhis sayımı: Mikro'da son ~1 yıl hareketli 261 müşteri → 46 adrese bağlı, 55 eşleşme önerisi (bazıları yanlış, kullanıcı onaylayacak), 160 adressiz (peşin satış, plasiyer, kişi, yurt dışı da var).
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 - (v138) Sunucudan çekilen Google Haritalar sayfasındaki APP_INITIALIZATION_STATE güvenilmez (sunucunun bulunduğu ülkenin varsayılan görünümü olabilir). Toplu konum işlerinden sonra koordinatları MUTLAKA bölge sınırıyla (Türkiye) kontrol et; teşhis verisinde aralığa bak.
