@@ -267,13 +267,44 @@ if (islem === "oneri-aktar") {
     if (!o || !o.link) continue; if (var_[o.link]) { atla++; continue; }
     const k = await haritaKonum(o.link); if (k) kon++;
     const id = D.ref("adresOneri").push().key;
-    O[id] = { ad: String(o.ad || "").slice(0, 100), link: String(o.link).slice(0, 500), z: String(o.z || "").slice(0, 10), kim: String(o.kim || "").slice(0, 30), kaynak: "WhatsApp Adresler grubu" };
+    O[id] = { ad: String(o.ad || "").slice(0, 100), link: String(o.link).slice(0, 500), z: String(o.z || "").slice(0, 10), kim: String(o.kim || "").slice(0, 30), kaynak: "WhatsApp " + (o.kay === "Sevkiyat" ? "Sevkiyat" : "Adresler") + " grubu" };
     if (k) O[id].konum = { lat: k.lat, lon: k.lon, u: O[id].link };
     n++; if (!k) await new Promise(r => setTimeout(r, 300));
   }
   await D.ref("adresOneri").set(O);
   await D.ref("denetim").push({ tur: "claude", baslik: "WhatsApp adres önerileri aktarıldı", detay: n + " öneri (" + kon + " konumlu), " + atla + " zaten kayıtlı", yol: "adresOneri", id: "", kim: "🤖 Claude (sahibin gönderdiği sohbet)", uid: "claude", zaman: admin.database.ServerValue.TIMESTAMP }).catch(() => { });
   log(`✅ Öneriler: ${n} aktarıldı • ${kon} konumlu • ${atla} zaten kayıtlı`);
+}
+
+/* oneri-kaydet (v141): SAHİBİN TALİMATIYLA («WhatsApp'tan tamamını ekle») adresOneri/ → sevkAdresleri/.
+   Aynı (çekirdek) ada sahip öneriler tek adres olur (konumlu ve en yeni seçilir); adres defterinde aynı çekirdek ad varsa EKLENMEZ («zaten kayıtlı»).
+   Adsız öneriler öneri olarak kalır. Mikro carisinin çekirdek adı birebir aynıysa cariKod bağlanır. Rapor ÖZEL depoya (teshis/oneri-kaydet.json). */
+if (islem === "oneri-kaydet") {
+  const D = admin.database(), A = (await D.ref("sevkAdresleri").once("value")).val() || {}, O = (await D.ref("adresOneri").once("value")).val() || {}, C = (await D.ref("cariler").once("value")).val() || {};
+  const trn = x => String(x == null ? "" : x).toLocaleLowerCase("tr-TR").replace(/ı/g, "i").replace(/ş/g, "s").replace(/ç/g, "c").replace(/ğ/g, "g").replace(/ö/g, "o").replace(/ü/g, "u").normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const nrm = x => trn(x).replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+  const GN = /\b(ltd|sti|a s|as|tic|san|ve|ins|paz|sanayi|ticaret|limited|sirketi|anonim|ith|ihr|dis|mam|gida|ambalaj|plastik|unlu|mamulleri|insaat|pazarlama|tekstil|ekmek|firin|kuruyemis|matbaacilik|konumu|konum|adresi|adres)\b/g;
+  const cek = x => nrm(x).replace(GN, " ").replace(/\b\d+\b/g, " ").replace(/\s+/g, " ").trim();
+  const kayitli = {}; Object.values(A).forEach(a => { const k = cek(a && a.ad); if (k && !kayitli[k]) kayitli[k] = a.ad; });
+  const cariK = {}; Object.values(C).forEach(c => { if (c && c.tur === "m") { const k = cek(c.ad); if (k && !cariK[k]) cariK[k] = c.kod; } });
+  const grup = {}, R = { eklendi: [], zatenKayitli: [], tekrar: [], adsiz: 0 };
+  for (const [id, o] of Object.entries(O)) { if (!o || !String(o.ad || "").trim()) { R.adsiz++; continue; } const k = cek(o.ad) || nrm(o.ad); (grup[k] = grup[k] || []).push([id, o]); }
+  const up = {}, ts = admin.database.ServerValue.TIMESTAMP;
+  for (const [k, L] of Object.entries(grup)) {
+    L.sort((x, y) => (!!y[1].konum - !!x[1].konum) || String(y[1].z || "").localeCompare(String(x[1].z || "")));
+    if (kayitli[k]) { R.zatenKayitli.push(L[0][1].ad + " → " + kayitli[k]); L.forEach(([id]) => up["adresOneri/" + id] = null); continue; }
+    const [, o] = L[0], nid = D.ref("sevkAdresleri").push().key;
+    const x = { ad: String(o.ad).trim().slice(0, 100), haritaUrl: String(o.link).slice(0, 500), sehir: "", tel: "", adres: "", yetkili: "", tel2: "",
+      not: (o.kaynak || "WhatsApp") + "ndan" + (o.z ? " (" + o.z.split("-").reverse().join(".") + ")" : ""), ekleyen: "🤖 Claude (sahibin talimatı, WhatsApp yedeği)", ekleyenUid: "claude", eklenmeTarihi: ts };
+    if (o.konum && isFinite(+o.konum.lat)) x.konum = { lat: +o.konum.lat, lon: +o.konum.lon, u: x.haritaUrl };
+    if (cariK[k]) x.cariKod = cariK[k];
+    up["sevkAdresleri/" + nid] = x; L.forEach(([id]) => up["adresOneri/" + id] = null); kayitli[k] = x.ad;
+    R.eklendi.push({ ad: x.ad, konum: !!x.konum, cari: !!x.cariKod, kaynak: o.kaynak || "" }); if (L.length > 1) R.tekrar.push(x.ad + " (" + L.length + " link)");
+  }
+  if (Object.keys(up).length) await D.ref().update(up);
+  await D.ref("denetim").push({ tur: "claude", baslik: "WhatsApp adresleri adres defterine eklendi", detay: R.eklendi.length + " adres (" + R.eklendi.filter(x => x.konum).length + " konumlu), " + R.zatenKayitli.length + " zaten kayıtlı", yol: "sevkAdresleri", id: "", kim: "🤖 Claude (sahibin talimatı)", uid: "claude", zaman: ts }).catch(() => { });
+  fs.mkdirSync("teshis", { recursive: true }); fs.writeFileSync("teshis/oneri-kaydet.json", JSON.stringify(R, null, 1));
+  log(`✅ Eklendi: ${R.eklendi.length} adres (${R.eklendi.filter(x => x.konum).length} konumlu, ${R.eklendi.filter(x => x.cari).length} Mikro'ya bağlı) • zaten kayıtlı ${R.zatenKayitli.length} • adsız öneri ${R.adsiz}`);
 }
 
 process.exit(hata ? 1 : 0);
