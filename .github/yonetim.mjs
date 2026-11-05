@@ -188,14 +188,16 @@ const koordBul = s => { s = String(s || ""); try { s = decodeURIComponent(s); } 
   if ((m = s.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/))) return ok(m[1], m[2]);
   if ((m = s.match(/^\s*(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})\s*$/))) return ok(m[1], m[2]);
   return null; };
+const IZ = [];
 async function haritaKonum(link) {
-  let cur = String(link || "").trim(), k = koordBul(cur), adim = 0;
+  let cur = String(link || "").trim(), k = koordBul(cur), adim = 0; const iz = { link: cur, yol: [] }; IZ.push(iz);
   if (!/^https?:\/\//i.test(cur)) return k;
   while (!k && cur && adim++ < 8) {
     let r; try { r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", Cookie: "CONSENT=YES+cb; SOCS=CAI" } }); } catch (e) { return null; }
-    const loc = r.headers.get("location");
+    const loc = r.headers.get("location"); iz.yol.push(r.status + " " + (loc || "").slice(0, 400));
     if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; k = koordBul(cur); if (!k && /consent\./.test(cur)) k = koordBul(new URL(cur).searchParams.get("continue")); continue; }
-    if (r.ok) k = koordBul((await r.text()).slice(0, 900000));
+    if (r.ok) { const t = (await r.text()).slice(0, 900000); k = koordBul(t);
+      if (!k) iz.sayfa = (t.match(/.{0,120}(?:center=|APP_INITIALIZATION_STATE|!3d|@4\d\.)[^"']{0,160}/g) || []).slice(0, 6); }
     break;
   }
   return k ? { lat: Math.round(k.lat * 1e6) / 1e6, lon: Math.round(k.lon * 1e6) / 1e6 } : null;
@@ -226,6 +228,7 @@ if (islem === "adres-konum") {
   }
   if (Object.keys(up).length) await D.ref().update(up);
   log(`✅ Adres konumları: ${n} link denendi • ${bul} konum bulundu • ${yok} bulunamadı`);
+  fs.mkdirSync("teshis", { recursive: true }); fs.writeFileSync("teshis/adres-konum.json", JSON.stringify(IZ.filter(x => x.yol.length), null, 1));
 }
 
 /* cari-aktar (v138): ÖZEL depo mag-yonetim/aktar/cariler.json (Mikro: hareketli cariler + adres fihristi + risk) → cariler/ ve cariBakiye/ (tamamı yenilenir).

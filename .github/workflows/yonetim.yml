@@ -47,12 +47,12 @@ jobs:
           YONETIM_TOKEN: ${{ secrets.YONETIM_TOKEN }}
           PROJE_AD: fabrika
       - name: Teşhisi özel depoya yaz
-        if: env.ISLEM == 'teshis'
+        if: env.ISLEM == 'teshis' || env.ISLEM == 'adres-konum'
         env:
           TOKEN: ${{ secrets.YONETIM_TOKEN }}
         run: |
           if [ -z "$TOKEN" ]; then echo "YONETIM_TOKEN yok — teşhis özel depoya yazılamadı"; exit 1; fi
           git clone -q --depth 1 "https://x-access-token:$TOKEN@github.com/xfranerx53/mag-yonetim.git" yon
-          mkdir -p "yon/fabrika-sevkiyat" && cp teshis/* "yon/fabrika-sevkiyat/"
+          mkdir -p "yon/fabrika-sevkiyat" && cp teshis/* "yon/fabrika-sevkiyat/" 2>/dev/null || true
           cd yon && git config user.name "mag-ajan" && git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A && (git commit -q -m "teşhis fabrika-sevkiyat $(TZ=Europe/Istanbul date +%F_%H%M)" && git push -q && echo "✅ Teşhis özel depoya yazıldı") || echo "Değişiklik yok"
