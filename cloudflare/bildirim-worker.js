@@ -1,5 +1,5 @@
 /* =====================================================================================
-   MAG AMBALAJ — TELEFON BİLDİRİM SUNUCUSU (Cloudflare Worker, ücretsiz plan)  · v134
+   MAG AMBALAJ — TELEFON BİLDİRİM SUNUCUSU (Cloudflare Worker, ücretsiz plan)  · v137
    -------------------------------------------------------------------------------------
    Ne yapar: Uygulama KAPALIYKEN de telefona bildirim gönderir (standart Web Push; Firebase
    Blaze / FCM gerekmez). Bu dosyanın TAMAMI Cloudflare > Worker > «Edit code» ekranına yapıştırılır.
@@ -10,6 +10,7 @@
    Uç noktalar (uygulama bildirim.js çağırır):
      GET  /          -> "çalışıyor" yazısı (kurulumu denemek için tarayıcıda açın)
      GET  /vapid     -> herkese açık imza anahtarı (telefon abone olurken kullanır)
+     POST /konum     -> (v137) giriş yapmış kullanıcı; {u:[harita linkleri]} -> {konum:{link:{lat,lon}|null}} — sevkiyat rotası için
      GET  /kur       -> (v129) TCMB günlük kur (USD, EUR; döviz + efektif satış), 1 saat önbellekli — Adet & Maliyet bölümü kullanır
      POST /abone     -> bu telefonu kaydet   {sub, cihaz, kapat:[...]}       (Firebase giriş jetonu gerekir)
      POST /sil       -> bu telefonun kaydını sil {endpoint}                  (Firebase giriş jetonu gerekir)
@@ -202,6 +203,55 @@ async function tcmbKur(env) {
   }
 }
 
+/* ---------------- v137: 🗺 harita linkinden konum (sevkiyat rotası için) ----------------
+   Telefondan paylaşılan kısa Google Maps linklerinde (maps.app.goo.gl/…) koordinat yazmaz. Bu uç nokta linki
+   Google'a sorup yönlendirmeyi izler, sayfadaki pin koordinatını bulur. YALNIZ Google harita adresleri açılır.
+   Sonuç KV'de 60 gün saklanır (bulunamazsa 1 gün). */
+function koordBul(s) {
+  s = String(s || "");
+  try { s = decodeURIComponent(s); } catch (e) { }
+  const ok = (a, b) => { const la = +a, lo = +b; return isFinite(la) && isFinite(lo) && Math.abs(la) <= 90 && Math.abs(lo) <= 180 && (la || lo) ? { lat: la, lon: lo } : null; };
+  let m = s.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/); if (m) return ok(m[1], m[2]);
+  m = s.match(/[?&](?:q|query|ll|destination|daddr|center|sll)=(?:loc:)?(-?\d{1,2}\.\d+)\s*(?:,|%2C)\s*(-?\d{1,3}\.\d+)/i); if (m) return ok(m[1], m[2]);
+  m = s.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/); if (m) return ok(m[1], m[2]);
+  m = s.match(/\/(-?\d{1,2}\.\d{3,}),\s*(-?\d{1,3}\.\d{3,})(?:[\/?#]|$)/); if (m) return ok(m[1], m[2]);
+  m = s.match(/^\s*(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})\s*$/); if (m) return ok(m[1], m[2]);
+  return null;
+}
+function sayfaKoord(t) {
+  let m = t.match(/staticmap\?[^"']*?center=(-?\d{1,2}\.\d+)(?:%2C|,)(-?\d{1,3}\.\d+)/); if (m) return { lat: +m[1], lon: +m[2] };
+  m = t.match(/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/); if (m) return { lat: +m[1], lon: +m[2] };
+  m = t.match(/APP_INITIALIZATION_STATE=\[\[\[[-\d.e+]+,(-?\d{1,3}\.\d+),(-?\d{1,2}\.\d+)\]/); if (m) return { lat: +m[2], lon: +m[1] };
+  return null;
+}
+const HARITA_HOST = /^(maps\.app\.goo\.gl|goo\.gl|g\.co|maps\.google\.[a-z.]+|(www\.)?google\.[a-z.]+|consent\.google\.[a-z.]+)$/i;
+async function konumCoz(u) {
+  let cur = String(u || "");
+  for (let i = 0; i < 7; i++) {
+    let x; try { x = new URL(cur); } catch (e) { return null; }
+    if (!/^https?:$/.test(x.protocol) || !HARITA_HOST.test(x.hostname)) return null;
+    const k = koordBul(cur); if (k) return k;
+    if (/^consent\./i.test(x.hostname)) return koordBul(x.searchParams.get("continue") || "");
+    const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", "Cookie": "CONSENT=YES+cb; SOCS=CAI" } });
+    const loc = r.headers.get("location");
+    if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; continue; }
+    if (r.ok) return sayfaKoord((await r.text()).slice(0, 800000));
+    return null;
+  }
+  return null;
+}
+async function konumlar(env, liste) {
+  const L = (Array.isArray(liste) ? liste : []).map(String).filter(u => /^https?:\/\//i.test(u) && u.length <= 600).slice(0, 25), o = {};
+  for (const u of L) {
+    const anahtar = "konum:" + await kisaAd(u), c = await env.KV.get(anahtar, "json");
+    if (c && (c.v || Date.now() - c.z < 864e5)) { o[u] = c.v || null; continue; }
+    let v = null; try { v = await konumCoz(u); } catch (e) { v = null; }
+    o[u] = v;
+    await env.KV.put(anahtar, JSON.stringify({ z: Date.now(), v }), { expirationTtl: v ? 60 * 864e2 : 864e2 });
+  }
+  return { ok: true, konum: o };
+}
+
 export default {
   async fetch(req, env, ctx) {
     const origin = req.headers.get("Origin") || "", url = new URL(req.url), yol = url.pathname.replace(/\/+$/, "") || "/";
@@ -228,6 +278,7 @@ export default {
       const kayit = await kayitOku(uid, jeton);
       if (!kayit || kayit.onay !== true) return cevap({ hata: "hesap onaylı değil" }, 403, origin);
       const g = await req.json().catch(() => ({}));
+      if (yol === "/konum") return cevap(await konumlar(env, g.u), 200, origin);
       if (yol === "/sifre") {
         if (kayit.yonetici !== true) return cevap({ hata: "Bu işlem için yönetici olmalısınız." }, 403, origin);
         const hedef = String(g.uid || ""), sifre = String(g.sifre || "");

@@ -179,4 +179,32 @@ if (islem === "komut") {
   }
 }
 
+/* ---------------- 📍 fabrika-konum (v137): .github/yonetim-istek.txt 2. satırdaki Google Maps linkini çözüp ayarlar/fabrika'ya yazar ----------------
+   Sevkiyat rotasının başlangıç/dönüş noktası. Koordinat log'a yazılır (firmanın kendi açık adresi; kişi bilgisi değil). */
+if (islem === "fabrika-konum") {
+  const link = (fs.readFileSync(".github/yonetim-istek.txt", "utf8").split(/\r?\n/)[1] || "").trim();
+  const kb = s => { s = String(s || ""); try { s = decodeURIComponent(s); } catch (e) { }
+    const ok = (a, b) => (isFinite(+a) && isFinite(+b) && Math.abs(+a) <= 90 && Math.abs(+b) <= 180) ? { lat: +a, lon: +b } : null; let m;
+    if ((m = s.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/))) return ok(m[1], m[2]);
+    if ((m = s.match(/[?&](?:q|query|ll|destination|daddr|center|sll)=(?:loc:)?(-?\d{1,2}\.\d+)\s*(?:,|%2C)\s*(-?\d{1,3}\.\d+)/i))) return ok(m[1], m[2]);
+    if ((m = s.match(/staticmap\?[^"']*?center=(-?\d{1,2}\.\d+)(?:%2C|,)(-?\d{1,3}\.\d+)/))) return ok(m[1], m[2]);
+    if ((m = s.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/))) return ok(m[1], m[2]);
+    if ((m = s.match(/^\s*(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})\s*$/))) return ok(m[1], m[2]);
+    return null; };
+  let cur = link, k = kb(cur), adim = 0;
+  while (!k && cur && adim++ < 8) {
+    const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", Cookie: "CONSENT=YES+cb; SOCS=CAI" } });
+    const loc = r.headers.get("location");
+    if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; log("ℹ yönlendirme", adim); k = kb(cur); if (!k && /consent\./.test(cur)) k = kb(new URL(cur).searchParams.get("continue")); continue; }
+    if (r.ok) k = kb((await r.text()).slice(0, 900000));
+    break;
+  }
+  if (!link || !/^https?:\/\//.test(link)) { hata++; log("❌ yonetim-istek.txt 2. satırda link yok"); }
+  else if (!k) { hata++; log("❌ Linkten konum çıkarılamadı"); }
+  else { k = { lat: Math.round(k.lat * 1e6) / 1e6, lon: Math.round(k.lon * 1e6) / 1e6 };
+    await admin.database().ref("ayarlar/fabrika").set({ lat: k.lat, lon: k.lon, url: link.slice(0, 500), z: admin.database.ServerValue.TIMESTAMP });
+    await admin.database().ref("denetim").push({ tur: "claude", baslik: "Fabrika konumu girildi (sevkiyat rotası)", detay: k.lat + ", " + k.lon, yol: "ayarlar/fabrika", id: "", kim: "🤖 Claude (sahibin talimatı)", uid: "claude", zaman: admin.database.ServerValue.TIMESTAMP }).catch(() => { });
+    log(`✅ Fabrika konumu kaydedildi: ${k.lat}, ${k.lon}`); }
+}
+
 process.exit(hata ? 1 : 0);

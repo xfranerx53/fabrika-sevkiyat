@@ -689,6 +689,26 @@
         "$other": {
           ".validate": "false"
         }
+      },
+      "fabrika": {
+        ".read": "auth != null && root.child('kullanicilar/' + auth.uid).child('onay').val() === true",
+        ".write": "auth != null && root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true",
+        ".validate": "newData.hasChildren(['lat', 'lon'])",
+        "lat": {
+          ".validate": "newData.isNumber() && newData.val() >= -90 && newData.val() <= 90"
+        },
+        "lon": {
+          ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180"
+        },
+        "url": {
+          ".validate": "newData.isString() && newData.val().length <= 500"
+        },
+        "z": {
+          ".validate": "newData.isNumber()"
+        },
+        "$diger": {
+          ".validate": false
+        }
       }
     },
     "cop": {
