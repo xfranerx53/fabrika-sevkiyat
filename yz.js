@@ -31,7 +31,8 @@
     if(m=s.match(/\/(-?\d{1,2}\.\d{3,}),\s*(-?\d{1,3}\.\d{3,})(?:[\/?#]|$)/))return ok(m[1],m[2]);
     if(m=s.match(/^\s*(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})\s*$/))return ok(m[1],m[2]);
     return null}
-  function adrKonum(a){if(!a)return null;if(a.konum&&isFinite(+a.konum.lat)&&(!a.haritaUrl||a.konum.u===a.haritaUrl))return{lat:+a.konum.lat,lon:+a.konum.lon};return koord(a.haritaUrl)}
+  function trk(k){return k&&k.lat>35.5&&k.lat<42.3&&k.lon>25.5&&k.lon<45?k:null}
+  function adrKonum(a){if(!a)return null;if(a.konum&&isFinite(+a.konum.lat)&&(!a.haritaUrl||a.konum.u===a.haritaUrl)&&trk(a.konum))return{lat:+a.konum.lat,lon:+a.konum.lon};return koord(a.haritaUrl)}
   window.adrKonum=adrKonum;
   function km(a,b){var t=Math.PI/180,x=Math.pow(Math.sin((b.lat-a.lat)*t/2),2)+Math.cos(a.lat*t)*Math.cos(b.lat*t)*Math.pow(Math.sin((b.lon-a.lon)*t/2),2);return 12742*Math.asin(Math.sqrt(x))}
   function onbOku(){try{return JSON.parse(localStorage.getItem("yzKonum")||"{}")||{}}catch(e){return{}}}
@@ -46,8 +47,8 @@
   async function konumlariBul(liste){
     var c=onbOku(),simdi=Date.now(),sor=[];
     liste.forEach(function(d){if(d.k||!d.harita)return;var k=koord(d.harita);if(k){d.k=k;return}
-      var e=c[d.harita];if(e&&e.v){d.k=e.v;return}if(e&&simdi-e.z<6*36e5)return;if(sor.indexOf(d.harita)<0)sor.push(d.harita)});
-    if(sor.length){var o=await sunucuKonum(sor);Object.keys(o).forEach(function(u){c[u]={z:simdi,v:o[u]||null}});
+      var e=c[d.harita];if(e&&trk(e.v)){d.k=e.v;return}if(e&&simdi-e.z<6*36e5)return;if(sor.indexOf(d.harita)<0)sor.push(d.harita)});
+    if(sor.length){var o=await sunucuKonum(sor);Object.keys(o).forEach(function(u){c[u]={z:simdi,v:trk(o[u])||null}});
       var ks=Object.keys(c);if(ks.length>400)ks.sort(function(a,b){return c[a].z-c[b].z}).slice(0,ks.length-400).forEach(function(x){delete c[x]});onbYaz(c);
       liste.forEach(function(d){if(!d.k&&d.harita&&c[d.harita]&&c[d.harita].v)d.k=c[d.harita].v})}}
   function adresBul(A,adlar){/* 1) Mikro cari koduyla bağlı adres 2) ad birebir 3) çekirdek ad birebir 4) biri ötekini içeriyor (≥5 harf) */

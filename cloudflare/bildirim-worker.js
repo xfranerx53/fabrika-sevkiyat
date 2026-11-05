@@ -218,11 +218,12 @@ function koordBul(s) {
   m = s.match(/^\s*(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})\s*$/); if (m) return ok(m[1], m[2]);
   return null;
 }
+const TRK = k => k && k.lat > 35.5 && k.lat < 42.3 && k.lon > 25.5 && k.lon < 45;
 function sayfaKoord(t) {
   let m = t.match(/staticmap\?[^"']*?center=(-?\d{1,2}\.\d+)(?:%2C|,)(-?\d{1,3}\.\d+)/); if (m) return { lat: +m[1], lon: +m[2] };
   m = t.match(/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/); if (m) return { lat: +m[1], lon: +m[2] };
-  m = t.match(/APP_INITIALIZATION_STATE=\[\[\[[-\d.e+]+,(-?\d{1,3}\.\d+),(-?\d{1,2}\.\d+)\]/); if (m) return { lat: +m[2], lon: +m[1] };
-  m = t.match(/\[null,null,(-?\d{1,2}\.\d{4,}),(-?\d{1,3}\.\d{4,})\]/); if (m) return { lat: +m[1], lon: +m[2] };
+  /* v138: APP_INITIALIZATION_STATE yalnız haritanın varsayılan görünümü olabiliyor (yanlış); yalnız Türkiye içindeki yer koordinatı alınır */
+  const re = /\[null,null,(-?\d{1,2}\.\d{4,}),(-?\d{1,3}\.\d{4,})\]/g; while ((m = re.exec(t))) { const k = { lat: +m[1], lon: +m[2] }; if (TRK(k)) return k; }
   return null;
 }
 const HARITA_HOST = /^(maps\.app\.goo\.gl|goo\.gl|g\.co|maps\.google\.[a-z.]+|(www\.)?google\.[a-z.]+|consent\.google\.[a-z.]+)$/i;
@@ -248,8 +249,8 @@ async function konumlar(env, liste) {
   const L = (Array.isArray(liste) ? liste : []).map(String).filter(u => /^https?:\/\//i.test(u) && u.length <= 600).slice(0, 25), o = {};
   for (const u of L) {
     const anahtar = "konum:" + await kisaAd(u), c = await env.KV.get(anahtar, "json");
-    if (c && (c.v || Date.now() - c.z < 864e5)) { o[u] = c.v || null; continue; }
-    let v = null; try { v = await konumCoz(u); } catch (e) { v = null; }
+    if (c && ((c.v && TRK(c.v)) || (!c.v && Date.now() - c.z < 864e5))) { o[u] = c.v || null; continue; }
+    let v = null; try { v = await konumCoz(u); } catch (e) { v = null; } if (v && !TRK(v)) v = null;
     o[u] = v;
     await env.KV.put(anahtar, JSON.stringify({ z: Date.now(), v }), { expirationTtl: v ? 60 * 864e2 : 864e2 });
   }

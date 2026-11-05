@@ -190,8 +190,10 @@ const koordBul = s => { s = String(s || ""); try { s = decodeURIComponent(s); } 
   return null; };
 const IZ = [];
 /* Google yer sayfası: APP_INITIALIZATION_STATE=[[[mesafe,boylam,enlem]…  ya da [null,null,enlem,boylam] */
-const sayfaCift = t => { let m = t.match(/APP_INITIALIZATION_STATE=\[\[\[[-\d.e+]+,(-?\d{1,3}\.\d+),(-?\d{1,2}\.\d+)\]/); if (m) return { lat: +m[2], lon: +m[1] };
-  m = t.match(/\[null,null,(-?\d{1,2}\.\d{4,}),(-?\d{1,3}\.\d{4,})\]/); if (m) return { lat: +m[1], lon: +m[2] }; return null; };
+const TR = k => k && k.lat > 35.5 && k.lat < 42.3 && k.lon > 25.5 && k.lon < 45; /* müşterilerin hepsi Türkiye'de: dışı = yanlış (ör. sunucunun ABD'deki varsayılan görünümü) */
+const sayfaCift = t => { const re = /\[null,null,(-?\d{1,2}\.\d{4,}),(-?\d{1,3}\.\d{4,})\]/g; let m;
+  while ((m = re.exec(t))) { const k = { lat: +m[1], lon: +m[2] }; if (TR(k)) return k; }
+  return null; };
 async function haritaKonum(link) {
   let cur = String(link || "").trim(), k = koordBul(cur), adim = 0; const iz = { link: cur, yol: [] }; IZ.push(iz);
   if (!/^https?:\/\//i.test(cur)) return k;
@@ -205,7 +207,7 @@ async function haritaKonum(link) {
           t = (await r2.text()).slice(0, 3000000); k = koordBul(t) || sayfaCift(t); iz.boy2 = t.length; if (!k) iz.ciftler2 = (t.match(/-?\d{1,3}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}/g) || []).slice(0, 8); else iz.masaustu = 1; } catch (e) { } } }
     break;
   }
-  return k ? { lat: Math.round(k.lat * 1e6) / 1e6, lon: Math.round(k.lon * 1e6) / 1e6 } : null;
+  return k && TR(k) ? { lat: Math.round(k.lat * 1e6) / 1e6, lon: Math.round(k.lon * 1e6) / 1e6 } : null;
 }
 
 /* fabrika-konum: .github/yonetim-istek.txt 2. satırdaki Google Maps linkini çözüp ayarlar/fabrika'ya yazar (firmanın kendi açık adresi; log'a yazılır) */
@@ -226,7 +228,8 @@ if (islem === "adres-konum") {
   let n = 0, bul = 0, yok = 0;
   for (const [id, a] of Object.entries(A)) {
     const u = a && a.haritaUrl; if (!u) continue;
-    if (a.konum && a.konum.u === u && isFinite(+a.konum.lat)) continue;
+    if (a.konum && a.konum.u === u && isFinite(+a.konum.lat) && TR(a.konum)) continue;
+    if (a.konum && !TR(a.konum)) up["sevkAdresleri/" + id + "/konum"] = null; /* v138 düzeltme: Türkiye dışı (yanlış) konumu sil */
     n++; const k = await haritaKonum(u);
     if (k) { bul++; up["sevkAdresleri/" + id + "/konum"] = { lat: k.lat, lon: k.lon, u }; } else yok++;
     await new Promise(r => setTimeout(r, 400));
