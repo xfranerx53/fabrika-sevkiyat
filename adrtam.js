@@ -91,7 +91,8 @@
       h='<div style="font-size:13px;color:#667085;margin-bottom:6px">Mikro\'daki cari ile kayıtlı adres AYNI firma mı? Onaylarsanız bağlanır; tahsilatta ve rotada cari adı her zaman bu adrese gider.</div>'+
         (L.length?L.map(function(x){return'<div style="border:1px solid #e5e7eb;border-radius:10px;padding:8px 10px;margin-bottom:6px"><div>🧾 Mikro: <b>'+e(x.c.ad)+'</b> <span style="color:#667085">'+e([x.c.ilce,x.c.il].filter(Boolean).join(" / "))+'</span></div><div>📍 Kayıtlı: <b>'+e(x.a.ad)+'</b></div><div style="display:flex;gap:6px;margin-top:6px"><button type="button" class="btn b3 sm" data-ev="'+e(x.k)+'" data-id="'+e(x.a.id)+'">✓ Aynı firma</button><button type="button" class="btn b6 sm" data-ha="'+e(x.k)+'" data-id="'+e(x.a.id)+'">✗ Değil</button></div></div>'}).join(""):'<div class="empty">Onay bekleyen eşleşme yok.</div>')}
     else if(ST.sek==="wp"){L=H.wp.filter(function(o){return f(o.ad)}).slice(0,200);
-      h='<div style="font-size:13px;color:#667085;margin-bottom:6px">WhatsApp «Mag Adresler» grubunda paylaşılmış konumlar. Doğruysa «Kaydet» deyin (konumu yoksa haritada işaretlersiniz); eski/gereksizse silin. Benzer adı zaten kayıtlı olanlar en altta.</div>'+
+      var TK=H.wp.filter(function(o){return o.konum&&!o.kayitli&&String(o.ad||"").trim()});
+      h=(TK.length?'<button type="button" class="btn b3" id="atWpHep" style="margin:0 0 8px">✓ Konumu belli '+TK.length+' öneriyi toplu kaydet</button>':'')+'<div style="font-size:13px;color:#667085;margin-bottom:6px">WhatsApp «Mag Adresler» grubunda paylaşılmış konumlar. Doğruysa «Kaydet» deyin (konumu yoksa haritada işaretlersiniz); eski/gereksizse silin. Benzer adı zaten kayıtlı olanlar en altta.</div>'+
         (L.length?L.map(function(o){return'<div style="border:1px solid #e5e7eb;border-radius:10px;padding:8px 10px;margin-bottom:6px"><b>'+e(o.ad||"(adsız konum)")+'</b> <span style="color:#667085;font-size:13px">'+(o.z?e(o.z.split("-").reverse().join(".")):"")+(o.kim?' • '+e(o.kim):'')+'</span><div style="font-size:13px">'+(o.konum?'<span style="color:#16a34a">📍 konumu var</span>':'<span style="color:#b45309">konum linkten çıkmadı — kaydederken haritada işaretleyin</span>')+(o.kayitli?' • <span style="color:#b42318">benzer kayıtlı: '+e(o.kayitli.ad)+'</span>':'')+'</div><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap"><button type="button" class="btn b1 sm" data-wk="'+e(o.id)+'">✓ Adres defterine kaydet</button><button type="button" class="btn b7 sm" data-wa="'+e(o.id)+'">🗺 Linki aç</button><button type="button" class="btn b6 sm" data-ws="'+e(o.id)+'">🗑 Gereksiz</button></div></div>'}).join("")+(H.wp.length>200?'<div class="empty">İlk 200 gösteriliyor; aramayı kullanın.</div>':''):'<div class="empty">WhatsApp önerisi kalmadı 👍</div>')}
     else if(ST.sek==="yok"){L=H.yok.filter(function(x){return f(x.c.ad)}).slice(0,150);
       h='<div style="font-size:13px;color:#667085;margin-bottom:6px">Son 1 yılda hareketi olan, kayıtlı sevk adresi olmayan müşteriler (en son hareket eden üstte). «Haritadan seç» ile konumu işaretleyip kaydedin; sevkiyat yapılmayanları gizleyin.</div>'+
@@ -104,6 +105,7 @@
     l.querySelectorAll("[data-ha]").forEach(function(b){b.onclick=function(){degil(b.dataset.ha,b.dataset.id,b)}});
     l.querySelectorAll("[data-yeni]").forEach(function(b){b.onclick=function(){yeni(b.dataset.yeni)}});
     l.querySelectorAll("[data-gz]").forEach(function(b){b.onclick=function(){gizle(b.dataset.gz,b)}});
+    var hp=$("atWpHep");if(hp)hp.onclick=function(){wpHepsi(hp)};
     l.querySelectorAll("[data-wk]").forEach(function(b){b.onclick=function(){wpKaydet(b.dataset.wk,b)}});
     l.querySelectorAll("[data-wa]").forEach(function(b){b.onclick=function(){var o=ST.O[b.dataset.wa];if(o)window.open(o.link,"_blank","noopener")}});
     l.querySelectorAll("[data-ws]").forEach(function(b){b.onclick=function(){wpSil(b.dataset.ws).then(function(){hesapla();ciz()})}});
@@ -140,6 +142,13 @@
       ekleyen:String((rec&&rec.ad)||"?")+(rec&&rec.rol?" ("+rec.rol+")":""),ekleyenUid:firebase.auth().currentUser.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP};
     if(bag)x.cariKod=c.kod;
     try{b.disabled=true;var r=firebase.database().ref("sevkAdresleri").push();await r.set(x);ST.A.push(Object.assign({id:r.key},x));await wpSil(id);hesapla();ciz();toast("✓ Adres kaydedildi: "+x.ad)}
+    catch(er){b.disabled=false;alert("Kaydedilemedi: "+(er&&er.message||er))}}
+  async function wpHepsi(b){if(!yaz()&&izinYok())return;var L=H.wp.filter(function(o){return o.konum&&!o.kayitli&&String(o.ad||"").trim()});
+    if(!confirm(L.length+" WhatsApp konumu adres defterine kaydedilsin mi?\n(Adları WhatsApp'ta yazıldığı gibi; benzer adı zaten kayıtlı olanlar ve adsızlar atlanır. Sonradan düzeltilebilir/silinebilir.)"))return;
+    b.disabled=true;var db=firebase.database(),up={},kim=String((rec&&rec.ad)||"?")+(rec&&rec.rol?" ("+rec.rol+")":""),uid=firebase.auth().currentUser.uid,n=0;
+    L.forEach(function(o){var id=db.ref("sevkAdresleri").push().key,u=o.link;up["sevkAdresleri/"+id]={ad:String(o.ad).trim().slice(0,100),haritaUrl:u,konum:{lat:+o.konum.lat,lon:+o.konum.lon,u:u},sehir:"",tel:"",adres:"",yetkili:"",tel2:"",not:"WhatsApp Adresler grubundan ("+(o.z||"")+")",ekleyen:kim,ekleyenUid:uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP};
+      up["adresOneri/"+o.id]=null;n++});
+    try{await db.ref().update(up);Object.keys(up).forEach(function(k){if(k.indexOf("sevkAdresleri/")===0)ST.A.push(Object.assign({id:k.split("/")[1]},up[k]));else delete ST.O[k.split("/")[1]]});hesapla();ciz();toast("✓ "+n+" adres kaydedildi")}
     catch(er){b.disabled=false;alert("Kaydedilemedi: "+(er&&er.message||er))}}
   async function wpUygula(a,b){var o=a._wp;if(!confirm("«"+a.ad+"» adresine WhatsApp'taki «"+o.ad+"» konumu yazılsın mı?"))return;b.disabled=true;
     var u=a.haritaUrl||o.link,k={lat:+o.konum.lat,lon:+o.konum.lon,u:u},up={konum:k,duzenleyen:String((rec&&rec.ad)||"")};if(!a.haritaUrl)up.haritaUrl=u;

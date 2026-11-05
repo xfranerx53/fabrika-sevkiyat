@@ -14,14 +14,14 @@
   function adresler(){var L=(window.sAdr&&window.sAdr.length)?window.sAdr:YED;return L.filter(function(a){return a&&a.ad})}
   async function adrYukle(){if((window.sAdr&&window.sAdr.length)||YED.length)return;try{var v=(await firebase.database().ref("sevkAdresleri").once("value")).val()||{};YED=Object.keys(v).map(function(k){return Object.assign({id:k},v[k])})}catch(er){}}
   /* yerel eşleme: adın ayırt edici kelimeleri mesajda geçiyor mu (Türkçe ekler için ilk 5 harf) */
-  function yerel(metin){var M=nrm(metin).split(" ").filter(Boolean),A=adresler(),sayi={},en=[],eb=0;
+  function adaylar(metin){var M=nrm(metin).split(" ").filter(Boolean),A=adresler(),sayi={},o=[];
     var kel=function(a){var W=cek(a.ad).split(" ").filter(function(w){return w.length>=3});return W.length?W:nrm(a.ad).split(" ").filter(function(w){return w.length>=3})};
     var gecer=function(w){return M.some(function(m){return m.indexOf(w)===0||(m.length>=4&&w.indexOf(m)===0)})};
     A.forEach(function(a){kel(a).forEach(function(w){sayi[w]=(sayi[w]||0)+1})});
     A.forEach(function(a){var W=kel(a);if(!W.length)return;var G=W.filter(gecer);if(!G.length)return;
-      var b=G.length/W.length+(G.length>1?0.2:0)+(G.some(function(w){return w.length>=4&&sayi[w]===1})?0.5:0);
-      if(b>eb+0.01){eb=b;en=[a]}else if(Math.abs(b-eb)<=0.01)en.push(a)});
-    return eb>=0.5?en:[]}
+      var b=G.length/W.length+(G.length>1?0.2:0)+(G.some(function(w){return w.length>=4&&sayi[w]===1})?0.5:0);if(b>=0.5)o.push({a:a,b:b})});
+    return o.sort(function(x,y){return y.b-x.b})}
+  function yerel(metin){var o=adaylar(metin);if(!o.length)return[];return o.filter(function(x){return Math.abs(x.b-o[0].b)<=0.01}).map(function(x){return x.a})}
   function tur(metin){return/\b(cek|cekini|tahsil|odeme|odemesini|para|nakit|havale|senet|alacak|hesap)/.test(nrm(metin))?"tahsilat":"talimat"}
   var ayar=null,ayarDenendi=false;
   async function anahtar(){if(ayarDenendi)return ayar;ayarDenendi=true;try{var v=(await firebase.database().ref("okumaAyar").once("value")).val();if(v&&v.anahtar)ayar={anahtar:String(v.anahtar),model:v.model?String(v.model):""}}catch(er){}return ayar}
@@ -59,5 +59,6 @@
   function hepsi(){kur("dTal","talMetin",function(){return window.talAS},function(r){$("talMetin").value=String(r.metin||"").slice(0,500)});
     kur("dTah","tahCari",function(){return window.tahAS},function(r){if(r.firma)$("tahCari").value=String(r.firma.ad).slice(0,100);var n=$("tahNot");if(n&&!n.value)n.value=String(r.metin||"").slice(0,300)})}
   window.yzMesajTest={yerel:yerel,tur:tur};
+  window.yzMesaj={adaylar:async function(m){await adrYukle();return adaylar(m)},gemini:gemini,dinle:dinle,nrm:nrm,cek:cek};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",hepsi);else hepsi();
 })();
