@@ -253,4 +253,27 @@ if (islem === "cari-aktar") {
   log(`✅ Cari aktarımı: ${Object.keys(C).length} cari • ${Object.keys(B).length} bakiye`);
 }
 
+/* oneri-aktar (v139): ÖZEL depo mag-yonetim/aktar/wp-adresler.json (WhatsApp «Mag Adresler» grubu: ad + harita linki) → adresOneri/{id}.
+   Kayıtlı adreslerde aynı link varsa atlanır. Linkten konum çıkarılabiliyorsa (Türkiye içi) eklenir. Adres defterine KAYDETMEZ:
+   kullanıcı Adres tamamlama › «WhatsApp'tan» sekmesinde tek tek onaylar. Log'a yalnız sayılar. */
+if (islem === "oneri-aktar") {
+  const T = env("YONETIM_TOKEN"); if (!T || !env("SA")) { log("❌ YONETIM_TOKEN ya da Firebase anahtarı yok"); process.exit(1); }
+  const r = await fetch("https://api.github.com/repos/xfranerx53/mag-yonetim/contents/aktar/wp-adresler.json", { headers: { Authorization: "Bearer " + T, Accept: "application/vnd.github.raw", "User-Agent": "mag-yonetim" } });
+  if (!r.ok) { log("❌ Aktarım dosyası okunamadı:", r.status); process.exit(1); }
+  const J = await r.json(), D = admin.database(), A = (await D.ref("sevkAdresleri").once("value")).val() || {}, var_ = {}, O = {};
+  Object.values(A).forEach(a => { if (a && a.haritaUrl) var_[String(a.haritaUrl).trim()] = 1; });
+  let n = 0, kon = 0, atla = 0;
+  for (const o of (J.oneri || [])) {
+    if (!o || !o.link) continue; if (var_[o.link]) { atla++; continue; }
+    const k = await haritaKonum(o.link); if (k) kon++;
+    const id = D.ref("adresOneri").push().key;
+    O[id] = { ad: String(o.ad || "").slice(0, 100), link: String(o.link).slice(0, 500), z: String(o.z || "").slice(0, 10), kim: String(o.kim || "").slice(0, 30), kaynak: "WhatsApp Adresler grubu" };
+    if (k) O[id].konum = { lat: k.lat, lon: k.lon, u: O[id].link };
+    n++; if (!k) await new Promise(r => setTimeout(r, 300));
+  }
+  await D.ref("adresOneri").set(O);
+  await D.ref("denetim").push({ tur: "claude", baslik: "WhatsApp adres önerileri aktarıldı", detay: n + " öneri (" + kon + " konumlu), " + atla + " zaten kayıtlı", yol: "adresOneri", id: "", kim: "🤖 Claude (sahibin gönderdiği sohbet)", uid: "claude", zaman: admin.database.ServerValue.TIMESTAMP }).catch(() => { });
+  log(`✅ Öneriler: ${n} aktarıldı • ${kon} konumlu • ${atla} zaten kayıtlı`);
+}
+
 process.exit(hata ? 1 : 0);

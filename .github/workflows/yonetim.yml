@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       islem:
-        description: "saglik | teshis | kural-kontrol | kural-yayinla | ajan-izin | komut | bildirim-yayinla | granul-aktar | fabrika-konum | adres-konum | cari-aktar"
+        description: "saglik | teshis | kural-kontrol | kural-yayinla | ajan-izin | komut | bildirim-yayinla | granul-aktar | fabrika-konum | adres-konum | cari-aktar | oneri-aktar"
         default: saglik
   push:
     branches: [main]
