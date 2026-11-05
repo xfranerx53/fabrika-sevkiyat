@@ -189,6 +189,9 @@ const koordBul = s => { s = String(s || ""); try { s = decodeURIComponent(s); } 
   if ((m = s.match(/^\s*(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})\s*$/))) return ok(m[1], m[2]);
   return null; };
 const IZ = [];
+/* Google yer sayfası: APP_INITIALIZATION_STATE=[[[mesafe,boylam,enlem]…  ya da [null,null,enlem,boylam] */
+const sayfaCift = t => { let m = t.match(/APP_INITIALIZATION_STATE=\[\[\[[-\d.e+]+,(-?\d{1,3}\.\d+),(-?\d{1,2}\.\d+)\]/); if (m) return { lat: +m[2], lon: +m[1] };
+  m = t.match(/\[null,null,(-?\d{1,2}\.\d{4,}),(-?\d{1,3}\.\d{4,})\]/); if (m) return { lat: +m[1], lon: +m[2] }; return null; };
 async function haritaKonum(link) {
   let cur = String(link || "").trim(), k = koordBul(cur), adim = 0; const iz = { link: cur, yol: [] }; IZ.push(iz);
   if (!/^https?:\/\//i.test(cur)) return k;
@@ -196,8 +199,10 @@ async function haritaKonum(link) {
     let r; try { r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", Cookie: "CONSENT=YES+cb; SOCS=CAI" } }); } catch (e) { return null; }
     const loc = r.headers.get("location"); iz.yol.push(r.status + " " + (loc || "").slice(0, 400));
     if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; k = koordBul(cur); if (!k && /consent\./.test(cur)) k = koordBul(new URL(cur).searchParams.get("continue")); continue; }
-    if (r.ok) { const t = (await r.text()).slice(0, 900000); k = koordBul(t);
-      if (!k) iz.sayfa = (t.match(/.{0,120}(?:center=|APP_INITIALIZATION_STATE|!3d|@4\d\.)[^"']{0,160}/g) || []).slice(0, 6); }
+    if (r.ok) { let t = (await r.text()).slice(0, 2000000); k = koordBul(t) || sayfaCift(t);
+      if (!k) { iz.boy = t.length; iz.ciftler = (t.match(/-?\d{1,3}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}/g) || []).slice(0, 8);
+        try { const r2 = await fetch(cur, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", Cookie: "CONSENT=YES+cb; SOCS=CAI" } });
+          t = (await r2.text()).slice(0, 3000000); k = koordBul(t) || sayfaCift(t); iz.boy2 = t.length; if (!k) iz.ciftler2 = (t.match(/-?\d{1,3}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}/g) || []).slice(0, 8); else iz.masaustu = 1; } catch (e) { } } }
     break;
   }
   return k ? { lat: Math.round(k.lat * 1e6) / 1e6, lon: Math.round(k.lon * 1e6) / 1e6 } : null;
