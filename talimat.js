@@ -117,7 +117,7 @@
   $("talGal").onchange=function(e){fEkle(e.target.files);e.target.value=""};
   $("talCam").onchange=function(e){fEkle(e.target.files);e.target.value=""};
   /* adres bloğu: ortak adrsec.js (kayıtlı adreslerden seç / link / açık adres / haritada seç) */
-  var AS=adrSecKur("talAdrBox","tal"),mevcut=null;
+  var AS=adrSecKur("talAdrBox","tal"),mevcut=null;window.talAS=AS;
   function ac(x){
     mevcut=x||null;
     $("talE").textContent="";$("talMetin").value=x?x.metin:"";TF=[];fCiz();AS.doldur(x||{});

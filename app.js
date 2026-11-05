@@ -1394,16 +1394,17 @@ function akart(a){
   const id=esc(a.id),canDel=isAdmin()||(a.ekleyenUid&&a.ekleyenUid===user.uid),
         tels=[a.tel,a.tel2].filter(Boolean).map(x=>`<a href="tel:${esc(String(x).replace(/[^\d+]/g,""))}">📞 ${esc(x)}</a>`).join(" · ");
   return `<div class="item c tamam-border">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(a.ad)}</b>${a.sehir?`<span class="badge" style="background:#64748b">${esc(a.sehir)}</span>`:""}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b class="nm">${esc(a.ad)}</b><span>${a.sehir?`<span class="badge" style="background:#64748b">${esc(a.sehir)}</span> `:""}${window.adrKonumRozet?adrKonumRozet(a):""}</span></div>
   ${a.yetkili||tels?`<div class="sub" style="font-size:16px">${a.yetkili?"👤 "+esc(a.yetkili)+" ":""}${tels}</div>`:""}
   ${a.adres?`<div class="sub" style="font-size:15px;color:#334155">📍 ${esc(a.adres)}</div>`:""}
   ${a.not?`<div class="sub">📌 ${esc(a.not)}</div>`:""}
-  <div class="acts s"><button class="btn b1" data-a="sevk" data-id="${id}">🚚 Sevkiyat oluştur</button><button class="btn b7" data-a="map" data-id="${id}">🗺️ Harita</button>
+  <div class="acts s"><button class="btn b1" data-a="sevk" data-id="${id}">🚚 Sevkiyat oluştur</button><button class="btn b7" data-a="map" data-id="${id}">🗺️ Harita</button><button class="btn b4 i" data-a="konum" data-id="${id}" title="Konumu haritadan seç/düzelt">📍</button>
   <button class="btn b6 i" data-a="edit" data-id="${id}">✏️</button>${canDel?`<button class="btn b5 i" data-a="del" data-id="${id}">🗑️</button>`:""}</div></div>`;
 }
 $("aList").onclick=async e=>{
   const b=e.target.closest("button[data-a]");if(!b)return;const a=sAdr.find(x=>x.id===b.dataset.id);if(!a)return;const k=b.dataset.a;
   if(k==="map")haritaAc(safeUrl(a.haritaUrl),a.adres||a.ad);
+  if(k==="konum"&&window.adrKonumSec)return adrKonumSec(a);
   else if(k==="edit")aAc(a);
   else if(k==="sevk")adrSevk(a);
   else if(k==="del"&&confirm(`"${a.ad}" adresi silinsin mi? (Mevcut sevkiyat kayıtları etkilenmez)`)){try{await silCop("sevkAdresleri",a.id,a.ad);toast("Silindi (Çöp kutusuna alındı)")}catch(err){toast(errText(err))}}

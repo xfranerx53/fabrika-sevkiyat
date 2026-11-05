@@ -96,7 +96,8 @@
     h+=kart({ik:"⚠️",baslik:"Kritik stok",bos:"Kritik stok yok",hata:S.hata.stok,n:stk?stk.length:null,renk:"kr",git:"stok",gitTxt:"Stoğa git",
       satir:(stk||[]).map(function(k){return{a:(k.ad||"-")+(k.ebat?" · "+k.ebat:""),b:mevTxt(k)+" — "+(dur(k)==="no"?"TÜKENDİ":"azalıyor")}})});
     h+=yedekKart();
-    box.innerHTML=h;
+    h+='<div id="pnKur"></div>';
+    box.innerHTML=h;if(window.kurulumCiz)kurulumCiz($("pnKur"));
   }
 
   /* ---------- gezinme ---------- */

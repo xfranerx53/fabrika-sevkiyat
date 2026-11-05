@@ -165,6 +165,7 @@
   var pjEnc=function(b){b=new Uint8Array(b);var s="";for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")};
   function pushDestek(){return !!(window.PushManager&&navigator.serviceWorker&&"Notification" in window)}
   function pushAktif(){try{return localStorage.getItem("pushOk")==="1"&&localStorage.getItem("pushUid")===me()}catch(e){return false}}
+  window.pushIstekG=function(y,g){return pushIstek(y,g)};
   async function pushIstek(yol,govde){
     if(!PUSH||!auth.currentUser)throw new Error("sunucu yok");
     var t=await auth.currentUser.getIdToken();

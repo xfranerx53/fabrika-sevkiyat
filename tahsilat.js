@@ -7,7 +7,7 @@
    v88: isteğe bağlı adres (kayıtlı adreslerden seç / link / açık adres; adrsec.js) · bekleyen talebi ✏ Düzenle (firma, not, adres) · alınmış kayıtta adres de düzeltilir
    v47: fotoğraflar küçük önizleme + fotoTam (Sevkiyat gibi) · silme çöp kutusuna + denetim · ✏ Düzenle · saatler sunucudan · Muhasebe ("tah" izni) */
 (function(){
-  var AS=adrSecKur("tahAdrBox","tah"),AF=["adres","haritaUrl","adresAd"];
+  var AS=adrSecKur("tahAdrBox","tah"),AF=["adres","haritaUrl","adresAd"];window.tahAS=AS;
   var ref=null,offRef=null,off=0,yuk=false,L=[],FM=6,TF=[],mod="talep",mevcut=null,sek="bek",don="bugun",ara="";
   var TS=function(){return firebase.database.ServerValue.TIMESTAMP}; /* kayıt saati: sunucu saati */
   var simdi=function(){return Date.now()+off}; /* "bugün / son 7 gün" hesabı da sunucu saatine göre */

@@ -1,5 +1,5 @@
 /* =====================================================================================
-   MAG AMBALAJ — TELEFON BİLDİRİM SUNUCUSU (Cloudflare Worker, ücretsiz plan)  · v137
+   MAG AMBALAJ — TELEFON BİLDİRİM SUNUCUSU (Cloudflare Worker, ücretsiz plan)  · v138
    -------------------------------------------------------------------------------------
    Ne yapar: Uygulama KAPALIYKEN de telefona bildirim gönderir (standart Web Push; Firebase
    Blaze / FCM gerekmez). Bu dosyanın TAMAMI Cloudflare > Worker > «Edit code» ekranına yapıştırılır.
@@ -222,6 +222,7 @@ function sayfaKoord(t) {
   let m = t.match(/staticmap\?[^"']*?center=(-?\d{1,2}\.\d+)(?:%2C|,)(-?\d{1,3}\.\d+)/); if (m) return { lat: +m[1], lon: +m[2] };
   m = t.match(/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/); if (m) return { lat: +m[1], lon: +m[2] };
   m = t.match(/APP_INITIALIZATION_STATE=\[\[\[[-\d.e+]+,(-?\d{1,3}\.\d+),(-?\d{1,2}\.\d+)\]/); if (m) return { lat: +m[2], lon: +m[1] };
+  m = t.match(/\[null,null,(-?\d{1,2}\.\d{4,}),(-?\d{1,3}\.\d{4,})\]/); if (m) return { lat: +m[1], lon: +m[2] };
   return null;
 }
 const HARITA_HOST = /^(maps\.app\.goo\.gl|goo\.gl|g\.co|maps\.google\.[a-z.]+|(www\.)?google\.[a-z.]+|consent\.google\.[a-z.]+)$/i;
@@ -235,7 +236,10 @@ async function konumCoz(u) {
     const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", "Cookie": "CONSENT=YES+cb; SOCS=CAI" } });
     const loc = r.headers.get("location");
     if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; continue; }
-    if (r.ok) return sayfaKoord((await r.text()).slice(0, 800000));
+    if (r.ok) { const k1 = sayfaKoord((await r.text()).slice(0, 2000000)); if (k1) return k1;
+      /* v138: telefon tarayıcısına verilen hafif sayfada koordinat yok; masaüstü sayfasında var */
+      const r2 = await fetch(cur, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", "Cookie": "CONSENT=YES+cb; SOCS=CAI" } });
+      return r2.ok ? sayfaKoord((await r2.text()).slice(0, 3000000)) : null; }
     return null;
   }
   return null;
