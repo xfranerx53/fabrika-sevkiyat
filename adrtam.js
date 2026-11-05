@@ -11,10 +11,13 @@
   var $=function(i){return document.getElementById(i)};
   function e(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
   function nrm(x){return(typeof trn==="function"?trn(x):String(x||"").toLowerCase()).replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim()}
-  var GEREKSIZ=/\b(ltd|sti|a s|as|tic|san|ve|ins|paz|sanayi|ticaret|limited|sirketi|anonim|ith|ihr|dis|mam|gida|ambalaj|plastik|unlu|mamulleri|insaat|pazarlama|tekstil|ekmek|firin|kuruyemis|matbaacilik|ve)\b/g;
+  var GEREKSIZ=/\b(ltd|sti|st|a s|as|tic|san|ve|ins|paz|sanayi|ticaret|limited|sirketi|anonim|ith|ihr|dis|mam|gida|ambalaj|plastik|unlu|mamulleri|mamuleri|insaat|pazarlama|tekstil|ekmek|firin|kuruyemis|matbaacilik|end|urn|amb|tem|urunleri|tur|grup|group|depo|ambar|ambari|cerkezkoy|silivri)\b/g;
   function cek(x){return nrm(x).replace(GEREKSIZ," ").replace(/\b\d+\b/g," ").replace(/\s+/g," ").trim()}
-  function benz(a,b){a=cek(a);b=cek(b);if(!a||!b)return 0;if(a===b)return 1;var A=a.split(" "),B=b.split(" "),o=A.filter(function(w){return B.indexOf(w)>=0}).length;
-    if(!o)return 0;var ilk=A[0]===B[0]?0.25:0;return Math.min(0.99,o/Math.max(A.length,B.length)+ilk)}
+  /* v141: ilk ayırt edici kelime (≥4 harf, Türkçe ek için baş eşleşme) güçlü işaret; kısa kayıtlı adın kelimeleri uzun cari adında geçiyorsa yüksek puan */
+  function benz(a,b){a=cek(a);b=cek(b);if(!a||!b)return 0;if(a===b)return 1;var A=a.split(" "),B=b.split(" ");
+    var es=function(w,x){return w===x||(w.length>=4&&x.length>=4&&(w.indexOf(x)===0||x.indexOf(w)===0))};
+    var o=A.filter(function(w){return B.some(function(x){return es(w,x)})}).length;if(!o)return 0;
+    var ilk=es(A[0],B[0])&&A[0].length>=4;return Math.min(0.99,(o/Math.min(A.length,B.length))*0.6+(ilk?0.35:0)+(o>=2?0.1:0))}
   function konum(a){return window.adrKonum?window.adrKonum(a):null}
   function yaz(){return typeof isAdmin==="function"&&isAdmin()||!!(typeof rec!=="undefined"&&rec&&rec.onay&&(rec.izin&&rec.izin.sevk===true||(!rec.izin||rec.izin.sevk!==false)&&(rec.rol==="Depo Görevlisi"||rec.rol==="Sevkiyat Sorumlusu")))}
   var ST={sek:"es",C:{},G:{},A:[],O:{},q:""};
