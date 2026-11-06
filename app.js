@@ -524,7 +524,8 @@ $("aracOk").onclick=async()=>{
   if(!ARACLAR[ar]){$("aracE").textContent="Lütfen aracı seçin.";return}
   const b=$("aracOk");b.disabled=true;
   try{
-    await db.ref(M().yol+"/"+u.id).update({durum:"sevk_edilecek",teslimEden:null,arac:ar,sevkSorumlu:x.ad,sevkSorumluUid:x.uid});
+    const mt=(!u.adres&&!u.haritaUrl&&window.musteriTeslimAlan)?musteriTeslimAlan(u.musteri):{};/* v142: teslim yeri Müşterilerim'den */
+    await db.ref(M().yol+"/"+u.id).update(Object.assign({durum:"sevk_edilecek",teslimEden:null,arac:ar,sevkSorumlu:x.ad,sevkSorumluUid:x.uid},mt.haritaUrl||mt.adres?mt:{}));
     $("dArac").close();toast("✓ Sevk listesine alındı: "+ARACLAR[ar]);
     if(window.bil){const um=[fmt(u.kg)+" kg · "+fmt(u.paket)+" adet",ARACLAR[ar],u.adres||""].filter(Boolean).join(" · ");
       if(u.sevkSorumluUid!==x.uid||u.durum!=="sevk_edilecek")bil(["u_"+x.uid],{t:"sevk",ik:"🚚",b:"🚚 Size sevkiyat verildi: "+(u.musteri||"-"),m:um,git:"sev:sevk_edilecek"});
@@ -2041,7 +2042,7 @@ const isAksiyon=async ev=>{
       const lab=P.map(x=>[x.i+1,x.c.en,x.c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - "));
       const lines=P.map((x,j)=>lab[j]+": "+[x.kg>0?fmt(x.kg)+" kg":"",x.paket>0?x.paket+" paket":""].filter(Boolean).join(" · "));
       const tkg=Math.round(P.reduce((a,x)=>a+x.kg,0)*1000)/1000,tpk=P.reduce((a,x)=>a+x.paket,0);
-      up["urunler/"+key]={musteri:e.musteri||"Etikete Bakınız",urun:((e.stok||"")+(lines.length?"\n"+lines.join("\n"):""))||"Etikete Bakınız",kg:tkg,paket:tpk,tarih:bugun(),durum:"hazir",not:"İş emri "+e.no+(e.fx?" · "+e.fx:""),adres:"",haritaUrl:"",ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:TS,isEmriNo:e.no,isEmriId:e.id,isFormu:isSnap(e),urunAd:e.stok||"",kalem:P.length>1?P.map((x,j)=>({ad:lab[j],kg:x.kg,paket:x.paket})):null};K[key]=true;
+      up["urunler/"+key]={musteri:e.musteri||"Etikete Bakınız",urun:((e.stok||"")+(lines.length?"\n"+lines.join("\n"):""))||"Etikete Bakınız",kg:tkg,paket:tpk,tarih:bugun(),durum:"hazir",not:"İş emri "+e.no+(e.fx?" · "+e.fx:""),adres:"",haritaUrl:"",...(window.musteriTeslimAlan?musteriTeslimAlan(e.musteri):{}),ekleyen:ad(),ekleyenUid:user.uid,eklenmeTarihi:TS,isEmriNo:e.no,isEmriId:e.id,isFormu:isSnap(e),urunAd:e.stok||"",kalem:P.length>1?P.map((x,j)=>({ad:lab[j],kg:x.kg,paket:x.paket})):null};K[key]=true;
       up["isEmirleri/"+e.id+"/aktarildi"]=true;up["isEmirleri/"+e.id+"/aktarTarih"]=TS;up["isEmirleri/"+e.id+"/aktarKeys"]=K;
       hrkEk(up,e.id,{tur:"aktar",kg:tkg,paket:tpk});
       await db.ref().update(up);

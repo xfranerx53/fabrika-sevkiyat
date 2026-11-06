@@ -99,7 +99,8 @@
     ham.t.forEach(function(x){if(x.durum==="yapildi")return;if(!(adm||x.hedefUid==="*"||x.hedefUid===uid||x.atayanUid===uid||!rolSofor()))return;if(!(x.adres||x.haritaUrl||x.adresAd))return;
       D.push({id:"t/"+x.__id,tur:"talimat",ad:x.adresAd||String(x.metin||"Talimat").split("\n")[0].slice(0,40),not:String(x.metin||"").split("\n")[0].slice(0,90),adres:x.adres||"",harita:x.haritaUrl||"",adresAd:x.adresAd||""})});
     ham.h.forEach(function(x){if(x.durum!=="bekliyor")return;D.push({id:"h/"+x.__id,tur:"tahsilat",ad:x.cari||x.adresAd||"",not:String(x.not||"").slice(0,90),adres:x.adres||"",harita:x.haritaUrl||"",adresAd:x.adresAd||""})});
-    D.forEach(function(d){d.k=koord(d.harita);var a=adresBul(ROTA.A,[d.adresAd,d.ad]);if(!a)return;d.kayit=a.ad;d.cariKod=a.cariKod||"";
+    D.forEach(function(d){d.k=koord(d.harita);var mt=!d.k&&window.musteriTeslim?musteriTeslim(d.adresAd||d.ad,{kendi:d.tur!=="sevk"}):null;/* v142: önce Müşterilerim (sevk → teslim yeri/ambar, diğer → kendi yeri) */
+      var a=(mt&&mt.adres)||adresBul(ROTA.A,[d.adresAd,d.ad]);if(!a)return;if(mt&&mt.ambar&&d.tur==="sevk")d.not=(d.not?d.not+" • ":"")+"🚚 "+a.ad+(mt.not?" ("+mt.not+")":"");d.kayit=a.ad;d.cariKod=a.cariKod||"";
       if(!d.adres)d.adres=a.adres||"";if(!d.k){var ak=adrKonum(a);if(ak)d.k=ak;else if(!d.harita||!/^https?:/i.test(d.harita))d.harita=a.haritaUrl||d.harita}});
     await konumlariBul(D);
     D.forEach(function(d,i){d.i=i;if(ROTA.sec[d.id]===undefined){ROTA.sec[d.id]=ROTA.ilk?d.tur==="sevk":true;if(!ROTA.ilk){ROTA.yeni.push(d.ad||"durak");sesli("🚚 Rotaya yeni durak eklendi: "+(d.ad||""));if(ROTA.aktif)telBildir("🚚 Rotaya yeni durak",(d.ad||"")+" — rotayı yeniden hesaplayın")}}d.sec=ROTA.sec[d.id]});
