@@ -1,6 +1,6 @@
 # Claude'un yönetim işleri: sağlık, teşhis (özel depoya), Firebase kural kontrolü/yayını, Cloudflare kontrolü.
 # Herkese açık kayda yalnız sayılar yazılır. Teşhis verisi yalnız ÖZEL depo xfranerx53/mag-yonetim'e gider (secret YONETIM_TOKEN).
-# Elle: Actions → "Yönetim" → Run workflow. Claude ayrıca .github/yonetim-istek.txt dosyasını değiştirerek tetikler. Her sabah 06:41 teşhis.
+# Elle: Actions → "Yönetim" → Run workflow. (v143) 10 dakikada bir «adres-konum»: linkle kaydedilen adreslerin tam konumu. Claude ayrıca .github/yonetim-istek.txt dosyasını değiştirerek tetikler. Her sabah 06:41 teşhis.
 name: Yönetim
 on:
   workflow_dispatch:
@@ -13,6 +13,7 @@ on:
     paths: [".github/yonetim-istek.txt"]
   schedule:
     - cron: "41 3 * * *"
+    - cron: "*/10 * * * *"
 permissions:
   contents: read
 concurrency:
@@ -30,7 +31,7 @@ jobs:
       - name: İşlemi belirle
         run: |
           ISLEM="${{ github.event.inputs.islem }}"
-          if [ "${{ github.event_name }}" = "schedule" ]; then ISLEM=teshis; fi
+          if [ "${{ github.event_name }}" = "schedule" ]; then ISLEM=teshis; if [ "${{ github.event.schedule }}" = "*/10 * * * *" ]; then ISLEM=adres-konum; fi; fi
           if [ -z "$ISLEM" ]; then ISLEM=$(head -1 .github/yonetim-istek.txt | tr -d '\r '); fi
           echo "ISLEM=$ISLEM" >> "$GITHUB_ENV"
       - name: Çalıştır

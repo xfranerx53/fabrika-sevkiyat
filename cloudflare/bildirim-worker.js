@@ -269,6 +269,9 @@ async function konumCoz(u) {
     if (!/^https?:$/.test(x.protocol) || !HARITA_HOST.test(x.hostname)) return null;
     const k = koordBul(cur); if (k) { const y = yerYazi(cur); if (y) k.yer = y; return k; }
     if (/^consent\./i.test(x.hostname)) return koordBul(x.searchParams.get("continue") || "");
+    /* v143: Cloudflare'den google.com/maps ve aramaya Google «sorry/429» veriyor → yer linkinde durulur: S2 bölge noktası (yaklaşık) + yer yazısı.
+       Tam konumu GitHub'daki yönetim işi «adres-konum» 10 dakikada bir tamamlar; rota yer yazısıyla zaten tam yere götürür. */
+    if (/(^|\.)google\./i.test(x.hostname) && /\/maps\/place\//.test(x.pathname)) { const kb = ftidKonum(decodeURIComponent(cur)), y = yerYazi(cur); return kb ? { lat: kb.lat, lon: kb.lon, yer: y, yaklasik: true } : null; }
     const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", "Cookie": "CONSENT=YES+cb; SOCS=CAI" } });
     const loc = intentAc(r.headers.get("location") || ""); if (IZW) IZW.push(r.status + " " + cur.slice(0, 120) + " -> " + loc.slice(0, 160));
     if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; continue; }

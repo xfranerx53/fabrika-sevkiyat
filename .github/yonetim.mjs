@@ -260,15 +260,17 @@ if (islem === "adres-konum" || islem === "teshis") { /* teşhis her sabah çalı
   let n = 0, bul = 0, yok = 0, yak = 0;
   for (const [id, a] of Object.entries(A)) {
     const u = a && a.haritaUrl; if (!u) continue;
-    if (a.konum && a.konum.u === u && isFinite(+a.konum.lat) && TR(a.konum) && !a.konum.yaklasik) continue;
+    const simdi = Date.now();
+    if (a.konum && a.konum.u === u && isFinite(+a.konum.lat) && TR(a.konum) && (!a.konum.yaklasik || (a.konum.dz && simdi - a.konum.dz < 864e5))) continue;
+    if (!a.konum && a.konumDeneme && a.konumDeneme.u === u && simdi - a.konumDeneme.z < 864e5) continue;
     if (a.konum && !TR(a.konum)) up["sevkAdresleri/" + id + "/konum"] = null; /* v138 düzeltme: Türkiye dışı (yanlış) konumu sil */
     n++; const k = await haritaKonum(u);
-    if (k) { bul++; up["sevkAdresleri/" + id + "/konum"] = Object.assign({ lat: k.lat, lon: k.lon, u }, k.yer ? { yer: k.yer } : {}, k.yaklasik ? { yaklasik: true } : {}); if (k.yaklasik) yak++; } else yok++;
+    if (k) { bul++; up["sevkAdresleri/" + id + "/konum"] = Object.assign({ lat: k.lat, lon: k.lon, u }, k.yer ? { yer: k.yer } : {}, k.yaklasik ? { yaklasik: true, dz: simdi } : {}); up["sevkAdresleri/" + id + "/konumDeneme"] = null; if (k.yaklasik) yak++; } else { yok++; up["sevkAdresleri/" + id + "/konumDeneme"] = { u, z: simdi }; }
     await new Promise(r => setTimeout(r, 400));
   }
   if (Object.keys(up).length) await D.ref().update(up);
   log(`✅ Adres konumları: ${n} link denendi • ${bul} konum bulundu (${yak} yaklaşık) • ${yok} bulunamadı`);
-  fs.mkdirSync("teshis", { recursive: true }); fs.writeFileSync("teshis/adres-konum.json", JSON.stringify(IZ.filter(x => x.yol.length), null, 1));
+  if (n) { fs.mkdirSync("teshis", { recursive: true }); fs.writeFileSync("teshis/adres-konum.json", JSON.stringify(IZ.filter(x => x.yol.length), null, 1)); }
 }
 
 /* cari-aktar (v138): ÖZEL depo mag-yonetim/aktar/cariler.json (Mikro: hareketli cariler + adres fihristi + risk) → cariler/ ve cariBakiye/ (tamamı yenilenir).
