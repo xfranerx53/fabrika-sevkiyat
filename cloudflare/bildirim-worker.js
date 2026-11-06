@@ -240,15 +240,16 @@ function ftidKonum(s){var m=String(s||"").match(/(?:!1s|ftid=|\/data=[^ ]*?1s)(0
 
 /* v143 — Google «yer» linki çözümü: kısa link → yönlendirme. URL'de koordinat (!3d/@) varsa kesin. Yoksa (telefondan paylaşılan yer linki):
    /maps/place/<ad, adres>/ yazısı + 1s0x kimliğinin S2 hücresi (≈5-10 km, yalnız bölge doğrulaması için) → OpenStreetMap Nominatim ile adres aranır,
-   S2 bölgesine 12 km'den yakınsa kabul; değilse S2 noktası «yaklaşık». «yer» yazısı her zaman döner: navigasyonda Google bu yazıyla firmayı tam bulur. */
+   S2 bölgesine 30 km'den yakınsa kabul; değilse S2 noktası «yaklaşık». «yer» yazısı her zaman döner: navigasyonda Google bu yazıyla firmayı tam bulur. */
 function yerYazi(u) { const m = String(u || "").match(/\/maps\/place\/([^\/@?]+)/); if (!m) return ""; try { return decodeURIComponent(m[1].replace(/\+/g, " ")).trim().slice(0, 200); } catch (e) { return ""; } }
 function kmF(a, b) { const t = Math.PI / 180, x = Math.pow(Math.sin((b.lat - a.lat) * t / 2), 2) + Math.cos(a.lat * t) * Math.cos(b.lat * t) * Math.pow(Math.sin((b.lon - a.lon) * t / 2), 2); return 12742 * Math.asin(Math.sqrt(x)); }
 async function nominatim(q) { try { const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=3&countrycodes=tr&accept-language=tr&q=" + encodeURIComponent(q), { headers: { "User-Agent": "MAG-Sevkiyat/1.0 (+https://xfranerx53.github.io/fabrika-sevkiyat/)" } }); if (!r.ok) return []; return (await r.json()) || []; } catch (e) { return []; } }
 async function yerKonum(sonUrl) {
   const yer = yerYazi(sonUrl), kaba = ftidKonum(decodeURIComponent(sonUrl)); if (!yer && !kaba) return null;
   const P = yer.split(",").map(x => x.trim()).filter(Boolean), Q = [];
-  if (P.length > 1) { Q.push(P.slice(1).join(", ")); Q.push(P.slice(-2).join(", ")); } if (yer) Q.push(yer);
-  for (const q of Q) { const L = await nominatim(q); for (const x of L) { const k = { lat: +x.lat, lon: +x.lon }; if (isFinite(k.lat) && (!kaba || kmF(k, kaba) <= 12)) return { lat: Math.round(k.lat * 1e6) / 1e6, lon: Math.round(k.lon * 1e6) / 1e6, yer, yaklasik: !/\d/.test(q) }; } await new Promise(r => setTimeout(r, 1100)); }
+  const noSiz = x => x.replace(/\bNo\s*:?\s*[\d\/\-A-Za-z]+/gi, " ").replace(/\s+/g, " ").trim();
+  if (P.length > 1) { Q.push(P.slice(1).join(", ")); Q.push(noSiz(P.slice(1).join(", "))); Q.push(P.slice(-2).join(", ")); } if (yer) Q.push(yer);
+  for (const q of Q) { const L = await nominatim(q); for (const x of L) { const k = { lat: +x.lat, lon: +x.lon }; if (isFinite(k.lat) && (!kaba || kmF(k, kaba) <= 30)) return { lat: Math.round(k.lat * 1e6) / 1e6, lon: Math.round(k.lon * 1e6) / 1e6, yer, yaklasik: !/\bNo\b|\d+\/|\d+\s*$/i.test(q) }; } await new Promise(r => setTimeout(r, 1100)); }
   return kaba ? { lat: kaba.lat, lon: kaba.lon, yer, yaklasik: true } : null;
 }
 
