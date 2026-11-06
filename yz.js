@@ -32,7 +32,7 @@
     if(m=s.match(/^\s*(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})\s*$/))return ok(m[1],m[2]);
     return null}
   function trk(k){return k&&k.lat>35.5&&k.lat<42.3&&k.lon>25.5&&k.lon<45?k:null}
-  function adrKonum(a){if(!a)return null;if(a.konum&&isFinite(+a.konum.lat)&&(!a.haritaUrl||a.konum.u===a.haritaUrl)&&trk(a.konum))return{lat:+a.konum.lat,lon:+a.konum.lon};return koord(a.haritaUrl)}
+  function adrKonum(a){if(!a)return null;if(a.konum&&isFinite(+a.konum.lat)&&(!a.haritaUrl||a.konum.u===a.haritaUrl)&&trk(a.konum))return{lat:+a.konum.lat,lon:+a.konum.lon,yer:a.konum.yer||""};return koord(a.haritaUrl)}
   window.adrKonum=adrKonum;
   function km(a,b){var t=Math.PI/180,x=Math.pow(Math.sin((b.lat-a.lat)*t/2),2)+Math.cos(a.lat*t)*Math.cos(b.lat*t)*Math.pow(Math.sin((b.lon-a.lon)*t/2),2);return 12742*Math.asin(Math.sqrt(x))}
   function onbOku(){try{return JSON.parse(localStorage.getItem("yzKonum")||"{}")||{}}catch(e){return{}}}
@@ -44,6 +44,8 @@
         var j=await r.json().catch(function(){return{}});if(j&&j.konum)Object.assign(o,j.konum)}}catch(e){}
     return o}
   window.yzSunucuKonum=sunucuKonum;
+  /* v143: Google Maps linkinden konum (kısa link de olur) → {lat,lon,yer?,yaklasik?} ya da null */
+  window.linktenKonum=async function(l){l=String(l||"").trim();var k=koord(l);if(k)return k;if(!/^https?:\/\//i.test(l))return null;var o=await sunucuKonum([l]);return trk(o[l])||null};
   async function konumlariBul(liste){
     var c=onbOku(),simdi=Date.now(),sor=[];
     liste.forEach(function(d){if(d.k||!d.harita)return;var k=koord(d.harita);if(k){d.k=k;return}
@@ -156,7 +158,7 @@
   function olustur(el,S,ac){var Se=ROTA.D.filter(function(d){return d.sec}),out=el.querySelector("#yzSon"),F=ROTA.fab,kon=S!==F;
     if(!Se.length){out.innerHTML='<div style="color:#b42318;margin-top:6px">Önce gidilecek durakları işaretleyin.</div>';return}
     var K=sirala(S,F,Se.filter(function(d){return d.k})),M=Se.filter(function(d){return!d.k&&d.adres}),Y=Se.filter(function(d){return!d.k&&!d.adres});
-    var ss=S.lat+","+S.lon,fs=F.lat+","+F.lon,nok=[ss].concat(K.map(function(d){return d.k.lat+","+d.k.lon}),M.map(function(d){return encodeURIComponent(d.adres)}),[fs]),L=linkler(nok);
+    var ss=S.lat+","+S.lon,fs=F.lat+","+F.lon,nok=[ss].concat(K.map(function(d){return d.k.yer?encodeURIComponent(d.k.yer):d.k.lat+","+d.k.lon}),M.map(function(d){return encodeURIComponent(d.adres)}),[fs]),L=linkler(nok);
     if(nok.length<3){out.innerHTML='<div style="color:#b42318;margin-top:6px">Seçilenlerin hiçbirinin konumu ya da açık adresi yok; harita açılamaz.</div>';return}
     if(ac)window.open(L[0],"_blank","noopener");
     var sira=K.concat(M),h='<div style="margin-top:10px;padding:10px;border-radius:10px;background:#f0fdf4"><b>Gidiş sırası</b> <span style="color:#667085;font-size:13px">(kuş uçuşu ≈ '+Math.round(K.length?turUzun(S,F,K):0)+' km'+(M.length?' + adresle aranan '+M.length+' durak':'')+')</span><ol style="margin:4px 0 0 20px;padding:0"><li style="color:#667085">'+(kon?"📍 Bulunduğunuz yer":"🏭 Fabrikadan çıkış")+'</li>'+

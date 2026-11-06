@@ -122,16 +122,20 @@
   async function gizle(k,b){if(!confirm((ST.C[k]||{}).ad+" listeden gizlensin mi? (Bu müşteriye sevkiyat yapılmıyor)"))return;b.disabled=true;
     try{await firebase.database().ref("adresGizle/"+k).set(true);ST.G[k]=true;hesapla();ciz()}catch(er){b.disabled=false;alert("Kaydedilemedi: "+(er&&er.message||er))}}
   async function yeni(k){if(!yaz()&&izinYok())return;var c=ST.C[k];if(!c)return;
-    var p=await window.haritaSec({baslik:"📍 "+c.ad,ipucu:[c.adres,c.ilce,c.il].filter(Boolean).join(", "),ara:[c.ilce,c.il].filter(Boolean).join(" ")});if(!p)return;
+    var l=prompt("📍 "+c.ad+"\nGoogle Maps linkini yapıştırın (boş bırakıp Tamam derseniz harita açılır):",""),p=null,lk="";if(l===null)return;
+    if(l.trim()){p=window.linktenKonum?await window.linktenKonum(l):null;if(p)lk=l.trim().slice(0,500);else alert("Bu linkten konum çıkmadı; haritadan seçin.")}
+    if(!p){p=await window.haritaSec({baslik:"📍 "+c.ad,ipucu:[c.adres,c.ilce,c.il].filter(Boolean).join(", "),ara:[c.ilce,c.il].filter(Boolean).join(" ")});if(!p)return}
     var ad=prompt("Adres defterinde görünecek ad:",c.ad);if(ad===null)return;ad=String(ad).trim()||c.ad;
     var acik=prompt("Açık adres (isteğe bağlı; Mikro'daki yazıldı, düzeltebilirsiniz):",[c.adres,c.ilce,c.il].filter(Boolean).join(", "));
-    var u=gUrl(p),o={ad:ad.slice(0,100),haritaUrl:u,konum:{lat:p.lat,lon:p.lon,u:u},cariKod:c.kod,sehir:[c.ilce,c.il].filter(Boolean).join(" / ").slice(0,60),tel:String(c.tel||"").slice(0,40),adres:String(acik||"").trim().slice(0,300),yetkili:"",tel2:"",not:"",
+    var u=lk||gUrl(p),kn={lat:p.lat,lon:p.lon,u:u};if(p.yer)kn.yer=String(p.yer).slice(0,200);if(p.yaklasik)kn.yaklasik=true;var o={ad:ad.slice(0,100),haritaUrl:u,konum:kn,cariKod:c.kod,sehir:[c.ilce,c.il].filter(Boolean).join(" / ").slice(0,60),tel:String(c.tel||"").slice(0,40),adres:String(acik||"").trim().slice(0,300),yetkili:"",tel2:"",not:"",
       ekleyen:String((rec&&rec.ad)||"?")+(rec&&rec.rol?" ("+rec.rol+")":""),ekleyenUid:firebase.auth().currentUser.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP};
     try{var r=firebase.database().ref("sevkAdresleri").push();await r.set(o);ST.A.push(Object.assign({id:r.key},o));hesapla();ciz();toast("✓ Adres kaydedildi: "+o.ad)}catch(er){alert("Kaydedilemedi: "+(er&&er.message||er))}}
   async function konumSec(a){if(!yaz()&&izinYok())return;var k=konum(a);
-    var p=await window.haritaSec({baslik:"📍 "+a.ad,merkez:k,isaretli:!!k,ipucu:a.adres||"",ara:a.adres||a.sehir||""});if(!p)return;
-    var u=a.haritaUrl&&!k?a.haritaUrl:gUrl(p);
-    try{await firebase.database().ref("sevkAdresleri/"+a.id).update({haritaUrl:u,konum:{lat:p.lat,lon:p.lon,u:u},duzenleyen:String((rec&&rec.ad)||"")});a.haritaUrl=u;a.konum={lat:p.lat,lon:p.lon,u:u};hesapla();if($("dAdrTam")&&$("dAdrTam").open)ciz();toast("✓ Konum kaydedildi: "+a.ad)}
+    var l=prompt("📍 "+a.ad+"\nGoogle Maps linkini yapıştırın (boş bırakıp Tamam derseniz harita açılır):",""),p=null,u="";if(l===null)return;
+    if(l.trim()){p=window.linktenKonum?await window.linktenKonum(l):null;if(p)u=l.trim().slice(0,500);else alert("Bu linkten konum çıkmadı; haritadan seçin.")}
+    if(!p){p=await window.haritaSec({baslik:"📍 "+a.ad,merkez:k,isaretli:!!k,ipucu:a.adres||"",ara:a.adres||a.sehir||""});if(!p)return;u=gUrl(p)}
+    var kn={lat:p.lat,lon:p.lon,u:u};if(p.yer)kn.yer=String(p.yer).slice(0,200);if(p.yaklasik)kn.yaklasik=true;
+    try{await firebase.database().ref("sevkAdresleri/"+a.id).update({haritaUrl:u,konum:kn,duzenleyen:String((rec&&rec.ad)||"")});a.haritaUrl=u;a.konum=kn;hesapla();if($("dAdrTam")&&$("dAdrTam").open)ciz();toast("✓ Konum kaydedildi: "+a.ad)}
     catch(er){alert("Kaydedilemedi: "+(er&&er.message||er))}}
   window.adrKonumSec=konumSec;
   async function wpSil(id){try{await firebase.database().ref("adresOneri/"+id).remove()}catch(er){}delete ST.O[id]}

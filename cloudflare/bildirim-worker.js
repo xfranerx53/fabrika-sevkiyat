@@ -1,5 +1,5 @@
 /* =====================================================================================
-   MAG AMBALAJ — TELEFON BİLDİRİM SUNUCUSU (Cloudflare Worker, ücretsiz plan)  · v138
+   MAG AMBALAJ — TELEFON BİLDİRİM SUNUCUSU (Cloudflare Worker, ücretsiz plan)  · v143
    -------------------------------------------------------------------------------------
    Ne yapar: Uygulama KAPALIYKEN de telefona bildirim gönderir (standart Web Push; Firebase
    Blaze / FCM gerekmez). Bu dosyanın TAMAMI Cloudflare > Worker > «Edit code» ekranına yapıştırılır.
@@ -226,21 +226,44 @@ function sayfaKoord(t) {
   const re = /\[null,null,(-?\d{1,2}\.\d{4,}),(-?\d{1,3}\.\d{4,})\]/g; while ((m = re.exec(t))) { const k = { lat: +m[1], lon: +m[2] }; if (TRK(k)) return k; }
   return null;
 }
+/* Google harita «yer» linklerindeki 1s0x…:0x… kimliğinin ilk yarısı yerin S2 hücre numarasıdır → enlem/boylam (S2 kütüphanesinden uyarlama) */
+var S2LK=null;
+function s2Tablo(){if(S2LK)return S2LK;var L=new Array(1024),PIJ=[[0,1,3,2],[0,2,3,1],[3,2,0,1],[3,1,0,2]],POR=[1,0,0,3];
+  function ini(lv,i,j,oo,pos,or){if(lv===4){L[(pos<<2)+oo]=(((i<<4)+j)<<2)+or;return}lv++;i<<=1;j<<=1;pos<<=2;var r=PIJ[or];for(var x=0;x<4;x++)ini(lv,i+(r[x]>>1),j+(r[x]&1),oo,pos+x,or^POR[x])}
+  for(var o=0;o<4;o++)ini(0,0,0,o,0,o);return S2LK=L}
+function s2Konum(hex){try{var id=BigInt(hex);if(id<=0n)return null;var L=s2Tablo(),face=Number(id>>61n),bits=face&1,i=0,j=0;
+  for(var k=7;k>=0;k--){var nb=k===7?2:4;bits+=Number((id>>BigInt(k*8+1))&BigInt((1<<(2*nb))-1))<<2;bits=L[bits];i+=(bits>>6)<<(k*4);j+=((bits>>2)&15)<<(k*4);bits&=3}
+  var lsb=id&-id,d=lsb===1n?1:((i^Number((id>>2n)&0xffffffffn))&1)?2:0,uv=function(s){return s>=0.5?(1/3)*(4*s*s-1):(1/3)*(1-4*(1-s)*(1-s))},u=uv((2*i+d)/2147483648),v=uv((2*j+d)/2147483648),p;
+  p=[[1,u,v],[-u,1,v],[-u,-v,1],[-1,-v,-u],[v,-1,-u],[v,u,-1]][face];if(!p)return null;
+  return{lat:Math.round(Math.atan2(p[2],Math.sqrt(p[0]*p[0]+p[1]*p[1]))*180/Math.PI*1e6)/1e6,lon:Math.round(Math.atan2(p[1],p[0])*180/Math.PI*1e6)/1e6}}catch(e){return null}}
+function ftidKonum(s){var m=String(s||"").match(/(?:!1s|ftid=|\/data=[^ ]*?1s)(0x[0-9a-f]{6,16}):0x[0-9a-f]+/i);return m?s2Konum(m[1]):null}
+
+/* v143 — Google «yer» linki çözümü: kısa link → yönlendirme. URL'de koordinat (!3d/@) varsa kesin. Yoksa (telefondan paylaşılan yer linki):
+   /maps/place/<ad, adres>/ yazısı + 1s0x kimliğinin S2 hücresi (≈5-10 km, yalnız bölge doğrulaması için) → OpenStreetMap Nominatim ile adres aranır,
+   S2 bölgesine 12 km'den yakınsa kabul; değilse S2 noktası «yaklaşık». «yer» yazısı her zaman döner: navigasyonda Google bu yazıyla firmayı tam bulur. */
+function yerYazi(u) { const m = String(u || "").match(/\/maps\/place\/([^\/@?]+)/); if (!m) return ""; try { return decodeURIComponent(m[1].replace(/\+/g, " ")).trim().slice(0, 200); } catch (e) { return ""; } }
+function kmF(a, b) { const t = Math.PI / 180, x = Math.pow(Math.sin((b.lat - a.lat) * t / 2), 2) + Math.cos(a.lat * t) * Math.cos(b.lat * t) * Math.pow(Math.sin((b.lon - a.lon) * t / 2), 2); return 12742 * Math.asin(Math.sqrt(x)); }
+async function nominatim(q) { try { const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=3&countrycodes=tr&accept-language=tr&q=" + encodeURIComponent(q), { headers: { "User-Agent": "MAG-Sevkiyat/1.0 (+https://xfranerx53.github.io/fabrika-sevkiyat/)" } }); if (!r.ok) return []; return (await r.json()) || []; } catch (e) { return []; } }
+async function yerKonum(sonUrl) {
+  const yer = yerYazi(sonUrl), kaba = ftidKonum(decodeURIComponent(sonUrl)); if (!yer && !kaba) return null;
+  const P = yer.split(",").map(x => x.trim()).filter(Boolean), Q = [];
+  if (P.length > 1) { Q.push(P.slice(1).join(", ")); Q.push(P.slice(-2).join(", ")); } if (yer) Q.push(yer);
+  for (const q of Q) { const L = await nominatim(q); for (const x of L) { const k = { lat: +x.lat, lon: +x.lon }; if (isFinite(k.lat) && (!kaba || kmF(k, kaba) <= 12)) return { lat: Math.round(k.lat * 1e6) / 1e6, lon: Math.round(k.lon * 1e6) / 1e6, yer, yaklasik: !/\d/.test(q) }; } await new Promise(r => setTimeout(r, 1100)); }
+  return kaba ? { lat: kaba.lat, lon: kaba.lon, yer, yaklasik: true } : null;
+}
+
 const HARITA_HOST = /^(maps\.app\.goo\.gl|goo\.gl|g\.co|maps\.google\.[a-z.]+|(www\.)?google\.[a-z.]+|consent\.google\.[a-z.]+)$/i;
 async function konumCoz(u) {
   let cur = String(u || "");
   for (let i = 0; i < 7; i++) {
     let x; try { x = new URL(cur); } catch (e) { return null; }
     if (!/^https?:$/.test(x.protocol) || !HARITA_HOST.test(x.hostname)) return null;
-    const k = koordBul(cur); if (k) return k;
+    const k = koordBul(cur); if (k) { const y = yerYazi(cur); if (y) k.yer = y; return k; }
     if (/^consent\./i.test(x.hostname)) return koordBul(x.searchParams.get("continue") || "");
     const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", "Cookie": "CONSENT=YES+cb; SOCS=CAI" } });
     const loc = r.headers.get("location");
     if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; continue; }
-    if (r.ok) { const k1 = sayfaKoord((await r.text()).slice(0, 2000000)); if (k1) return k1;
-      /* v138: telefon tarayıcısına verilen hafif sayfada koordinat yok; masaüstü sayfasında var */
-      const r2 = await fetch(cur, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", "Cookie": "CONSENT=YES+cb; SOCS=CAI" } });
-      return r2.ok ? sayfaKoord((await r2.text()).slice(0, 3000000)) : null; }
+    if (r.ok) { const y = await yerKonum(cur); if (y) return y; return sayfaKoord((await r.text()).slice(0, 2000000)); }
     return null;
   }
   return null;

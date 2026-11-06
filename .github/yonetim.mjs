@@ -200,6 +200,20 @@ function s2Konum(hex){try{var id=BigInt(hex);if(id<=0n)return null;var L=s2Tablo
   return{lat:Math.round(Math.atan2(p[2],Math.sqrt(p[0]*p[0]+p[1]*p[1]))*180/Math.PI*1e6)/1e6,lon:Math.round(Math.atan2(p[1],p[0])*180/Math.PI*1e6)/1e6}}catch(e){return null}}
 function ftidKonum(s){var m=String(s||"").match(/(?:!1s|ftid=|\/data=[^ ]*?1s)(0x[0-9a-f]{6,16}):0x[0-9a-f]+/i);return m?s2Konum(m[1]):null}
 
+/* v143 — Google «yer» linki çözümü: kısa link → yönlendirme. URL'de koordinat (!3d/@) varsa kesin. Yoksa (telefondan paylaşılan yer linki):
+   /maps/place/<ad, adres>/ yazısı + 1s0x kimliğinin S2 hücresi (≈5-10 km, yalnız bölge doğrulaması için) → OpenStreetMap Nominatim ile adres aranır,
+   S2 bölgesine 12 km'den yakınsa kabul; değilse S2 noktası «yaklaşık». «yer» yazısı her zaman döner: navigasyonda Google bu yazıyla firmayı tam bulur. */
+function yerYazi(u) { const m = String(u || "").match(/\/maps\/place\/([^\/@?]+)/); if (!m) return ""; try { return decodeURIComponent(m[1].replace(/\+/g, " ")).trim().slice(0, 200); } catch (e) { return ""; } }
+function kmF(a, b) { const t = Math.PI / 180, x = Math.pow(Math.sin((b.lat - a.lat) * t / 2), 2) + Math.cos(a.lat * t) * Math.cos(b.lat * t) * Math.pow(Math.sin((b.lon - a.lon) * t / 2), 2); return 12742 * Math.asin(Math.sqrt(x)); }
+async function nominatim(q) { try { const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=3&countrycodes=tr&accept-language=tr&q=" + encodeURIComponent(q), { headers: { "User-Agent": "MAG-Sevkiyat/1.0 (+https://xfranerx53.github.io/fabrika-sevkiyat/)" } }); if (!r.ok) return []; return (await r.json()) || []; } catch (e) { return []; } }
+async function yerKonum(sonUrl) {
+  const yer = yerYazi(sonUrl), kaba = ftidKonum(decodeURIComponent(sonUrl)); if (!yer && !kaba) return null;
+  const P = yer.split(",").map(x => x.trim()).filter(Boolean), Q = [];
+  if (P.length > 1) { Q.push(P.slice(1).join(", ")); Q.push(P.slice(-2).join(", ")); } if (yer) Q.push(yer);
+  for (const q of Q) { const L = await nominatim(q); for (const x of L) { const k = { lat: +x.lat, lon: +x.lon }; if (isFinite(k.lat) && (!kaba || kmF(k, kaba) <= 12)) return { lat: Math.round(k.lat * 1e6) / 1e6, lon: Math.round(k.lon * 1e6) / 1e6, yer, yaklasik: !/\d/.test(q) }; } await new Promise(r => setTimeout(r, 1100)); }
+  return kaba ? { lat: kaba.lat, lon: kaba.lon, yer, yaklasik: true } : null;
+}
+
 const IZ = [];
 /* Google yer sayfası: APP_INITIALIZATION_STATE=[[[mesafe,boylam,enlem]…  ya da [null,null,enlem,boylam] */
 const TR = k => k && k.lat > 35.5 && k.lat < 42.3 && k.lon > 25.5 && k.lon < 45; /* müşterilerin hepsi Türkiye'de: dışı = yanlış (ör. sunucunun ABD'deki varsayılan görünümü) */
@@ -212,14 +226,12 @@ async function haritaKonum(link) {
   while (!k && cur && adim++ < 8) {
     let r; try { r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", Cookie: "CONSENT=YES+cb; SOCS=CAI" } }); } catch (e) { return null; }
     const loc = r.headers.get("location"); iz.yol.push(r.status + " " + (loc || "").slice(0, 400));
-    if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; k = koordBul(cur) || ftidKonum(decodeURIComponent(cur)); if (!k && /consent\./.test(cur)) { const c = new URL(cur).searchParams.get("continue"); k = koordBul(c) || ftidKonum(c); } continue; }
-    if (r.ok) { let t = (await r.text()).slice(0, 2000000); k = koordBul(t) || sayfaCift(t);
-      if (!k) { iz.boy = t.length; iz.ciftler = (t.match(/-?\d{1,3}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}/g) || []).slice(0, 8);
-        try { const r2 = await fetch(cur, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", Cookie: "CONSENT=YES+cb; SOCS=CAI" } });
-          t = (await r2.text()).slice(0, 3000000); k = koordBul(t) || sayfaCift(t); iz.boy2 = t.length; if (!k) iz.ciftler2 = (t.match(/-?\d{1,3}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}/g) || []).slice(0, 8); else iz.masaustu = 1; } catch (e) { } } }
+    if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; k = koordBul(cur); if (!k && /consent\./.test(cur)) { const c = new URL(cur).searchParams.get("continue"); k = koordBul(c); } continue; }
+    if (r.ok) { k = await yerKonum(cur); if (!k) { const t = (await r.text()).slice(0, 2000000); k = koordBul(t) || sayfaCift(t); } }
     break;
   }
-  return k && TR(k) ? { lat: Math.round(k.lat * 1e6) / 1e6, lon: Math.round(k.lon * 1e6) / 1e6 } : null;
+  if (k && !k.yer) { const y = yerYazi(cur); if (y) k.yer = y; }
+  return k && TR(k) ? Object.assign({ lat: Math.round(k.lat * 1e6) / 1e6, lon: Math.round(k.lon * 1e6) / 1e6 }, k.yer ? { yer: k.yer } : {}, k.yaklasik ? { yaklasik: true } : {}) : null;
 }
 
 /* fabrika-konum: .github/yonetim-istek.txt 2. satırdaki Google Maps linkini çözüp ayarlar/fabrika'ya yazar (firmanın kendi açık adresi; log'a yazılır) */
@@ -237,17 +249,17 @@ if (islem === "fabrika-konum") {
    u = çözülen link; link sonradan değişirse uygulama eski konumu kullanmaz. Adres metnine/adına DOKUNULMAZ. Log'a yalnız sayılar. */
 if (islem === "adres-konum") {
   const D = admin.database(), A = (await D.ref("sevkAdresleri").once("value")).val() || {}, up = {};
-  let n = 0, bul = 0, yok = 0;
+  let n = 0, bul = 0, yok = 0, yak = 0;
   for (const [id, a] of Object.entries(A)) {
     const u = a && a.haritaUrl; if (!u) continue;
     if (a.konum && a.konum.u === u && isFinite(+a.konum.lat) && TR(a.konum)) continue;
     if (a.konum && !TR(a.konum)) up["sevkAdresleri/" + id + "/konum"] = null; /* v138 düzeltme: Türkiye dışı (yanlış) konumu sil */
     n++; const k = await haritaKonum(u);
-    if (k) { bul++; up["sevkAdresleri/" + id + "/konum"] = { lat: k.lat, lon: k.lon, u }; } else yok++;
+    if (k) { bul++; up["sevkAdresleri/" + id + "/konum"] = Object.assign({ lat: k.lat, lon: k.lon, u }, k.yer ? { yer: k.yer } : {}, k.yaklasik ? { yaklasik: true } : {}); if (k.yaklasik) yak++; } else yok++;
     await new Promise(r => setTimeout(r, 400));
   }
   if (Object.keys(up).length) await D.ref().update(up);
-  log(`✅ Adres konumları: ${n} link denendi • ${bul} konum bulundu • ${yok} bulunamadı`);
+  log(`✅ Adres konumları: ${n} link denendi • ${bul} konum bulundu (${yak} yaklaşık) • ${yok} bulunamadı`);
   fs.mkdirSync("teshis", { recursive: true }); fs.writeFileSync("teshis/adres-konum.json", JSON.stringify(IZ.filter(x => x.yol.length), null, 1));
 }
 
@@ -325,7 +337,7 @@ if (islem === "link-coz") {
   for (const l of L) { let cur = l; const o = { link: l, yol: [] };
     for (let i = 0; i < 8; i++) { const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9" } });
       const loc = r.headers.get("location"); o.yol.push(r.status + " " + (loc || "")); if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; continue; } break; }
-    const t = decodeURIComponent(o.yol.join(" ")); o.koord = koordBul(t); o.ftid = ftidKonum(t); out.push(o); }
+    const t = decodeURIComponent(o.yol.join(" ")); o.koord = koordBul(t); o.ftid = ftidKonum(t); o.sonuc = await haritaKonum(l); out.push(o); }
   fs.mkdirSync("teshis", { recursive: true }); fs.writeFileSync("teshis/link-coz.json", JSON.stringify(out, null, 1)); log("✅ link-coz: " + out.length + " link");
 }
 

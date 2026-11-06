@@ -74,7 +74,8 @@
     d.innerHTML='<div style="padding:12px 14px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:17px">'+e(x.ad)+'</b><button type="button" id="mdX" style="font-size:20px;background:none;border:0">✕</button></div><div style="padding:10px 14px;max-height:78vh;overflow:auto">'+
       (x.c?'<div style="background:#f8fafc;border-radius:10px;padding:8px 10px;font-size:14px"><b>🧾 Mikro</b> '+e(c.kod)+'<br>'+e(c.ad)+(c.adres?'<br><span style="color:#667085">'+e(c.adres)+'</span>':'')+(c.ilce||c.il?'<br>'+e([c.ilce,c.il].filter(Boolean).join(" / ")):'')+(c.tel?'<br>☎ '+e(c.tel):'')+(c.son?'<br>Son hareket: '+e(c.son.split("-").reverse().join("."))+(c.sonTur?' ('+e(c.sonTur)+')':''):'')+(b?'<br>💰 Açık hesap: <b>'+Math.round(+b.acik||0).toLocaleString("tr-TR")+' ₺</b>'+(+b.cek?' • çek '+Math.round(+b.cek).toLocaleString("tr-TR")+' ₺':''):'')+'</div>':'<div style="color:#667085;font-size:13px">Mikro\'da kaydı yok (elle eklenmiş müşteri).</div>')+
       '<h4 style="margin:12px 0 4px">📍 Müşterinin kendi konumu</h4>'+(x.d.k?'<div>'+e(x.d.k.ad)+' — '+(x.d.kk?'<span style="color:#16a34a">konum ✓</span> '+gl(x.d.kk):'<span style="color:#dc2626">konum yok</span>')+'</div>':'<div style="color:#dc2626">Seçilmemiş</div>')+
-      '<button type="button" class="btn b1 sm" id="mdKon" style="margin-top:6px">📍 '+(x.d.kk?'Konumu haritadan değiştir':'Haritadan seç')+'</button>'+
+      '<div style="display:flex;gap:6px;margin-top:6px"><input id="mdL" placeholder="🔗 Google Maps linkini yapıştırın" style="flex:1;min-width:0;margin:0"><button type="button" class="btn b3 sm" id="mdLk" style="width:auto;margin:0">Linkten kaydet</button></div><div id="mdLs" style="font-size:12px"></div>'+
+      '<button type="button" class="btn b6 sm" id="mdKon" style="margin-top:6px">📍 '+(x.d.kk?'Konumu haritadan değiştir':'Haritadan seç')+'</button>'+
       '<h4 style="margin:14px 0 4px">🚚 Teslim yeri</h4><label style="display:flex;gap:6px;align-items:center"><input type="radio" name="mdT" value="k"'+(tId?'':' checked')+' style="width:auto"> Müşterinin kendi adresi</label><label style="display:flex;gap:6px;align-items:center"><input type="radio" name="mdT" value="a"'+(tId?' checked':'')+' style="width:auto"> Ambar / başka adres</label>'+
       '<div id="mdA" style="'+(tId?'':'display:none')+'"><input id="mdAq" placeholder="🔍 Ambar ara" style="margin:4px 0"><select id="mdAs" size="6" style="height:auto">'+amb.map(function(a){return'<option value="'+e(a.id)+'"'+(a.id===tId?" selected":"")+'>'+(konum(a)?"📍 ":"⚠ ")+e(a.ad)+'</option>'}).join("")+'</select><button type="button" class="btn b6 sm" id="mdAy" style="margin-top:4px">➕ Listede yok: yeni ambar/adres haritadan ekle</button></div>'+
       '<label style="margin-top:8px">Teslim notu (ör. «Antalya ambarına, alıcı adı …», «sabah 9\'dan önce»)</label><input id="mdN" value="'+e(m.teslimNot||"")+'">'+
@@ -84,8 +85,14 @@
     $("mdX").onclick=$("mdV").onclick=function(){d.close()};
     d.querySelectorAll('[name="mdT"]').forEach(function(r){r.onchange=function(){$("mdA").style.display=r.value==="a"&&r.checked?"":"none"}});
     $("mdAq").oninput=function(){var q=nrm(this.value);Array.prototype.forEach.call($("mdAs").options,function(o){o.hidden=!!q&&nrm(o.textContent).indexOf(q)<0})};
-    $("mdAy").onclick=async function(){var ad=prompt("Ambar / adres adı (ör. Akdeniz Nakliyat Antalya Ambarı):","");if(!ad)return;var p=await window.haritaSec({baslik:"📍 "+ad,ara:ad});if(!p)return;
-      var id=await adresYaz(null,{ad:ad.trim().slice(0,100)},p);if(id){var o=document.createElement("option");o.value=id;o.textContent="📍 "+ad;o.selected=true;$("mdAs").insertBefore(o,$("mdAs").firstChild)}};
+    $("mdAy").onclick=async function(){var ad=prompt("Ambar / adres adı (ör. Akdeniz Nakliyat Antalya Ambarı):","");if(!ad)return;
+      var l=prompt("Google Maps linkini yapıştırın (boş bırakırsanız harita açılır):",""),p=null;if(l&&l.trim()){p=window.linktenKonum?await window.linktenKonum(l):null;if(!p)alert("Linkten konum çıkmadı; haritadan seçin.")}
+      if(!p){l="";p=await window.haritaSec({baslik:"📍 "+ad,ara:ad});if(!p)return}
+      var id=await adresYaz(null,{ad:ad.trim().slice(0,100)},p,l);if(id){var o=document.createElement("option");o.value=id;o.textContent="📍 "+ad;o.selected=true;$("mdAs").insertBefore(o,$("mdAs").firstChild)}};
+    $("mdLk").onclick=async function(){if(!yaz()){alert("Konum değiştirme yetkiniz yok.");return}var l=$("mdL").value.trim(),S=$("mdLs");if(!l){S.textContent="Linki yapıştırın.";return}S.textContent="Konum aranıyor…";
+      var p=window.linktenKonum?await window.linktenKonum(l):null;if(!p){S.innerHTML='<span style="color:#b42318">Bu linkten konum çıkarılamadı; «Haritadan seç»i kullanın.</span>';return}
+      var k=x.d.k,id=await adresYaz(k&&k.id,{ad:k?k.ad:x.ad,cariKod:x.kod||undefined},p,l);if(!id)return;if(!k||k.id!==id)await musYaz(x,{kendiId:id});
+      toast("✓ Konum kaydedildi"+(p.yer?": "+p.yer:""));detay(key)};
     $("mdKon").onclick=async function(){if(!yaz()){alert("Konum değiştirme yetkiniz yok.");return}var k=x.d.k,kk=x.d.kk;
       var p=await window.haritaSec({baslik:"📍 "+x.ad+" — kendi konumu",merkez:kk,isaretli:!!kk,ipucu:c.adres?[c.adres,c.ilce,c.il].filter(Boolean).join(", "):"",ara:kk?"":[c.ilce,c.il].filter(Boolean).join(" ")||x.ad});if(!p)return;
       var id=await adresYaz(k&&k.id,{ad:k?k.ad:x.ad,cariKod:x.kod||undefined},p);if(!id)return;
@@ -94,9 +101,9 @@
       if(t==="a"&&!sec){$("mdE").textContent="Teslim edilecek ambarı/adresi seçin.";return}
       var o={teslimId:t==="a"?sec:null,teslimNot:$("mdN").value.trim().slice(0,200),yetkili:$("mdY").value.trim().slice(0,100),tel:$("mdTel").value.trim().slice(0,40),not:$("mdNot").value.trim().slice(0,500)};
       if(await musYaz(x,o)){d.close();toast("✓ Kaydedildi: "+x.ad);liste()}}}
-  async function adresYaz(id,o,p){var u="https://www.google.com/maps?q="+p.lat+","+p.lon,db=firebase.database();
-    try{if(id){await db.ref("sevkAdresleri/"+id).update({haritaUrl:u,konum:{lat:p.lat,lon:p.lon,u:u},duzenleyen:String((rec&&rec.ad)||"")});return id}
-      var r=db.ref("sevkAdresleri").push(),x={ad:o.ad,haritaUrl:u,konum:{lat:p.lat,lon:p.lon,u:u},sehir:"",tel:"",adres:"",yetkili:"",tel2:"",not:"",ekleyen:String((rec&&rec.ad)||"?")+(rec&&rec.rol?" ("+rec.rol+")":""),ekleyenUid:firebase.auth().currentUser.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP};
+  async function adresYaz(id,o,p,link){var u=String(link||"").trim().slice(0,500)||"https://www.google.com/maps?q="+p.lat+","+p.lon,db=firebase.database(),kn={lat:p.lat,lon:p.lon,u:u};if(p.yer)kn.yer=String(p.yer).slice(0,200);if(p.yaklasik)kn.yaklasik=true;
+    try{if(id){await db.ref("sevkAdresleri/"+id).update({haritaUrl:u,konum:kn,duzenleyen:String((rec&&rec.ad)||"")});return id}
+      var r=db.ref("sevkAdresleri").push(),x={ad:o.ad,haritaUrl:u,konum:kn,sehir:"",tel:"",adres:"",yetkili:"",tel2:"",not:"",ekleyen:String((rec&&rec.ad)||"?")+(rec&&rec.rol?" ("+rec.rol+")":""),ekleyenUid:firebase.auth().currentUser.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP};
       if(o.cariKod)x.cariKod=o.cariKod;await r.set(x);return r.key}catch(er){alert("Kaydedilemedi: "+(er&&er.message||er));return null}}
   async function musYaz(x,o){var v=Object.assign({},x.m,o,{ad:String(x.ad).slice(0,100),z:firebase.database.ServerValue.TIMESTAMP,duzenleyen:String((rec&&rec.ad)||"").slice(0,100)});
     if(x.kod)v.cariKod=x.kod;Object.keys(v).forEach(function(k){if(v[k]===undefined||v[k]===""||v[k]===null)delete v[k]});
