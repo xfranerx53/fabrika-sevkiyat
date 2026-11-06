@@ -279,7 +279,7 @@ async function konumCoz(u) {
 async function konumlar(env, liste) {
   const L = (Array.isArray(liste) ? liste : []).map(String).filter(u => /^https?:\/\//i.test(u) && u.length <= 600).slice(0, 25), o = {};
   for (const u of L) {
-    const anahtar = "konum:" + await kisaAd(u), c = await env.KV.get(anahtar, "json");
+    const anahtar = "konum2:" + await kisaAd(u), c = await env.KV.get(anahtar, "json");
     if (c && ((c.v && TRK(c.v)) || (!c.v && Date.now() - c.z < 864e5))) { o[u] = c.v || null; continue; }
     let v = null; try { v = await konumCoz(u); } catch (e) { v = null; } if (v && !TRK(v)) v = null;
     o[u] = v;
