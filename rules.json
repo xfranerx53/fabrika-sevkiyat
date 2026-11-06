@@ -1025,10 +1025,22 @@
       }
     },
     "musteriler": {
-      ".read": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Depo Görevlisi' || root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Sevkiyat Sorumlusu')))))",
+      ".read": "((root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Depo Görevlisi' || root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Sevkiyat Sorumlusu')))))) || (root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Muhasebe')",
       "$id": {
-        ".write": "(root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Depo Görevlisi' || root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Sevkiyat Sorumlusu')))))",
+        ".write": "((root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Depo Görevlisi' || root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Sevkiyat Sorumlusu')))))) || (root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Muhasebe')",
         ".validate": "!newData.exists() || (newData.child('ad').isString() && newData.child('ad').val().length > 0 && newData.child('ad').val().length <= 100)"
+      }
+    },
+    "musteriGorusme": {
+      ".read": "((root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Depo Görevlisi' || root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Sevkiyat Sorumlusu')))))) || (root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Muhasebe')",
+      "$m": {
+        ".indexOn": [
+          "z"
+        ],
+        "$id": {
+          ".write": "((root.child('kullanicilar/' + auth.uid).child('onay').val() === true && (root.child('kullanicilar/' + auth.uid).child('yonetici').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() === true || (root.child('kullanicilar/' + auth.uid).child('izin').child('sevk').val() !== false && (root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Depo Görevlisi' || root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Sevkiyat Sorumlusu'))))) || (root.child('kullanicilar/' + auth.uid).child('onay').val() === true && root.child('kullanicilar/' + auth.uid).child('rol').val() === 'Muhasebe')) && (!data.exists() || newData.exists() === false)",
+          ".validate": "!newData.exists() || (newData.hasChildren(['tur','sonuc','kimUid','z']) && newData.child('kimUid').val() === auth.uid && (!newData.child('not').exists() || newData.child('not').val().length <= 500))"
+        }
       }
     }
   }
