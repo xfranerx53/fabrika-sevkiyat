@@ -349,7 +349,7 @@ if (islem === "link-coz") {
   /* worker /konum uçtan uca: ajan hesabıyla jeton → POST /konum */
   try { const D = admin.database(), U = (await D.ref("kullanicilar").once("value")).val() || {}, aj = Object.keys(U).find(k => U[k] && U[k].kullanici === "magajan");
     const ct = await admin.auth().createCustomToken(aj), x = await (await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=AIzaSyA_ZyOtWAvaYQvU8KaJnAJZK1s4Qd80FtU", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: ct, returnSecureToken: true }) })).json();
-    const wu = String((await D.ref("ayarlar/push/url").once("value")).val() || "").replace(/\/+$/, ""), r = await fetch(wu + "/konum", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + x.idToken }, body: JSON.stringify({ u: L }) });
+    const wu = String((await D.ref("ayarlar/push/url").once("value")).val() || "").replace(/\/+$/, ""), r = await fetch(wu + "/konum", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + x.idToken }, body: JSON.stringify({ u: L, iz: 1 }) });
     out.push({ worker: r.status, cevap: await r.text() }); } catch (e) { out.push({ worker: "hata " + e.message }); }
   fs.mkdirSync("teshis", { recursive: true }); fs.writeFileSync("teshis/link-coz.json", JSON.stringify(out, null, 1)); log("✅ link-coz: " + out.length + " link");
 }

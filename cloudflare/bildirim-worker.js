@@ -248,7 +248,7 @@ function kmF(a, b) { const t = Math.PI / 180, x = Math.pow(Math.sin((b.lat - a.l
 async function nominatim(q) { try { const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=3&countrycodes=tr&accept-language=tr&q=" + encodeURIComponent(q), { headers: { "User-Agent": "MAG-Sevkiyat/1.0 (+https://xfranerx53.github.io/fabrika-sevkiyat/)" } }); if (!r.ok) return []; return (await r.json()) || []; } catch (e) { return []; } }
 /* v143: Google Haritalar aramasının (tbm=map) cevabında yerin tam koordinatı [null,null,enlem,boylam] olarak gelir — en doğru yol */
 async function googleAra(q) { try { const r = await fetch("https://www.google.com/search?tbm=map&hl=tr&gl=tr&q=" + encodeURIComponent(q), { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", Cookie: "CONSENT=YES+cb; SOCS=CAI" } });
-  if (!r.ok) return null; const t = (await r.text()).slice(0, 400000), re = /\[null,null,(-?\d{1,2}\.\d{3,}),(-?\d{1,3}\.\d{3,})\]/g; let m;
+  if (typeof IZW !== "undefined" && IZW) IZW.push("ara " + r.status); if (!r.ok) return null; const t = (await r.text()).slice(0, 400000); if (typeof IZW !== "undefined" && IZW) IZW.push("ara boy " + t.length + " " + t.slice(0, 80)); const re = /\[null,null,(-?\d{1,2}\.\d{3,}),(-?\d{1,3}\.\d{3,})\]/g; let m;
   while ((m = re.exec(t))) { const k = { lat: Math.round(+m[1] * 1e6) / 1e6, lon: Math.round(+m[2] * 1e6) / 1e6 }; if (k.lat > 35.5 && k.lat < 42.3 && k.lon > 25.5 && k.lon < 45) return k; } return null; } catch (e) { return null; } }
 async function yerKonum(sonUrl) {
   const yer = yerYazi(sonUrl), kaba = ftidKonum(decodeURIComponent(sonUrl)); if (!yer && !kaba) return null;
@@ -261,6 +261,7 @@ async function yerKonum(sonUrl) {
 }
 
 const HARITA_HOST = /^(maps\.app\.goo\.gl|goo\.gl|g\.co|maps\.google\.[a-z.]+|(www\.)?google\.[a-z.]+|consent\.google\.[a-z.]+)$/i;
+let IZW = null;
 async function konumCoz(u) {
   let cur = String(u || "");
   for (let i = 0; i < 7; i++) {
@@ -269,14 +270,15 @@ async function konumCoz(u) {
     const k = koordBul(cur); if (k) { const y = yerYazi(cur); if (y) k.yer = y; return k; }
     if (/^consent\./i.test(x.hostname)) return koordBul(x.searchParams.get("continue") || "");
     const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", "Cookie": "CONSENT=YES+cb; SOCS=CAI" } });
-    const loc = intentAc(r.headers.get("location") || "");
+    const loc = intentAc(r.headers.get("location") || ""); if (IZW) IZW.push(r.status + " " + cur.slice(0, 120) + " -> " + loc.slice(0, 160));
     if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; continue; }
     if (r.ok) { const y = await yerKonum(cur); if (y) return y; return sayfaKoord((await r.text()).slice(0, 2000000)); }
     return null;
   }
   return null;
 }
-async function konumlar(env, liste) {
+async function konumlar(env, liste, iz) {
+  if (iz) { IZW = []; let v = null; try { v = await konumCoz(String(liste[0])); } catch (e) { IZW.push("hata " + e.message); } const t = IZW; IZW = null; return { ok: true, v, iz: t }; }
   const L = (Array.isArray(liste) ? liste : []).map(String).filter(u => /^https?:\/\//i.test(u) && u.length <= 600).slice(0, 25), o = {};
   for (const u of L) {
     const anahtar = "konum2:" + await kisaAd(u), c = await env.KV.get(anahtar, "json");
@@ -314,7 +316,7 @@ export default {
       const kayit = await kayitOku(uid, jeton);
       if (!kayit || kayit.onay !== true) return cevap({ hata: "hesap onaylı değil" }, 403, origin);
       const g = await req.json().catch(() => ({}));
-      if (yol === "/konum") return cevap(await konumlar(env, g.u), 200, origin);
+      if (yol === "/konum") return cevap(await konumlar(env, g.u, g.iz === 1), 200, origin);
       if (yol === "/sifre") {
         if (kayit.yonetici !== true) return cevap({ hata: "Bu işlem için yönetici olmalısınız." }, 403, origin);
         const hedef = String(g.uid || ""), sifre = String(g.sifre || "");
