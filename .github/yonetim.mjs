@@ -338,7 +338,7 @@ if (islem === "link-coz") {
   for (const l of L) { let cur = l; const o = { link: l, yol: [] };
     for (let i = 0; i < 8; i++) { const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9" } });
       const loc = r.headers.get("location"); o.yol.push(r.status + " " + (loc || "")); if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; continue; } break; }
-    const t = decodeURIComponent(o.yol.join(" ")); o.koord = koordBul(t); o.ftid = ftidKonum(t); o.sonuc = await haritaKonum(l); out.push(o); }
+    const t = decodeURIComponent(o.yol.join(" ")); o.koord = koordBul(t); o.ftid = ftidKonum(t); o.sonuc = await haritaKonum(l); try { const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=3&countrycodes=tr&q=" + encodeURIComponent("Cihangir, Şehit Uğur Hancı Sokak, Avcılar, İstanbul"), { headers: { "User-Agent": "MAG-Sevkiyat/1.0 (+https://xfranerx53.github.io/fabrika-sevkiyat/)" } }); o.nom = r.status + " " + (await r.text()).slice(0, 400); } catch (e) { o.nom = String(e); } out.push(o); }
   fs.mkdirSync("teshis", { recursive: true }); fs.writeFileSync("teshis/link-coz.json", JSON.stringify(out, null, 1)); log("✅ link-coz: " + out.length + " link");
 }
 
