@@ -241,7 +241,9 @@ function ftidKonum(s){var m=String(s||"").match(/(?:!1s|ftid=|\/data=[^ ]*?1s)(0
 /* v143 — Google «yer» linki çözümü: kısa link → yönlendirme. URL'de koordinat (!3d/@) varsa kesin. Yoksa (telefondan paylaşılan yer linki):
    /maps/place/<ad, adres>/ yazısı + 1s0x kimliğinin S2 hücresi (≈5-10 km, yalnız bölge doğrulaması için) → OpenStreetMap Nominatim ile adres aranır,
    S2 bölgesine 30 km'den yakınsa kabul; değilse S2 noktası «yaklaşık». «yer» yazısı her zaman döner: navigasyonda Google bu yazıyla firmayı tam bulur. */
-function yerYazi(u) { const m = String(u || "").match(/\/maps\/place\/([^\/@?]+)/); if (!m) return ""; try { return decodeURIComponent(m[1].replace(/\+/g, " ")).trim().slice(0, 200); } catch (e) { return ""; } }
+function yerYazi(u) { u = String(u || ""); let m = u.match(/\/maps\/place\/([^\/@?#]+)/) || u.match(/[?&]q=([^&#]+)/); if (!m) return ""; try { const y = decodeURIComponent(m[1].replace(/\+/g, " ")).trim().slice(0, 200); return /^-?\d+\.\d+\s*,\s*-?\d+\.\d+$/.test(y) ? "" : y; } catch (e) { return ""; } }
+/* v143: Android tarayıcı kimliğine Google «intent://…S.browser_fallback_url=…» döner — gerçek adres o parametrede */
+function intentAc(loc) { if (!/^intent:/i.test(loc)) return loc; const m = String(loc).match(/S\.browser_fallback_url=([^;]+)/); if (!m) return ""; try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; } }
 function kmF(a, b) { const t = Math.PI / 180, x = Math.pow(Math.sin((b.lat - a.lat) * t / 2), 2) + Math.cos(a.lat * t) * Math.cos(b.lat * t) * Math.pow(Math.sin((b.lon - a.lon) * t / 2), 2); return 12742 * Math.asin(Math.sqrt(x)); }
 async function nominatim(q) { try { const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=3&countrycodes=tr&accept-language=tr&q=" + encodeURIComponent(q), { headers: { "User-Agent": "MAG-Sevkiyat/1.0 (+https://xfranerx53.github.io/fabrika-sevkiyat/)" } }); if (!r.ok) return []; return (await r.json()) || []; } catch (e) { return []; } }
 /* v143: Google Haritalar aramasının (tbm=map) cevabında yerin tam koordinatı [null,null,enlem,boylam] olarak gelir — en doğru yol */
@@ -266,8 +268,8 @@ async function konumCoz(u) {
     if (!/^https?:$/.test(x.protocol) || !HARITA_HOST.test(x.hostname)) return null;
     const k = koordBul(cur); if (k) { const y = yerYazi(cur); if (y) k.yer = y; return k; }
     if (/^consent\./i.test(x.hostname)) return koordBul(x.searchParams.get("continue") || "");
-    const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", "Cookie": "CONSENT=YES+cb; SOCS=CAI" } });
-    const loc = r.headers.get("location");
+    const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", "Cookie": "CONSENT=YES+cb; SOCS=CAI" } });
+    const loc = intentAc(r.headers.get("location") || "");
     if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; continue; }
     if (r.ok) { const y = await yerKonum(cur); if (y) return y; return sayfaKoord((await r.text()).slice(0, 2000000)); }
     return null;

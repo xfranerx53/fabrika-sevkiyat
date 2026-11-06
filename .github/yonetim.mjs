@@ -203,7 +203,9 @@ function ftidKonum(s){var m=String(s||"").match(/(?:!1s|ftid=|\/data=[^ ]*?1s)(0
 /* v143 — Google «yer» linki çözümü: kısa link → yönlendirme. URL'de koordinat (!3d/@) varsa kesin. Yoksa (telefondan paylaşılan yer linki):
    /maps/place/<ad, adres>/ yazısı + 1s0x kimliğinin S2 hücresi (≈5-10 km, yalnız bölge doğrulaması için) → OpenStreetMap Nominatim ile adres aranır,
    S2 bölgesine 30 km'den yakınsa kabul; değilse S2 noktası «yaklaşık». «yer» yazısı her zaman döner: navigasyonda Google bu yazıyla firmayı tam bulur. */
-function yerYazi(u) { const m = String(u || "").match(/\/maps\/place\/([^\/@?]+)/); if (!m) return ""; try { return decodeURIComponent(m[1].replace(/\+/g, " ")).trim().slice(0, 200); } catch (e) { return ""; } }
+function yerYazi(u) { u = String(u || ""); let m = u.match(/\/maps\/place\/([^\/@?#]+)/) || u.match(/[?&]q=([^&#]+)/); if (!m) return ""; try { const y = decodeURIComponent(m[1].replace(/\+/g, " ")).trim().slice(0, 200); return /^-?\d+\.\d+\s*,\s*-?\d+\.\d+$/.test(y) ? "" : y; } catch (e) { return ""; } }
+/* v143: Android tarayıcı kimliğine Google «intent://…S.browser_fallback_url=…» döner — gerçek adres o parametrede */
+function intentAc(loc) { if (!/^intent:/i.test(loc)) return loc; const m = String(loc).match(/S\.browser_fallback_url=([^;]+)/); if (!m) return ""; try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; } }
 function kmF(a, b) { const t = Math.PI / 180, x = Math.pow(Math.sin((b.lat - a.lat) * t / 2), 2) + Math.cos(a.lat * t) * Math.cos(b.lat * t) * Math.pow(Math.sin((b.lon - a.lon) * t / 2), 2); return 12742 * Math.asin(Math.sqrt(x)); }
 async function nominatim(q) { try { const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=3&countrycodes=tr&accept-language=tr&q=" + encodeURIComponent(q), { headers: { "User-Agent": "MAG-Sevkiyat/1.0 (+https://xfranerx53.github.io/fabrika-sevkiyat/)" } }); if (!r.ok) return []; return (await r.json()) || []; } catch (e) { return []; } }
 /* v143: Google Haritalar aramasının (tbm=map) cevabında yerin tam koordinatı [null,null,enlem,boylam] olarak gelir — en doğru yol */
@@ -230,8 +232,8 @@ async function haritaKonum(link) {
   let cur = String(link || "").trim(), k = koordBul(cur), adim = 0; const iz = { link: cur, yol: [] }; IZ.push(iz);
   if (!/^https?:\/\//i.test(cur)) return k;
   while (!k && cur && adim++ < 8) {
-    let r; try { r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", Cookie: "CONSENT=YES+cb; SOCS=CAI" } }); } catch (e) { return null; }
-    const loc = r.headers.get("location"); iz.yol.push(r.status + " " + (loc || "").slice(0, 400));
+    let r; try { r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", Cookie: "CONSENT=YES+cb; SOCS=CAI" } }); } catch (e) { return null; }
+    const loc = intentAc(r.headers.get("location") || ""); iz.yol.push(r.status + " " + (loc || "").slice(0, 400));
     if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; k = koordBul(cur); if (!k && /consent\./.test(cur)) { const c = new URL(cur).searchParams.get("continue"); k = koordBul(c); } continue; }
     if (r.ok) { k = await yerKonum(cur); if (!k) { const t = (await r.text()).slice(0, 2000000); k = koordBul(t) || sayfaCift(t); } }
     break;
@@ -341,7 +343,7 @@ if (islem === "oneri-kaydet") {
 if (islem === "link-coz") {
   const L = fs.readFileSync(".github/yonetim-istek.txt", "utf8").split(/\r?\n/).slice(1).map(x => x.trim()).filter(Boolean), out = [];
   for (const l of L) { let cur = l; const o = { link: l, yol: [] };
-    for (let i = 0; i < 8; i++) { const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9" } });
+    for (let i = 0; i < 8; i++) { const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9" } });
       const loc = r.headers.get("location"); o.yol.push(r.status + " " + (loc || "")); if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; continue; } break; }
     const t = decodeURIComponent(o.yol.join(" ")); o.koord = koordBul(t); o.ftid = ftidKonum(t); o.sonuc = await haritaKonum(l); out.push(o); }
   fs.mkdirSync("teshis", { recursive: true }); fs.writeFileSync("teshis/link-coz.json", JSON.stringify(out, null, 1)); log("✅ link-coz: " + out.length + " link");
