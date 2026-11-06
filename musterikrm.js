@@ -13,11 +13,12 @@
   function waNo(t){var d=String(t||"").replace(/\D/g,"");if(d.indexOf("90")===0&&d.length===12)d=d.slice(2);if(d.charAt(0)==="0")d=d.slice(1);return/^5\d{9}$/.test(d)?"90"+d:""}
   function benAd(){return String((typeof rec!=="undefined"&&rec&&rec.ad)||"").split(" ")[0]}
   function hitap(x){var y=String((x.m&&x.m.yetkili)||"").trim();return y?y+" Bey/Hanım":"Merhaba"}
-  async function isler(){if(IS&&Date.now()-ISZ<120000)return IS;try{var v=(await firebase.database().ref("isEmirleri").orderByChild("eklenmeTarihi").limitToLast(800).once("value")).val()||{};IS=Object.keys(v).map(function(k){return Object.assign({id:k},v[k])});ISZ=Date.now()}catch(er){IS=IS||[]}return IS}
+  async function isler(){if(IS&&Date.now()-ISZ<120000)return IS;IDX=null;try{var v=(await firebase.database().ref("isEmirleri").orderByChild("eklenmeTarihi").limitToLast(800).once("value")).val()||{};IS=Object.keys(v).map(function(k){return Object.assign({id:k},v[k])});ISZ=Date.now()}catch(er){IS=IS||[]}return IS}
   function tarih(ms){return ms?new Date(ms).toLocaleDateString("tr-TR"):"-"}
   /* son alım: Mikro son hareket satış faturasıysa o tarih; programdaki son iş emri daha yeniyse o */
-  function sonAlim(x,L){var t=0,c=x.c||{};if(c.son&&/sat/i.test(c.sonTur||""))t=Date.parse(c.son)||0;
-    (L||[]).forEach(function(i){if(i.musteri&&window.musteriBul&&(musteriBul(i.musteri)||{}).key===x.key){var z=+i.eklenmeTarihi||0;if(z>t)t=z}});return t}
+  /* v146: iş emirlerinden müşteri → son tarih dizini bir kez kurulur (her müşteri için bütün iş emirlerini taramak donduruyordu) */
+  var IDX=null,IDXL=null;function dizin(L){if(IDX&&IDXL===L)return IDX;IDX={};IDXL=L;(L||[]).forEach(function(i){if(!i.musteri||!window.musteriBul)return;var x=musteriBul(i.musteri);if(!x)return;var z=+i.eklenmeTarihi||0;if(!IDX[x.key]||z>IDX[x.key])IDX[x.key]=z});return IDX}
+  function sonAlim(x,L){var t=0,c=x.c||{};if(c.son&&/sat/i.test(c.sonTur||""))t=Date.parse(c.son)||0;var z=(dizin(L)||{})[x.key]||0;return z>t?z:t}
   function sinif(x){return(x.c&&x.c.sinif)||(x.kod?"C":"")}
   function sessiz(x,L){var s=sonAlim(x,L);return s?Math.floor((Date.now()-s)/GUN):null}
   function aranacak(x,L){var m=x.m||{},g=sessiz(x,L),sn=sinif(x),son=m.son&&m.son.z||0;
@@ -62,8 +63,10 @@
     try{var v=(await firebase.database().ref("musteriGorusme/"+x.key).orderByChild("z").limitToLast(30).once("value")).val()||{},G=Object.keys(v).map(function(k){return v[k]}).sort(function(a,b){return(+b.z||0)-(+a.z||0)});
       $("krH").innerHTML=G.length?G.map(function(o){return'<div style="padding:4px 0;border-bottom:1px solid #f1f5f9">'+tarih(+o.z)+' • '+(o.tur==="whatsapp"?"💬":o.tur==="ziyaret"?"🚗":"☎")+' <b>'+e(o.sonuc||"")+'</b> — '+e(o.kim||"")+(o.not?'<br>'+e(o.not):'')+(o.sonraki?'<br><span style="color:#2563eb">Sonraki: '+tarih(o.sonraki)+'</span>':'')+'</div>'}).join(""):'<span style="color:#667085">Henüz görüşme kaydı yok.</span>'}catch(er){var hh=$("krH");if(hh)hh.textContent="Okunamadı."}};
   /* ---------- Yönetici Paneli kartı ---------- */
+  var PANO=null,PANOZ=0;
   window.musteriPanoCiz=async function(el){if(!el||!window.musteriListe)return;var L=await isler(),M=musteriListe();if(!M.length){el.innerHTML="";return}
-    var A=M.map(function(x){return{x:x,n:aranacak(x,L),s:sinif(x)}}).filter(function(o){return o.n}).sort(function(a,b){return(a.s>b.s?1:a.s<b.s?-1:0)});
+    if(!PANO||Date.now()-PANOZ>60000){PANOZ=Date.now();PANO=M.map(function(x){return{x:x,n:aranacak(x,L),s:sinif(x)}}).filter(function(o){return o.n}).sort(function(a,b){return(a.s>b.s?1:a.s<b.s?-1:0)})}
+    var A=PANO||M.map(function(x){return{x:x,n:aranacak(x,L),s:sinif(x)}}).filter(function(o){return o.n}).sort(function(a,b){return(a.s>b.s?1:a.s<b.s?-1:0)});
     if(!document.body.contains(el))return;
     el.innerHTML='<div class="pnK" data-r="'+(A.length?"tu":"ye")+'"><div class="pnT"><span>📞 Aranacak müşteriler</span><b class="pnN">'+A.length+'</b></div>'+(A.length?A.slice(0,8).map(function(o){return'<div class="pnR" data-mk="'+e(o.x.key)+'" style="cursor:pointer"><div><b>'+e(o.x.ad)+'</b> <span class="badge" style="background:#64748b">'+e(o.s||"-")+'</span></div><small>'+e(o.n)+'</small></div>'}).join("")+(A.length>8?'<div class="sub">+'+(A.length-8)+' müşteri daha — Müşterilerim › 📞 Aranacaklar</div>':''):'<div class="sub">Bugün aranması gereken müşteri yok 👍</div>')+'</div>';
     el.querySelectorAll("[data-mk]").forEach(function(r){r.onclick=function(ev){ev.stopPropagation();var d=document.getElementById("dPano");if(d&&d.open)d.close();window.musAc();setTimeout(function(){window.musteriDetay(r.dataset.mk)},400)}})};

@@ -24,7 +24,7 @@
   function yaz(){return typeof isAdmin==="function"&&isAdmin()||!!(rec&&rec.onay&&(rec.izin&&rec.izin.sevk===true||(!rec.izin||rec.izin.sevk!==false)&&(rec.rol==="Depo Görevlisi"||rec.rol==="Sevkiyat Sorumlusu")))}
   function konum(a){return a&&window.adrKonum?window.adrKonum(a):null}
   /* ---------- veri (girişten sonra canlı) ---------- */
-  function bagla(){if(V.ref.length||!izin())return;var db=firebase.database(),on=function(p,f){var r=db.ref(p);V.ref.push(r);r.on("value",function(s){f(s.val()||{});V.hazir=true;if($("dMus")&&$("dMus").open)liste()},function(){f({})})};
+  function bagla(){if(V.ref.length||!izin())return;var db=firebase.database(),on=function(p,f){var r=db.ref(p);V.ref.push(r);r.on("value",function(s){f(s.val()||{});sifirla();V.hazir=true;if($("dMus")&&$("dMus").open){clearTimeout(V.lz);V.lz=setTimeout(liste,300)}},function(){f({})})};
     on("musteriler",function(v){V.M=v});on("cariler",function(v){V.C=v});on("sevkAdresleri",function(v){V.A=v});
     db.ref("cariBakiye").once("value").then(function(s){V.B=s.val()||{}},function(){V.B=null})}
   function birak(){V.ref.forEach(function(r){try{r.off()}catch(x){}});V.ref=[];V.hazir=false}
@@ -37,9 +37,13 @@
   function kendi(x){if(!x)return null;var a=adr(x.m.kendiId);if(a)return a;if(!x.kod)return null;var en=null;
     Object.keys(V.A).forEach(function(id){var b=V.A[id];if(b&&b.cariKod===x.kod){var o=Object.assign({id:id},b);if(!en||(!konum(en)&&konum(o)))en=o}});return en}
   function teslim(x){var t=adr(x&&x.m.teslimId);return t||kendi(x)}
-  window.musteriBul=function(ad){if(!ad)return null;var L=hepsi(),q=cek(ad),n=nrm(ad);if(!q&&!n)return null;
+  /* v146: ad → müşteri sonucu önbellekte (veri değişince sıfırlanır); aksi halde listeler binlerce kez bulanık eşleme yapıp uygulamayı donduruyordu */
+  var BUL={},HEP=null;function sifirla(){BUL={};HEP=null}
+  function hepsiOnb(){return HEP||(HEP=hepsi())}
+  window.musteriBul=function(ad){if(!ad)return null;var anah=String(ad);if(anah in BUL)return BUL[anah];return BUL[anah]=bul0(ad)};
+  function bul0(ad){var L=hepsiOnb(),q=cek(ad),n=nrm(ad);if(!q&&!n)return null;
     var t=L.find(function(x){return nrm(x.ad)===n})||L.find(function(x){return x.c&&nrm(x.c.ad)===n})||L.find(function(x){return cek(x.ad)===q});if(t)return t;
-    var en=null,eb=0;L.forEach(function(x){var b=benz(ad,x.ad);if(b>eb){eb=b;en=x}});return eb>=0.75?en:null};
+    var en=null,eb=0;L.forEach(function(x){var b=benz(ad,x.ad);if(b>eb){eb=b;en=x}});return eb>=0.75?en:null}
   window.musteriTeslim=function(ad,o){var x=window.musteriBul(ad);if(!x)return null;var k=kendi(x),t=o&&o.kendi?k:teslim(x);
     return{musteri:x,adres:t,ambar:!!(t&&k&&t.id!==k.id)||!!(t&&!k&&x.m.teslimId),not:x.m.teslimNot||""}};
   window.musteriTeslimAlan=function(ad){var r=window.musteriTeslim(ad);if(!r||!r.adres)return{adres:"",haritaUrl:""};var a=r.adres;

@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v145**
+**GÜNCEL SÜRÜM: v146**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -428,6 +428,8 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-06: v144 — Cloudflare'den google.com'a istek «sorry/429» alıyor (worker yer sayfasını/aramayı okuyamaz). Worker /konum artık yer linkinde durur: S2 bölge noktası + `yer` yazısı, `yaklasik:true`. Kesin konumu GitHub yönetim işi `adres-konum` bulur: **yonetim.yml'e 10 dakikada bir zamanlama eklendi** (`*/10 * * * *` → adres-konum; 03:41 → teşhis). Bulunamayanlar `konumDeneme {u,z}`, yaklaşıklar `konum.dz` ile 24 saat yeniden denenmez. Toplu çalıştırmada 211 adresten 188'i konumlandı (Google araması), kalan ~27 foursquare/yandex/eksik link. Müşteri kartı «yaklaşık — birkaç dakikada kesinleşir» / «link kayıtlı, konum aranıyor» gösterir. Worker v143+ (iz:1 teşhis parametresi). **Cloudflare: DEĞİŞTİ — Claude yayınladı.**
 
 - 2026-11-06: v145 — Kullanıcı: müşterilere ara / WhatsApp mesaj at; uzun süredir alım yapmayanları teyit için aramak, genel ilgi; «tam bir firma olması için ne gerekiyorsa uygula». Yapılan: musterikrm.js (Bölüm 2), `musteriGorusme/` (Bölüm 5); cariler'e `sinif` A/B/C (Mikro hareketli cariler raporundaki Borç toplamına göre %80/%95 dilimleri — TUTAR uygulamada gösterilmez; rapor borcu yıllık satıştan büyük çıktı, devir/çek dahil olabilir), cariBakiye'ye `ciro` (aynı borç toplamı), `limit`, `asim` (risk listesi) → `cari-aktar` yeniden. Müşteriler ve görüşmeleri Muhasebe de görür/yazar. **Firebase kuralı: DEĞİŞTİ — Claude yayınladı.** Cloudflare: değişmedi.
+
+- 2026-11-06: v146 — ACİL: kullanıcı «uygulama ~10 sn sonra donuyor». Sebep v145: her müşteri için bütün iş emirleri taranıp her birinde `musteriBul` (bulanık eşleme, bütün müşteriler) çağrılıyordu → ~260×800×260 eşleme, Yönetici Paneli ve liste her yenilendiğinde. Düzeltme: `musteriBul` sonucu ad→müşteri önbellekte (veri değişince sıfırlanır), iş emri→müşteri son tarih dizini bir kez kurulur, pano kartı 60 sn önbellek, liste yeniden çizimi 300 ms gecikmeli. DERS: listede her satır için tüm veriyi tarayan bulanık eşleme yapma; önce dizin kur.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 - (v143) Google yer linklerinden koordinat: sayfayı değil `google.com/search?tbm=map&q=<yer yazısı>` cevabını oku. 1s0x kimliği hassas konum DEĞİL (S2 seviye ~10).

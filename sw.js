@@ -1,5 +1,5 @@
-const CACHE = 'fabrika-v145';
-const V = '?v=145';
+const CACHE = 'fabrika-v146';
+const V = '?v=146';
 const ASSETS = ['./', './index.html', './manifest.webmanifest',
   './style.css'+V, './raporlar.js'+V, './xlsx-yaz.js'+V, './app.js'+V, './hatakayit.js'+V, './yz.js'+V, './adrtam.js'+V, './yzmesaj.js'+V, './kurulum.js'+V, './sevkmesaj.js'+V, './musteri.js'+V, './musterikrm.js'+V, './fire.js'+V, './yzcek.js'+V, './foto-onizleme.js'+V, './saat.js'+V, './diyalog.js'+V,
   './qr.js'+V, './etiket.js'+V, './arama.js'+V, './israpor.js'+V, './fotookut.js'+V, './sesasistan.js'+V, './adrsec.js'+V, './talimat.js'+V, './tahsilat.js'+V, './bildirim.js'+V, './surum.js'+V, './maliyet.js'+V, './granul.js'+V, './pano.js'+V, './stokaktar.js'+V, './baglanti.js'+V, './sw-kayit.js'+V, './yazi.js'+V, './hesap.js'+V,
