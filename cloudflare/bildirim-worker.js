@@ -244,8 +244,13 @@ function ftidKonum(s){var m=String(s||"").match(/(?:!1s|ftid=|\/data=[^ ]*?1s)(0
 function yerYazi(u) { const m = String(u || "").match(/\/maps\/place\/([^\/@?]+)/); if (!m) return ""; try { return decodeURIComponent(m[1].replace(/\+/g, " ")).trim().slice(0, 200); } catch (e) { return ""; } }
 function kmF(a, b) { const t = Math.PI / 180, x = Math.pow(Math.sin((b.lat - a.lat) * t / 2), 2) + Math.cos(a.lat * t) * Math.cos(b.lat * t) * Math.pow(Math.sin((b.lon - a.lon) * t / 2), 2); return 12742 * Math.asin(Math.sqrt(x)); }
 async function nominatim(q) { try { const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=3&countrycodes=tr&accept-language=tr&q=" + encodeURIComponent(q), { headers: { "User-Agent": "MAG-Sevkiyat/1.0 (+https://xfranerx53.github.io/fabrika-sevkiyat/)" } }); if (!r.ok) return []; return (await r.json()) || []; } catch (e) { return []; } }
+/* v143: Google Haritalar aramasının (tbm=map) cevabında yerin tam koordinatı [null,null,enlem,boylam] olarak gelir — en doğru yol */
+async function googleAra(q) { try { const r = await fetch("https://www.google.com/search?tbm=map&hl=tr&gl=tr&q=" + encodeURIComponent(q), { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", Cookie: "CONSENT=YES+cb; SOCS=CAI" } });
+  if (!r.ok) return null; const t = (await r.text()).slice(0, 400000), re = /\[null,null,(-?\d{1,2}\.\d{3,}),(-?\d{1,3}\.\d{3,})\]/g; let m;
+  while ((m = re.exec(t))) { const k = { lat: Math.round(+m[1] * 1e6) / 1e6, lon: Math.round(+m[2] * 1e6) / 1e6 }; if (k.lat > 35.5 && k.lat < 42.3 && k.lon > 25.5 && k.lon < 45) return k; } return null; } catch (e) { return null; } }
 async function yerKonum(sonUrl) {
   const yer = yerYazi(sonUrl), kaba = ftidKonum(decodeURIComponent(sonUrl)); if (!yer && !kaba) return null;
+  if (yer) { const g = await googleAra(yer); if (g && (!kaba || kmF(g, kaba) <= 40)) return { lat: g.lat, lon: g.lon, yer }; }
   const P = yer.split(",").map(x => x.trim()).filter(Boolean), Q = [];
   const noSiz = x => x.replace(/\bNo\s*:?\s*[\d\/\-A-Za-z]+/gi, " ").replace(/\s+/g, " ").trim();
   if (P.length > 1) { Q.push(P.slice(1).join(", ")); Q.push(noSiz(P.slice(1).join(", "))); Q.push(P.slice(-2).join(", ")); } if (yer) Q.push(yer);

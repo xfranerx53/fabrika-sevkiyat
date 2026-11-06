@@ -90,7 +90,11 @@
       if(!p){l="";p=await window.haritaSec({baslik:"📍 "+ad,ara:ad});if(!p)return}
       var id=await adresYaz(null,{ad:ad.trim().slice(0,100)},p,l);if(id){var o=document.createElement("option");o.value=id;o.textContent="📍 "+ad;o.selected=true;$("mdAs").insertBefore(o,$("mdAs").firstChild)}};
     $("mdLk").onclick=async function(){if(!yaz()){alert("Konum değiştirme yetkiniz yok.");return}var l=$("mdL").value.trim(),S=$("mdLs");if(!l){S.textContent="Linki yapıştırın.";return}S.textContent="Konum aranıyor…";
-      var p=window.linktenKonum?await window.linktenKonum(l):null;if(!p){S.innerHTML='<span style="color:#b42318">Bu linkten konum çıkarılamadı; «Haritadan seç»i kullanın.</span>';return}
+      var p=window.linktenKonum?await window.linktenKonum(l):null;
+      if(!p){if(!/^https?:\/\//i.test(l)){S.innerHTML='<span style="color:#b42318">Geçerli bir link değil.</span>';return}
+        var k0=x.d.k,db=firebase.database();try{var id0=k0&&k0.id;if(id0)await db.ref("sevkAdresleri/"+id0).update({haritaUrl:l.slice(0,500),konum:null,duzenleyen:String((rec&&rec.ad)||"")});
+          else{var r0=db.ref("sevkAdresleri").push();await r0.set({ad:x.ad.slice(0,100),haritaUrl:l.slice(0,500),cariKod:x.kod||null,sehir:"",tel:"",adres:"",yetkili:"",tel2:"",not:"",ekleyen:String((rec&&rec.ad)||"?"),ekleyenUid:firebase.auth().currentUser.uid,eklenmeTarihi:firebase.database.ServerValue.TIMESTAMP});id0=r0.key;await musYaz(x,{kendiId:id0})}
+          toast("✓ Link kaydedildi; konum bu gece otomatik bulunacak");detay(key)}catch(er){S.textContent="Kaydedilemedi: "+(er&&er.message||er)}return}
       var k=x.d.k,id=await adresYaz(k&&k.id,{ad:k?k.ad:x.ad,cariKod:x.kod||undefined},p,l);if(!id)return;if(!k||k.id!==id)await musYaz(x,{kendiId:id});
       toast("✓ Konum kaydedildi"+(p.yer?": "+p.yer:""));detay(key)};
     $("mdKon").onclick=async function(){if(!yaz()){alert("Konum değiştirme yetkiniz yok.");return}var k=x.d.k,kk=x.d.kk;

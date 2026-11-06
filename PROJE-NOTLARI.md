@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v142**
+**GÜNCEL SÜRÜM: v143**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -421,7 +421,10 @@ Satır numaraları kayar; bu başlıkları ara:
 
 - 2026-11-06: v142 — Kullanıcı: «Müşterilerim» bölümü olsun; bütün müşteriler ve bilgileri görülsün; konum açık adres yazısıyla değil HARİTADAN kaydedilsin, yanlış/değişmiş konum düzeltilebilsin; bazı firmalara ambara bırakılıyor → teslim yeri ambar seçilebilsin; yeni iş emri açınca teslim yeri kendiliğinden bilinsin, sevkiyatta yeniden ayar gerekmesin. Yapılan: musteri.js (Bölüm 2), `musteriler/` (Bölüm 5), app.js iki küçük ek (aktarım + aracOk), yz.js rota çözümü. **Firebase kuralı: DEĞİŞTİ (musteriler) — Claude yayınladı.** Cloudflare: değişmedi.
 
+- 2026-11-06: v143 — Kullanıcı: «haritadan seç zor; ACK Plastik → https://maps.app.goo.gl/… diye LİNKLE kaydedebilmeliyim». Bulgu: telefondan paylaşılan yer linki yönlendirmesinde koordinat yok, yalnız `/maps/place/<ad, adres>/…1s0x…:0x…`. 1s0x'in ilk yarısı S2 hücresi ama yalnız ~seviye 10 (5–13 km) → sadece bölge kontrolü. ÇÖZÜM: yönlendirmedeki ad+adres yazısıyla Google Haritalar araması `https://www.google.com/search?tbm=map&hl=tr&gl=tr&q=…` → cevapta `[null,null,enlem,boylam]` = TAM konum (MAG için 41.069802, 28.2839614 birebir). Yedek: Nominatim (Türkiye küçük sokaklarında çoğu boş) → S2 kaba nokta `yaklasik`. `konum.yer` (ad+adres yazısı) saklanır; rota Google linkinde koordinat yerine bu yazıyı kullanır (Google firmayı tam bulur), sıralama koordinatla. Uygulama: Müşterilerim kartında «🔗 Google Maps linkini yapıştırın → Linkten kaydet» (worker /konum; bulunamazsa link kaydedilir, konum gece), Adres tamamlama ve yeni ambar ekleme de önce link sorar. `window.linktenKonum`. Yönetim: `adres-konum` artık her sabahki `teshis` ile de çalışır (konumsuz/yaklaşık adresler kendiliğinden tamamlanır); `link-coz` teşhis işlemi. Worker v143. **Firebase kuralı: değişmedi. Cloudflare: DEĞİŞTİ — Claude yayınladı.**
+
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
+- (v143) Google yer linklerinden koordinat: sayfayı değil `google.com/search?tbm=map&q=<yer yazısı>` cevabını oku. 1s0x kimliği hassas konum DEĞİL (S2 seviye ~10).
 - (v138) Sunucudan çekilen Google Haritalar sayfasındaki APP_INITIALIZATION_STATE güvenilmez (sunucunun bulunduğu ülkenin varsayılan görünümü olabilir). Toplu konum işlerinden sonra koordinatları MUTLAKA bölge sınırıyla (Türkiye) kontrol et; teşhis verisinde aralığa bak.
 
 1. **Uzun-sorgu (`forceLongPolling`) bu sitede ASLA kullanılmaz.** `index.html` CSP'si `script-src`te firebaseio.com'a izin vermez; Firebase uzun-sorgu script yükler, engellenir, bağlantı kalıcı kopar (v85-v87 yaşandı). Takılmada: `forceWebSockets()` + `db.goOffline()` → `goOnline()`.
