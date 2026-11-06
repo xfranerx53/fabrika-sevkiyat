@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       islem:
-        description: "saglik | teshis | kural-kontrol | kural-yayinla | ajan-izin | komut | bildirim-yayinla | granul-aktar | fabrika-konum | adres-konum | cari-aktar | oneri-aktar | oneri-kaydet"
+        description: "saglik | teshis | kural-kontrol | kural-yayinla | ajan-izin | komut | bildirim-yayinla | granul-aktar | fabrika-konum | adres-konum | cari-aktar | oneri-aktar | oneri-kaydet | link-coz"
         default: saglik
   push:
     branches: [main]
@@ -47,7 +47,7 @@ jobs:
           YONETIM_TOKEN: ${{ secrets.YONETIM_TOKEN }}
           PROJE_AD: fabrika
       - name: Teşhisi özel depoya yaz
-        if: env.ISLEM == 'teshis' || env.ISLEM == 'adres-konum' || env.ISLEM == 'oneri-kaydet'
+        if: env.ISLEM == 'teshis' || env.ISLEM == 'adres-konum' || env.ISLEM == 'oneri-kaydet' || env.ISLEM == 'link-coz'
         env:
           TOKEN: ${{ secrets.YONETIM_TOKEN }}
         run: |

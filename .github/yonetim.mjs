@@ -188,6 +188,18 @@ const koordBul = s => { s = String(s || ""); try { s = decodeURIComponent(s); } 
   if ((m = s.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/))) return ok(m[1], m[2]);
   if ((m = s.match(/^\s*(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})\s*$/))) return ok(m[1], m[2]);
   return null; };
+/* Google harita «yer» linklerindeki 1s0x…:0x… kimliğinin ilk yarısı yerin S2 hücre numarasıdır → enlem/boylam (S2 kütüphanesinden uyarlama) */
+var S2LK=null;
+function s2Tablo(){if(S2LK)return S2LK;var L=new Array(1024),PIJ=[[0,1,3,2],[0,2,3,1],[3,2,0,1],[3,1,0,2]],POR=[1,0,0,3];
+  function ini(lv,i,j,oo,pos,or){if(lv===4){L[(pos<<2)+oo]=(((i<<4)+j)<<2)+or;return}lv++;i<<=1;j<<=1;pos<<=2;var r=PIJ[or];for(var x=0;x<4;x++)ini(lv,i+(r[x]>>1),j+(r[x]&1),oo,pos+x,or^POR[x])}
+  for(var o=0;o<4;o++)ini(0,0,0,o,0,o);return S2LK=L}
+function s2Konum(hex){try{var id=BigInt(hex);if(id<=0n)return null;var L=s2Tablo(),face=Number(id>>61n),bits=face&1,i=0,j=0;
+  for(var k=7;k>=0;k--){var nb=k===7?2:4;bits+=Number((id>>BigInt(k*8+1))&BigInt((1<<(2*nb))-1))<<2;bits=L[bits];i+=(bits>>6)<<(k*4);j+=((bits>>2)&15)<<(k*4);bits&=3}
+  var lsb=id&-id,d=lsb===1n?1:((i^Number((id>>2n)&0xffffffffn))&1)?2:0,uv=function(s){return s>=0.5?(1/3)*(4*s*s-1):(1/3)*(1-4*(1-s)*(1-s))},u=uv((2*i+d)/2147483648),v=uv((2*j+d)/2147483648),p;
+  p=[[1,u,v],[-u,1,v],[-u,-v,1],[-1,-v,-u],[v,-1,-u],[v,u,-1]][face];if(!p)return null;
+  return{lat:Math.round(Math.atan2(p[2],Math.sqrt(p[0]*p[0]+p[1]*p[1]))*180/Math.PI*1e6)/1e6,lon:Math.round(Math.atan2(p[1],p[0])*180/Math.PI*1e6)/1e6}}catch(e){return null}}
+function ftidKonum(s){var m=String(s||"").match(/(?:!1s|ftid=|\/data=[^ ]*?1s)(0x[0-9a-f]{6,16}):0x[0-9a-f]+/i);return m?s2Konum(m[1]):null}
+
 const IZ = [];
 /* Google yer sayfası: APP_INITIALIZATION_STATE=[[[mesafe,boylam,enlem]…  ya da [null,null,enlem,boylam] */
 const TR = k => k && k.lat > 35.5 && k.lat < 42.3 && k.lon > 25.5 && k.lon < 45; /* müşterilerin hepsi Türkiye'de: dışı = yanlış (ör. sunucunun ABD'deki varsayılan görünümü) */
@@ -200,7 +212,7 @@ async function haritaKonum(link) {
   while (!k && cur && adim++ < 8) {
     let r; try { r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", Cookie: "CONSENT=YES+cb; SOCS=CAI" } }); } catch (e) { return null; }
     const loc = r.headers.get("location"); iz.yol.push(r.status + " " + (loc || "").slice(0, 400));
-    if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; k = koordBul(cur); if (!k && /consent\./.test(cur)) k = koordBul(new URL(cur).searchParams.get("continue")); continue; }
+    if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; k = koordBul(cur) || ftidKonum(decodeURIComponent(cur)); if (!k && /consent\./.test(cur)) { const c = new URL(cur).searchParams.get("continue"); k = koordBul(c) || ftidKonum(c); } continue; }
     if (r.ok) { let t = (await r.text()).slice(0, 2000000); k = koordBul(t) || sayfaCift(t);
       if (!k) { iz.boy = t.length; iz.ciftler = (t.match(/-?\d{1,3}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}/g) || []).slice(0, 8);
         try { const r2 = await fetch(cur, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9", Cookie: "CONSENT=YES+cb; SOCS=CAI" } });
@@ -305,6 +317,16 @@ if (islem === "oneri-kaydet") {
   await D.ref("denetim").push({ tur: "claude", baslik: "WhatsApp adresleri adres defterine eklendi", detay: R.eklendi.length + " adres (" + R.eklendi.filter(x => x.konum).length + " konumlu), " + R.zatenKayitli.length + " zaten kayıtlı", yol: "sevkAdresleri", id: "", kim: "🤖 Claude (sahibin talimatı)", uid: "claude", zaman: ts }).catch(() => { });
   fs.mkdirSync("teshis", { recursive: true }); fs.writeFileSync("teshis/oneri-kaydet.json", JSON.stringify(R, null, 1));
   log(`✅ Eklendi: ${R.eklendi.length} adres (${R.eklendi.filter(x => x.konum).length} konumlu, ${R.eklendi.filter(x => x.cari).length} Mikro'ya bağlı) • zaten kayıtlı ${R.zatenKayitli.length} • adsız öneri ${R.adsiz}`);
+}
+
+/* link-coz (v143, teşhis): yonetim-istek.txt 2.+ satırlardaki harita linklerinin yönlendirme zinciri, !3d/@ koordinatı ve 1s0x (S2) koordinatı → ÖZEL depo teshis/link-coz.json */
+if (islem === "link-coz") {
+  const L = fs.readFileSync(".github/yonetim-istek.txt", "utf8").split(/\r?\n/).slice(1).map(x => x.trim()).filter(Boolean), out = [];
+  for (const l of L) { let cur = l; const o = { link: l, yol: [] };
+    for (let i = 0; i < 8; i++) { const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9" } });
+      const loc = r.headers.get("location"); o.yol.push(r.status + " " + (loc || "")); if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; continue; } break; }
+    const t = decodeURIComponent(o.yol.join(" ")); o.koord = koordBul(t); o.ftid = ftidKonum(t); out.push(o); }
+  fs.mkdirSync("teshis", { recursive: true }); fs.writeFileSync("teshis/link-coz.json", JSON.stringify(out, null, 1)); log("✅ link-coz: " + out.length + " link");
 }
 
 process.exit(hata ? 1 : 0);
