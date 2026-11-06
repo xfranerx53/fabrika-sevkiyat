@@ -346,6 +346,11 @@ if (islem === "link-coz") {
     for (let i = 0; i < 8; i++) { const r = await fetch(cur, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9" } });
       const loc = r.headers.get("location"); o.yol.push(r.status + " " + (loc || "")); if (r.status >= 300 && r.status < 400 && loc) { cur = new URL(loc, cur).href; continue; } break; }
     const t = decodeURIComponent(o.yol.join(" ")); o.koord = koordBul(t); o.ftid = ftidKonum(t); o.sonuc = await haritaKonum(l); out.push(o); }
+  /* worker /konum uçtan uca: ajan hesabıyla jeton → POST /konum */
+  try { const D = admin.database(), U = (await D.ref("kullanicilar").once("value")).val() || {}, aj = Object.keys(U).find(k => U[k] && U[k].kullanici === "magajan");
+    const ct = await admin.auth().createCustomToken(aj), x = await (await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=AIzaSyA_ZyOtWAvaYQvU8KaJnAJZK1s4Qd80FtU", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: ct, returnSecureToken: true }) })).json();
+    const wu = String((await D.ref("ayarlar/push/url").once("value")).val() || "").replace(/\/+$/, ""), r = await fetch(wu + "/konum", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + x.idToken }, body: JSON.stringify({ u: L }) });
+    out.push({ worker: r.status, cevap: await r.text() }); } catch (e) { out.push({ worker: "hata " + e.message }); }
   fs.mkdirSync("teshis", { recursive: true }); fs.writeFileSync("teshis/link-coz.json", JSON.stringify(out, null, 1)); log("✅ link-coz: " + out.length + " link");
 }
 
