@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v146**
+**GÜNCEL SÜRÜM: v147**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -430,6 +430,8 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-06: v145 — Kullanıcı: müşterilere ara / WhatsApp mesaj at; uzun süredir alım yapmayanları teyit için aramak, genel ilgi; «tam bir firma olması için ne gerekiyorsa uygula». Yapılan: musterikrm.js (Bölüm 2), `musteriGorusme/` (Bölüm 5); cariler'e `sinif` A/B/C (Mikro hareketli cariler raporundaki Borç toplamına göre %80/%95 dilimleri — TUTAR uygulamada gösterilmez; rapor borcu yıllık satıştan büyük çıktı, devir/çek dahil olabilir), cariBakiye'ye `ciro` (aynı borç toplamı), `limit`, `asim` (risk listesi) → `cari-aktar` yeniden. Müşteriler ve görüşmeleri Muhasebe de görür/yazar. **Firebase kuralı: DEĞİŞTİ — Claude yayınladı.** Cloudflare: değişmedi.
 
 - 2026-11-06: v146 — ACİL: kullanıcı «uygulama ~10 sn sonra donuyor». Sebep v145: her müşteri için bütün iş emirleri taranıp her birinde `musteriBul` (bulanık eşleme, bütün müşteriler) çağrılıyordu → ~260×800×260 eşleme, Yönetici Paneli ve liste her yenilendiğinde. Düzeltme: `musteriBul` sonucu ad→müşteri önbellekte (veri değişince sıfırlanır), iş emri→müşteri son tarih dizini bir kez kurulur, pano kartı 60 sn önbellek, liste yeniden çizimi 300 ms gecikmeli. DERS: listede her satır için tüm veriyi tarayan bulanık eşleme yapma; önce dizin kur.
+
+- 2026-11-20: v147 — Kullanıcı: iş emri «Yazdır»da Chrome/Edge kenar boşluğu bırakıyor, boşluksuz olsun. style.css `@page{size:A4 landscape;margin:0}` (eskiden 11/6/6/6 mm), `#prn .prow` 297×209 mm, ölçüm genişliği 297 mm, app.js isYazdir hedef yükseklik 208 mm. Etiket yazdırma zaten margin:0. Not: yazıcının donanım baskı sınırı (≈3-4 mm) varsa en dış kenar kesilebilir; tarayıcıda «Kenar boşlukları: Yok» seçili kalmalı. Firebase/Cloudflare: değişmedi.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 - (v143) Google yer linklerinden koordinat: sayfayı değil `google.com/search?tbm=map&q=<yer yazısı>` cevabını oku. 1s0x kimliği hassas konum DEĞİL (S2 seviye ~10).

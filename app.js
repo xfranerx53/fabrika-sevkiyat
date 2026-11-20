@@ -2301,7 +2301,7 @@ function isYazdir(e){
   P.innerHTML=`<div class="prow">${h}<div class="pcut"></div>${isForm(e,islemYap("fiyat"))}</div>`;
   /* Sayfaya sığan en büyük yazı boyutunu bul (ekranda ölç, sonra yazdır) */
   P.classList.add("meas");
-  const f=P.querySelector(".pf:last-child"),hedef=193*96/25.4;
+  const f=P.querySelector(".pf:last-child"),hedef=208*96/25.4; /* v147: kenar boşluksuz A4 yatay (210 mm) */
   /* Yazı en büyükten küçülterek: hem yükseklik hem genişlik sayfaya sığana kadar (QR sabit 16 mm) */
   const tasar=()=>f.offsetHeight>hedef||[...f.querySelectorAll("td,.hdr")].some(x=>x.scrollWidth>x.clientWidth+1);
   let z=3;P.style.setProperty("--z",z);
