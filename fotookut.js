@@ -246,7 +246,10 @@
     notSet("iNtU",notlar.join("\n"));notSet("iNtB","");
     /* baskı-kesim bölümü: «OR. LDPE. BASKILI TORBA» → ürün adı TORBA; BASKILI ise baskılı iş (BASKISIZ değil) */
     var st=ust(K1.isim),son=(st.split(/\s+/).pop()||"").replace(/[^A-ZÇĞİÖŞÜ]/g,"");
-    set("iBU",son.length>=3?son:"");set("iRenk","");
+    /* v152: ürün adı her ölçüye ayrı (kalemin kendi adının son kelimesi, yoksa ilk kalemin) */
+    [0,1,2].forEach(function(n){var i=document.querySelector('#iCols [data-c="'+n+'"][data-f="urunAdi"]');if(!i)return;
+      var kn=K[n]?ust(K[n].isim):"",sn=(kn.split(/\s+/).pop()||"").replace(/[^A-ZÇĞİÖŞÜ]/g,"");i.value=K[n]?(sn.length>=3?sn:(son.length>=3?son:"")):""});
+    set("iRenk","");
     g("iBv").checked=/BASKILI/.test(fold(st));
     var q=g("iNo");if(q)q.dispatchEvent(new Event("input"));
     var yok=[];if(!ust(m.cariIsmi))yok.push("müşteri");
@@ -274,12 +277,14 @@
       if(!bul){bul=document.createElement("option");bul.value=bul.textContent=fx.toUpperCase();bul.dataset.ek="1";sx.appendChild(bul)}
       sx.value=bul.value;sx.dispatchEvent(new Event("change"))}
     [0,1,2].forEach(function(n){var c=S[n]||{};
-      var v={kg:sayi(c.kg),en:temiz(c.en),mikron:temiz(c.mikron).replace(/[µμu]\s*$/i,"").trim(),korona:temiz(c.korona),boy:temiz(c.boy)};
+      var v={kg:sayi(c.kg),en:temiz(c.en),mikron:temiz(c.mikron).replace(/[µμu]\s*$/i,"").trim(),korona:temiz(c.korona),boy:temiz(c.boy),urunAdi:temiz(c.urunAdi)};
+      if(benzersiz(S.map(function(x){return x&&x.uretimNotu})).length>1)v.notU=temiz(c.uretimNotu);
+      if(benzersiz(S.map(function(x){return x&&x.baskiNotu})).length>1)v.notB=temiz(c.baskiNotu);
       document.querySelectorAll('#iCols [data-c="'+n+'"]').forEach(function(i){i.value=v[i.dataset.f]||""})});
     var notU=benzersiz(S.map(function(c){return c&&c.uretimNotu})),notB=benzersiz(S.map(function(c){return c&&c.baskiNotu}));
-    notSet("iNtU",notU.join("\n"));notSet("iNtB",notB.join("\n"));
-    var ad=benzersiz(S.map(function(c){return c&&c.urunAdi}))[0]||"",renk=benzersiz(S.map(function(c){return c&&c.baskiRengi}))[0]||"";
-    set("iBU",ad);set("iRenk",renk);
+    notSet("iNtU",notU.length>1?"":notU.join("\n"));notSet("iNtB",notB.length>1?"":notB.join("\n")); /* v152: ölçüye göre farklıysa her ölçünün kendi notuna */
+    var renk=benzersiz(S.map(function(c){return c&&c.baskiRengi}))[0]||"";
+    set("iRenk",renk);
     g("iBv").checked=/BASKILI/i.test(temiz(o.stokAdi))||!!renk;
     var q=g("iNo");if(q)q.dispatchEvent(new Event("input")); /* QR güncellensin */
     var yok=[];if(!no&&!mesaj)yok.push("seri no");if(!temiz(o.musteri))yok.push("müşteri");

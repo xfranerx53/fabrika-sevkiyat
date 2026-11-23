@@ -1948,7 +1948,7 @@ function isListele(){
   $(u?"uTabs":"iTabs").innerHTML=AG.map(([k,l])=>{const n=isE.filter(e=>e.asama===k&&!e.aktarildi).length;return `<button data-t="${k}" style="font-size:12px" class="${k===T?"on":""}">${l}${k!=="bitti"&&n?" ("+n+")":""}</button>`}).join("");
   /* İş emirleri bölümünde arama açıkken tüm aşamalar taranır; Üretim'de sadece üretim aşamaları */
   const EA=st.aktif&&!u?isE.filter(e=>asamaGor(e.asama)):EG;
-  const L=st.aktif?EA.filter(e=>fbEsles(st,[e.no,e.musteri,e.stok,e.isAdi,e.fx,e.formul,e.urunAdi,e.renk,e.notU,e.notB,...icols(e).flatMap(c=>[c.notU,c.notB]),e.ekleyen,ASL[e.asama]],e.spTarih||e.eklenmeTarihi)):EG.filter(e=>e.asama===T&&!e.aktarildi);
+  const L=st.aktif?EA.filter(e=>fbEsles(st,[e.no,e.musteri,e.stok,e.isAdi,e.fx,e.formul,e.urunAdi,e.renk,e.notU,e.notB,...icols(e).flatMap(c=>[c.notU,c.notB,c.urunAdi]),e.ekleyen,ASL[e.asama]],e.spTarih||e.eklenmeTarihi)):EG.filter(e=>e.asama===T&&!e.aktarildi);
   fbSay(q,L.length,EA.length,"iş emri");
   const rk=x=>{const g=terminGun(x);return g!==null&&g>0?g:-1};L.sort((x,y)=>rk(y)-rk(x));
   const GE=isE.filter(x=>ST.includes(x.asama)&&asamaGor(x.asama)&&rk(x)>0).sort((x,y)=>rk(y)-rk(x));
@@ -2233,8 +2233,8 @@ function iDL(){
   const uniq=a=>{const s=new Set(),o=[];a.forEach(v=>{v=String(v==null?"":v).trim();const k=v.toLowerCase();if(v&&!s.has(k)){s.add(k);o.push(v)}});return o};
   const mk=(f,a)=>`<datalist id="dl_${f}">${a.map(v=>`<option value="${esc(v)}">`).join("")}</datalist>`;
   const top=["musteri","isAdi","stok","fx","formul","urunAdi","renk"],col=["en","mikron","korona","boy"];
-  $("iDL").innerHTML=top.map(f=>mk(f,uniq(isE.map(e=>e[f])))).concat(col.map(f=>mk(f,uniq(isE.flatMap(e=>icols(e).map(c=>c[f])))))).join("");
-  [["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"],["iBU","urunAdi"],["iRenk","renk"]].forEach(([i,f])=>$(i).setAttribute("list","dl_"+f));
+  $("iDL").innerHTML=top.map(f=>mk(f,uniq(isE.flatMap(e=>f==="urunAdi"?[...icols(e).map(c=>c.urunAdi),e.urunAdi]:[e[f]])))).concat(col.map(f=>mk(f,uniq(isE.flatMap(e=>icols(e).map(c=>c[f])))))).join("");
+  [["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"],["iRenk","renk"]].forEach(([i,f])=>$(i).setAttribute("list","dl_"+f));
 }
 /* ===== Notlar: madde madde ===== */
 const notL=t=>String(t==null?"":t).split("\n").map(x=>x.trim().replace(/^•\s*/,"")).filter(Boolean);
@@ -2293,7 +2293,7 @@ function isForm(e,fy,tk){
   <tr><th>KORONA :</th>${k3(c=>c&&c.korona?esc(c.korona):"-")}</tr>
   ${notSat("notU","")}
   <tr><th class="hd" colspan="7">BASKI - KESİM İŞ TAKİP FORMU</th></tr>
-  <tr><th>ÜRÜN ADI :</th>${k3(c=>c?U(e.urunAdi):"-")}</tr>
+  <tr><th>ÜRÜN ADI :</th>${k3(c=>c?U(c.urunAdi||e.urunAdi):"-")}</tr>
   <tr><th>BOY/KAZAN :</th>${k3(c=>c&&c.boy?esc(c.boy):"-")}</tr>
   <tr><th>BASKI RENGİ :</th>${k3((c,i)=>i===0?U(e.renk):"-")}</tr>
   ${notSat("notB",' style="height:calc(14mm*var(--z))"')}
@@ -2320,7 +2320,7 @@ const canIsAc=()=>!!rec&&(rec.yonetici===true||islemYap("isAc")); /* adım 1: ta
 const PB={TRY:"₺",USD:"$",EUR:"€"};
 function iAc(e){
   iEdit=e||null;const v=e||{},C=e?icols(e):[];$("iT").textContent=e?"İş emrini düzenle":"Yeni iş emri";$("iGet").style.display=e?"none":"";$("iE").textContent="";
-  [["iNo","no"],["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"],["iBU","urunAdi"],["iRenk","renk"]].forEach(([i,f])=>$(i).value=v[f]||"");
+  [["iNo","no"],["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"],["iRenk","renk"]].forEach(([i,f])=>$(i).value=v[f]||"");
   notSet("iNtU",v.notU);notSet("iNtB",v.notB);
   if(!e)$("iNo").value=iNext();iDL();
   $("iTr").value=v.spTarih||bugun();$("iTermin").value=v.termin||"";$("iBv").checked=!!v.baskiVar;
@@ -2329,7 +2329,7 @@ function iAc(e){
    if(v.fx&&v.fx!=="X-PEŞİN"&&v.fx!=="F-PEŞİN"&&v.fx!=="-"){const o=document.createElement("option");o.value=o.textContent=v.fx;o.dataset.ek="1";sx.appendChild(o)}
    sx.value=v.fx||"X-PEŞİN";
    $("iKd").checked=v.fiyat!=null?!v.kdvDahil:sx.value==="F-PEŞİN"}
-  document.querySelectorAll("#iCols [data-c]").forEach(i=>{const c=C[+i.dataset.c]||{};i.value=c[i.dataset.f]??""});
+  document.querySelectorAll("#iCols [data-c]").forEach(i=>{const k=+i.dataset.c,c=C[k]||{};i.value=c[i.dataset.f]??(i.dataset.f==="urunAdi"&&(C[k]||k===0)?v.urunAdi||"":"")});
   iQrGuncelle();$("iDlg").showModal();
 }
 $("iAdd").onclick=()=>{if(!canIsAc())return toast("Yeni iş emrini sadece muhasebe, depo görevlisi ve yönetici açabilir.");iAc(null)};
@@ -2342,7 +2342,7 @@ $("iOk").onclick=async()=>{
   const S=[];[0,1,2].forEach(n=>{const c={};document.querySelectorAll(`#iCols [data-c="${n}"]`).forEach(i=>c[i.dataset.f]=i.value.trim());c.kg=parseFloat(c.kg)||0;if(c.kg>0||c.en)S.push(c)});
   if(!S.length)return err("En az bir ebat için kg veya en girin.");
   {const vm=(!iEdit||iEdit.no!==no)?isVarMesaj(no,iEdit&&iEdit.id):"";if(vm)return err(vm)}
-  const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:notGet("iNtU"),baskiVar:$("iBv").checked,urunAdi:g("iBU"),renk:g("iRenk"),notB:notGet("iNtB"),siparis:S};
+  const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:notGet("iNtU"),baskiVar:$("iBv").checked,urunAdi:(S.find(c=>c.urunAdi)||{}).urunAdi||"",renk:g("iRenk"),notB:notGet("iNtB"),siparis:S};
   {const tm=g("iTermin");if(iEdit?tm!==(iEdit.termin||""):tm)d.termin=tm} /* termin yalnızca değiştiyse yazılır (eski kurallarla uyum) */
   if(islemYap("fiyat")){const fy=parseFloat(g("iFy").replace(",","."));d.fiyat=fy>0?fy:null;d.kdvDahil=!$("iKd").checked;d.paraBirimi=$("iPb").value}
   $("iOk").disabled=true;let woMsg=null;
