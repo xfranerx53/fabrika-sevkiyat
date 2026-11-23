@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v152**
+**GÜNCEL SÜRÜM: v153**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -438,6 +438,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-23: v150 — v149 telefonda işe yaramadı (ekranda JS ile ölçülen satır boyu telefon baskısında tutmuyor). Boşluk dağıtma JS'ten kaldırıldı; @media print'te .pf flex sütun + align-self:stretch, tablolar flex-grow (üst 3 / alt 11) → iki form da her cihazda sayfanın altına kadar.
 - 2026-11-23: v151 — Kullanıcı: 3 ölçünün her birine ayrı not (üretim + baskı-kesim). siparis[i].notU / notB (input data-f), eski tek not 'ORTAK NOT' olarak kaldı (e.notU/notB). Formda ölçü notu varsa NOT satırı 3 hücre + ortak not ayrı satır; yoksa eski görünüm. Aramaya ölçü notları eklendi.
 - 2026-11-23: v152 — Kullanıcı: ürün adı da her ölçüye ayrı (örn. KULPLU / EL GEÇME). siparis[i].urunAdi (input data-f), #iBU kaldırıldı; e.urunAdi = ilk dolu sütunun adı (etiket/arama uyumu). Eski kayıtta sütun adı yoksa genel ad gösterilir. BASKI RENGİ ayrı satır. fotookut: Mikro fişinde her kalemin adı, foto okumada sütun ürün adı + ölçüye göre farklı notlar kendi sütununa.
+- 2026-11-23: v153 — Kullanıcı: X-PEŞİN'de +KDV çıkmasın, yalnız F-PEŞİN'de. Formda KDV yazısı yalnız F/X 'F' ile başlıyorsa; iş emri formunda +KDV kutusu X'te gizli (iKdUI); kayıtta X ise kdvDahil=true.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 - (v143) Google yer linklerinden koordinat: sayfayı değil `google.com/search?tbm=map&q=<yer yazısı>` cevabını oku. 1s0x kimliği hassas konum DEĞİL (S2 seviye ~10).

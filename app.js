@@ -2271,7 +2271,7 @@ function isForm(e,fy,tk){
     tkOn=!!tk&&TIKAS.includes(e.asama)&&C.length>1,tkT=(e.tik&&e.tik[e.asama])||{},tkOk=tkOn&&asamaYap(e.asama),
     kutu=i=>{if(!tkOn||!X(i))return"";const t=tkT[i];return `<button type="button" class="ftk${t?" on":""}" ${tkOk?`data-a="tik" data-i="${i}" data-id="${esc(e.id)}"`:"disabled"} title="${t?esc((t.kim||"")+" ✓"):"Bitti ise tik koy"}">${t?"✓":""}</button>`},
     pair=(f,u)=>[0,1,2].map(i=>{const c=X(i),v=c&&c[f]?(f==="kg"?fmt(c.kg):c[f]):"";return `<td class="v">${v?esc(v):"-"}${f==="kg"?kutu(i):""}</td><td class="u">${u}</td>`}).join(""),
-    fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ${PB[e.paraBirimi]||"₺"} <small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:"",
+    fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ${PB[e.paraBirimi]||"₺"} ${/^F/i.test(e.fx||"")?`<small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:""}`:"",
     /* v151: her ölçünün (sütunun) kendi notu + tüm ölçüler için ortak not */
     notSat=(f,st)=>{const ay=C.some(c=>c&&String(c[f]||"").trim()),gn=notL(e[f]).length;
       if(!ay)return `<tr><th>NOT :</th><td class="v n" colspan="6"${st}>${notP(e[f])}</td></tr>`;
@@ -2328,13 +2328,15 @@ function iAc(e){
   {const sx=$("iFx");[...sx.options].forEach(o=>{if(o.dataset.ek)o.remove()});
    if(v.fx&&v.fx!=="X-PEŞİN"&&v.fx!=="F-PEŞİN"&&v.fx!=="-"){const o=document.createElement("option");o.value=o.textContent=v.fx;o.dataset.ek="1";sx.appendChild(o)}
    sx.value=v.fx||"X-PEŞİN";
-   $("iKd").checked=v.fiyat!=null?!v.kdvDahil:sx.value==="F-PEŞİN"}
+   $("iKd").checked=v.fiyat!=null?!v.kdvDahil:sx.value==="F-PEŞİN";iKdUI()}
   document.querySelectorAll("#iCols [data-c]").forEach(i=>{const k=+i.dataset.c,c=C[k]||{};i.value=c[i.dataset.f]??(i.dataset.f==="urunAdi"&&(C[k]||k===0)?v.urunAdi||"":"")});
   iQrGuncelle();$("iDlg").showModal();
 }
 $("iAdd").onclick=()=>{if(!canIsAc())return toast("Yeni iş emrini sadece muhasebe, depo görevlisi ve yönetici açabilir.");iAc(null)};
 $("iNo2").onclick=()=>$("iDlg").close();
-$("iFx").onchange=()=>{$("iKd").checked=$("iFx").value==="F-PEŞİN"};
+/* v153: KDV yalnız faturalı (F-…) işte; X-PEŞİN'de +KDV kutusu gizli ve yazdırmada KDV yazmaz */
+const iKdUI=()=>{const f=/^F/i.test($("iFx").value||"");$("iKd").closest("label").style.display=f?"":"none";if(!f)$("iKd").checked=false};
+$("iFx").onchange=()=>{$("iKd").checked=/^F/i.test($("iFx").value||"");iKdUI()};
 $("iOk").onclick=async()=>{
   const err=m=>{$("iE").textContent=m},g=id=>$(id).value.trim(),no=g("iNo").toUpperCase();
   if(!no)return err("Seri no gerekli (örn: MG-0945).");
@@ -2344,7 +2346,7 @@ $("iOk").onclick=async()=>{
   {const vm=(!iEdit||iEdit.no!==no)?isVarMesaj(no,iEdit&&iEdit.id):"";if(vm)return err(vm)}
   const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:notGet("iNtU"),baskiVar:$("iBv").checked,urunAdi:(S.find(c=>c.urunAdi)||{}).urunAdi||"",renk:g("iRenk"),notB:notGet("iNtB"),siparis:S};
   {const tm=g("iTermin");if(iEdit?tm!==(iEdit.termin||""):tm)d.termin=tm} /* termin yalnızca değiştiyse yazılır (eski kurallarla uyum) */
-  if(islemYap("fiyat")){const fy=parseFloat(g("iFy").replace(",","."));d.fiyat=fy>0?fy:null;d.kdvDahil=!$("iKd").checked;d.paraBirimi=$("iPb").value}
+  if(islemYap("fiyat")){const fy=parseFloat(g("iFy").replace(",","."));d.fiyat=fy>0?fy:null;d.kdvDahil=!(/^F/i.test(g("iFx"))&&$("iKd").checked);d.paraBirimi=$("iPb").value}
   $("iOk").disabled=true;let woMsg=null;
   try{
     if(iEdit){d.duzenleyen=ad();if(!d.baskiVar&&iEdit.asama==="baski")d.asama="kesim";
