@@ -1948,7 +1948,7 @@ function isListele(){
   $(u?"uTabs":"iTabs").innerHTML=AG.map(([k,l])=>{const n=isE.filter(e=>e.asama===k&&!e.aktarildi).length;return `<button data-t="${k}" style="font-size:12px" class="${k===T?"on":""}">${l}${k!=="bitti"&&n?" ("+n+")":""}</button>`}).join("");
   /* İş emirleri bölümünde arama açıkken tüm aşamalar taranır; Üretim'de sadece üretim aşamaları */
   const EA=st.aktif&&!u?isE.filter(e=>asamaGor(e.asama)):EG;
-  const L=st.aktif?EA.filter(e=>fbEsles(st,[e.no,e.musteri,e.stok,e.isAdi,e.fx,e.formul,e.urunAdi,e.renk,e.notU,e.notB,e.ekleyen,ASL[e.asama]],e.spTarih||e.eklenmeTarihi)):EG.filter(e=>e.asama===T&&!e.aktarildi);
+  const L=st.aktif?EA.filter(e=>fbEsles(st,[e.no,e.musteri,e.stok,e.isAdi,e.fx,e.formul,e.urunAdi,e.renk,e.notU,e.notB,...icols(e).flatMap(c=>[c.notU,c.notB]),e.ekleyen,ASL[e.asama]],e.spTarih||e.eklenmeTarihi)):EG.filter(e=>e.asama===T&&!e.aktarildi);
   fbSay(q,L.length,EA.length,"iş emri");
   const rk=x=>{const g=terminGun(x);return g!==null&&g>0?g:-1};L.sort((x,y)=>rk(y)-rk(x));
   const GE=isE.filter(x=>ST.includes(x.asama)&&asamaGor(x.asama)&&rk(x)>0).sort((x,y)=>rk(y)-rk(x));
@@ -2272,6 +2272,10 @@ function isForm(e,fy,tk){
     kutu=i=>{if(!tkOn||!X(i))return"";const t=tkT[i];return `<button type="button" class="ftk${t?" on":""}" ${tkOk?`data-a="tik" data-i="${i}" data-id="${esc(e.id)}"`:"disabled"} title="${t?esc((t.kim||"")+" ✓"):"Bitti ise tik koy"}">${t?"✓":""}</button>`},
     pair=(f,u)=>[0,1,2].map(i=>{const c=X(i),v=c&&c[f]?(f==="kg"?fmt(c.kg):c[f]):"";return `<td class="v">${v?esc(v):"-"}${f==="kg"?kutu(i):""}</td><td class="u">${u}</td>`}).join(""),
     fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ${PB[e.paraBirimi]||"₺"} <small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:"",
+    /* v151: her ölçünün (sütunun) kendi notu + tüm ölçüler için ortak not */
+    notSat=(f,st)=>{const ay=C.some(c=>c&&String(c[f]||"").trim()),gn=notL(e[f]).length;
+      if(!ay)return `<tr><th>NOT :</th><td class="v n" colspan="6"${st}>${notP(e[f])}</td></tr>`;
+      return `<tr><th>NOT :</th>${[0,1,2].map(i=>{const c=X(i),v=c&&String(c[f]||"").trim();return `<td colspan="2" class="v n"${st}>${v?esc(v):"-"}</td>`}).join("")}</tr>`+(gn?`<tr><th>ORTAK NOT :</th><td class="v n" colspan="6">${notP(e[f])}</td></tr>`:"")},
     logo='<svg viewBox="0 0 60 30"><ellipse cx="30" cy="15" rx="28" ry="12" fill="none" stroke="#000" stroke-width="3"/><path d="M10 19L24 6L30 17L36 6L50 19" fill="none" stroke="#000" stroke-width="3.5"/></svg>';
   return `<div class="pf">
   <div class="hdr"><div class="lg">${logo}mag ambalaj</div><div class="snw"><div class="sn"><small>SERİ NO:</small><b>${esc(e.no||"")}</b></div>${e.no?`<div class="pq">${isQrSvg(e.no,1)}</div>`:""}</div></div>
@@ -2287,12 +2291,12 @@ function isForm(e,fy,tk){
   <tr><th>EN :</th>${k3(c=>c&&c.en?esc(c.en):"-")}</tr>
   <tr><th>MİKRON :</th>${pair("mikron","µ")}</tr>
   <tr><th>KORONA :</th>${k3(c=>c&&c.korona?esc(c.korona):"-")}</tr>
-  <tr><th>NOT :</th><td class="v n" colspan="6">${notP(e.notU)}</td></tr>
+  ${notSat("notU","")}
   <tr><th class="hd" colspan="7">BASKI - KESİM İŞ TAKİP FORMU</th></tr>
   <tr><th>ÜRÜN ADI :</th>${k3(c=>c?U(e.urunAdi):"-")}</tr>
   <tr><th>BOY/KAZAN :</th>${k3(c=>c&&c.boy?esc(c.boy):"-")}</tr>
   <tr><th>BASKI RENGİ :</th>${k3((c,i)=>i===0?U(e.renk):"-")}</tr>
-  <tr><th>NOT :</th><td class="v n" colspan="6" style="height:calc(14mm*var(--z))">${notP(e.notB)}</td></tr>
+  ${notSat("notB",' style="height:calc(14mm*var(--z))"')}
   </table>
   </div>`;
 }
