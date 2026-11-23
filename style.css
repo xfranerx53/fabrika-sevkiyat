@@ -166,12 +166,15 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #prn .ps{margin-top:calc(2.5mm*var(--z))}
 :is(#prn,.isf) .px tr.sm th,:is(#prn,.isf) .px tr.sm td{padding-top:calc(.4mm*var(--z));padding-bottom:calc(.4mm*var(--z));font-size:calc(8.5pt*var(--z)*var(--fk));line-height:1.05}
 :is(#prn,.isf) .px tr.sm td.v{font-size:calc(9.5pt*var(--z)*var(--fk))}
-:is(#prn,.isf) .px.pk{border-top:0}:is(#prn,.isf) .px.pk th,:is(#prn,.isf) .px.pk td{border-top:0;padding-top:calc(.3mm*var(--z));padding-bottom:calc(.3mm*var(--z));font-size:calc(8pt*var(--z)*var(--fk));line-height:1.05}
-:is(#prn,.isf) .px.pk td.v{font-size:calc(9pt*var(--z)*var(--fk))}
+:is(#prn,.isf) .px.pk{border-top:0}:is(#prn,.isf) .px.pk th,:is(#prn,.isf) .px.pk td{border-top:0;padding-top:calc(1mm*var(--z));padding-bottom:calc(1mm*var(--z));font-size:calc(9.5pt*var(--z)*var(--fk));line-height:1.1}
+:is(#prn,.isf) .px.pk td.v{font-size:calc(11pt*var(--z)*var(--fk))}
+:is(#prn,.isf) .px.r th,:is(#prn,.isf) .px.r td{border-top:0}
 /* v150: yazdırmada iki form da (fiyatsız + fiyatlı) sayfanın altına kadar uzar — tablo satırları boşluğu kendisi paylaşır (telefonda da) */
 @media print{
   #prn .prow>.pf{align-self:stretch;display:flex;flex-direction:column}
   #prn .prow>.pf>.px{flex:1 1 auto}
+  #prn .prow>.pf>.px.r{flex:1 1 0} /* v155: stok adının altındaki her satır ayrı tablo, hepsi eşit pay alır (yazı sığmazsa o satır biraz uzar) */
+  #prn .prow>.pf>.px.r td.n{height:auto}
   #prn .prow>.pf>.px.top,#prn .prow>.pf>.px.pk{flex:0 0 auto} /* v154: üst bilgi ve paket/kg büyümez, boşluk ana tabloya */
   #prn .prow>.pf .px tr{height:auto!important}
 }

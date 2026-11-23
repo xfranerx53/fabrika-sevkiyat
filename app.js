@@ -2289,21 +2289,19 @@ function isForm(e,fy,tk){
   <tr><th>İŞİN ADI :</th><td class="v">${U(e.isAdi)}</td>${fy?`<th>F/X :</th><td class="v">${U(e.fx)}</td>`:`<th></th><td class="v"></td>`}</tr>
   ${fyT?`<tr class="sm"><th rowspan="2">STOK ADI :</th><td class="v" rowspan="2">${U(e.stok)}</td><th>FİYAT :</th><td class="v">${fyT}</td></tr><tr class="sm"><th>KLİŞE :</th><td class="v">-</td></tr>`:`<tr class="sm"><th>STOK ADI :</th><td class="v">${U(e.stok)}</td><th>SP. NO:</th><td class="v">-</td></tr>`}
   </table>
-  <table class="px"><colgroup><col style="width:20%">${'<col style="width:21%"><col style="width:6%">'.repeat(3)}</colgroup>
-  <tr><th>SİPARİŞ<br>MİKTARI :</th>${pair("kg","Kg")}</tr>
-  <tr><th>ÜRÜN<br>FORMÜLÜ :</th><td class="v" colspan="6" style="font-size:calc(15pt*var(--z)*var(--fk))">${U(e.formul)}</td></tr>
-  <tr><th>EN :</th>${k3(c=>c&&c.en?esc(c.en):"-")}</tr>
-  <tr><th>MİKRON :</th>${pair("mikron","µ")}</tr>
-  <tr><th>KORONA :</th>${k3(c=>c&&c.korona?esc(c.korona):"-")}</tr>
-  ${notSat("notU","")}
-  <tr><th class="hd" colspan="7">BASKI - KESİM İŞ TAKİP FORMU</th></tr>
-  <tr><th>ÜRÜN ADI :</th>${k3(c=>c?U(c.urunAdi||e.urunAdi):"-")}</tr>
-  <tr><th>BOY/KAZAN :</th>${k3(c=>c&&c.boy?esc(c.boy):"-")}</tr>
-  <tr><th>BASKI RENGİ :</th>${k3((c,i)=>i===0?U(e.renk):"-")}</tr>
-  ${notSat("notB",' style="height:calc(14mm*var(--z))"')}
-  </table>
+  ${[`<tr><th>SİPARİŞ<br>MİKTARI :</th>${pair("kg","Kg")}</tr>`,
+  `<tr><th>ÜRÜN<br>FORMÜLÜ:</th><td class="v" colspan="6" style="font-size:calc(15pt*var(--z)*var(--fk))">${U(e.formul)}</td></tr>`,
+  `<tr><th>EN :</th>${k3(c=>c&&c.en?esc(c.en):"-")}</tr>`,
+  `<tr><th>MİKRON :</th>${pair("mikron","µ")}</tr>`,
+  `<tr><th>KORONA :</th>${k3(c=>c&&c.korona?esc(c.korona):"-")}</tr>`,
+  notSat("notU",""),
+  `<tr><th class="hd" colspan="7">BASKI - KESİM İŞ TAKİP FORMU</th></tr>`,
+  `<tr><th>ÜRÜN ADI :</th>${k3(c=>c?U(c.urunAdi||e.urunAdi):"-")}</tr>`,
+  `<tr><th>BOY/KAZAN :</th>${k3(c=>c&&c.boy?esc(c.boy):"-")}</tr>`,
+  `<tr><th>BASKI RENGİ :</th>${k3((c,i)=>i===0?U(e.renk):"-")}</tr>`,
+  notSat("notB","")].map(r=>`<table class="px r"><colgroup><col style="width:20%">${'<col style="width:21%"><col style="width:6%">'.repeat(3)}</colgroup>${r}</table>`).join("")}
   <table class="px pk"><colgroup><col style="width:20%">${'<col style="width:27%">'.repeat(3)}</colgroup>
-  <tr><th>PAKET / KG :</th>${[0,1,2].map(i=>{const c=X(i),v=c&&String(c.paketKg||"").trim();return `<td class="v">${v?esc(v):"-"}</td>`}).join("")}</tr>
+  <tr><th>PAKET/KG :</th>${[0,1,2].map(i=>{const c=X(i),v=c&&String(c.paketKg||"").trim();return `<td class="v">${v?esc(v):"-"}</td>`}).join("")}</tr>
   </table>
   </div>`;
 }
