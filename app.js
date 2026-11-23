@@ -2307,9 +2307,10 @@ function isYazdir(e){
   let z=3;P.style.setProperty("--z",z);
   while(tasar()&&z>0.5){z=Math.round((z-0.02)*100)/100;P.style.setProperty("--z",z)}
   /* Kalan dikey boşluğu tablo satırlarına eşit dağıt: form sayfayı tam doldursun */
-  const bos=hedef-f.offsetHeight,tr=[...P.querySelectorAll(".pf .px tr")];
-  if(bos>4&&tr.length){const ek=bos/tr.length;P.querySelectorAll(".pf").forEach(pf=>{const r=[...pf.querySelectorAll(".px tr")];r.forEach(x=>x.style.height=(x.offsetHeight+ek)+"px")});
-    if(f.offsetHeight>hedef)tr.forEach(x=>x.style.height="")}
+  /* v149: her form (fiyatsız + fiyatlı) KENDİ boşluğunu kendi satırlarına dağıtır → ikisi de aynı boyda, sayfanın sonuna kadar */
+  P.querySelectorAll(".pf").forEach(pf=>{const r=[...pf.querySelectorAll(".px tr")],bos=hedef-pf.offsetHeight;if(!(bos>4&&r.length))return;
+    const ek=bos/r.length,h0=r.map(x=>x.offsetHeight);r.forEach((x,i)=>x.style.height=(h0[i]+ek)+"px");
+    if(pf.offsetHeight>hedef)r.forEach(x=>x.style.height="")});
   P.classList.remove("meas");
   const t=document.title;document.title=(e.no||"is-emri")+" - iş takip formu";
   window.onafterprint=()=>{document.title=t;P.innerHTML=""};
