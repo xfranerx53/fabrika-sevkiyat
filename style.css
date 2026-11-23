@@ -164,11 +164,15 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 :is(#prn,.isf) .px.top tr:first-child th,:is(#prn,.isf) .px.top tr:first-child td{height:calc(10mm*var(--z))}
 :is(#prn,.isf) .px small{font-size:.62em;font-weight:700}
 #prn .ps{margin-top:calc(2.5mm*var(--z))}
+:is(#prn,.isf) .px tr.sm th,:is(#prn,.isf) .px tr.sm td{padding-top:calc(.4mm*var(--z));padding-bottom:calc(.4mm*var(--z));font-size:calc(8.5pt*var(--z)*var(--fk));line-height:1.05}
+:is(#prn,.isf) .px tr.sm td.v{font-size:calc(9.5pt*var(--z)*var(--fk))}
+:is(#prn,.isf) .px.pk{border-top:0}:is(#prn,.isf) .px.pk th,:is(#prn,.isf) .px.pk td{border-top:0;padding-top:calc(.3mm*var(--z));padding-bottom:calc(.3mm*var(--z));font-size:calc(8pt*var(--z)*var(--fk));line-height:1.05}
+:is(#prn,.isf) .px.pk td.v{font-size:calc(9pt*var(--z)*var(--fk))}
 /* v150: yazdırmada iki form da (fiyatsız + fiyatlı) sayfanın altına kadar uzar — tablo satırları boşluğu kendisi paylaşır (telefonda da) */
 @media print{
   #prn .prow>.pf{align-self:stretch;display:flex;flex-direction:column}
-  #prn .prow>.pf>.px{flex:3 1 auto}
-  #prn .prow>.pf>.px:not(.top){flex:11 1 auto}
+  #prn .prow>.pf>.px{flex:1 1 auto}
+  #prn .prow>.pf>.px.top,#prn .prow>.pf>.px.pk{flex:0 0 auto} /* v154: üst bilgi ve paket/kg büyümez, boşluk ana tabloya */
   #prn .prow>.pf .px tr{height:auto!important}
 }
 #lbDlg{width:min(1440px,calc(100vw - 40px));max-height:calc(100vh - 28px);margin:auto;padding:14px 16px}

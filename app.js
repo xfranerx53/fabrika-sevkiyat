@@ -2249,7 +2249,12 @@ function notRow(el,val,ph){
   r.append(i,x);el.insertBefore(r,el.querySelector(".nadd"));return r;
 }
 function notSet(id,txt){
-  const el=$(id),a=notL(txt);el.innerHTML="";
+  const el=$(id),a=notL(txt);
+  if(!el&&(id==="iNtU"||id==="iNtB")){/* v154: ortak not yok → foto/Mikro okumadan gelen not, dolu ölçülerin kendi not kutusuna */
+    const f=id==="iNtU"?"notU":"notB",t=a.join(" · ");if(!t){document.querySelectorAll(`#iCols [data-f="${f}"]`).forEach(i=>{if(!i.value.trim())i.value="-"});return}
+    [0,1,2].forEach(n=>{const q=x=>document.querySelector(`#iCols [data-c="${n}"][data-f="${x}"]`),i=q(f);if(!i)return;
+      const dolu=(q("kg")&&q("kg").value.trim())||(q("en")&&q("en").value.trim());if(dolu&&(!i.value.trim()||i.value.trim()==="-"))i.value=t});return}
+  el.innerHTML="";
   const b=document.createElement("button");b.type="button";b.className="btn b6 nadd";b.textContent="+ Madde ekle";b.style.cssText="padding:6px;margin-bottom:4px";
   b.onclick=()=>notRow(el,"").querySelector("input").focus();el.appendChild(b);
   (a.length?a:[""]).forEach((v,k)=>notRow(el,v,k===0?el.dataset.ph:"Madde"));
@@ -2272,10 +2277,9 @@ function isForm(e,fy,tk){
     kutu=i=>{if(!tkOn||!X(i))return"";const t=tkT[i];return `<button type="button" class="ftk${t?" on":""}" ${tkOk?`data-a="tik" data-i="${i}" data-id="${esc(e.id)}"`:"disabled"} title="${t?esc((t.kim||"")+" ✓"):"Bitti ise tik koy"}">${t?"✓":""}</button>`},
     pair=(f,u)=>[0,1,2].map(i=>{const c=X(i),v=c&&c[f]?(f==="kg"?fmt(c.kg):c[f]):"";return `<td class="v">${v?esc(v):"-"}${f==="kg"?kutu(i):""}</td><td class="u">${u}</td>`}).join(""),
     fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ${PB[e.paraBirimi]||"₺"} ${/^F/i.test(e.fx||"")?`<small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:""}`:"",
-    /* v151: her ölçünün (sütunun) kendi notu + tüm ölçüler için ortak not */
-    notSat=(f,st)=>{const ay=C.some(c=>c&&String(c[f]||"").trim()),gn=notL(e[f]).length;
-      if(!ay)return `<tr><th>NOT :</th><td class="v n" colspan="6"${st}>${notP(e[f])}</td></tr>`;
-      return `<tr><th>NOT :</th>${[0,1,2].map(i=>{const c=X(i),v=c&&String(c[f]||"").trim();return `<td colspan="2" class="v n"${st}>${v?esc(v):"-"}</td>`}).join("")}</tr>`+(gn?`<tr><th>ORTAK NOT :</th><td class="v n" colspan="6">${notP(e[f])}</td></tr>`:"")},
+    /* v154: ortak not yok — her ölçünün kendi notu; boşsa "-" (kullanıcı "-"yi silerse boş kalır). Eski kayıtların genel notu her ölçüde gösterilir */
+    genN=f=>notL(e[f]).join(" · "),nV=(c,f)=>{const v=String((c&&c[f])??"").trim();return v?v:genN(f)?genN(f):(c&&c[f]==="")?"":"-"},
+    notSat=(f,st)=>`<tr><th>NOT :</th>${[0,1,2].map(i=>{const c=X(i);return `<td colspan="2" class="v n"${st}>${c?esc(nV(c,f)):"-"}</td>`}).join("")}</tr>`,
     logo='<svg viewBox="0 0 60 30"><ellipse cx="30" cy="15" rx="28" ry="12" fill="none" stroke="#000" stroke-width="3"/><path d="M10 19L24 6L30 17L36 6L50 19" fill="none" stroke="#000" stroke-width="3.5"/></svg>';
   return `<div class="pf">
   <div class="hdr"><div class="lg">${logo}mag ambalaj</div><div class="snw"><div class="sn"><small>SERİ NO:</small><b>${esc(e.no||"")}</b></div>${e.no?`<div class="pq">${isQrSvg(e.no,1)}</div>`:""}</div></div>
@@ -2283,7 +2287,7 @@ function isForm(e,fy,tk){
   <table class="px top"><colgroup><col style="width:20%"><col style="width:42%"><col style="width:16%"><col style="width:22%"></colgroup>
   <tr><th>MÜŞTERİ :</th><td class="v">${U(e.musteri)}</td><th>SP.<br>TARİHİ:</th><td class="v" style="white-space:nowrap">${esc(trDate(e.spTarih))}</td></tr>
   <tr><th>İŞİN ADI :</th><td class="v">${U(e.isAdi)}</td>${fy?`<th>F/X :</th><td class="v">${U(e.fx)}</td>`:`<th></th><td class="v"></td>`}</tr>
-  ${fyT?`<tr><th rowspan="2">STOK ADI :</th><td class="v" rowspan="2">${U(e.stok)}</td><th>FİYAT :</th><td class="v">${fyT}</td></tr><tr><th>KLİŞE :</th><td class="v">-</td></tr>`:`<tr><th>STOK ADI :</th><td class="v">${U(e.stok)}</td><th>SP.<br>NO:</th><td class="v">-</td></tr>`}
+  ${fyT?`<tr class="sm"><th rowspan="2">STOK ADI :</th><td class="v" rowspan="2">${U(e.stok)}</td><th>FİYAT :</th><td class="v">${fyT}</td></tr><tr class="sm"><th>KLİŞE :</th><td class="v">-</td></tr>`:`<tr class="sm"><th>STOK ADI :</th><td class="v">${U(e.stok)}</td><th>SP. NO:</th><td class="v">-</td></tr>`}
   </table>
   <table class="px"><colgroup><col style="width:20%">${'<col style="width:21%"><col style="width:6%">'.repeat(3)}</colgroup>
   <tr><th>SİPARİŞ<br>MİKTARI :</th>${pair("kg","Kg")}</tr>
@@ -2297,6 +2301,9 @@ function isForm(e,fy,tk){
   <tr><th>BOY/KAZAN :</th>${k3(c=>c&&c.boy?esc(c.boy):"-")}</tr>
   <tr><th>BASKI RENGİ :</th>${k3((c,i)=>i===0?U(e.renk):"-")}</tr>
   ${notSat("notB",' style="height:calc(14mm*var(--z))"')}
+  </table>
+  <table class="px pk"><colgroup><col style="width:20%">${'<col style="width:27%">'.repeat(3)}</colgroup>
+  <tr><th>PAKET / KG :</th>${[0,1,2].map(i=>{const c=X(i),v=c&&String(c.paketKg||"").trim();return `<td class="v">${v?esc(v):"-"}</td>`}).join("")}</tr>
   </table>
   </div>`;
 }
@@ -2321,7 +2328,6 @@ const PB={TRY:"₺",USD:"$",EUR:"€"};
 function iAc(e){
   iEdit=e||null;const v=e||{},C=e?icols(e):[];$("iT").textContent=e?"İş emrini düzenle":"Yeni iş emri";$("iGet").style.display=e?"none":"";$("iE").textContent="";
   [["iNo","no"],["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"],["iRenk","renk"]].forEach(([i,f])=>$(i).value=v[f]||"");
-  notSet("iNtU",v.notU);notSet("iNtB",v.notB);
   if(!e)$("iNo").value=iNext();iDL();
   $("iTr").value=v.spTarih||bugun();$("iTermin").value=v.termin||"";$("iBv").checked=!!v.baskiVar;
   $("iFyW").classList.toggle("hide",!islemYap("fiyat"));$("iFyL").textContent=islemYap("fiyat")?"FİYAT :":"";$("iPb").value=PB[v.paraBirimi]?v.paraBirimi:"TRY";$("iFy").value=v.fiyat!=null?String(v.fiyat).replace(".",","):"";
@@ -2329,7 +2335,7 @@ function iAc(e){
    if(v.fx&&v.fx!=="X-PEŞİN"&&v.fx!=="F-PEŞİN"&&v.fx!=="-"){const o=document.createElement("option");o.value=o.textContent=v.fx;o.dataset.ek="1";sx.appendChild(o)}
    sx.value=v.fx||"X-PEŞİN";
    $("iKd").checked=v.fiyat!=null?!v.kdvDahil:sx.value==="F-PEŞİN";iKdUI()}
-  document.querySelectorAll("#iCols [data-c]").forEach(i=>{const k=+i.dataset.c,c=C[k]||{};i.value=c[i.dataset.f]??(i.dataset.f==="urunAdi"&&(C[k]||k===0)?v.urunAdi||"":"")});
+  {const gN=f=>notL(v[f]).join(" · ");document.querySelectorAll("#iCols [data-c]").forEach(i=>{const k=+i.dataset.c,c=C[k]||{},f=i.dataset.f,nt=f==="notU"||f==="notB";i.value=c[f]??(f==="urunAdi"&&(C[k]||k===0)?v.urunAdi||"":nt?(gN(f)||"-"):"")})}
   iQrGuncelle();$("iDlg").showModal();
 }
 $("iAdd").onclick=()=>{if(!canIsAc())return toast("Yeni iş emrini sadece muhasebe, depo görevlisi ve yönetici açabilir.");iAc(null)};
@@ -2344,7 +2350,7 @@ $("iOk").onclick=async()=>{
   const S=[];[0,1,2].forEach(n=>{const c={};document.querySelectorAll(`#iCols [data-c="${n}"]`).forEach(i=>c[i.dataset.f]=i.value.trim());c.kg=parseFloat(c.kg)||0;if(c.kg>0||c.en)S.push(c)});
   if(!S.length)return err("En az bir ebat için kg veya en girin.");
   {const vm=(!iEdit||iEdit.no!==no)?isVarMesaj(no,iEdit&&iEdit.id):"";if(vm)return err(vm)}
-  const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:notGet("iNtU"),baskiVar:$("iBv").checked,urunAdi:(S.find(c=>c.urunAdi)||{}).urunAdi||"",renk:g("iRenk"),notB:notGet("iNtB"),siparis:S};
+  const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:"",baskiVar:$("iBv").checked,urunAdi:(S.find(c=>c.urunAdi)||{}).urunAdi||"",renk:g("iRenk"),notB:"",siparis:S};
   {const tm=g("iTermin");if(iEdit?tm!==(iEdit.termin||""):tm)d.termin=tm} /* termin yalnızca değiştiyse yazılır (eski kurallarla uyum) */
   if(islemYap("fiyat")){const fy=parseFloat(g("iFy").replace(",","."));d.fiyat=fy>0?fy:null;d.kdvDahil=!(/^F/i.test(g("iFx"))&&$("iKd").checked);d.paraBirimi=$("iPb").value}
   $("iOk").disabled=true;let woMsg=null;
