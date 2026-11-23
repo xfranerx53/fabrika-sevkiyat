@@ -164,6 +164,13 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 :is(#prn,.isf) .px.top tr:first-child th,:is(#prn,.isf) .px.top tr:first-child td{height:calc(10mm*var(--z))}
 :is(#prn,.isf) .px small{font-size:.62em;font-weight:700}
 #prn .ps{margin-top:calc(2.5mm*var(--z))}
+/* v150: yazdırmada iki form da (fiyatsız + fiyatlı) sayfanın altına kadar uzar — tablo satırları boşluğu kendisi paylaşır (telefonda da) */
+@media print{
+  #prn .prow>.pf{align-self:stretch;display:flex;flex-direction:column}
+  #prn .prow>.pf>.px{flex:3 1 auto}
+  #prn .prow>.pf>.px:not(.top){flex:11 1 auto}
+  #prn .prow>.pf .px tr{height:auto!important}
+}
 #lbDlg{width:min(1440px,calc(100vw - 40px));max-height:calc(100vh - 28px);margin:auto;padding:14px 16px}
 #lbDlg #lbT{font-size:22px;font-weight:900}
 #lbDlg #lbRows{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:12px;align-items:start}

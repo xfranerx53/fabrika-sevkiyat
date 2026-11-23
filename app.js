@@ -2306,11 +2306,7 @@ function isYazdir(e){
   const tasar=()=>f.offsetHeight>hedef||[...f.querySelectorAll("td,.hdr")].some(x=>x.scrollWidth>x.clientWidth+1);
   let z=3;P.style.setProperty("--z",z);
   while(tasar()&&z>0.5){z=Math.round((z-0.02)*100)/100;P.style.setProperty("--z",z)}
-  /* Kalan dikey boşluğu tablo satırlarına eşit dağıt: form sayfayı tam doldursun */
-  /* v149: her form (fiyatsız + fiyatlı) KENDİ boşluğunu kendi satırlarına dağıtır → ikisi de aynı boyda, sayfanın sonuna kadar */
-  P.querySelectorAll(".pf").forEach(pf=>{const r=[...pf.querySelectorAll(".px tr")],bos=hedef-pf.offsetHeight;if(!(bos>4&&r.length))return;
-    const ek=bos/r.length,h0=r.map(x=>x.offsetHeight);r.forEach((x,i)=>x.style.height=(h0[i]+ek)+"px");
-    if(pf.offsetHeight>hedef)r.forEach(x=>x.style.height="")});
+  /* v150: kalan dikey boşluk CSS ile (@media print, .pf flex sütun) dağıtılır → iki form da aynı boy, telefonda da */
   P.classList.remove("meas");
   const t=document.title;document.title=(e.no||"is-emri")+" - iş takip formu";
   window.onafterprint=()=>{document.title=t;P.innerHTML=""};
