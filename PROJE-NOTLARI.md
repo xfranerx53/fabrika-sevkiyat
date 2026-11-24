@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v167**
+**GÜNCEL SÜRÜM: v168**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -454,6 +454,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-24: (v165, sürüm değişmedi) (6) Mikro günlük otomatik aktarım: zamanlanmış görev «Mikro günlük aktarım» (trig_01L3grhpVPdCxyj7XCY5SHRy, hafta içi 12:33 İstanbul; kullanıcı öğle arası seçti). Ofis PC'sinde Mikro'dan rapor → Masaüstü\Atılacaklar\gunluk-TARİH → buluta → mag-yonetim/aktar/ham (son halleri; gelmeyen rapor için önceki) → araclar/aktar.py (tarih/mizan otomatik; mizan_YYYY-AA adlı) → push → cari-aktar. Görev oluşturulurken bilgisayar BAĞLANAMADI (onay yok) → kullanıcı ofis PC'sindeki Claude masaüstü uygulamasında görevin ayarından «Require this computer» açmalı; açılmazsa bulutta çalışır ve Mikro'ya ulaşamaz. Düzen: mag-yonetim/araclar/GUNLUK.md.
 - 2026-11-24: v166 — Kullanıcı: ölçü (en), kg, mikron, notların hepsi ve ürün formülü KALIN, diğer değerler normal. .pf2 td.v → 500 ağırlık/çizgisiz; td.v.b (pair kg/mikron, en, formül, notU, notB) → 900. Başlık/etiket (th) kalın kaldı. Kısa listede de en/mikron/not kalın, diğerleri normal.
 - 2026-11-24: v167 — Kullanıcı: Yapay Zekâ › bugünkü iş, SİLİNMİŞ iş emirlerini (MG-0966 vb.) gösteriyordu. Neden: plan (ai/kuyruk) gece ajanının son turundan (mag-pazar-analiz ajan-gece.mjs) — arada silinen/ilerletilen işler kalıyordu. yz.js ac(): 5 aşama canlı okunur (orderByChild asama), kuyrukta yalnız hâlâ o aşamada olan işler kalır, gün yeniden hesaplanır, ajanın görmediği yeni işler sona eklenir, gecGun canlı.
+- 2026-11-24: v168 — Kullanıcı: «Önümüzdeki iş yükü» 7.630 kg görünüyordu (ajanın eski turundan, silinen işler dahil). yz.js: iş yükü canlı kuyruktan ajan formülüyle yeniden hesaplanır (ekstruder = etiket+ekstruder; baskı = önceki aşamalardaki baskılı + baskı; kesim = önceki tümü + kesim; hız kg/saat ajanın son değerinden türetilir, yoksa 60/80/25). «gündür bekliyor» ajanla aynı: sipariş tarihinden; gecGun yalnız sipariş tarihli işler.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 - (v143) Google yer linklerinden koordinat: sayfayı değil `google.com/search?tbm=map&q=<yer yazısı>` cevabını oku. 1s0x kimliği hassas konum DEĞİL (S2 seviye ~10).

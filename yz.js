@@ -189,11 +189,16 @@
       /* v167: plan gece ajanının son turundan gelir; arada SİLİNEN ya da ilerletilen iş emirleri gösterilmesin, yeni açılanlar sona eklensin (canlı veriyle süzülür) */
       if(v)try{var AS5=["etiket","ekstruder","baski","kesim","depo"],CA={};
         await Promise.all(AS5.map(function(a){return firebase.database().ref("isEmirleri").orderByChild("asama").equalTo(a).once("value").then(function(x){var o=x.val()||{};Object.keys(o).forEach(function(k){var j=o[k];if(j&&j.no)CA[j.no]=j})})}));
-        var gun=function(j){var g=Math.max(+j.eklenmeTarihi||0);Object.keys(j.log||{}).forEach(function(k){g=Math.max(g,+((j.log[k]||{}).zaman)||0)});return g?Math.floor((Date.now()-g)/864e5):0};
+        var gun=function(j){var g=j.spTarih?Date.parse(j.spTarih+"T12:00:00+03:00"):(+j.eklenmeTarihi||0);return g?Math.floor((Date.now()-g)/864e5):0}; /* ajanla aynı: sipariş tarihinden bu yana */
         var kg=function(j){return Math.round(Object.keys(j.siparis||{}).reduce(function(t,k){var c=j.siparis[k];return t+(c&&!c._bos?(+c.kg||0):0)},0))};
-        var K=v.kuyruk||{},Y={};AS5.forEach(function(a){var l=(K[a]||[]).filter(function(x){var j=CA[x.no];return j&&j.asama===a&&!j.aktarildi}).map(function(x){var j=CA[x.no];return Object.assign({},x,{gun:gun(j)})});
-          var var_={};l.forEach(function(x){var_[x.no]=1});Object.keys(CA).forEach(function(no){var j=CA[no];if(j.asama===a&&!var_[no])l.push({no:no,musteri:j.musteri||"",urun:j.urunAdi||j.stok||"",kg:kg(j),formul:j.formul||"",renk:j.renk||"",gun:gun(j)})});Y[a]=l});
-        v.kuyruk=Y;v.gecGun=Object.keys(CA).filter(function(no){return gun(CA[no])>10}).sort()}catch(er){}
+        var K=v.kuyruk||{},Y={};AS5.forEach(function(a){var l=(K[a]||[]).filter(function(x){var j=CA[x.no];return j&&j.asama===a&&!j.aktarildi}).map(function(x){var j=CA[x.no];return Object.assign({},x,{gun:gun(j),kg:kg(j)||x.kg,baski:!!j.baskiVar})});
+          var var_={};l.forEach(function(x){var_[x.no]=1});Object.keys(CA).forEach(function(no){var j=CA[no];if(j.asama===a&&!var_[no])l.push({no:no,musteri:j.musteri||"",urun:j.urunAdi||j.stok||"",kg:kg(j),formul:j.formul||"",renk:j.renk||"",baski:!!j.baskiVar,gun:gun(j)})});Y[a]=l});
+        v.kuyruk=Y;v.gecGun=Object.keys(CA).filter(function(no){return CA[no].spTarih&&gun(CA[no])>10}).sort();
+        /* iş yükü de canlı kuyruktan (ajan formülü): ekstruder = etiket + ekstruder; baskı = önceki aşamalardaki baskılı işler + baskı; kesim = önceki tüm + kesim. Hız (kg/saat) ajanın son değerinden */
+        var oy=v.yuk||{},HZ={ekstruder:60,baski:80,kesim:25},top=function(a,f){return(Y[a]||[]).filter(f||function(){return 1}).reduce(function(t,x){return t+(+x.kg||0)},0)};
+        Object.keys(HZ).forEach(function(a){var o=oy[a];if(o&&+o.kg>0&&+o.saat>0)HZ[a]=o.kg/o.saat});
+        var YK={};["ekstruder","baski","kesim"].forEach(function(a){var i=AS5.indexOf(a),k=top(a)+AS5.slice(0,i).reduce(function(t,b){return t+top(b,a==="baski"?function(x){return x.baski}:null)},0);
+          YK[a]={kg:Math.round(k),saat:Math.round(k/HZ[a]*10)/10,vardiya:Math.round(k/HZ[a]/12*10)/10}});v.yuk=YK}catch(er){}
       var rol=(typeof rec!=="undefined"&&rec&&rec.rol)||"",yon=typeof isAdmin==="function"&&isAdmin(),h=v?'<div style="color:#667085;font-size:13px">Son güncelleme: '+ts(v.t)+'</div>':'';
       var sofor=rol==="Sevkiyat Sorumlusu",asl=ROLAS[rol];
       var rotaVar=sofor||yon||rol==="Depo Görevlisi";
