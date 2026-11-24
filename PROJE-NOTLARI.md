@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v166**
+**GÜNCEL SÜRÜM: v167**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -453,6 +453,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-24: v165 — Kullanıcı inceleme listesinden 1,2,4,5,6,9'u istedi. (1) yönetim işlemi `mikro-maliyet`: maliyet/hammadde HDPE/LDPE/LLDPE/Kalsit = mikroOzet.ham (son 3 ay ağırlıklı ort., KDV hariç; eski değer hammadde/{id}/mikro/eski'de + denetim). (2) maliyet giderKaynak «ort3»: personel gideri diğer ayların yarısından az olan ay (bordro işlenmemiş, Ekim) hariç son 3 ayın toplam gider ÷ toplam kg (Tem–Eyl ≈ 40 ₺/kg); mikro-maliyet bunu ayar yapar. (4) musterikrm aranacak(): vadesi geçen ≥ 5.000 ₺ (TL hesap) ve 7 gündür görüşülmediyse «💰 Vadesi geçen … — tahsilat için ara»; ödeme hatırlatma şablonu vadesi geçeni yazar. (5) Yönetici Paneli #pnMz (mikroPanoCiz): vadesi geçen alacak (TL hesaplar, ilk 5) + çek vadeleri (verdiğimiz 30 gün, müşteri çekleri 7 gün/geçmiş; 60+ gün geçmiş Teminatta eski kayıt hariç). (9) «📋 Benim işlerim» kısa liste (isKisa; yönetici dışı herkeste varsayılan, localStorage isKisa ile değişir): no, müşteri, kaç gündür bekliyor, formül, ölçüler + aşamaya göre not, tek dokunuş «Bitti →», «Formu aç» kartı tam açar.
 - 2026-11-24: (v165, sürüm değişmedi) (6) Mikro günlük otomatik aktarım: zamanlanmış görev «Mikro günlük aktarım» (trig_01L3grhpVPdCxyj7XCY5SHRy, hafta içi 12:33 İstanbul; kullanıcı öğle arası seçti). Ofis PC'sinde Mikro'dan rapor → Masaüstü\Atılacaklar\gunluk-TARİH → buluta → mag-yonetim/aktar/ham (son halleri; gelmeyen rapor için önceki) → araclar/aktar.py (tarih/mizan otomatik; mizan_YYYY-AA adlı) → push → cari-aktar. Görev oluşturulurken bilgisayar BAĞLANAMADI (onay yok) → kullanıcı ofis PC'sindeki Claude masaüstü uygulamasında görevin ayarından «Require this computer» açmalı; açılmazsa bulutta çalışır ve Mikro'ya ulaşamaz. Düzen: mag-yonetim/araclar/GUNLUK.md.
 - 2026-11-24: v166 — Kullanıcı: ölçü (en), kg, mikron, notların hepsi ve ürün formülü KALIN, diğer değerler normal. .pf2 td.v → 500 ağırlık/çizgisiz; td.v.b (pair kg/mikron, en, formül, notU, notB) → 900. Başlık/etiket (th) kalın kaldı. Kısa listede de en/mikron/not kalın, diğerleri normal.
+- 2026-11-24: v167 — Kullanıcı: Yapay Zekâ › bugünkü iş, SİLİNMİŞ iş emirlerini (MG-0966 vb.) gösteriyordu. Neden: plan (ai/kuyruk) gece ajanının son turundan (mag-pazar-analiz ajan-gece.mjs) — arada silinen/ilerletilen işler kalıyordu. yz.js ac(): 5 aşama canlı okunur (orderByChild asama), kuyrukta yalnız hâlâ o aşamada olan işler kalır, gün yeniden hesaplanır, ajanın görmediği yeni işler sona eklenir, gecGun canlı.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 - (v143) Google yer linklerinden koordinat: sayfayı değil `google.com/search?tbm=map&q=<yer yazısı>` cevabını oku. 1s0x kimliği hassas konum DEĞİL (S2 seviye ~10).

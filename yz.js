@@ -186,6 +186,14 @@
   window.yzRotaTest={koord:koord,sirala:sirala,linkler:linkler,adresBul:adresBul,turUzun:turUzun,bolge:bolge,ROTA:ROTA};
   async function ac(){var d=dlg();d.showModal();var B=d.querySelector("#yzB");B.textContent="Yükleniyor…";
     try{var s=await firebase.database().ref("ai").once("value").catch(function(){return null}),v=(s&&s.val())||null;
+      /* v167: plan gece ajanının son turundan gelir; arada SİLİNEN ya da ilerletilen iş emirleri gösterilmesin, yeni açılanlar sona eklensin (canlı veriyle süzülür) */
+      if(v)try{var AS5=["etiket","ekstruder","baski","kesim","depo"],CA={};
+        await Promise.all(AS5.map(function(a){return firebase.database().ref("isEmirleri").orderByChild("asama").equalTo(a).once("value").then(function(x){var o=x.val()||{};Object.keys(o).forEach(function(k){var j=o[k];if(j&&j.no)CA[j.no]=j})})}));
+        var gun=function(j){var g=Math.max(+j.eklenmeTarihi||0);Object.keys(j.log||{}).forEach(function(k){g=Math.max(g,+((j.log[k]||{}).zaman)||0)});return g?Math.floor((Date.now()-g)/864e5):0};
+        var kg=function(j){return Math.round(Object.keys(j.siparis||{}).reduce(function(t,k){var c=j.siparis[k];return t+(c&&!c._bos?(+c.kg||0):0)},0))};
+        var K=v.kuyruk||{},Y={};AS5.forEach(function(a){var l=(K[a]||[]).filter(function(x){var j=CA[x.no];return j&&j.asama===a&&!j.aktarildi}).map(function(x){var j=CA[x.no];return Object.assign({},x,{gun:gun(j)})});
+          var var_={};l.forEach(function(x){var_[x.no]=1});Object.keys(CA).forEach(function(no){var j=CA[no];if(j.asama===a&&!var_[no])l.push({no:no,musteri:j.musteri||"",urun:j.urunAdi||j.stok||"",kg:kg(j),formul:j.formul||"",renk:j.renk||"",gun:gun(j)})});Y[a]=l});
+        v.kuyruk=Y;v.gecGun=Object.keys(CA).filter(function(no){return gun(CA[no])>10}).sort()}catch(er){}
       var rol=(typeof rec!=="undefined"&&rec&&rec.rol)||"",yon=typeof isAdmin==="function"&&isAdmin(),h=v?'<div style="color:#667085;font-size:13px">Son güncelleme: '+ts(v.t)+'</div>':'';
       var sofor=rol==="Sevkiyat Sorumlusu",asl=ROLAS[rol];
       var rotaVar=sofor||yon||rol==="Depo Görevlisi";
