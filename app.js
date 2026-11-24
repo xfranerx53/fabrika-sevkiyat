@@ -2308,8 +2308,8 @@ function isForm(e,fy,tk){
   ${tr(th(R.std,"BASKI RENGİ :")+k3(R.std,(c,i)=>c?U(c.renk||(i===0?e.renk:"")):"-"))}
   ${tr(th(R.not2,"NOT :")+k3(R.not2,c=>c?esc(nV(c,"notB")):"-",13))}
   </table>
-  <table class="px2 pk2"><colgroup><col style="width:20%">${'<col style="width:26.67%">'.repeat(3)}</colgroup>
-  ${tr(th(R.pk,"PAKET/KG :",{mx:10})+[0,1,2].map(i=>{const c=X(i),v=c&&String(c.paketKg||"").trim();return td(R.pk,v?esc(v):"&nbsp;",{cl:"v",mx:14})}).join(""))}
+  <table class="px2 pk2">${cols}
+  ${tr(th(R.pk,"PAKET/KG :",{mx:10})+[0,1,2].map(i=>{const c=X(i),v=c&&String(c.paketKg||"").trim();return td(R.pk,v?esc(v):"&nbsp;",{cs:2,cl:"v",mx:14})}).join(""))}
   </table>
   </div>`;
 }
