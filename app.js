@@ -2009,7 +2009,7 @@ function isKisa(e){
   const gir=Math.max(+e.eklenmeTarihi||0,...Object.values(e.log||{}).map(v=>+(v&&v.zaman)||0)),gun=gir?Math.floor((Date.now()-gir)/864e5):null;
   const baskiAsama=["baski","kesim","depo"].includes(e.asama);
   const sat=C.map((c,j)=>{const p=[c.urunAdi||e.urunAdi||"",c.en?"en "+c.en:"",c.mikron?c.mikron+" µ":"",c.boy?"boy "+c.boy:"",c.korona||"",c.renk||(j===0?e.renk:"")||""].filter(Boolean).join(" · "),nt=String((baskiAsama?c.notB:c.notU)||"").trim();
-    return `<div style="padding:4px 0;border-top:1px dashed #e5e7eb"><b style="font-size:17px">${C.length>1?(j+1)+") ":""}${c.kg?esc(fmt(c.kg))+" kg":""}</b> ${esc(p)}${c.paketKg?` · paket ${esc(c.paketKg)} kg`:""}${nt&&nt!=="-"?`<div style="color:#b45309;font-weight:700">📝 ${esc(nt)}</div>`:""}</div>`}).join("");
+    return `<div style="padding:4px 0;border-top:1px dashed #e5e7eb;font-weight:400"><b style="font-size:17px">${C.length>1?(j+1)+") ":""}${c.kg?esc(fmt(c.kg))+" kg":""}</b> ${[c.urunAdi||e.urunAdi||"",c.en?"<b>en "+esc(c.en)+"</b>":"",c.mikron?"<b>"+esc(c.mikron)+" µ</b>":"",c.boy?"boy "+esc(c.boy):"",c.korona||"",c.renk||(j===0?e.renk:"")||""].filter(Boolean).map(x=>/^<b>/.test(x)?x:esc(x)).join(" · ")}${c.paketKg?` · paket ${esc(c.paketKg)} kg`:""}${nt&&nt!=="-"?`<div style="color:#b45309;font-weight:800">📝 ${esc(nt)}</div>`:""}</div>`}).join("");
   return `<div class="item sevk-border" style="padding:10px 12px">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap"><div><b style="font-size:19px">${esc(e.no)}</b> <span style="font-size:16px">${esc(e.musteri||"-")}</span></div><div><span class="badge badge-sevk">${esc(ASL[e.asama]||e.asama)}</span>${gun!=null?` <span class="badge" style="background:${gun>=3?"#dc2626":"#64748b"}">${gun===0?"bugün geldi":gun+" gündür bekliyor"}</span>`:""}</div></div>
   ${e.formul?`<div style="margin-top:4px"><b>${esc(e.formul)}</b>${e.stok?` <span style="color:#667085">· ${esc(e.stok)}</span>`:""}</div>`:e.stok?`<div style="margin-top:4px">${esc(e.stok)}</div>`:""}
@@ -2305,8 +2305,8 @@ function isForm(e,fy,tk){
     td=(h,html,o={})=>`<${o.th?"th":"td"}${o.cs?` colspan="${o.cs}"`:""}${o.rs?` rowspan="${o.rs}"`:""}${o.cl?` class="${o.cl}"`:""}><div class="fx"${o.g?` data-g="${o.g}"`:""} data-mx="${o.mx||(o.th?11:16)}" style="height:${H(h)}"><span class="t">${html}</span></div></${o.th?"th":"td"}>`,
     th=(h,t,o={})=>td(h,t,Object.assign({th:1},o.mx?{}:{g:"lb"},o)),
     cols='<colgroup><col style="width:20%">'+'<col style="width:21%"><col style="width:6%">'.repeat(3)+'</colgroup>',
-    k3=(h,fn,mx)=>[0,1,2].map(i=>td(h,fn(X(i),i),{cs:2,cl:"v",mx})).join(""),
-    pair=(h,f,u)=>[0,1,2].map(i=>{const c=X(i),v=c&&c[f]?(f==="kg"?fmt(c.kg):c[f]):"";return td(h,(v?esc(v):"-")+(f==="kg"?kutu(i):""),{cl:"v"})+td(h,u,{cl:"u",mx:8})}).join(""),
+    k3=(h,fn,mx,b)=>[0,1,2].map(i=>td(h,fn(X(i),i),{cs:2,cl:"v"+(b?" b":""),mx})).join(""),
+    pair=(h,f,u)=>[0,1,2].map(i=>{const c=X(i),v=c&&c[f]?(f==="kg"?fmt(c.kg):c[f]):"";return td(h,(v?esc(v):"-")+(f==="kg"?kutu(i):""),{cl:"v b"})+td(h,u,{cl:"u",mx:8})}).join(""),
     tr=r=>`<tr>${r}</tr>`,
     R=ISF_H;
   return `<div class="pf pf2">
@@ -2320,16 +2320,16 @@ function isForm(e,fy,tk){
   </table>
   <table class="px2">${cols}
   ${tr(th(R.sip,"SİPARİŞ<br>MİKTARI :")+pair(R.sip,"kg","Kg"))}
-  ${tr(th(R.frm,"ÜRÜN<br>FORMÜLÜ :")+td(R.frm,U(e.formul),{cs:6,cl:"v",mx:17}))}
-  ${tr(th(R.std,"EN :")+k3(R.std,c=>c&&c.en?esc(c.en):"-"))}
+  ${tr(th(R.frm,"ÜRÜN<br>FORMÜLÜ :")+td(R.frm,U(e.formul),{cs:6,cl:"v b",mx:17}))}
+  ${tr(th(R.std,"EN :")+k3(R.std,c=>c&&c.en?esc(c.en):"-",null,1))}
   ${tr(th(R.std,"MİKRON :")+pair(R.std,"mikron","µ"))}
   ${tr(th(R.std,"KORONA :")+k3(R.std,c=>c&&c.korona?esc(c.korona):"-"))}
-  ${tr(th(R.not1,"NOT :<br>ETİKET :")+k3(R.not1,c=>c?esc(nV(c,"notU")):"-",13))}
+  ${tr(th(R.not1,"NOT :<br>ETİKET :")+k3(R.not1,c=>c?esc(nV(c,"notU")):"-",13,1))}
   ${tr(td(R.hd,"BASKI - KESİM İŞ TAKİP FORMU",{cs:7,cl:"tt2",mx:15}))}
   ${tr(th(R.std,"ÜRÜN ADI :")+k3(R.std,c=>c?U(c.urunAdi||(c._bos?"":e.urunAdi)):"-"))}
   ${tr(th(R.std,"BOY/KAZAN :")+k3(R.std,c=>c&&c.boy?esc(c.boy):"-"))}
   ${tr(th(R.std,"BASKI RENGİ :")+k3(R.std,(c,i)=>c?U(c.renk||(i===0?e.renk:"")):"-"))}
-  ${tr(th(R.not2,"NOT :")+k3(R.not2,c=>c?esc(nV(c,"notB")):"-",13))}
+  ${tr(th(R.not2,"NOT :")+k3(R.not2,c=>c?esc(nV(c,"notB")):"-",13,1))}
   </table>
   <table class="px2 pk2">${cols}
   ${tr(th(R.pk,"PAKET/KG :",{mx:10})+[0,1,2].map(i=>{const c=X(i),v=c&&String(c.paketKg||"").trim();return td(R.pk,v?esc(v):"&nbsp;",{cs:2,cl:"v",mx:14})}).join(""))}

@@ -186,6 +186,9 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .pf2 th .fx{justify-content:flex-start}.pf2 th .fx>.t{text-align:left;font-weight:900;white-space:nowrap}
 .pf2 td.u .fx{padding:0 .4mm}.pf2 td.u .fx>.t{text-align:left;font-weight:700}
 .pf2 td.tt2 .fx>.t{font-weight:900}
+/* v166: yalnız ölçü (en), kg, mikron, notlar ve ürün formülü kalın; diğer değerler normal */
+.pf2 td.v .fx>.t{font-weight:500;-webkit-text-stroke:0}
+.pf2 td.v.b .fx>.t{font-weight:900;-webkit-text-stroke:.25px #000}
 .pf2 small{font-size:.6em;font-weight:700}
 .pf2 .ftk{width:5mm;height:5mm;font-size:11pt;line-height:4mm;border-width:.6mm}
 }
