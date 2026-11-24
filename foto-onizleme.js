@@ -20,7 +20,7 @@ try{
     var l=document.querySelectorAll(".item img");
     for(var i=0;i<l.length;i++){
       var g=l[i];
-      if(g.__fv||g.classList.contains("th"))continue;
+      if(g.__fv||g.classList.contains("th")||g.closest(".isf,.pf2,#prn"))continue; /* v163: iş emri formundaki logo fotoğraf değildir */
       g.__fv=1;g.style.cursor="pointer";
       g.addEventListener("click",tikla);
       var bt=document.createElement("button");

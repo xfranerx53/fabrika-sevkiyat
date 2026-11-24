@@ -114,7 +114,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #fvBox .fvb a,#fvBox .fvb button{padding:13px 22px;border-radius:10px;border:0;font-size:18px;font-weight:800;color:#fff;text-decoration:none;cursor:pointer}
 #fvDl{background:#16a34a}#fvCl{background:#64748b}
 #fvBox small{color:#cbd5e1;margin-top:10px;font-size:14px;text-align:center}
-.item img:not(.th){cursor:zoom-in}
+.item img:not(.th):not(.lgi){cursor:zoom-in}
 .qrBox{background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden}
 .qrBox svg{display:block;width:100%;height:100%}
 :is(#prn,.isf) .snw{display:flex;align-items:flex-end;gap:calc(2.5mm*var(--z))}
@@ -174,7 +174,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 #prn .prow>.pf2{flex:0 0 138.5mm;width:138.5mm;height:200mm;padding:0;margin:0 auto;align-self:flex-start;overflow:hidden}
 .isf .pf2{padding:2mm;box-sizing:content-box}
 .pf2 .hdr2{display:flex;justify-content:space-between;align-items:center;gap:2mm;border:.5mm solid #000;border-bottom:0;padding:0 2mm;box-sizing:border-box;overflow:hidden}
-.pf2 .lgi{height:72%;max-width:66%;object-fit:contain;object-position:left center;display:block}
+.pf2 .lgi,.item .pf2 img.lgi{height:72%!important;width:auto!important;max-width:66%!important;max-height:none!important;object-fit:contain;object-position:left center;display:block;background:transparent!important;border-radius:0!important;margin:0!important;cursor:default!important}
 .pf2 .snw{display:flex;align-items:center;gap:2mm}
 .pf2 .sn{text-align:right;line-height:1.05;white-space:nowrap}.pf2 .sn small{display:block;font-size:8pt;font-weight:900}.pf2 .sn b{font-size:19pt;font-weight:900}
 .pf2 .pq{width:13mm;height:13mm;margin:0}
