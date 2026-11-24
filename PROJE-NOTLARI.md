@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v163**
+**GÜNCEL SÜRÜM: v164**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -449,6 +449,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-24: v161 — Muhasebe Claude'u eksikleri getirdi: bordro icmali Mikro'da yok → 770.01 muavininden Oca–Eyl 2026 brüt/SGK/işsizlik (mikroOzet.bordro, Giderler sekmesi); Kas–Ara 2025 önceki mali yıl DB'sinde, Ekim bordrosu işlenmemiş (yeni Ekim mizanında da 770.01 yok). kapatilmamis_siparisler (25 satır, %96+ teslim) → sip[].kapat, Siparişler sekmesinde ayrı. «TL karşılığı» yaşlandırma yine döviz ayrı satırlı geldi (değişmedi); doviz_bakiyeleri ve kurlu satış kalemleri gelmedi.
 - 2026-11-24: v162 — doviz_bakiyeleri.xlsx geldi (103 satır; Mikro cari bazında değerlemeli rapor vermiyor, TL = döviz bakiye × 24.11.2026 Mikro döviz alış kuru USD 50,5116 · EUR 55,4656 · GBP 66,1497). aktar.py KUR'u bu dosyadan alır; dövizli carilerde TL karşılığı = TL bakiye + döviz × kur. Teyit edilmesi gereken: Memişler Çay ≈5,7 M, Sar Lojistik ≈4,6 M, ALG ≈2,9 M, Konya Kağıt ≈2,5 M (12 ayda satış yok/eski adat).
 - 2026-11-24: v163 — Kullanıcı (video): iş emri kartında logo siyah kutu olarak görünüyor, üstüne «🔍 Büyüt / İndir» düğmesi biniyordu. Neden: foto-onizleme.js her «.item img»yi fotoğraf sayıp düğme ekliyor, .item img CSS'i koyu zemin (#0f172a) veriyordu. Düzeltme: .isf/.pf2/#prn içindeki resimler atlanır; .pf2 .lgi stilleri !important ile sabit (saydam zemin, boyut, imleç). Gerçek liste ortamında (fake DB, .item içinde) ekran görüntüsüyle doğrulandı.
+- 2026-11-24: v164 — Kullanıcı: kg/en'i boş sütuna (3. ölçü) yazılan NOT kaydedilmiyordu (kayıt yalnız kg>0||en olan sütunları alıyordu). Artık kg/en yok ama not/ürün adı/renk/paket vb. yazılmış sütun siparis'e _bos:1 ile, KENDİ konumunda kaydedilir (arada boş sütun varsa {_bos:1} yer tutucu). icols() _bos'ları dışlar (etiket, üretim, depo, tik, kg toplamı etkilenmez); icolsTum() yalnız formda (isForm, iAc). etiket.js cols da _bos'u dışlar. Fake DB ile kaydet→yeniden aç doğrulandı.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 - (v143) Google yer linklerinden koordinat: sayfayı değil `google.com/search?tbm=map&q=<yer yazısı>` cevabını oku. 1s0x kimliği hassas konum DEĞİL (S2 seviye ~10).

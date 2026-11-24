@@ -1919,7 +1919,8 @@ const URA=["ekstruder","baski","kesim","depo","bitti"]; /* Üretim bölümünde 
 const AS=[["etiket","🏷️ ETİKET"],["ekstruder","🏭 EKSTRUDER"],["baski","🖨️ BASKI"],["kesim","✂️ KESİM"],["depo","📦 DEPO"],["bitti","✅ BİTEN"]],ASL=Object.fromEntries(AS);
 const asOrd=e=>e&&e.baskiVar?["etiket","ekstruder","baski","kesim","depo","bitti"]:["etiket","ekstruder","kesim","depo","bitti"];
 const bugun=()=>trIso(Date.now());
-const icols=e=>Object.values(e.siparis||{}).filter(Boolean);
+const icols=e=>Object.values(e.siparis||{}).filter(c=>c&&!c._bos); /* v164: _bos = kg/en'i olmayan, yalnız not vb. yazılmış sütun (yalnız formda görünür) */
+const icolsTum=e=>Object.values(e.siparis||{}).filter(Boolean);
 /* ---- Hareket geçmişi: isHareket/<isEmriId>/<pushId> (sadece eklenir, değiştirilemez) ---- */
 const HT={olustur:"🆕 Oluşturdu",ileri:"✅ İlerletti",geri:"↩️ Geri aldı",etiketsiz:"⚠️ Etiketsiz ilerletti",etiket:"🏷️ Etiket bastı",duzenle:"✏️ Düzenledi",aktar:"📦 Hazır ürünlere aktardı"};
 function hrkObj(o){return Object.assign({kim:ad(),uid:user.uid,zaman:firebase.database.ServerValue.TIMESTAMP},o)}
@@ -2272,9 +2273,9 @@ function isFormKutu(u){const e=isFormBul(u);if(!e)return"";let f="";try{f=`<div 
 function isForm(e,fy,tk){
   /* v156: Excel'deki MAG AMBALAJ formu düzeni — çerçeve SABİT (her satırın yüksekliği mm olarak sabit),
      yazı her hücrede kutuya sığacak şekilde büyür/küçülür (isfFit). Orijinal logo sol üstte. */
-  const C=icols(e),X=i=>C[i]||null,U=v=>esc(v||"-"),
-    tkOn=!!tk&&TIKAS.includes(e.asama)&&C.length>1,tkT=(e.tik&&e.tik[e.asama])||{},tkOk=tkOn&&asamaYap(e.asama),
-    kutu=i=>{if(!tkOn||!X(i))return"";const t=tkT[i];return `<button type="button" class="ftk${t?" on":""}" ${tkOk?`data-a="tik" data-i="${i}" data-id="${esc(e.id)}"`:"disabled"} title="${t?esc((t.kim||"")+" ✓"):"Bitti ise tik koy"}">${t?"✓":""}</button>`},
+  const C=icolsTum(e),X=i=>C[i]||null,U=v=>esc(v||"-"),
+    tkOn=!!tk&&TIKAS.includes(e.asama)&&icols(e).length>1,tkT=(e.tik&&e.tik[e.asama])||{},tkOk=tkOn&&asamaYap(e.asama),
+    kutu=i=>{if(!tkOn||!X(i)||X(i)._bos)return"";const t=tkT[i];return `<button type="button" class="ftk${t?" on":""}" ${tkOk?`data-a="tik" data-i="${i}" data-id="${esc(e.id)}"`:"disabled"} title="${t?esc((t.kim||"")+" ✓"):"Bitti ise tik koy"}">${t?"✓":""}</button>`},
     fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ${PB[e.paraBirimi]||"₺"}${/^F/i.test(e.fx||"")?` <small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:""}`:"",
     genN=f=>notL(e[f]).join(" · "),nV=(c,f)=>{const v=String((c&&c[f])??"").trim();return v?v:genN(f)?genN(f):(c&&c[f]==="")?"":"-"},
     K=ISF_K,H=h=>(h*K).toFixed(2)+"mm",
@@ -2303,7 +2304,7 @@ function isForm(e,fy,tk){
   ${tr(th(R.std,"KORONA :")+k3(R.std,c=>c&&c.korona?esc(c.korona):"-"))}
   ${tr(th(R.not1,"NOT :<br>ETİKET :")+k3(R.not1,c=>c?esc(nV(c,"notU")):"-",13))}
   ${tr(td(R.hd,"BASKI - KESİM İŞ TAKİP FORMU",{cs:7,cl:"tt2",mx:15}))}
-  ${tr(th(R.std,"ÜRÜN ADI :")+k3(R.std,c=>c?U(c.urunAdi||e.urunAdi):"-"))}
+  ${tr(th(R.std,"ÜRÜN ADI :")+k3(R.std,c=>c?U(c.urunAdi||(c._bos?"":e.urunAdi)):"-"))}
   ${tr(th(R.std,"BOY/KAZAN :")+k3(R.std,c=>c&&c.boy?esc(c.boy):"-"))}
   ${tr(th(R.std,"BASKI RENGİ :")+k3(R.std,(c,i)=>c?U(c.renk||(i===0?e.renk:"")):"-"))}
   ${tr(th(R.not2,"NOT :")+k3(R.not2,c=>c?esc(nV(c,"notB")):"-",13))}
@@ -2339,7 +2340,7 @@ function isYazdir(e){
 const canIsAc=()=>!!rec&&(rec.yonetici===true||islemYap("isAc")); /* adım 1: tablodan okunur, sonuç eskisiyle aynı */
 const PB={TRY:"₺",USD:"$",EUR:"€"};
 function iAc(e){
-  iEdit=e||null;const v=e||{},C=e?icols(e):[];$("iT").textContent=e?"İş emrini düzenle":"Yeni iş emri";$("iGet").style.display=e?"none":"";$("iE").textContent="";
+  iEdit=e||null;const v=e||{},C=e?icolsTum(e):[];$("iT").textContent=e?"İş emrini düzenle":"Yeni iş emri";$("iGet").style.display=e?"none":"";$("iE").textContent="";
   [["iNo","no"],["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"]].forEach(([i,f])=>$(i).value=v[f]||"");
   if(!e)$("iNo").value=iNext();iDL();
   $("iTr").value=v.spTarih||bugun();$("iTermin").value=v.termin||"";$("iBv").checked=!!v.baskiVar;
@@ -2360,10 +2361,15 @@ $("iOk").onclick=async()=>{
   const err=m=>{$("iE").textContent=m},g=id=>$(id).value.trim(),no=g("iNo").toUpperCase();
   if(!no)return err("Seri no gerekli (örn: MG-0945).");
   if(!g("iMu"))return err("Müşteri adı gerekli.");
-  const S=[];[0,1,2].forEach(n=>{const c={};document.querySelectorAll(`#iCols [data-c="${n}"]`).forEach(i=>c[i.dataset.f]=i.value.trim());c.kg=parseFloat(c.kg)||0;if(c.kg>0||c.en)S.push(c)});
+  const S=[],SL=[];[0,1,2].forEach(n=>{const c={};document.querySelectorAll(`#iCols [data-c="${n}"]`).forEach(i=>c[i.dataset.f]=i.value.trim());c.kg=parseFloat(c.kg)||0;
+    if(c.kg>0||c.en){S.push(c);SL.push(c)}
+    /* v164: kg/en yok ama not, ürün adı vb. yazılmışsa KAYBOLMASIN → formda kendi sütununda görünür (etikete/üretime ebat olarak girmez) */
+    else if(Object.keys(c).some(k=>k!=="kg"&&c[k]&&c[k]!=="-")){c._bos=1;SL.push(c)}else SL.push(null)});
+  while(SL.length&&!SL[SL.length-1])SL.pop();
+  const SK=SL.map((c,i)=>c||(SL.slice(i+1).some(x=>x&&x._bos)?{_bos:1}:null)).filter(Boolean);
   if(!S.length)return err("En az bir ebat için kg veya en girin.");
   {const vm=(!iEdit||iEdit.no!==no)?isVarMesaj(no,iEdit&&iEdit.id):"";if(vm)return err(vm)}
-  const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:"",baskiVar:$("iBv").checked,urunAdi:(S.find(c=>c.urunAdi)||{}).urunAdi||"",renk:(S.find(c=>c.renk)||{}).renk||"",notB:"",siparis:S};
+  const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:"",baskiVar:$("iBv").checked,urunAdi:(S.find(c=>c.urunAdi)||{}).urunAdi||"",renk:(S.find(c=>c.renk)||{}).renk||"",notB:"",siparis:SK};
   {const tm=g("iTermin");if(iEdit?tm!==(iEdit.termin||""):tm)d.termin=tm} /* termin yalnızca değiştiyse yazılır (eski kurallarla uyum) */
   if(islemYap("fiyat")){const fy=parseFloat(g("iFy").replace(",","."));d.fiyat=fy>0?fy:null;d.kdvDahil=!(/^F/i.test(g("iFx"))&&$("iKd").checked);d.paraBirimi=$("iPb").value}
   $("iOk").disabled=true;let woMsg=null;

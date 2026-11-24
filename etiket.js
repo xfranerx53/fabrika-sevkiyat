@@ -21,7 +21,7 @@ var LG_A="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOIAAAB/CAAAAADXg0GWAAAB
   var T=function(s){return String(s==null?"":s).trim().toLocaleUpperCase("tr-TR")};
   var X=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
   var N=function(n){return Number(n||0).toLocaleString("tr-TR",{maximumFractionDigits:3})};
-  var cols=function(e){return Object.values((e&&e.siparis)||{}).filter(Boolean)};
+  var cols=function(e){return Object.values((e&&e.siparis)||{}).filter(function(c){return c&&!c._bos})}; /* v164: _bos (yalnız notlu) sütun etikete girmez */
   var nCol=function(e){return Math.max(cols(e).length,1)};
   var live=function(){return(window.isE||[]).find(function(x){return cur&&x.id===cur.id})||cur};
 
