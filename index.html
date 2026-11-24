@@ -16,9 +16,9 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="hatakayit.js?v=155"></script>
-<link rel="stylesheet" href="style.css?v=155">
-<script src="yazi.js?v=155"></script>
+<script src="hatakayit.js?v=156"></script>
+<link rel="stylesheet" href="style.css?v=156">
+<script src="yazi.js?v=156"></script>
 </head>
 <body>
 <input type="file" id="irsF" accept="image/*" capture="environment" class="hide">
@@ -643,7 +643,7 @@
    <tr><th class="ihd" colspan="4">BASKI - KESİM İŞ TAKİP FORMU <label class="chip"><input type="checkbox" id="iBv">Baskılı iş (matbaaya gider)</label></th></tr>
    
    <tr><th>ÜRÜN ADI :</th><td><input data-c="0" data-f="urunAdi" list="dl_urunAdi" placeholder="ATLET"></td><td><input data-c="1" data-f="urunAdi" list="dl_urunAdi" placeholder="Ürün adı"></td><td><input data-c="2" data-f="urunAdi" list="dl_urunAdi" placeholder="Ürün adı"></td></tr>
-   <tr><th>BASKI RENGİ :</th><td colspan="3"><input id="iRenk" placeholder="Baskı rengi / klişe"></td></tr>
+   <tr><th>BASKI RENGİ :</th><td><input data-c="0" data-f="renk" list="dl_renk" placeholder="1. baskı rengi"></td><td><input data-c="1" data-f="renk" list="dl_renk" placeholder="2. baskı rengi"></td><td><input data-c="2" data-f="renk" list="dl_renk" placeholder="3. baskı rengi"></td></tr>
    <tr><th>BOY / KAZAN :</th><td><input data-c="0" data-f="boy" list="dl_boy" placeholder="Boy (cm)"></td><td><input data-c="1" data-f="boy" list="dl_boy" placeholder="Boy (cm)"></td><td><input data-c="2" data-f="boy" list="dl_boy" placeholder="Boy (cm)"></td></tr>
    <tr><th>NOT :</th><td><input data-c="0" data-f="notB" maxlength="200" value="-" placeholder="1. ölçü notu"></td><td><input data-c="1" data-f="notB" maxlength="200" value="-" placeholder="2. ölçü notu"></td><td><input data-c="2" data-f="notB" maxlength="200" value="-" placeholder="3. ölçü notu"></td></tr>
      <tr><th>PAKET / KG :</th><td><input data-c="0" data-f="paketKg" maxlength="40" inputmode="decimal" placeholder="1. paket kg"></td><td><input data-c="1" data-f="paketKg" maxlength="40" inputmode="decimal" placeholder="2. paket kg"></td><td><input data-c="2" data-f="paketKg" maxlength="40" inputmode="decimal" placeholder="3. paket kg"></td></tr>
@@ -742,18 +742,19 @@
   <input id="qtM" placeholder="Örn: MG-0945" autocomplete="off" autocapitalize="characters" enterkeyhint="go">
   <div style="display:flex;gap:8px;margin-top:8px"><button class="btn b6" id="qtX" type="button">Vazgeç</button><button class="btn b3" id="qtOk" type="button">Aç</button></div>
 </dialog>
-<script src="xlsx-yaz.js?v=155"></script>
-<script src="raporlar.js?v=155"></script>
+<script src="xlsx-yaz.js?v=156"></script>
+<script src="raporlar.js?v=156"></script>
 
 <div id="toast"></div>
 
-<script src="app.js?v=155"></script>
+<script src="logo.js?v=156"></script>
+<script src="app.js?v=156"></script>
 <!-- FOTO BÜYÜTME + İNDİRME (bağımsız blok: ana koddan ayrı, hata olsa bile uygulamayı etkilemez) -->
 <div id="fvBox"><img id="fvImg" alt="Fotoğraf"><div class="fvb"><a id="fvDl" download="foto.jpg" href="#">⬇️ İndir</a><button id="fvCl" type="button">✖ Kapat</button></div><small>İndirme çalışmazsa fotoğrafa uzun basıp "Kaydet" seçin.</small></div>
-<script src="foto-onizleme.js?v=155"></script>
-<script src="saat.js?v=155"></script>
+<script src="foto-onizleme.js?v=156"></script>
+<script src="saat.js?v=156"></script>
 <div id="prn"></div>
-<script src="diyalog.js?v=155"></script>
+<script src="diyalog.js?v=156"></script>
 <!-- ===================== ETİKET AŞAMASI (Godex / etiket yazıcı) ===================== -->
 <dialog id="lbDlg">
   <h3 id="lbT" style="margin-bottom:4px">🏷️ Etiket hazırla</h3>
@@ -784,8 +785,8 @@
   <button class="btn b6" id="lbWX" type="button">Vazgeç</button>
 </dialog>
 <div id="lprn"></div>
-<script src="qr.js?v=155"></script>
-<script src="etiket.js?v=155"></script>
+<script src="qr.js?v=156"></script>
+<script src="etiket.js?v=156"></script>
 <dialog id="gDlg" style="width:min(520px,95vw);max-height:90vh;overflow:auto">
   <h3 style="margin-bottom:4px">📋 Getir — tamamlanan iş emirleri</h3>
   <p style="font-size:13px;color:#64748b;margin-bottom:6px">Seçtiğiniz iş emrinin bilgileri yeni iş emrine kopyalanır (seri no ve tarih yeniden verilir).</p>
@@ -795,30 +796,30 @@
   <div id="gtL"></div>
   <button class="btn b6" id="gX" type="button" style="margin-top:8px">Kapat</button>
 </dialog>
-<script src="adrsec.js?v=155"></script>
-<script src="talimat.js?v=155"></script>
-<script src="tahsilat.js?v=155"></script>
-<script src="bildirim.js?v=155"></script>
-<script src="surum.js?v=155"></script>
-<script src="maliyet.js?v=155"></script>
-<script src="granul.js?v=155"></script>
-<script src="arama.js?v=155"></script>
-<script src="israpor.js?v=155"></script>
-<script src="fotookut.js?v=155"></script>
-<script src="sesasistan.js?v=155"></script>
-<script src="pano.js?v=155"></script>
-<script src="stokaktar.js?v=155"></script>
-<script src="baglanti.js?v=155"></script>
-<script src="hesap.js?v=155"></script>
-<script src="yz.js?v=155"></script>
-<script src="adrtam.js?v=155"></script>
-<script src="yzmesaj.js?v=155"></script>
-<script src="kurulum.js?v=155"></script>
-<script src="sevkmesaj.js?v=155"></script>
-<script src="musteri.js?v=155"></script>
-<script src="musterikrm.js?v=155"></script>
-<script src="fire.js?v=155"></script>
-<script src="yzcek.js?v=155"></script>
-<script src="sw-kayit.js?v=155"></script>
+<script src="adrsec.js?v=156"></script>
+<script src="talimat.js?v=156"></script>
+<script src="tahsilat.js?v=156"></script>
+<script src="bildirim.js?v=156"></script>
+<script src="surum.js?v=156"></script>
+<script src="maliyet.js?v=156"></script>
+<script src="granul.js?v=156"></script>
+<script src="arama.js?v=156"></script>
+<script src="israpor.js?v=156"></script>
+<script src="fotookut.js?v=156"></script>
+<script src="sesasistan.js?v=156"></script>
+<script src="pano.js?v=156"></script>
+<script src="stokaktar.js?v=156"></script>
+<script src="baglanti.js?v=156"></script>
+<script src="hesap.js?v=156"></script>
+<script src="yz.js?v=156"></script>
+<script src="adrtam.js?v=156"></script>
+<script src="yzmesaj.js?v=156"></script>
+<script src="kurulum.js?v=156"></script>
+<script src="sevkmesaj.js?v=156"></script>
+<script src="musteri.js?v=156"></script>
+<script src="musterikrm.js?v=156"></script>
+<script src="fire.js?v=156"></script>
+<script src="yzcek.js?v=156"></script>
+<script src="sw-kayit.js?v=156"></script>
 </body>
 </html>

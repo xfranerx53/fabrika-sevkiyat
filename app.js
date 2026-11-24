@@ -1962,7 +1962,9 @@ isfSigdir()}
 var isfRO=window.ResizeObserver?new ResizeObserver(es=>{if(es.some(en=>String(Math.round(en.contentRect.width))!==en.target.dataset.w))isfSigdir()}):null;
 function isfSigdir(){
   document.querySelectorAll(".isf:not(.dp)").forEach(b=>{const f=b.firstElementChild;if(!f)return;if(isfRO&&!b._ro){b._ro=1;isfRO.observe(b)}const w=b.clientWidth;if(w<=0)return;b.dataset.w=w;
-    const s=Math.min(w/560,1.15);f.style.transform="scale("+s+")";f.style.marginLeft=Math.max(0,(w-560*s)/2)+"px";b.style.height=Math.ceil(f.offsetHeight*s)+2+"px"})}
+    if(f.classList.contains("pf2")&&!f._fit)f._fit=isfFit(f);
+    const W=f.offsetWidth||560,s=Math.min(w/W,1.15);f.style.transform="scale("+s+")";f.style.marginLeft=Math.max(0,(w-W*s)/2)+"px";b.style.height=Math.ceil(f.offsetHeight*s)+2+"px"});
+  document.querySelectorAll(".isf.dp>.pf2").forEach(f=>{if(!f._fit)f._fit=isfFit(f)})}
 window.addEventListener("resize",isfSigdir);
 /* Termin: >0 gecikti, 0 bugün, <0 kalan gün; bitmiş/aktarılmış işte null */
 const terminGun=e=>{if(!e||!e.termin||e.asama==="bitti"||e.aktarildi)return null;return Math.round((Date.parse(bugun()+"T12:00:00+03:00")-Date.parse(e.termin+"T12:00:00+03:00"))/864e5)};
@@ -2233,8 +2235,8 @@ function iDL(){
   const uniq=a=>{const s=new Set(),o=[];a.forEach(v=>{v=String(v==null?"":v).trim();const k=v.toLowerCase();if(v&&!s.has(k)){s.add(k);o.push(v)}});return o};
   const mk=(f,a)=>`<datalist id="dl_${f}">${a.map(v=>`<option value="${esc(v)}">`).join("")}</datalist>`;
   const top=["musteri","isAdi","stok","fx","formul","urunAdi","renk"],col=["en","mikron","korona","boy"];
-  $("iDL").innerHTML=top.map(f=>mk(f,uniq(isE.flatMap(e=>f==="urunAdi"?[...icols(e).map(c=>c.urunAdi),e.urunAdi]:[e[f]])))).concat(col.map(f=>mk(f,uniq(isE.flatMap(e=>icols(e).map(c=>c[f])))))).join("");
-  [["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"],["iRenk","renk"]].forEach(([i,f])=>$(i).setAttribute("list","dl_"+f));
+  $("iDL").innerHTML=top.map(f=>mk(f,uniq(isE.flatMap(e=>(f==="urunAdi"||f==="renk")?[...icols(e).map(c=>c[f]),e[f]]:[e[f]])))).concat(col.map(f=>mk(f,uniq(isE.flatMap(e=>icols(e).map(c=>c[f])))))).join("");
+  [["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"]].forEach(([i,f])=>$(i).setAttribute("list","dl_"+f));
 }
 /* ===== Notlar: madde madde ===== */
 const notL=t=>String(t==null?"":t).split("\n").map(x=>x.trim().replace(/^•\s*/,"")).filter(Boolean);
@@ -2268,55 +2270,68 @@ function isLogHtml(e){return Object.entries(e.log||{}).map(([k,v])=>`<div class=
 function isFormKutu(u){const e=isFormBul(u);if(!e)return"";let f="";try{f=`<div class="isf">${isForm(e,islemYap("fiyat"))}</div>`}catch(er){return""}return f+isLogHtml(e)}
 /* ===== YAZDIRMA: A4 yatay, yan yana 2 adet üretim iş takip formu ===== */
 function isForm(e,fy,tk){
-  const C=icols(e),L=e.log||{},bos=n=>{let r="";for(let i=0;i<n;i++)r+="<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>";return r};
-  const satir=(k,ad)=>{if(k==="depo"){const R=(C.length?C:[{}]).map((c,i)=>`<tr><th>${esc([i+1,c.en,c.boy].filter(x=>x!==undefined&&x!==null&&String(x).trim()!=="").join(" - "))}</th><td></td><td></td></tr>`).join("");return `<tr><th>DEPO</th><td colspan="3" style="padding:0"><table class="pd"><tr><th>Ebat</th><th>Çıkan Kg</th><th>Paket Sayısı</th></tr>${R}</table></td></tr>`}const g=L[k]||{};return `<tr><th>${ad}</th><td></td><td></td><td></td></tr>`};
-  const st=[["ekstruder","EKSTRUDER"]].concat(e.baskiVar?[["baski","BASKI"]]:[]).concat([["kesim","KESİM"],["depo","DEPO"]]);
-  const cr=C.map((c,i)=>`<tr><td>${i+1}</td><td><b>${esc(fmt(c.kg))}</b></td><td>${esc(c.en||"")}</td><td>${esc(c.mikron||"")}</td><td>${esc(c.korona||"")}</td><td>${esc(c.boy||"")}</td></tr>`).join("");
-  const U=v=>esc(v||"-"),X=i=>C[i]||null,k3=(fn,cl)=>[0,1,2].map(i=>`<td colspan="2" class="v">${fn(X(i),i)}</td>`).join(""),
+  /* v156: Excel'deki MAG AMBALAJ formu düzeni — çerçeve SABİT (her satırın yüksekliği mm olarak sabit),
+     yazı her hücrede kutuya sığacak şekilde büyür/küçülür (isfFit). Orijinal logo sol üstte. */
+  const C=icols(e),X=i=>C[i]||null,U=v=>esc(v||"-"),
     tkOn=!!tk&&TIKAS.includes(e.asama)&&C.length>1,tkT=(e.tik&&e.tik[e.asama])||{},tkOk=tkOn&&asamaYap(e.asama),
     kutu=i=>{if(!tkOn||!X(i))return"";const t=tkT[i];return `<button type="button" class="ftk${t?" on":""}" ${tkOk?`data-a="tik" data-i="${i}" data-id="${esc(e.id)}"`:"disabled"} title="${t?esc((t.kim||"")+" ✓"):"Bitti ise tik koy"}">${t?"✓":""}</button>`},
-    pair=(f,u)=>[0,1,2].map(i=>{const c=X(i),v=c&&c[f]?(f==="kg"?fmt(c.kg):c[f]):"";return `<td class="v">${v?esc(v):"-"}${f==="kg"?kutu(i):""}</td><td class="u">${u}</td>`}).join(""),
-    fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ${PB[e.paraBirimi]||"₺"} ${/^F/i.test(e.fx||"")?`<small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:""}`:"",
-    /* v154: ortak not yok — her ölçünün kendi notu; boşsa "-" (kullanıcı "-"yi silerse boş kalır). Eski kayıtların genel notu her ölçüde gösterilir */
+    fyT=fy&&e.fiyat>0?`${esc(e.fiyat.toLocaleString("tr-TR",{maximumFractionDigits:4}))} ${PB[e.paraBirimi]||"₺"}${/^F/i.test(e.fx||"")?` <small>${e.kdvDahil?"KDV DAHİL":"+ KDV"}</small>`:""}`:"",
     genN=f=>notL(e[f]).join(" · "),nV=(c,f)=>{const v=String((c&&c[f])??"").trim();return v?v:genN(f)?genN(f):(c&&c[f]==="")?"":"-"},
-    notSat=(f,st)=>`<tr><th>NOT :</th>${[0,1,2].map(i=>{const c=X(i);return `<td colspan="2" class="v n"${st}>${c?esc(nV(c,f)):"-"}</td>`}).join("")}</tr>`,
-    logo='<svg viewBox="0 0 60 30"><ellipse cx="30" cy="15" rx="28" ry="12" fill="none" stroke="#000" stroke-width="3"/><path d="M10 19L24 6L30 17L36 6L50 19" fill="none" stroke="#000" stroke-width="3.5"/></svg>';
-  return `<div class="pf">
-  <div class="hdr"><div class="lg">${logo}mag ambalaj</div><div class="snw"><div class="sn"><small>SERİ NO:</small><b>${esc(e.no||"")}</b></div>${e.no?`<div class="pq">${isQrSvg(e.no,1)}</div>`:""}</div></div>
-  <div class="tt">ÜRETİM İŞ TAKİP FORMU</div>
-  <table class="px top"><colgroup><col style="width:20%"><col style="width:42%"><col style="width:16%"><col style="width:22%"></colgroup>
-  <tr><th>MÜŞTERİ :</th><td class="v">${U(e.musteri)}</td><th>SP.<br>TARİHİ:</th><td class="v" style="white-space:nowrap">${esc(trDate(e.spTarih))}</td></tr>
-  <tr><th>İŞİN ADI :</th><td class="v">${U(e.isAdi)}</td>${fy?`<th>F/X :</th><td class="v">${U(e.fx)}</td>`:`<th></th><td class="v"></td>`}</tr>
-  ${fyT?`<tr class="sm"><th rowspan="2">STOK ADI :</th><td class="v" rowspan="2">${U(e.stok)}</td><th>FİYAT :</th><td class="v">${fyT}</td></tr><tr class="sm"><th>KLİŞE :</th><td class="v">-</td></tr>`:`<tr class="sm"><th>STOK ADI :</th><td class="v">${U(e.stok)}</td><th>SP. NO:</th><td class="v">-</td></tr>`}
+    K=ISF_K,H=h=>(h*K).toFixed(2)+"mm",
+    /* hücre: içerik sabit yükseklikli kutuda; mx = en büyük yazı (pt) */
+    td=(h,html,o={})=>`<${o.th?"th":"td"}${o.cs?` colspan="${o.cs}"`:""}${o.rs?` rowspan="${o.rs}"`:""}${o.cl?` class="${o.cl}"`:""}><div class="fx"${o.g?` data-g="${o.g}"`:""} data-mx="${o.mx||(o.th?11:16)}" style="height:${H(h)}"><span class="t">${html}</span></div></${o.th?"th":"td"}>`,
+    th=(h,t,o={})=>td(h,t,Object.assign({th:1},o.mx?{}:{g:"lb"},o)),
+    cols='<colgroup><col style="width:20%">'+'<col style="width:21%"><col style="width:6%">'.repeat(3)+'</colgroup>',
+    k3=(h,fn,mx)=>[0,1,2].map(i=>td(h,fn(X(i),i),{cs:2,cl:"v",mx})).join(""),
+    pair=(h,f,u)=>[0,1,2].map(i=>{const c=X(i),v=c&&c[f]?(f==="kg"?fmt(c.kg):c[f]):"";return td(h,(v?esc(v):"-")+(f==="kg"?kutu(i):""),{cl:"v"})+td(h,u,{cl:"u",mx:8})}).join(""),
+    tr=r=>`<tr>${r}</tr>`,
+    R=ISF_H;
+  return `<div class="pf pf2">
+  <div class="hdr2" style="height:${H(R.hdr)}"><img class="lgi" src="${window.MAG_LOGO||""}" alt="mag ambalaj"><div class="snw"><div class="sn"><small>SERİ NO:</small><b>${esc(e.no||"")}</b></div>${e.no?`<div class="pq">${isQrSvg(e.no,1)}</div>`:""}</div></div>
+  <table class="px2">${'<colgroup><col style="width:20%"><col style="width:44%"><col style="width:15%"><col style="width:21%"></colgroup>'}
+  ${tr(td(R.tt,"ÜRETİM İŞ TAKİP FORMU",{cs:4,cl:"tt2",mx:16}))}
+  ${tr(th(R.mus,"MÜŞTERİ :")+td(R.mus,U(e.musteri),{cl:"v",mx:15})+th(R.mus,"SP.<br>TARİHİ:",{mx:8.5})+td(R.mus,esc(trDate(e.spTarih)),{cl:"v",mx:13}))}
+  ${tr(th(R.isa,"İŞİN ADI :")+td(R.isa,U(e.isAdi),{cl:"v",mx:15})+(fy?th(R.isa,"F/X :",{mx:8.5})+td(R.isa,U(e.fx),{cl:"v",mx:13}):th(R.isa,"")+td(R.isa,"",{cl:"v"})))}
+  ${fyT?tr(th(2*R.stk,"STOK ADI :",{rs:2})+td(2*R.stk,U(e.stok),{rs:2,cl:"v",mx:13})+th(R.stk,"FİYAT :",{mx:8.5})+td(R.stk,fyT,{cl:"v",mx:12}))+tr(th(R.stk,"KLİŞE :",{mx:8.5})+td(R.stk,"-",{cl:"v",mx:11}))
+      :tr(th(2*R.stk,"STOK ADI :",{rs:2})+td(2*R.stk,U(e.stok),{rs:2,cl:"v",mx:13})+th(2*R.stk,"SP. NO:",{rs:2,mx:8.5})+td(2*R.stk,"-",{rs:2,cl:"v",mx:11}))+"<tr></tr>"}
   </table>
-  ${[`<tr><th>SİPARİŞ<br>MİKTARI :</th>${pair("kg","Kg")}</tr>`,
-  `<tr><th>ÜRÜN<br>FORMÜLÜ:</th><td class="v" colspan="6" style="font-size:calc(15pt*var(--z)*var(--fk))">${U(e.formul)}</td></tr>`,
-  `<tr><th>EN :</th>${k3(c=>c&&c.en?esc(c.en):"-")}</tr>`,
-  `<tr><th>MİKRON :</th>${pair("mikron","µ")}</tr>`,
-  `<tr><th>KORONA :</th>${k3(c=>c&&c.korona?esc(c.korona):"-")}</tr>`,
-  notSat("notU",""),
-  `<tr><th class="hd" colspan="7">BASKI - KESİM İŞ TAKİP FORMU</th></tr>`,
-  `<tr><th>ÜRÜN ADI :</th>${k3(c=>c?U(c.urunAdi||e.urunAdi):"-")}</tr>`,
-  `<tr><th>BOY/KAZAN :</th>${k3(c=>c&&c.boy?esc(c.boy):"-")}</tr>`,
-  `<tr><th>BASKI RENGİ :</th>${k3((c,i)=>i===0?U(e.renk):"-")}</tr>`,
-  notSat("notB","")].map(r=>`<table class="px r"><colgroup><col style="width:20%">${'<col style="width:21%"><col style="width:6%">'.repeat(3)}</colgroup>${r}</table>`).join("")}
-  <table class="px pk"><colgroup><col style="width:20%">${'<col style="width:27%">'.repeat(3)}</colgroup>
-  <tr><th>PAKET/KG :</th>${[0,1,2].map(i=>{const c=X(i),v=c&&String(c.paketKg||"").trim();return `<td class="v">${v?esc(v):"-"}</td>`}).join("")}</tr>
+  <table class="px2">${cols}
+  ${tr(th(R.sip,"SİPARİŞ<br>MİKTARI :")+pair(R.sip,"kg","Kg"))}
+  ${tr(th(R.frm,"ÜRÜN<br>FORMÜLÜ :")+td(R.frm,U(e.formul),{cs:6,cl:"v",mx:17}))}
+  ${tr(th(R.std,"EN :")+k3(R.std,c=>c&&c.en?esc(c.en):"-"))}
+  ${tr(th(R.std,"MİKRON :")+pair(R.std,"mikron","µ"))}
+  ${tr(th(R.std,"KORONA :")+k3(R.std,c=>c&&c.korona?esc(c.korona):"-"))}
+  ${tr(th(R.not1,"NOT :<br>ETİKET :")+k3(R.not1,c=>c?esc(nV(c,"notU")):"-",13))}
+  ${tr(td(R.hd,"BASKI - KESİM İŞ TAKİP FORMU",{cs:7,cl:"tt2",mx:15}))}
+  ${tr(th(R.std,"ÜRÜN ADI :")+k3(R.std,c=>c?U(c.urunAdi||e.urunAdi):"-"))}
+  ${tr(th(R.std,"BOY/KAZAN :")+k3(R.std,c=>c&&c.boy?esc(c.boy):"-"))}
+  ${tr(th(R.std,"BASKI RENGİ :")+k3(R.std,(c,i)=>c?U(c.renk||(i===0?e.renk:"")):"-"))}
+  ${tr(th(R.not2,"NOT :")+k3(R.not2,c=>c?esc(nV(c,"notB")):"-",13))}
+  </table>
+  <table class="px2 pk2"><colgroup><col style="width:20%">${'<col style="width:26.67%">'.repeat(3)}</colgroup>
+  ${tr(th(R.pk,"PAKET/KG :",{mx:8})+[0,1,2].map(i=>{const c=X(i),v=c&&String(c.paketKg||"").trim();return td(R.pk,v?esc(v):"-",{cl:"v",mx:11})}).join(""))}
   </table>
   </div>`;
 }
+/* v156: satır yükseklikleri (mm, toplam ≈ 196 mm × ISF_K) — çerçeve bunlarla sabit */
+const ISF_H={hdr:16,tt:8,mus:11,isa:8.5,stk:6.5,sip:10,frm:10,std:8.5,not1:17,hd:7.5,not2:16,pk:7},ISF_K=1.105;
+/* v156: her hücrede yazıyı kutuya sığan EN BÜYÜK boyuta getir (toplu ikili arama, az ölçüm) */
+function isfFit(root){
+  const F=[...root.querySelectorAll(".fx")].filter(x=>x.clientHeight>0);if(!F.length)return false;
+  const T=F.map(x=>x.firstElementChild),lo=F.map(()=>4.5),hi=F.map(x=>+x.dataset.mx||14);
+  const tas=i=>{const f=F[i],t=T[i];return t.offsetHeight>f.clientHeight+.5||t.scrollWidth>t.clientWidth+.5};
+  F.forEach((f,i)=>f.style.fontSize=hi[i]+"pt");
+  const ok=F.map((f,i)=>!tas(i));
+  for(let r=0;r<7;r++){const A=[];F.forEach((f,i)=>{if(ok[i])return;const m=(lo[i]+hi[i])/2;A.push([i,m]);f.style.fontSize=m+"pt"});if(!A.length)break;
+    A.forEach(([i,m])=>{if(tas(i))hi[i]=m;else lo[i]=m})}
+  F.forEach((f,i)=>{if(!ok[i])hi[i]=lo[i];f.style.fontSize=hi[i]+"pt"});
+  /* aynı gruptaki hücreler (sol sütun başlıkları) aynı boyda: en küçüğü */
+  const G={};F.forEach((f,i)=>{const g=f.dataset.g;if(g)G[g]=Math.min(G[g]??99,hi[i])});F.forEach(f=>{const g=f.dataset.g;if(g)f.style.fontSize=G[g]+"pt"});return true}
 function isYazdir(e){
   const h=isForm(e),P=$("prn");
   P.innerHTML=`<div class="prow">${h}<div class="pcut"></div>${isForm(e,islemYap("fiyat"))}</div>`;
-  /* Sayfaya sığan en büyük yazı boyutunu bul (ekranda ölç, sonra yazdır) */
-  P.classList.add("meas");
-  const f=P.querySelector(".pf:last-child"),hedef=199*96/25.4; /* v148: A4 yatay, her kenarda ~4 mm pay */
-  /* Yazı en büyükten küçülterek: hem yükseklik hem genişlik sayfaya sığana kadar (QR sabit 16 mm) */
-  const tasar=()=>f.offsetHeight>hedef||[...f.querySelectorAll("td,.hdr")].some(x=>x.scrollWidth>x.clientWidth+1);
-  let z=3;P.style.setProperty("--z",z);
-  while(tasar()&&z>0.5){z=Math.round((z-0.02)*100)/100;P.style.setProperty("--z",z)}
-  /* v150: kalan dikey boşluk CSS ile (@media print, .pf flex sütun) dağıtılır → iki form da aynı boy, telefonda da */
-  P.classList.remove("meas");
+  /* v156: çerçeve sabit; her hücrenin yazısı kendi kutusuna sığdırılır (ekranda, yazdırma boyutunda ölçülür) */
+  P.classList.add("meas");P.querySelectorAll(".pf").forEach(f=>isfFit(f));P.classList.remove("meas");
   const t=document.title;document.title=(e.no||"is-emri")+" - iş takip formu";
   window.onafterprint=()=>{document.title=t;P.innerHTML=""};
   setTimeout(()=>window.print(),150);
@@ -2325,7 +2340,7 @@ const canIsAc=()=>!!rec&&(rec.yonetici===true||islemYap("isAc")); /* adım 1: ta
 const PB={TRY:"₺",USD:"$",EUR:"€"};
 function iAc(e){
   iEdit=e||null;const v=e||{},C=e?icols(e):[];$("iT").textContent=e?"İş emrini düzenle":"Yeni iş emri";$("iGet").style.display=e?"none":"";$("iE").textContent="";
-  [["iNo","no"],["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"],["iRenk","renk"]].forEach(([i,f])=>$(i).value=v[f]||"");
+  [["iNo","no"],["iMu","musteri"],["iAdi","isAdi"],["iSt","stok"],["iFx","fx"],["iFo","formul"]].forEach(([i,f])=>$(i).value=v[f]||"");
   if(!e)$("iNo").value=iNext();iDL();
   $("iTr").value=v.spTarih||bugun();$("iTermin").value=v.termin||"";$("iBv").checked=!!v.baskiVar;
   $("iFyW").classList.toggle("hide",!islemYap("fiyat"));$("iFyL").textContent=islemYap("fiyat")?"FİYAT :":"";$("iPb").value=PB[v.paraBirimi]?v.paraBirimi:"TRY";$("iFy").value=v.fiyat!=null?String(v.fiyat).replace(".",","):"";
@@ -2333,7 +2348,7 @@ function iAc(e){
    if(v.fx&&v.fx!=="X-PEŞİN"&&v.fx!=="F-PEŞİN"&&v.fx!=="-"){const o=document.createElement("option");o.value=o.textContent=v.fx;o.dataset.ek="1";sx.appendChild(o)}
    sx.value=v.fx||"X-PEŞİN";
    $("iKd").checked=v.fiyat!=null?!v.kdvDahil:sx.value==="F-PEŞİN";iKdUI()}
-  {const gN=f=>notL(v[f]).join(" · ");document.querySelectorAll("#iCols [data-c]").forEach(i=>{const k=+i.dataset.c,c=C[k]||{},f=i.dataset.f,nt=f==="notU"||f==="notB";i.value=c[f]??(f==="urunAdi"&&(C[k]||k===0)?v.urunAdi||"":nt?(gN(f)||"-"):"")})}
+  {const gN=f=>notL(v[f]).join(" · ");document.querySelectorAll("#iCols [data-c]").forEach(i=>{const k=+i.dataset.c,c=C[k]||{},f=i.dataset.f,nt=f==="notU"||f==="notB";i.value=c[f]??(f==="urunAdi"&&(C[k]||k===0)?v.urunAdi||"":f==="renk"&&k===0?v.renk||"":nt?(gN(f)||"-"):"")})}
   iQrGuncelle();$("iDlg").showModal();
 }
 $("iAdd").onclick=()=>{if(!canIsAc())return toast("Yeni iş emrini sadece muhasebe, depo görevlisi ve yönetici açabilir.");iAc(null)};
@@ -2348,7 +2363,7 @@ $("iOk").onclick=async()=>{
   const S=[];[0,1,2].forEach(n=>{const c={};document.querySelectorAll(`#iCols [data-c="${n}"]`).forEach(i=>c[i.dataset.f]=i.value.trim());c.kg=parseFloat(c.kg)||0;if(c.kg>0||c.en)S.push(c)});
   if(!S.length)return err("En az bir ebat için kg veya en girin.");
   {const vm=(!iEdit||iEdit.no!==no)?isVarMesaj(no,iEdit&&iEdit.id):"";if(vm)return err(vm)}
-  const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:"",baskiVar:$("iBv").checked,urunAdi:(S.find(c=>c.urunAdi)||{}).urunAdi||"",renk:g("iRenk"),notB:"",siparis:S};
+  const d={no,musteri:g("iMu"),isAdi:g("iAdi"),stok:g("iSt"),fx:g("iFx"),spTarih:g("iTr"),formul:g("iFo"),notU:"",baskiVar:$("iBv").checked,urunAdi:(S.find(c=>c.urunAdi)||{}).urunAdi||"",renk:(S.find(c=>c.renk)||{}).renk||"",notB:"",siparis:S};
   {const tm=g("iTermin");if(iEdit?tm!==(iEdit.termin||""):tm)d.termin=tm} /* termin yalnızca değiştiyse yazılır (eski kurallarla uyum) */
   if(islemYap("fiyat")){const fy=parseFloat(g("iFy").replace(",","."));d.fiyat=fy>0?fy:null;d.kdvDahil=!(/^F/i.test(g("iFx"))&&$("iKd").checked);d.paraBirimi=$("iPb").value}
   $("iOk").disabled=true;let woMsg=null;

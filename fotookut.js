@@ -277,7 +277,7 @@
       if(!bul){bul=document.createElement("option");bul.value=bul.textContent=fx.toUpperCase();bul.dataset.ek="1";sx.appendChild(bul)}
       sx.value=bul.value;sx.dispatchEvent(new Event("change"))}
     [0,1,2].forEach(function(n){var c=S[n]||{};
-      var v={kg:sayi(c.kg),en:temiz(c.en),mikron:temiz(c.mikron).replace(/[µμu]\s*$/i,"").trim(),korona:temiz(c.korona),boy:temiz(c.boy),urunAdi:temiz(c.urunAdi)};
+      var v={kg:sayi(c.kg),en:temiz(c.en),mikron:temiz(c.mikron).replace(/[µμu]\s*$/i,"").trim(),korona:temiz(c.korona),boy:temiz(c.boy),urunAdi:temiz(c.urunAdi),renk:temiz(c.baskiRengi)};
       if(benzersiz(S.map(function(x){return x&&x.uretimNotu})).length>1)v.notU=temiz(c.uretimNotu);
       if(benzersiz(S.map(function(x){return x&&x.baskiNotu})).length>1)v.notB=temiz(c.baskiNotu);
       document.querySelectorAll('#iCols [data-c="'+n+'"]').forEach(function(i){i.value=v[i.dataset.f]||""})});
