@@ -31,7 +31,7 @@
       ["🤝 Bir süredir sipariş yok",h+", MAG Ambalaj'dan "+b+". Bir süredir sizden sipariş alamadık; memnun kalmadığınız bir konu olduysa öğrenmek ve düzeltmek isteriz. Size nasıl daha iyi hizmet verebiliriz?"],
       ["📦 Sipariş hazır",h+", siparişiniz hazırlandı. Teslimat için uygun olduğunuz gün ve saati yazabilir misiniz? MAG Ambalaj"],
       ["🙏 Teşekkür",h+", siparişiniz için teşekkür ederiz. Ürünlerle ilgili her türlü geri bildiriminiz bizim için değerli. MAG Ambalaj"]];
-    if(bk&&+bk.acik>0)o.push(["💰 Ödeme hatırlatma",h+", MAG Ambalaj muhasebeden yazıyoruz. Cari hesabınızda "+Math.round(+bk.acik).toLocaleString("tr-TR")+" ₺ açık bakiye görünüyor. Ödeme planınızı paylaşabilir misiniz? İyi çalışmalar."]);
+    if(bk&&+bk.acik>0&&!(bk.dvz&&Object.keys(bk.dvz).length))o.push(["💰 Ödeme hatırlatma",h+", MAG Ambalaj muhasebeden yazıyoruz. Cari hesabınızda "+Math.round(+bk.acik).toLocaleString("tr-TR")+" ₺ açık bakiye görünüyor. Ödeme planınızı paylaşabilir misiniz? İyi çalışmalar."]);
     return o}
   /* ---------- görüşme kaydı ---------- */
   var SONUC=["✅ Ulaşıldı — sipariş verecek","🙂 Ulaşıldı — şimdilik ihtiyaç yok","⚠️ Ulaşıldı — şikâyet / sorun var","💸 Ulaşıldı — fiyat yüksek buluyor","🔁 Başka firmayla çalışıyor","📵 Ulaşılamadı","💬 Mesaj gönderildi","📝 Diğer"];

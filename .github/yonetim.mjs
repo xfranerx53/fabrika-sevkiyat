@@ -282,6 +282,19 @@ if (islem === "cari-aktar") {
   const J = await r.json(), D = admin.database(), C = J.cariler || {}, B = J.bakiye || {};
   if (Object.keys(C).length < 20) { log("❌ Cari listesi beklenenden kısa, aktarılmadı"); process.exit(1); }
   await D.ref("cariler").set(C); await D.ref("cariBakiye").set(B);
+  /* v159: Mikro muhasebe özeti (satış/tahsilat/çek/yaşlandırma/sipariş/gider/demirbaş) → mikroOzet; mizandan aylık giderler → maliyet/gider/{ay} (elle girilmiş ay EZİLMEZ, yalnız «mikro» alt alanı yazılır) */
+  const r2 = await fetch("https://api.github.com/repos/xfranerx53/mag-yonetim/contents/aktar/mikro-ozet.json", { headers: { Authorization: "Bearer " + T, Accept: "application/vnd.github.raw", "User-Agent": "mag-yonetim" } });
+  if (r2.ok) {
+    const O = await r2.json(); await D.ref("mikroOzet").set(Object.assign({}, O, { z: admin.database.ServerValue.TIMESTAMP }));
+    let gy = 0;
+    for (const [ay, k] of Object.entries(O.gider || {})) {
+      if (!/^\d{4}-\d\d$/.test(ay)) continue;
+      const kg = Math.round(((O.satisAy || {})[ay] || {}).kg || 0), ref = D.ref("maliyet/gider/" + ay), v = (await ref.once("value")).val();
+      const mk = { k, kgMikro: kg, kaynak: "Mikro mizanı (borç) + Mikro satış kg'ı", z: admin.database.ServerValue.TIMESTAMP };
+      if (!v) { await ref.set({ k, kgMikro: kg, mikro: mk, z: admin.database.ServerValue.TIMESTAMP }); gy++; } else await ref.child("mikro").set(mk);
+    }
+    log(`✅ Mikro özeti aktarıldı • ${Object.keys(O.gider || {}).length} ay gider (${gy} yeni ay)`);
+  } else log("ℹ️ mikro-ozet.json yok:", r2.status);
   await D.ref("ayarlar/cariAktar").set({ z: admin.database.ServerValue.TIMESTAMP, n: Object.keys(C).length, kaynak: String(J.kaynak || "").slice(0, 200) });
   await D.ref("denetim").push({ tur: "claude", baslik: "Mikro cari listesi aktarıldı", detay: Object.keys(C).length + " cari, " + Object.keys(B).length + " bakiye", yol: "cariler", id: "", kim: "🤖 Claude (Mikro aktarımı)", uid: "claude", zaman: admin.database.ServerValue.TIMESTAMP }).catch(() => { });
   log(`✅ Cari aktarımı: ${Object.keys(C).length} cari • ${Object.keys(B).length} bakiye`);

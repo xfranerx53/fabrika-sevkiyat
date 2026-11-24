@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v158**
+**GÜNCEL SÜRÜM: v159**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -444,6 +444,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-24: v156 — Kullanıcı: iş emri formu Excel'deki MAG AMBALAJ formu düzeninde; çerçeve SABİT, yazı hücreye sığacak şekilde büyür/küçülür; orijinal logo (logo.js, MAG_LOGO data-URI, siyah/saydam) sol üstte. isForm yeniden yazıldı (.pf2, .px2, her hücre .fx sabit mm yükseklik; ISF_H satır yükseklikleri × ISF_K=1.105 ≈ 198 mm). isfFit: toplu ikili arama ile her hücrede sığan en büyük pt; sol sütun başlıkları (data-g=lb) aynı boy. Yazdırma 138.5×200 mm form ×2; kartlarda isfSigdir f.offsetWidth ile ölçekler. BASKI RENGİ de ölçü başına (siparis[i].renk; e.renk=ilk sütun, eskilerde 1. sütuna). NOT satırı 'NOT : ETİKET :'. PAKET/KG korundu. Eski v150-155 flex yazdırma kuralları kaldırıldı.
 - 2026-11-24: v157 — Kullanıcı: PAKET/KG boş hücrelerde '-' yok (boş), satır biraz büyük (pk 9, yazı max 14pt); ÜRÜN FORMÜLÜ satırı küçüldü (frm 8.5); ISF_K 1.1.
 - 2026-11-24: v158 — PAKET/KG sütun çizgileri üstteki tabloyla aynı hizada: aynı colgroup (cols) + colspan 2.
+- 2026-11-24: v159 — Kullanıcı Mikro raporlarını (17 Excel, 01.11.2025–31.10.2026) gönderdi: «eksiksiz mi bak, gerekli ne varsa entegre et». Dönüştürücü: ÖZEL depo mag-yonetim/araclar/aktar.py (+oku.py; xls→xlsx LibreOffice ile) → aktar/cariler.json (601 cari: kart+adres+yetkili+yaşlandırma+satış+tahsilat+çek; ABC = 12 ay cirosu %80/%15) ve aktar/mikro-ozet.json. cari-aktar işlemi artık mikroOzet/ de yazar ve mizandan Tem–Eki giderlerini maliyet/gider/{ay}'a aktarır (elle girilmiş ay ezilmez → yalnız «mikro» alt alanı; kgMikro = Mikro satış kg'ı, giderAy kg yedeği). mikroozet.js: Raporlar › «🧾 Mikro muhasebe özeti» (yönetici+Muhasebe; Özet, Müşteriler, Vadesi geçen, Çekler, Ürünler, Alış, Siparişler, Giderler, Demirbaş, Eksikler) + müşteri kartında Mikro kutusu (vade, temsilci, açık/vadesi geçen, yaşlandırma, 12 ay satış/tahsilat, çek, sipariş, aylık satış grafiği). Maliyet › hammadde: Mikro alış fiyatı (son 3 ay, KDV hariç) «Uygula». Dövizli carilerde TL karşılığı bugünkü kurla YAKLAŞIK (b.tl + b.dvz ayrı); dövizli hesapta ödeme hatırlatma mesajı önerilmez. rules: mikroOzet (okuma yönetici+Muhasebe). EKSİK (kullanıcıya söylendi): bordro icmali, döviz kuru sütunu, yetkili/e-posta, fiyat listesi kullanılmıyor, kredi limitleri boş, dövizli bakiye TL karşılığı, Ekim personel gideri.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 - (v143) Google yer linklerinden koordinat: sayfayı değil `google.com/search?tbm=map&q=<yer yazısı>` cevabını oku. 1s0x kimliği hassas konum DEĞİL (S2 seviye ~10).

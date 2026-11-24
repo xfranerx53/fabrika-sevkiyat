@@ -526,3 +526,15 @@ html.byz2 .full{grid-column:auto}
 .mlFy{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.mlFy>div{background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:8px}.mlFy small{display:block;font-size:12px;color:#166534}.mlFy b{display:block;font-size:15px;color:#14532d}
 #dMal .grid{grid-template-columns:1fr 1fr}
 #dMal label,#pMal label{text-transform:none;letter-spacing:0}
+
+/* v159: Mikro muhasebe özeti */
+.mzSek{display:flex;gap:4px;overflow-x:auto;padding:6px 10px;border-bottom:1px solid #e5e7eb;background:#f8fafc}
+.mzSek button{flex:0 0 auto;border:1px solid #cbd5e1;background:#fff;border-radius:999px;padding:6px 10px;font-size:13px;font-weight:700;color:#334155;width:auto;margin:0}
+.mzSek button.on{background:#1e3a8a;color:#fff;border-color:#1e3a8a}
+.mzT{width:100%;border-collapse:collapse;font-size:13px}
+.mzT th{position:sticky;top:0;background:#f1f5f9;text-align:left;padding:5px 6px;border-bottom:1px solid #cbd5e1;white-space:nowrap}
+.mzT td{padding:4px 6px;border-bottom:1px solid #eef2f6;vertical-align:middle}
+.mzT td:nth-child(3) div{min-width:50px}
+.mzK{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.mzK>div{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:8px 10px}
+.mzK small{display:block;color:#667085;font-size:12px}.mzK b{display:block;font-size:18px;color:#0f172a}.mzK span{font-size:12px;color:#667085}

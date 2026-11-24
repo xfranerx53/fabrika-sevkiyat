@@ -34,7 +34,7 @@
     Object.keys(r.b||{}).forEach(function(hid){var o=+r.b[hid]||0,h=H[hid];if(!h||o<=0){if(o>0)eks=true;return}top+=o;tl_+=o/100*hFiyatTL(h);inv+=o/100/(+h.yog||0.93)});
     return{tl:tl_,yog:inv>0?(top/100)/inv:0.93,top:top,eksik:eks}}
   /* ---------- aylık gider ---------- */
-  function giderAy(a){var g=G[a];if(!g)return null;var top=GIDER_K.reduce(function(s,k){return s+(+((g.k||{})[k[0]])||0)},0),kg=+g.kgElle||+g.kgOto||0;return{top:top,kg:kg,tlKg:kg>0?top/kg:0}}
+  function giderAy(a){var g=G[a];if(!g)return null;var top=GIDER_K.reduce(function(s,k){return s+(+((g.k||{})[k[0]])||0)},0),kg=+g.kgElle||+g.kgOto||+g.kgMikro||0; /* v159: üretim kg'ı yoksa Mikro satış kg'ı */return{top:top,kg:kg,tlKg:kg>0?top/kg:0}}
   /* ---------- ürün hesabı ---------- */
   function hesap(u){
     var a=ay(),r=recHesap(u.recete),o={uyar:[]};
@@ -174,7 +174,14 @@
       +alan("mhY","Yoğunluk (g/cm³) — HDPE 0,95 · LDPE/LLDPE 0,92 · kalsit 2,0",x.yog)+alan("mhS","Sıra",x.sira)+'</div>',
       async function(){var v={ad:$("mhAd").value.trim(),fiyat:n($("mhF").value),pb:$("mhPb").value,kdvDahil:$("mhK").checked,yog:n($("mhY").value)||0.92,sira:n($("mhS").value),z:TS()};
         if(!v.ad)throw new Error("Ad yazın.");if(!(v.fiyat>0))throw new Error("Fiyat girin.");await yaz("hammadde/"+(id||yeniId("hammadde")),v)},
-      id?async function(){var kul=Object.keys(R).filter(function(r){return R[r].b&&+R[r].b[id]>0});if(kul.length)throw new Error("Bu hammadde reçetelerde kullanılıyor: "+kul.map(function(r){return R[r].ad}).join(", "));await yaz("hammadde/"+id,null)}:null)}
+      id?async function(){var kul=Object.keys(R).filter(function(r){return R[r].b&&+R[r].b[id]>0});if(kul.length)throw new Error("Bu hammadde reçetelerde kullanılıyor: "+kul.map(function(r){return R[r].ad}).join(", "));await yaz("hammadde/"+id,null)}:null)
+    /* v159: Mikro alış faturalarından son 3 ay ağırlıklı ortalama (KDV hariç) — «Uygula» alanları doldurur, Kaydet'e basınca yazılır */
+    if(window.mikroHamFiyat)mikroHamFiyat().then(function(M){var ad=String(x.ad||"").toLocaleUpperCase("tr-TR"),k=null;
+      var es=[["LLDPE","LLDPE"],["HDPE","HDPE"],["LDPE","AYPE"],["KALS","KALSIT"]];for(var i=0;i<es.length&&!k;i++)if(ad.indexOf(es[i][0])>=0)k=Object.keys(M).find(function(m){return m.toLocaleUpperCase("tr-TR").indexOf(es[i][1])>=0&&!(es[i][1]==="HDPE"&&/LLDPE|LDPE /.test(m))&&!(es[i][1]==="LLDPE"&&!/LLDPE/.test(m))});
+      if(!k||!$("mhF"))return;var m=M[k],u=m.USD||m.TL,pb=m.USD?"USD":"TRY";if(!u)return;
+      var d=document.createElement("div");d.className="note";d.style.marginTop="6px";d.innerHTML='🧾 Mikro alış (son 3 ay, '+esc(k)+'): <b>'+f2(u.fiyat,4)+' '+(pb==="USD"?"$":"₺")+'/kg</b> KDV hariç · '+f2(u.kg,0)+' kg'+(m.USD&&m.TL?' (₺ faturalar: '+f2(m.TL.fiyat,2)+' ₺/kg)':'')+' <button type="button" class="btn b3 sm" id="mhMk" style="width:auto;margin:0 0 0 6px">Uygula</button>';
+      var g=$("mhF").closest(".grid");g.parentNode.insertBefore(d,g.nextSibling);
+      $("mhMk").onclick=function(){$("mhF").value=String(u.fiyat).replace(".",",");$("mhPb").value=pb;$("mhK").checked=false;d.innerHTML+=' <b style="color:#16a34a">✓ alanlara yazıldı — Kaydet\'e basın</b>'}})}
   /* ---------- reçete ---------- */
   function recAc(id){var x=id?R[id]:{b:{}},HL=Object.keys(H).sort(function(a,b){return(+H[a].sira||0)-(+H[b].sira||0)});
     if(!HL.length)return toast("Önce hammadde ekleyin.");
@@ -189,11 +196,11 @@
   async function uretimKg(m){ /* o ay depoya giren üretim: iş emirlerindeki «Depoya girişi kaydet» kayıtları */
     try{var s=await db.ref("isEmirleri").once("value"),v=s.val()||{},t=0;Object.keys(v).forEach(function(k){var d=v[k]&&v[k].log&&v[k].log.depo;if(d&&d.zaman&&new Date(+d.zaman).toLocaleDateString("en-CA",{timeZone:"Europe/Istanbul"}).slice(0,7)===m)t+=+d.kg||0});return Math.round(t*100)/100}catch(e){return null}}
   function giderAc(m){var x=m?G[m]:{k:{}},d=new Date(),vm=m||(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"));
-    var ciz2=function(){var t=GIDER_K.reduce(function(s,k){return s+n($("mg_"+k[0]).value)},0),kg=n($("mgKe").value)||n($("mgKo").dataset.v);$("mgOz").innerHTML="Toplam <b>"+tl(t,0)+"</b> ÷ "+f2(kg,0)+" kg = <b>"+(kg>0?tl(t/kg):"—")+"/kg</b>"};
+    var ciz2=function(){var t=GIDER_K.reduce(function(s,k){return s+n($("mg_"+k[0]).value)},0),kg=n($("mgKe").value)||n($("mgKo").dataset.v)||(+x.kgMikro||0);$("mgOz").innerHTML="Toplam <b>"+tl(t,0)+"</b> ÷ "+f2(kg,0)+" kg = <b>"+(kg>0?tl(t/kg):"—")+"/kg</b>"};
     pencere(m?"Giderler: "+ayAd(m):"Yeni ay",'<div class="grid"><div class="full"><label>Ay</label><input id="mgAy" type="month" value="'+esc(vm)+'"'+(m?" disabled":"")+'></div>'+GIDER_K.map(function(k){return alan("mg_"+k[0],k[1]+" (₺, aylık)",(x.k||{})[k[0]])}).join("")
-      +'<div class="full"><div class="note" id="mgKo" data-v="'+(+x.kgOto||0)+'">Bu ay depoya giren üretim: <b>'+f2(x.kgOto||0,0)+' kg</b> (iş emirlerinden hesaplanıyor…)</div></div>'+alan("mgKe","Üretim kg'ını elle düzelt (boş = otomatik)",x.kgElle)+'</div><div class="note" id="mgOz" style="margin-top:8px"></div>',
+      +'<div class="full"><div class="note" id="mgKo" data-v="'+(+x.kgOto||0)+'">Bu ay depoya giren üretim: <b>'+f2(x.kgOto||0,0)+' kg</b> (iş emirlerinden hesaplanıyor…)</div>'+(x.mikro?'<div class="note">🧾 Mikro mizanından aktarıldı (toplam '+tl(GIDER_K.reduce(function(s,k){return s+(+((x.mikro.k||{})[k[0]])||0)},0),0)+'). Programda üretim kaydı yoksa kg olarak Mikro satış kg\'ı kullanılır: <b>'+f2(x.kgMikro||0,0)+' kg</b></div>':'')+'</div>'+alan("mgKe","Üretim kg'ını elle düzelt (boş = otomatik)",x.kgElle)+'</div><div class="note" id="mgOz" style="margin-top:8px"></div>',
       async function(){var am=$("mgAy").value;if(!/^\d{4}-\d{2}$/.test(am))throw new Error("Ay seçin.");var k={};GIDER_K.forEach(function(g){var v=n($("mg_"+g[0]).value);if(v)k[g[0]]=v});
-        await yaz("gider/"+am,{k:k,kgOto:n($("mgKo").dataset.v),kgElle:nb($("mgKe").value),z:TS()})},
+        await yaz("gider/"+am,{k:k,kgOto:n($("mgKo").dataset.v),kgElle:nb($("mgKe").value),kgMikro:x.kgMikro||null,mikro:x.mikro||null,z:TS()})},
       m?async function(){await yaz("gider/"+m,null)}:null,
       async function(){ciz2();$("mdG").addEventListener("input",ciz2);
         var hes=async function(){var am=$("mgAy").value,kg=await uretimKg(am);var b=$("mgKo");if(!b)return;if(kg==null){b.innerHTML="Üretim kg'ı okunamadı, elle girin.";return}b.dataset.v=kg;b.innerHTML="Bu ay ("+esc(ayAd(am))+") depoya giren üretim: <b>"+f2(kg,0)+" kg</b> (iş emirlerindeki depo girişleri)";ciz2()};
