@@ -54,9 +54,9 @@
     var z=o.ozet||{};
     if(sek==="ozet"){
       var A=Object.keys(o.satisAy||{}).sort(),b1=bar(A,function(m){return o.satisAy[m].m});
-      var T=o.tahAy||{},TS=["Nakit","Havale/EFT","Çek","Kart (POS)"];
+      var T=o.tahAy||{},TS=["nakit","havale","cek","kart"],TA={nakit:"Nakit",havale:"Havale/EFT",cek:"Çek",kart:"Kart (POS)"};
       return'<div class="mzK">'+[["12 ay satış (KDV hariç)",tl(z.satis),"faturasız (X) "+tl(z.x)],["12 ay tahsilat",tl(z.tah),"müşterilerden"],["Satılan",sy(z.kg)+" kg",z.fatura+" fatura · "+z.musteri+" müşteri"],["Elimizdeki müşteri çekleri",tl(z.cek),z.cekN+" çek (portföy + tahsilde)"],["Verdiğimiz açık çekler",tl(z.verilen),"vadesi gelmemiş"],["Müşteri alacağı (≈)",tl(o.yas&&o.yas.m&&o.yas.m.top),"vadesi geçen ≈ "+tl(o.yas&&o.yas.m&&o.yas.m.gecen)]].map(function(k){return'<div><small>'+e(k[0])+'</small><b>'+k[1]+'</b><span>'+e(k[2])+'</span></div>'}).join("")+'</div>'+
-        '<h4 style="margin:12px 0 4px">Aylık satış ve tahsilat</h4>'+tablo(["Ay","Satış","","Faturasız","Kg","Tahsilat"].concat(TS),A.map(function(m){var s=o.satisAy[m],t=T[m]||{},tt=TS.reduce(function(a,k){return a+(+t[k]||0)},0);return[ayk(m),tl(s.m),b1(m),tl(s.x),sy(s.kg),tl(tt)].concat(TS.map(function(k){return t[k]?tl(t[k]):"-"}))}),[1,3,4,5,6,7,8,9])+
+        '<h4 style="margin:12px 0 4px">Aylık satış ve tahsilat</h4>'+tablo(["Ay","Satış","","Faturasız","Kg","Tahsilat"].concat(TS.map(function(k){return TA[k]})),A.map(function(m){var s=o.satisAy[m],t=T[m]||{},tt=TS.reduce(function(a,k){return a+(+t[k]||0)},0);return[ayk(m),tl(s.m),b1(m),tl(s.x),sy(s.kg),tl(tt)].concat(TS.map(function(k){return t[k]?tl(t[k]):"-"}))}),[1,3,4,5,6,7,8,9])+
         '<div style="font-size:12px;color:#667085;margin-top:4px">Kg: KG birimli satırlar + kolili rulo poşetler (koli kg\'ı ile); adet satılan streç vb. hariç.</div>'}
     if(sek==="mus"){var L=o.musteri||[],b=bar(L,function(x){return x.ciro});
       return'<div style="font-size:13px;color:#667085;margin-bottom:6px">12 ayda en çok satış yapılan '+L.length+' müşteri. Sınıf: cironun ilk %80\'i A, sonraki %15 B, kalan C.</div>'+tablo(["#","Müşteri","Sınıf","12 ay satış","","Tahsilat","Açık hesap","Vadesi geçen"],L.map(function(x,i){return[i+1,e(x.ad),x.sinif||"",tl(x.ciro),b(x),tl(x.tah),tl(x.acik),+x.gecen>0?'<b style="color:#b42318">'+tl(x.gecen)+'</b>':"-"]}),[3,5,6,7])}
