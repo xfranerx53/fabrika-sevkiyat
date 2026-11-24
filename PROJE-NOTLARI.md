@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v156**
+**GÜNCEL SÜRÜM: v157**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -442,6 +442,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-23: v154 — Kullanıcı: (1) STOK ADI / SP.NO ve STOK/FİYAT/KLİŞE satırları küçüldü (tr.sm, üst tablo yazdırmada büyümez). (2) ORTAK NOT kaldırıldı (#iNtU/#iNtB yok, e.notU/notB="" yazılır); her ölçünün notu, yeni işte '-' hazır gelir, silinirse boş basılır; eski kayıtların genel notu her ölçüde gösterilir. notSet(iNtU/iNtB) foto/Mikro okumada notu dolu ölçülere dağıtır. (3) En altta küçük PAKET / KG satırı, ölçü başına (siparis[i].paketKg, .px.pk tablo).
 - 2026-11-23: v155 — Kullanıcı: stok adının altındaki satırlar (paket/kg hariç) eşit boy, paket/kg bir tık büyük. Ana tablo satır satır ayrı tablolara bölündü (.px.r, aynı colgroup, border-top:0); yazdırmada her biri flex:1 1 0 → eşit pay (yazı sığmazsa o satır uzar). Paket/kg yazısı 9.5/11pt.
 - 2026-11-24: v156 — Kullanıcı: iş emri formu Excel'deki MAG AMBALAJ formu düzeninde; çerçeve SABİT, yazı hücreye sığacak şekilde büyür/küçülür; orijinal logo (logo.js, MAG_LOGO data-URI, siyah/saydam) sol üstte. isForm yeniden yazıldı (.pf2, .px2, her hücre .fx sabit mm yükseklik; ISF_H satır yükseklikleri × ISF_K=1.105 ≈ 198 mm). isfFit: toplu ikili arama ile her hücrede sığan en büyük pt; sol sütun başlıkları (data-g=lb) aynı boy. Yazdırma 138.5×200 mm form ×2; kartlarda isfSigdir f.offsetWidth ile ölçekler. BASKI RENGİ de ölçü başına (siparis[i].renk; e.renk=ilk sütun, eskilerde 1. sütuna). NOT satırı 'NOT : ETİKET :'. PAKET/KG korundu. Eski v150-155 flex yazdırma kuralları kaldırıldı.
+- 2026-11-24: v157 — Kullanıcı: PAKET/KG boş hücrelerde '-' yok (boş), satır biraz büyük (pk 9, yazı max 14pt); ÜRÜN FORMÜLÜ satırı küçüldü (frm 8.5); ISF_K 1.1.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 - (v143) Google yer linklerinden koordinat: sayfayı değil `google.com/search?tbm=map&q=<yer yazısı>` cevabını oku. 1s0x kimliği hassas konum DEĞİL (S2 seviye ~10).

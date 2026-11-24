@@ -2309,12 +2309,12 @@ function isForm(e,fy,tk){
   ${tr(th(R.not2,"NOT :")+k3(R.not2,c=>c?esc(nV(c,"notB")):"-",13))}
   </table>
   <table class="px2 pk2"><colgroup><col style="width:20%">${'<col style="width:26.67%">'.repeat(3)}</colgroup>
-  ${tr(th(R.pk,"PAKET/KG :",{mx:8})+[0,1,2].map(i=>{const c=X(i),v=c&&String(c.paketKg||"").trim();return td(R.pk,v?esc(v):"-",{cl:"v",mx:11})}).join(""))}
+  ${tr(th(R.pk,"PAKET/KG :",{mx:10})+[0,1,2].map(i=>{const c=X(i),v=c&&String(c.paketKg||"").trim();return td(R.pk,v?esc(v):"&nbsp;",{cl:"v",mx:14})}).join(""))}
   </table>
   </div>`;
 }
 /* v156: satır yükseklikleri (mm, toplam ≈ 196 mm × ISF_K) — çerçeve bunlarla sabit */
-const ISF_H={hdr:16,tt:8,mus:11,isa:8.5,stk:6.5,sip:10,frm:10,std:8.5,not1:17,hd:7.5,not2:16,pk:7},ISF_K=1.105;
+const ISF_H={hdr:16,tt:8,mus:11,isa:8.5,stk:6.5,sip:10,frm:8.5,std:8.5,not1:17,hd:7.5,not2:16,pk:9},ISF_K=1.1;
 /* v156: her hücrede yazıyı kutuya sığan EN BÜYÜK boyuta getir (toplu ikili arama, az ölçüm) */
 function isfFit(root){
   const F=[...root.querySelectorAll(".fx")].filter(x=>x.clientHeight>0);if(!F.length)return false;
