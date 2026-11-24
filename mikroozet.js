@@ -100,6 +100,20 @@
     b.innerHTML='<span>🧾</span><div><b>Mikro muhasebe özeti</b><small>Satış · tahsilat · çek · vadesi geçen · gider</small></div>';b.onclick=window.mikroOzetAc;i.parentNode.insertBefore(b,i.nextSibling)}
   var ra=window.rapAc;window.rapAc=function(){dugme();var b=$("mzAc");if(b)b.style.display=yetki()?"":"none";return ra&&ra.apply(this,arguments)};
   if(document.readyState!=="loading")dugme();else document.addEventListener("DOMContentLoaded",dugme);
+  /* v165: Yönetici Paneli kartı — vadesi geçen alacak + vadesi gelen/geçen çekler */
+  window.mikroPanoCiz=async function(el){if(!el||!yetki())return;var o;try{o=await oku()}catch(er){return}if(!o||!o.t||!document.body.contains(el))return;
+    var bugun=new Date().toISOString().slice(0,10),gun=function(d){return Math.round((Date.parse(d)-Date.parse(bugun))/864e5)};
+    var G=(o.geciken||[]).filter(function(x){return!x.dvz||!Object.keys(x.dvz).length}),gt=G.reduce(function(a,x){return a+(+x.gecen||0)},0);
+    var MC=(o.cekAcik||[]).filter(function(c){var g=gun(c.vade);return g<=7&&!(c.poz==="Teminatta"&&g<-60)}) /* vadesi çok eski teminat çekleri (2021) eski kayıt — panoda gösterilmez */,VC=(o.verilenCek||[]).filter(function(c){return gun(c.vade)<=30});
+    var r=function(a,b){return'<div class="pnR"><div>'+a+'</div><small>'+b+'</small></div>'},h="";
+    if(G.length){h+='<div class="pnK" data-r="kr"><div class="pnT"><span>💰 Vadesi geçen alacak</span><b class="pnN">'+G.length+'</b></div>'+r('<b>'+tl(gt)+'</b> (TL hesaplar)','Mikro yaşlandırma '+trd(o.t)+(o.yas&&o.yas.m?' · dövizliler dahil ≈ '+tl(o.yas.m.gecen):''))+
+      G.slice(0,5).map(function(x){return r(e(x.ad)+(x.sinif?' <span class="badge" style="background:#64748b">'+x.sinif+'</span>':''),'vadesi geçen <b>'+tl(x.gecen)+'</b>'+(x.son?' · son satış '+trd(x.son):''))}).join("")+
+      '<button type="button" class="pnG" data-mz="yas">Vadesi geçenlerin tamamı ›</button></div>'}
+    if(MC.length||VC.length){h+='<div class="pnK" data-r="'+((MC.some(function(c){return gun(c.vade)<0})||VC.some(function(c){return gun(c.vade)<=7}))?"kr":"tu")+'"><div class="pnT"><span>🧾 Çek vadeleri</span><b class="pnN">'+(MC.length+VC.length)+'</b></div>'+
+      VC.map(function(c){var g=gun(c.vade);return r('📤 Verdiğimiz çek <b>'+tl(c.tut)+'</b> — '+e(c.chAd||c.ad),(g<0?'<b style="color:#b42318">vadesi '+(-g)+' gün geçti</b>':g===0?'<b style="color:#b42318">BUGÜN ödenecek</b>':g+' gün sonra ödenecek')+' · '+trd(c.vade)+' — hesapta para olmalı')}).join("")+
+      MC.slice(0,6).map(function(c){var g=gun(c.vade);return r('📥 '+e(c.ad)+' çeki <b>'+tl(c.tut)+'</b> ('+e(c.poz)+')',(g<0?'<b style="color:#b42318">vadesi '+(-g)+' gün geçti</b>':g===0?'<b style="color:#b42318">vadesi BUGÜN</b>':g+' gün sonra')+' · '+trd(c.vade)+(c.poz==="Portföyde"?' — bankaya tahsile verilmeli':''))}).join("")+
+      (MC.length>6?r('+ '+(MC.length-6)+' çek daha',''):'')+'<button type="button" class="pnG" data-mz="cek">Çeklerin tamamı ›</button></div>'}
+    el.innerHTML=h;el.querySelectorAll("[data-mz]").forEach(function(b){b.onclick=function(ev){ev.stopPropagation();sek=b.dataset.mz;window.mikroOzetAc()}})};
   /* ADET & MALİYET › hammadde: Mikro alış fiyatı önerisi */
   window.mikroHamFiyat=async function(){try{return((await oku())||{}).ham||{}}catch(er){return{}}};
 })();

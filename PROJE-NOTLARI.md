@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v164**
+**GÜNCEL SÜRÜM: v165**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -450,6 +450,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-24: v162 — doviz_bakiyeleri.xlsx geldi (103 satır; Mikro cari bazında değerlemeli rapor vermiyor, TL = döviz bakiye × 24.11.2026 Mikro döviz alış kuru USD 50,5116 · EUR 55,4656 · GBP 66,1497). aktar.py KUR'u bu dosyadan alır; dövizli carilerde TL karşılığı = TL bakiye + döviz × kur. Teyit edilmesi gereken: Memişler Çay ≈5,7 M, Sar Lojistik ≈4,6 M, ALG ≈2,9 M, Konya Kağıt ≈2,5 M (12 ayda satış yok/eski adat).
 - 2026-11-24: v163 — Kullanıcı (video): iş emri kartında logo siyah kutu olarak görünüyor, üstüne «🔍 Büyüt / İndir» düğmesi biniyordu. Neden: foto-onizleme.js her «.item img»yi fotoğraf sayıp düğme ekliyor, .item img CSS'i koyu zemin (#0f172a) veriyordu. Düzeltme: .isf/.pf2/#prn içindeki resimler atlanır; .pf2 .lgi stilleri !important ile sabit (saydam zemin, boyut, imleç). Gerçek liste ortamında (fake DB, .item içinde) ekran görüntüsüyle doğrulandı.
 - 2026-11-24: v164 — Kullanıcı: kg/en'i boş sütuna (3. ölçü) yazılan NOT kaydedilmiyordu (kayıt yalnız kg>0||en olan sütunları alıyordu). Artık kg/en yok ama not/ürün adı/renk/paket vb. yazılmış sütun siparis'e _bos:1 ile, KENDİ konumunda kaydedilir (arada boş sütun varsa {_bos:1} yer tutucu). icols() _bos'ları dışlar (etiket, üretim, depo, tik, kg toplamı etkilenmez); icolsTum() yalnız formda (isForm, iAc). etiket.js cols da _bos'u dışlar. Fake DB ile kaydet→yeniden aç doğrulandı.
+- 2026-11-24: v165 — Kullanıcı inceleme listesinden 1,2,4,5,6,9'u istedi. (1) yönetim işlemi `mikro-maliyet`: maliyet/hammadde HDPE/LDPE/LLDPE/Kalsit = mikroOzet.ham (son 3 ay ağırlıklı ort., KDV hariç; eski değer hammadde/{id}/mikro/eski'de + denetim). (2) maliyet giderKaynak «ort3»: personel gideri diğer ayların yarısından az olan ay (bordro işlenmemiş, Ekim) hariç son 3 ayın toplam gider ÷ toplam kg (Tem–Eyl ≈ 40 ₺/kg); mikro-maliyet bunu ayar yapar. (4) musterikrm aranacak(): vadesi geçen ≥ 5.000 ₺ (TL hesap) ve 7 gündür görüşülmediyse «💰 Vadesi geçen … — tahsilat için ara»; ödeme hatırlatma şablonu vadesi geçeni yazar. (5) Yönetici Paneli #pnMz (mikroPanoCiz): vadesi geçen alacak (TL hesaplar, ilk 5) + çek vadeleri (verdiğimiz 30 gün, müşteri çekleri 7 gün/geçmiş; 60+ gün geçmiş Teminatta eski kayıt hariç). (9) «📋 Benim işlerim» kısa liste (isKisa; yönetici dışı herkeste varsayılan, localStorage isKisa ile değişir): no, müşteri, kaç gündür bekliyor, formül, ölçüler + aşamaya göre not, tek dokunuş «Bitti →», «Formu aç» kartı tam açar.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 - (v143) Google yer linklerinden koordinat: sayfayı değil `google.com/search?tbm=map&q=<yer yazısı>` cevabını oku. 1s0x kimliği hassas konum DEĞİL (S2 seviye ~10).

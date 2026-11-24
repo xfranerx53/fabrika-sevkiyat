@@ -1954,7 +1954,7 @@ function isListele(){
   const rk=x=>{const g=terminGun(x);return g!==null&&g>0?g:-1};L.sort((x,y)=>rk(y)-rk(x));
   const GE=isE.filter(x=>ST.includes(x.asama)&&asamaGor(x.asama)&&rk(x)>0).sort((x,y)=>rk(y)-rk(x));
   const gb=GE.length?'<div class="note" style="background:#fee2e2;border-color:#e71d36;color:#991b1b;margin:0 0 8px"><b>⏰ '+GE.length+' geciken iş</b>'+GE.slice(0,6).map(x=>'<div style="font-size:14px">'+esc(x.no)+' · '+esc(x.musteri||"-")+' · <b>'+rk(x)+' gün</b> · '+esc(ASL[x.asama]||x.asama)+'</div>').join("")+(GE.length>6?'<div style="font-size:13px">… ve '+(GE.length-6)+' tane daha</div>':"")+'</div>':"";
-  $(u?"uList":"iList").innerHTML=gb+(st.aktif?'<div class="mut" style="font-size:13px;margin:0 0 6px">🔎 Arama/filtre açık: '+(u?"tüm üretim aşamalarında":"tüm aşamalarda")+' gösteriliyor</div>':"")+(L.length?L.map(isKart).join(""):'<div class="empty">'+(st.aktif?"Aramaya uygun iş emri yok.":"Bu aşamada iş emri yok.")+'</div>');
+  $(u?"uList":"iList").innerHTML=gb+(st.aktif?'<div class="mut" style="font-size:13px;margin:0 0 6px">🔎 Arama/filtre açık: '+(u?"tüm üretim aşamalarında":"tüm aşamalarda")+' gösteriliyor</div>':"")+kisaBar(kisaMi()&&T!=="bitti"&&!st.aktif?L.filter(x=>asamaYap(x.asama)).length:0)+(L.length?L.map(kisaMi()&&T!=="bitti"?isKisa:isKart).join(""):'<div class="empty">'+(st.aktif?"Aramaya uygun iş emri yok.":"Bu aşamada iş emri yok.")+'</div>');
   if(window.irGoster)irGoster();
   {const eb=$("etNew");if(eb)eb.classList.toggle("hide",!(asamaYap("etiket")||isAdmin()))}
   if(Object.keys(iSon).length>=iLimit&&(st.aktif||T==="bitti")){const bt=document.createElement("button");bt.className="btn b6";bt.id="iEski";bt.textContent="⬇️ Daha eski iş emirlerini yükle (şu an son "+iLimit+")";bt.onclick=()=>{iLimit+=300;toast("Daha eski kayıtlar yükleniyor…");isYukle()};$(u?"uList":"iList").appendChild(bt)}
@@ -1999,6 +1999,24 @@ function tikPanel(e){
     h+=`<div class="tikd${sy.n===sy.t?" ok":""}"><b>${sy.n===sy.t?"✅":"☑️"} ${esc(ASL[e.asama])}: ${sy.n}/${sy.t} ürün tamam</b>${kim?` <span>— ${esc(kim)}</span>`:""}${asamaYap(e.asama)&&sy.n<sy.t?`<small>Biten ürünün kg kutusuna (formda) dokunup tik koyun.</small>`:""}</div>`}
   gecmis.forEach(a=>{const sy=tikSay(e,a);h+=`<div class="who">${esc(ASL[a])}: ${sy.n}/${sy.t} ürün tamamlandı ${sy.n===sy.t?"✓":"⚠️"}</div>`});
   return h}
+/* v165: «Benim işlerim» kısa liste — operatör tek bakışta ne yapacağını görür, tek dokunuşla «Bitti →» der (form istenirse açılır) */
+const isKisaAcik=new Set();
+const kisaMi=()=>{let v=null;try{v=localStorage.getItem("isKisa")}catch(er){}return v===null?!isAdmin():v==="1"};
+const kisaBar=n=>`<div style="display:flex;gap:6px;align-items:center;justify-content:space-between;margin:0 0 8px;flex-wrap:wrap"><b style="font-size:15px">${kisaMi()?`📋 Benim işlerim${n?` — sizi bekleyen <span style="color:#b42318">${n}</span> iş`:""}`:""}</b><button type="button" class="btn b6 sm" data-kisa="1" style="width:auto;margin:0">${kisaMi()?"🧾 Form görünümüne geç":"📋 Kısa listeye geç (Benim işlerim)"}</button></div>`;
+function isKisa(e){
+  if(isKisaAcik.has(e.id))return isKart(e).replace('<div class="item sevk-border">','<div class="item sevk-border"><button type="button" class="btn b6 sm" data-kapa="'+esc(e.id)+'" style="width:auto;margin:0 0 6px">▲ Kısa görünüme dön</button>');
+  const id=esc(e.id),o=asOrd(e),i=o.indexOf(e.asama),nx=o[i+1],C=icols(e);
+  const gir=Math.max(+e.eklenmeTarihi||0,...Object.values(e.log||{}).map(v=>+(v&&v.zaman)||0)),gun=gir?Math.floor((Date.now()-gir)/864e5):null;
+  const baskiAsama=["baski","kesim","depo"].includes(e.asama);
+  const sat=C.map((c,j)=>{const p=[c.urunAdi||e.urunAdi||"",c.en?"en "+c.en:"",c.mikron?c.mikron+" µ":"",c.boy?"boy "+c.boy:"",c.korona||"",c.renk||(j===0?e.renk:"")||""].filter(Boolean).join(" · "),nt=String((baskiAsama?c.notB:c.notU)||"").trim();
+    return `<div style="padding:4px 0;border-top:1px dashed #e5e7eb"><b style="font-size:17px">${C.length>1?(j+1)+") ":""}${c.kg?esc(fmt(c.kg))+" kg":""}</b> ${esc(p)}${c.paketKg?` · paket ${esc(c.paketKg)} kg`:""}${nt&&nt!=="-"?`<div style="color:#b45309;font-weight:700">📝 ${esc(nt)}</div>`:""}</div>`}).join("");
+  return `<div class="item sevk-border" style="padding:10px 12px">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap"><div><b style="font-size:19px">${esc(e.no)}</b> <span style="font-size:16px">${esc(e.musteri||"-")}</span></div><div><span class="badge badge-sevk">${esc(ASL[e.asama]||e.asama)}</span>${gun!=null?` <span class="badge" style="background:${gun>=3?"#dc2626":"#64748b"}">${gun===0?"bugün geldi":gun+" gündür bekliyor"}</span>`:""}</div></div>
+  ${e.formul?`<div style="margin-top:4px"><b>${esc(e.formul)}</b>${e.stok?` <span style="color:#667085">· ${esc(e.stok)}</span>`:""}</div>`:e.stok?`<div style="margin-top:4px">${esc(e.stok)}</div>`:""}
+  ${sat}${terminRozet(e)}
+  <div class="acts" style="margin-top:6px">${e.asama==="etiket"&&asamaYap("etiket")?`<button class="btn b7 big" style="grid-column:span 2" data-a="etik" data-id="${id}">🏷️ Etiket hazırla</button>`:""}${nx&&asamaYap(e.asama)?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:18px" data-a="ileri" data-id="${id}">${e.asama==="depo"?"📦 Depoya girişi kaydet → BİTEN":"✓ Bitti → "+esc(ASL[nx])}</button>`:""}<button type="button" class="btn b6" data-ac="${id}" style="grid-column:span 2">🧾 Formu aç (tik, yazdır, düzenle)</button></div>
+  ${e.asama==="bitti"&&e.bekleAktar&&!e.aktarildi&&modGor("sevk")?`<button class="btn b4" style="width:100%;margin-top:8px;padding:14px;font-size:18px" data-a="aktar" data-id="${id}">📦 Hazır ürünlere aktar</button>`:""}</div>`;
+}
 function isKart(e){
   const id=esc(e.id),o=asOrd(e),i=o.indexOf(e.asama),nx=o[i+1],canDel=isAdmin()||(islemYap("isSil")&&e.ekleyenUid&&e.ekleyenUid===user.uid);
   const lg=Object.entries(e.log||{}).map(([k,v])=>`<div class="who">${esc(ASL[k]||k)}: ${v.kg!=null?esc(fmt(v.kg))+" kg":""}${v.paket?" · "+esc(fmt(v.paket))+" adet":""} — ${esc(v.kim||"")} ${esc(tarih(v.zaman))}${k==="depo"&&Array.isArray(v.kalem)?"<br>"+v.kalem.map((x,i)=>{const c=icols(e)[i]||{};return esc([i+1,c.en,c.boy].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=="").join(" - ")+": "+fmt(x&&x.kg)+" kg · "+fmt(x&&x.paket)+" paket")}).join("<br>"):""}</div>`).join("");
@@ -2076,7 +2094,11 @@ const isAksiyon=async ev=>{
   finally{if(gec)isKilit.delete(e.id)}
 };
 $("etNew").onclick=()=>{if(!(asamaYap("etiket")||isAdmin())){toast("Etiket hazırlama yetkiniz yok.");return}if(window.etiketSerbest)etiketSerbest()};
-$("iList").onclick=isAksiyon;$("uList").onclick=isAksiyon;
+/* v165: kısa liste düğmeleri (görünüm değiştir, formu aç/kapat) önce; diğerleri isAksiyon */
+const isListTik=ev=>{const k=ev.target.closest("[data-kisa]"),ac=ev.target.closest("[data-ac]"),kp=ev.target.closest("[data-kapa]");
+  if(k){try{localStorage.setItem("isKisa",kisaMi()?"0":"1")}catch(er){}isListele();return}
+  if(ac){isKisaAcik.add(ac.dataset.ac);isListele();return}if(kp){isKisaAcik.delete(kp.dataset.kapa);isListele();return}isAksiyon(ev)};
+$("iList").onclick=isListTik;$("uList").onclick=isListTik;
 /* ===================== QR: etiketteki iş emri QR'ı → iş emrini aç ===================== */
 var qrCache={},qrAcikId=null,qrRef=null,qrBekle=(function(){
   var v=null;try{v=new URLSearchParams(location.search).get("is")}catch(e){}

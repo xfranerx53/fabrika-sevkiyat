@@ -275,6 +275,25 @@ if (islem === "adres-konum" || islem === "teshis") { /* teşhis her sabah çalı
 
 /* cari-aktar (v138): ÖZEL depo mag-yonetim/aktar/cariler.json (Mikro: hareketli cariler + adres fihristi + risk) → cariler/ ve cariBakiye/ (tamamı yenilenir).
    Log'a yalnız sayılar yazılır. */
+/* mikro-maliyet (v165): SAHİBİN ONAYIYLA («1 ve 2'yi yap») ADET & MALİYET hammadde fiyatları = Mikro alış faturaları son 3 ay ağırlıklı ort. (KDV hariç; mikroOzet/ham)
+   + gider kaynağı «son 3 tam ayın ortalaması». Eski değerler denetim kaydına yazılır (geri alınabilir). */
+if (islem === "mikro-maliyet") {
+  if (!env("SA")) { log("❌ Firebase anahtarı yok"); process.exit(1); }
+  const D = admin.database(), M = (await D.ref("mikroOzet/ham").once("value")).val() || {}, H = (await D.ref("maliyet/hammadde").once("value")).val() || {};
+  const ES = [["LLDPE", m => /LLDPE/.test(m)], ["HDPE", m => /HDPE/.test(m) && !/LLDPE/.test(m)], ["LDPE", m => /AYPE|LDPE/.test(m) && !/LLDPE|HDPE/.test(m)], ["KALS", m => /KALS/.test(m)]];
+  const deg = [];
+  for (const [id, h] of Object.entries(H)) {
+    const ad = String(h.ad || "").toLocaleUpperCase("tr-TR"), e = ES.find(x => ad.includes(x[0]) && (x[0] !== "LDPE" || !/LLDPE|HDPE/.test(ad)) && (x[0] !== "HDPE" || !/LLDPE/.test(ad)));
+    if (!e) continue; const k = Object.keys(M).find(m => e[1](m.toLocaleUpperCase("tr-TR"))); if (!k) continue;
+    const m = M[k], u = m.USD || m.TL, pb = m.USD ? "USD" : "TRY"; if (!u || !(u.fiyat > 0)) continue;
+    deg.push(`${h.ad}: ${h.fiyat} ${h.pb}${h.kdvDahil ? " (KDV dahil)" : ""} → ${u.fiyat} ${pb} (KDV hariç, Mikro ${k})`);
+    await D.ref("maliyet/hammadde/" + id).update({ fiyat: u.fiyat, pb, kdvDahil: false, mikro: { kaynak: k, kg: u.kg || 0, son: u.son || "", eski: { fiyat: h.fiyat, pb: h.pb, kdvDahil: !!h.kdvDahil } }, z: admin.database.ServerValue.TIMESTAMP });
+  }
+  await D.ref("maliyet/ayar/giderKaynak").set("ort3");
+  await D.ref("denetim").push({ tur: "claude", baslik: "Maliyet: hammadde fiyatları Mikro alışlarına göre güncellendi", detay: deg.join(" · ").slice(0, 900) + " · gider kaynağı: son 3 tam ayın ortalaması", yol: "maliyet", id: "", kim: "🤖 Claude (sahibin onayıyla)", uid: "claude", zaman: admin.database.ServerValue.TIMESTAMP }).catch(() => { });
+  log(`✅ Hammadde: ${deg.length} fiyat güncellendi • gider kaynağı = son 3 ay`); deg.forEach(x => log("   " + x));
+}
+
 if (islem === "cari-aktar") {
   const T = env("YONETIM_TOKEN"); if (!T || !env("SA")) { log("❌ YONETIM_TOKEN ya da Firebase anahtarı yok"); process.exit(1); }
   const r = await fetch("https://api.github.com/repos/xfranerx53/mag-yonetim/contents/aktar/cariler.json", { headers: { Authorization: "Bearer " + T, Accept: "application/vnd.github.raw", "User-Agent": "mag-yonetim" } });

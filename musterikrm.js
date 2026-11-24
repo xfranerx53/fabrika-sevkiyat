@@ -23,6 +23,8 @@
   function sessiz(x,L){var s=sonAlim(x,L);return s?Math.floor((Date.now()-s)/GUN):null}
   function aranacak(x,L){var m=x.m||{},g=sessiz(x,L),sn=sinif(x),son=m.son&&m.son.z||0;
     if(m.sonraki&&m.sonraki<=Date.now()+GUN/2)return"📅 Sonraki arama günü: "+tarih(m.sonraki);
+    /* v165: vadesi geçen alacak (Mikro; TL hesap) ≥ 5.000 ₺ ve son 7 günde görüşülmediyse */
+    var bk=window.musteriBakiye&&musteriBakiye(x.key);if(bk&&+bk.gecen>=5000&&!(bk.dvz&&Object.keys(bk.dvz).length)&&Date.now()-son>7*GUN)return"💰 Vadesi geçen "+Math.round(+bk.gecen).toLocaleString("tr-TR")+" ₺ — tahsilat için ara";
     if(g!=null&&sn&&g>=ESIK[sn]&&Date.now()-son>14*GUN)return"⏳ "+g+" gündür alım yok ("+sn+" müşteri)";return""}
   window.musteriAranacak=aranacak;window.musteriSessiz=sessiz;window.musteriSinif=sinif;
   /* ---------- mesaj şablonları ---------- */
@@ -31,7 +33,7 @@
       ["🤝 Bir süredir sipariş yok",h+", MAG Ambalaj'dan "+b+". Bir süredir sizden sipariş alamadık; memnun kalmadığınız bir konu olduysa öğrenmek ve düzeltmek isteriz. Size nasıl daha iyi hizmet verebiliriz?"],
       ["📦 Sipariş hazır",h+", siparişiniz hazırlandı. Teslimat için uygun olduğunuz gün ve saati yazabilir misiniz? MAG Ambalaj"],
       ["🙏 Teşekkür",h+", siparişiniz için teşekkür ederiz. Ürünlerle ilgili her türlü geri bildiriminiz bizim için değerli. MAG Ambalaj"]];
-    if(bk&&+bk.acik>0&&!(bk.dvz&&Object.keys(bk.dvz).length))o.push(["💰 Ödeme hatırlatma",h+", MAG Ambalaj muhasebeden yazıyoruz. Cari hesabınızda "+Math.round(+bk.acik).toLocaleString("tr-TR")+" ₺ açık bakiye görünüyor. Ödeme planınızı paylaşabilir misiniz? İyi çalışmalar."]);
+    if(bk&&+bk.acik>0&&!(bk.dvz&&Object.keys(bk.dvz).length))o.push(["💰 Ödeme hatırlatma",h+", MAG Ambalaj muhasebeden yazıyoruz. Cari hesabınızda "+(+bk.gecen>0?"vadesi geçmiş "+Math.round(+bk.gecen).toLocaleString("tr-TR")+" ₺ (toplam "+Math.round(+bk.acik).toLocaleString("tr-TR")+" ₺) bakiye":Math.round(+bk.acik).toLocaleString("tr-TR")+" ₺ açık bakiye")+" görünüyor. Ödeme planınızı paylaşabilir misiniz? İyi çalışmalar."]);
     return o}
   /* ---------- görüşme kaydı ---------- */
   var SONUC=["✅ Ulaşıldı — sipariş verecek","🙂 Ulaşıldı — şimdilik ihtiyaç yok","⚠️ Ulaşıldı — şikâyet / sorun var","💸 Ulaşıldı — fiyat yüksek buluyor","🔁 Başka firmayla çalışıyor","📵 Ulaşılamadı","💬 Mesaj gönderildi","📝 Diğer"];

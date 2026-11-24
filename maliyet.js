@@ -34,6 +34,9 @@
     Object.keys(r.b||{}).forEach(function(hid){var o=+r.b[hid]||0,h=H[hid];if(!h||o<=0){if(o>0)eks=true;return}top+=o;tl_+=o/100*hFiyatTL(h);inv+=o/100/(+h.yog||0.93)});
     return{tl:tl_,yog:inv>0?(top/100)/inv:0.93,top:top,eksik:eks}}
   /* ---------- aylık gider ---------- */
+  /* v165: son 3 TAM ayın ortalaması (personel gideri işlenmiş = bordrosu girilmiş aylar; toplam gider ÷ toplam kg) */
+  function giderOrt3(){var P=function(m){return +(((G[m]||{}).k||{}).personel)||0},mx=Math.max.apply(null,Object.keys(G).map(P).concat([0]));
+    var L=Object.keys(G).sort().reverse().filter(function(m){var x=giderAy(m);return P(m)>=mx*0.5&&x&&x.kg>0}).slice(0,3); /* personel gideri diğer ayların yarısından azsa bordro işlenmemiş sayılır (ör. Ekim 2026) */if(!L.length)return null;var t=0,k=0;L.forEach(function(m){var x=giderAy(m);t+=x.top;k+=x.kg});return{tlKg:k>0?t/k:0,aylar:L.sort()}}
   function giderAy(a){var g=G[a];if(!g)return null;var top=GIDER_K.reduce(function(s,k){return s+(+((g.k||{})[k[0]])||0)},0),kg=+g.kgElle||+g.kgOto||+g.kgMikro||0; /* v159: üretim kg'ı yoksa Mikro satış kg'ı */return{top:top,kg:kg,tlKg:kg>0?top/kg:0}}
   /* ---------- ürün hesabı ---------- */
   function hesap(u){
@@ -44,9 +47,9 @@
     o.yog=r.yog;o.ham=r.tl;
     o.ek=(+u.boya||0)+(+u.baski||0)+(+u.ekDiger||0);
     o.fire=(o.ham+o.ek)*(+u.fire||0)/100;
-    var gm=a.giderKaynak==="aylik"?giderAy(a.giderAy):null;
-    if(gm&&gm.tlKg>0){o.elektrik=0;o.genel=gm.tlKg;o.giderNot="aylık gerçek ("+a.giderAy+")"}
-    else{o.elektrik=u.elektrik!=null?+u.elektrik:+a.elektrik;o.genel=u.genel!=null?+u.genel:+a.genel;o.giderNot=a.giderKaynak==="aylik"?"⚠ seçili ayın gideri yok, sabit değer":"sabit"}
+    var gm=a.giderKaynak==="aylik"?giderAy(a.giderAy):a.giderKaynak==="ort3"?giderOrt3():null;
+    if(gm&&gm.tlKg>0){o.elektrik=0;o.genel=gm.tlKg;o.giderNot=a.giderKaynak==="ort3"?"son 3 ay ortalaması ("+gm.aylar.map(ayAd).join(", ")+")":"aylık gerçek ("+a.giderAy+")"}
+    else{o.elektrik=u.elektrik!=null?+u.elektrik:+a.elektrik;o.genel=u.genel!=null?+u.genel:+a.genel;o.giderNot=a.giderKaynak==="aylik"?"⚠ seçili ayın gideri yok, sabit değer":a.giderKaynak==="ort3"?"⚠ tam ay gideri yok, sabit değer":"sabit"}
     if(u.tur==="adet"){
       o.gramaj=((+u.en||0)+(+u.koruk||0))*(+u.boy||0)*(+u.kat||2)*(+u.mikron||0)*o.yog/10000*(1+(+u.duz||0)/100);
       o.adetKg=o.gramaj>0?1000/o.gramaj:0;
@@ -87,7 +90,7 @@
   function ciz(){
     if(!acik)return;var el=$("malIc");if(!el)return;
     $("malTabs").innerHTML=SK.map(function(s){return '<button type="button" data-s="'+s[0]+'" class="'+(s[0]===sekme?"on":"")+'">'+s[1]+'</button>'}).join("");
-    var a=ay(),kb='<div class="mlKur">💱 $ '+f2(kur("USD"),4)+' · € '+f2(kur("EUR"),4)+' <span class="mut">('+esc(K&&K.tarih||"kur yok")+' · '+(a.kurTur==="doviz"?"döviz satış":"efektif satış")+(K&&K.kaynak?" · "+esc(K.kaynak):"")+')</span> · Gider: '+(a.giderKaynak==="aylik"?"aylık gerçek "+esc(a.giderAy||"?"):"sabit")+'</div>';
+    var a=ay(),kb='<div class="mlKur">💱 $ '+f2(kur("USD"),4)+' · € '+f2(kur("EUR"),4)+' <span class="mut">('+esc(K&&K.tarih||"kur yok")+' · '+(a.kurTur==="doviz"?"döviz satış":"efektif satış")+(K&&K.kaynak?" · "+esc(K.kaynak):"")+')</span> · Gider: '+(a.giderKaynak==="aylik"?"aylık gerçek "+esc(a.giderAy||"?"):a.giderKaynak==="ort3"?(function(){var o=giderOrt3();return o?"son 3 ay ort. "+f2(o.tlKg)+" ₺/kg":"son 3 ay (veri yok)"})():"sabit")+'</div>';
     var bos=!Object.keys(H).length&&!Object.keys(U).length;
     var h=kb+(bos?'<div class="note" style="margin:8px 0">Henüz veri yok. <button type="button" class="btn b3 sm" id="malTohum" style="width:auto;margin:6px 0 0">📥 Excel\'deki değerlerle başlat</button><div class="mut" style="font-size:13px">Hammaddeler (HDPE 1,85 $ …), 7 reçete ve Excel\'deki örnek ürünler yüklenir; sonra dilediğiniz gibi değiştirin.</div></div>':"");
     h+=sekme==="urun"?cizUrun():sekme==="liste"?cizListe():sekme==="ham"?cizHam():sekme==="gider"?cizGider():cizAyar();
@@ -133,7 +136,7 @@
       +'<div class="mut" style="font-size:12px">Kur kaynağı: '+esc(k.kaynak||"-")+' · '+esc(k.tarih||"")+'. TCMB kuru her açılışta 6 saatten eskiyse kendiliğinden yenilenir (elle girildiyse yenilenmez).</div>'
       +'<label style="margin-top:8px">Hangi kur kullanılsın?</label><select id="maKt"><option value="efektif"'+(a.kurTur==="efektif"?" selected":"")+'>Efektif satış (Excel\'deki gibi)</option><option value="doviz"'+(a.kurTur==="doviz"?" selected":"")+'>Döviz satış</option></select>'
       +'<div class="shd" style="margin-top:12px">🧾 KDV</div><div class="grid"><div><label>KDV oranı %</label><input id="maKdv" inputmode="decimal" value="'+gir(a.kdv)+'"></div><div><label>Faturasız (X) satışta maliyete eklenen KDV yükü %</label><input id="maKy" inputmode="decimal" value="'+gir(a.kdvYuk)+'"></div></div>'
-      +'<div class="shd" style="margin-top:12px">🏭 GİDER</div><label>Gider nereden alınsın?</label><select id="maGk"><option value="sabit"'+(a.giderKaynak!=="aylik"?" selected":"")+'>Sabit ₺/kg (aşağıdaki değerler; ürün kartında değiştirilebilir)</option><option value="aylik"'+(a.giderKaynak==="aylik"?" selected":"")+'>Aylık gerçek (Giderler sekmesindeki seçili ay)</option></select>'
+      +'<div class="shd" style="margin-top:12px">🏭 GİDER</div><label>Gider nereden alınsın?</label><select id="maGk"><option value="ort3"'+(a.giderKaynak==="ort3"?" selected":"")+'>Son 3 tam ayın ortalaması (Mikro mizanından; bordrosu işlenmemiş ay sayılmaz)</option><option value="sabit"'+(a.giderKaynak!=="aylik"&&a.giderKaynak!=="ort3"?" selected":"")+'>Sabit ₺/kg (aşağıdaki değerler; ürün kartında değiştirilebilir)</option><option value="aylik"'+(a.giderKaynak==="aylik"?" selected":"")+'>Aylık gerçek (Giderler sekmesindeki seçili ay)</option></select>'
       +'<label>Aylık gerçek için ay</label><select id="maGa"><option value="">— ay seçin —</option>'+ayOpt+'</select>'
       +'<div class="grid"><div><label>Elektrik ₺/kg (sabit)</label><input id="maEl" inputmode="decimal" value="'+gir(a.elektrik)+'"></div><div><label>Genel gider ₺/kg (sabit)</label><input id="maGe" inputmode="decimal" value="'+gir(a.genel)+'"></div></div>'
       +'<button type="button" class="btn b1" id="maKaydet">💾 Ayarları kaydet</button>'}
