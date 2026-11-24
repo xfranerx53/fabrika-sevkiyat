@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v161**
+**GÜNCEL SÜRÜM: v162**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -447,6 +447,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-24: v159 — Kullanıcı Mikro raporlarını (17 Excel, 01.11.2025–31.10.2026) gönderdi: «eksiksiz mi bak, gerekli ne varsa entegre et». Dönüştürücü: ÖZEL depo mag-yonetim/araclar/aktar.py (+oku.py; xls→xlsx LibreOffice ile) → aktar/cariler.json (601 cari: kart+adres+yetkili+yaşlandırma+satış+tahsilat+çek; ABC = 12 ay cirosu %80/%15) ve aktar/mikro-ozet.json. cari-aktar işlemi artık mikroOzet/ de yazar ve mizandan Tem–Eki giderlerini maliyet/gider/{ay}'a aktarır (elle girilmiş ay ezilmez → yalnız «mikro» alt alanı; kgMikro = Mikro satış kg'ı, giderAy kg yedeği). mikroozet.js: Raporlar › «🧾 Mikro muhasebe özeti» (yönetici+Muhasebe; Özet, Müşteriler, Vadesi geçen, Çekler, Ürünler, Alış, Siparişler, Giderler, Demirbaş, Eksikler) + müşteri kartında Mikro kutusu (vade, temsilci, açık/vadesi geçen, yaşlandırma, 12 ay satış/tahsilat, çek, sipariş, aylık satış grafiği). Maliyet › hammadde: Mikro alış fiyatı (son 3 ay, KDV hariç) «Uygula». Dövizli carilerde TL karşılığı bugünkü kurla YAKLAŞIK (b.tl + b.dvz ayrı); dövizli hesapta ödeme hatırlatma mesajı önerilmez. rules: mikroOzet (okuma yönetici+Muhasebe). EKSİK (kullanıcıya söylendi): bordro icmali, döviz kuru sütunu, yetkili/e-posta, fiyat listesi kullanılmıyor, kredi limitleri boş, dövizli bakiye TL karşılığı, Ekim personel gideri.
 - 2026-11-24: v160 — mikroOzet.tahAy anahtarları Firebase'e uygun (nakit/havale/cek/kart; «Havale/EFT» anahtarı aktarımı düşürmüştü). cari-aktar çalıştı: 601 cari, 506 bakiye, Mikro özeti, Tem–Eki giderleri maliyet/gider'e (4 yeni ay).
 - 2026-11-24: v161 — Muhasebe Claude'u eksikleri getirdi: bordro icmali Mikro'da yok → 770.01 muavininden Oca–Eyl 2026 brüt/SGK/işsizlik (mikroOzet.bordro, Giderler sekmesi); Kas–Ara 2025 önceki mali yıl DB'sinde, Ekim bordrosu işlenmemiş (yeni Ekim mizanında da 770.01 yok). kapatilmamis_siparisler (25 satır, %96+ teslim) → sip[].kapat, Siparişler sekmesinde ayrı. «TL karşılığı» yaşlandırma yine döviz ayrı satırlı geldi (değişmedi); doviz_bakiyeleri ve kurlu satış kalemleri gelmedi.
+- 2026-11-24: v162 — doviz_bakiyeleri.xlsx geldi (103 satır; Mikro cari bazında değerlemeli rapor vermiyor, TL = döviz bakiye × 24.11.2026 Mikro döviz alış kuru USD 50,5116 · EUR 55,4656 · GBP 66,1497). aktar.py KUR'u bu dosyadan alır; dövizli carilerde TL karşılığı = TL bakiye + döviz × kur. Teyit edilmesi gereken: Memişler Çay ≈5,7 M, Sar Lojistik ≈4,6 M, ALG ≈2,9 M, Konya Kağıt ≈2,5 M (12 ayda satış yok/eski adat).
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 - (v143) Google yer linklerinden koordinat: sayfayı değil `google.com/search?tbm=map&q=<yer yazısı>` cevabını oku. 1s0x kimliği hassas konum DEĞİL (S2 seviye ~10).

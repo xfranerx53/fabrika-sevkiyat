@@ -24,7 +24,7 @@
     if(!b)return h;
     var dv=b.dvz&&Object.keys(b.dvz).length;
     h+='<div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:6px">'+
-      kut("Açık hesap",(dv?"≈ ":"")+tl(b.acik),+b.acik>0?"#b42318":"#16a34a",dv?'TL '+tl(b.tl!=null?b.tl:0)+' + '+dvz(b.dvz)+' (bugünkü kurla yaklaşık)':(b.adat?'adat vadesi '+trd(b.adat):''))+
+      kut("Açık hesap",(dv?"≈ ":"")+tl(b.acik),+b.acik>0?"#b42318":"#16a34a",dv?'TL '+tl(b.tl!=null?b.tl:0)+' + '+dvz(b.dvz)+' (Mikro kuru 24.11.2026)':(b.adat?'adat vadesi '+trd(b.adat):''))+
       kut("Vadesi geçen",tl(b.gecen),+b.gecen>0?"#b42318":"#334155","")+
       (b.ciro!=null?kut("12 ay satış",tl(b.ciro),"#334155",(b.fat?b.fat+" fatura":"")+(b.kg?" • "+sy(b.kg)+" kg":"")):"")+
       (b.tah!=null?kut("12 ay tahsilat",tl(b.tah),"#334155",b.sonTah?"son: "+trd(b.sonTah.t)+" "+tl(b.sonTah.m)+" ("+e(b.sonTah.sek)+")":""):"")+
@@ -62,10 +62,10 @@
       return'<div style="font-size:13px;color:#667085;margin-bottom:6px">12 ayda en çok satış yapılan '+L.length+' müşteri. Sınıf: cironun ilk %80\'i A, sonraki %15 B, kalan C.</div>'+tablo(["#","Müşteri","Sınıf","12 ay satış","","Tahsilat","Açık hesap","Vadesi geçen"],L.map(function(x,i){return[i+1,e(x.ad),x.sinif||"",tl(x.ciro),b(x),tl(x.tah),tl(x.acik),+x.gecen>0?'<b style="color:#b42318">'+tl(x.gecen)+'</b>':"-"]}),[3,5,6,7])}
     if(sek==="yas"){var y=o.yas||{},m=y.m||{},s=y.s||{},Y=[["g0","0–30 gün"],["g30","31–60"],["g60","61–90"],["g90","91–120"],["g120","120+ gün"],["gelecek","Vadesi gelmemiş"],["top","TOPLAM"]];
       var G=o.geciken||[],tlG=G.filter(function(x){return!x.dvz||!Object.keys(x.dvz).length}),dvG=G.filter(function(x){return x.dvz&&Object.keys(x.dvz).length});
-      return'<div style="font-size:13px;color:#667085;margin-bottom:6px">Mikro cari yaşlandırma (24.11.2026). Dövizli carilerde TL karşılığı bugünkü kurla <b>yaklaşık</b>; eski TL ödemeleri eski kurdan olduğu için bu hesaplarda tutar şişik görünebilir.</div>'+
+      return'<div style="font-size:13px;color:#667085;margin-bottom:6px">Mikro cari yaşlandırma (24.11.2026). Dövizli carilerde TL karşılığı = TL bakiye + döviz bakiye × Mikro kuru (24.11.2026). Mikro kur farkı fişi kesmediği için bu hesaplar muhasebeyle <b>teyit edilmeli</b>.</div>'+
         tablo(["","Müşteriler (bize borçlu)","Tedarikçiler (bizim borcumuz)"],Y.map(function(a){return['<b>'+a[1]+'</b>',tl(m[a[0]]),tl(-(+s[a[0]]||0))]}),[1,2])+
         '<h4 style="margin:12px 0 4px">Vadesi geçen müşteriler — TL hesaplar ('+tlG.length+')</h4>'+tablo(["Müşteri","Sınıf","Vadesi geçen","Toplam","Adat vadesi","Son satış"],tlG.map(function(x){return[e(x.ad),x.sinif||"",'<b style="color:#b42318">'+tl(x.gecen)+'</b>',tl(x.top),trd(x.adat),trd(x.son)]}),[2,3])+
-        (dvG.length?'<h4 style="margin:12px 0 4px">Dövizli hesaplar (yaklaşık, muhasebeyle teyit edin) ('+dvG.length+')</h4>'+tablo(["Müşteri","TL bakiye","Döviz bakiye","≈ TL toplam","Adat vadesi","Son satış"],dvG.map(function(x){return[e(x.ad),tl(x.tl),dvz(x.dvz),tl(x.top),trd(x.adat),trd(x.son)]}),[1,2,3]):"")+
+        (dvG.length?'<h4 style="margin:12px 0 4px">Dövizli hesaplar (muhasebeyle teyit edin) ('+dvG.length+')</h4>'+tablo(["Müşteri","TL bakiye","Döviz bakiye","≈ TL toplam","Adat vadesi","Son satış"],dvG.map(function(x){return[e(x.ad),tl(x.tl),dvz(x.dvz),tl(x.top),trd(x.adat),trd(x.son)]}),[1,2,3]):"")+
         '<h4 style="margin:12px 0 4px">Tedarikçilere borcumuz (en büyük '+(o.tedBorc||[]).length+')</h4>'+tablo(["Tedarikçi","≈ Borç","TL","Döviz","12 ay alış (TL fatura)"],(o.tedBorc||[]).map(function(x){return[e(x.ad),'<b>'+tl(-x.top)+'</b>',tl(-x.tl),dvz(x.dvz),x.alis?tl(x.alis):"-"]}),[1,2,3,4])}
     if(sek==="cek"){var C=o.cekAcik||[],V=o.verilenCek||[],K=o.karsiliksiz||[];
       return'<h4 style="margin:4px 0">Elimizdeki müşteri çekleri — portföyde / bankada tahsilde ('+C.length+' adet, '+tl(C.reduce(function(a,c){return a+c.tut},0))+')</h4>'+tablo(["Vade","Tutar","Veren müşteri","Borçlu","Durum","Banka","Çek no"],C.map(function(c){var g=c.vade<new Date().toISOString().slice(0,10);return[(g?'<b style="color:#b42318">':'')+trd(c.vade)+(g?'</b>':''),tl(c.tut),e(c.ad),e(c.borclu),e(c.poz),e(c.banka),e(c.cekNo)]}),[1])+
