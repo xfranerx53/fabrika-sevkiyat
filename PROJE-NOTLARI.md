@@ -459,6 +459,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-25: v170 — Kullanıcı: «çok küçük oldu, soldan sağa 5 tane olsun». .izg 5 sütun (≤900 px 3, ≤560 px 2); aşama etiketi 12 px.
 - 2026-11-25: v171 — Kullanıcı: Tüm fişler ızgarası İş emirleri bölümünde de olsun. izgaraMi panel uretim|is, ayar her bölüm için ayrı (localStorage isIzgara_<panel>). Izgaradaki fiş, kartlardaki gibi fiyat yetkisine göre (islemYap fiyat) fiyatlı/fiyatsız.
 - 2026-11-25: v172 — Kullanıcı: ızgarada fişler işaretlenebilsin, toplu işlem — yalnız yönetici. «☑ Toplu seçim» (izSecMod) → fişe dokununca seç/bırak (mavi çerçeve + ✓), üstte yapışkan çubuk (izBar): Tümünü seç / Temizle / ✓ Sonraki aşamaya geçir (etiket & depo atlanır — onlar diyalog ister) / ⤴ Aşamaya taşı (isHareket tur «tasi») / 🖨 Yazdır (isYazdirToplu: her iş emri ayrı A4 sayfa, #prn.cok .psay) / 🗑 Sil (isSilYap: tek silme mantığı fonksiyona çıkarıldı; çöp kutusuna). isHareket kuralı bilinmeyen alana izin vermez → «toplu» alanı yazılmaz, log kim «(toplu)».
+- 2026-11-25: (v172 yayını) GitHub Pages derlemesi GitHub'ın geçici 503 hatasıyla (Jekyll → api.github.com) düştü, site v171'de kaldı. .nojekyll eklendi: Pages artık Jekyll çalıştırmadan dosyaları olduğu gibi yayınlar (bu tür hatalar tekrarlanmaz). Firebase Hosting (sevkiyat-fc22b.web.app) etkilenmemişti.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 - (v143) Google yer linklerinden koordinat: sayfayı değil `google.com/search?tbm=map&q=<yer yazısı>` cevabını oku. 1s0x kimliği hassas konum DEĞİL (S2 seviye ~10).
