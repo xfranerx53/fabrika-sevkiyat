@@ -5,7 +5,7 @@
 > hafızası yoktur; hafıza BU DOSYA + zip'teki gerçek kodlardır.
 > Her teslimatta güncellenir.
 
-**GÜNCEL SÜRÜM: v170**
+**GÜNCEL SÜRÜM: v171**
 Son güncelleme: 2026-10-30 (v123: uygulama KAPALIYKEN telefon bildirimi — Cloudflare Worker `cloudflare/bildirim-worker.js` + standart Web Push; v122: kişiye özel bildirim sistemi bildirim.js, yeni sürüm uyarısı surum.js, tahsilat düzenleme düğmesi hatası, talimat silme çöp kutusuna). Not: v119-v121 günlük satırları önceki sohbette yazılmamış (v119 = ürün bazlı tik, Bölüm 7).
 
 ---
@@ -457,6 +457,7 @@ Satır numaraları kayar; bu başlıkları ara:
 - 2026-11-24: v168 — Kullanıcı: «Önümüzdeki iş yükü» 7.630 kg görünüyordu (ajanın eski turundan, silinen işler dahil). yz.js: iş yükü canlı kuyruktan ajan formülüyle yeniden hesaplanır (ekstruder = etiket+ekstruder; baskı = önceki aşamalardaki baskılı + baskı; kesim = önceki tümü + kesim; hız kg/saat ajanın son değerinden türetilir, yoksa 60/80/25). «gündür bekliyor» ajanla aynı: sipariş tarihinden; gecGun yalnız sipariş tarihli işler.
 - 2026-11-25: v169 (DENEME — kullanıcı beğenmezse düzeltilecek) — Üretim › «🗂 Tüm fişler» ızgarası: görünüm çubuğu 3 düğme (📋 Kısa liste / 🧾 Form / 🗂 Tüm fişler; localStorage isIzgara/isKisa). Ekstruder→depo tüm açık fişler (bitti hariç; arama açıksa sonuçlar) küçük formlar halinde, 4 px aralıkla; ≥1100 px 8'li, 800–1100 6'lı, 480–800 4'lü, telefonda 3'lü. Seçenek düğmeleri yok; fişe dokununca izDlg'de tam kart (isKart) seçeneklerle açılır, bir seçenek kullanılınca pencere kapanır.
 - 2026-11-25: v170 — Kullanıcı: «çok küçük oldu, soldan sağa 5 tane olsun». .izg 5 sütun (≤900 px 3, ≤560 px 2); aşama etiketi 12 px.
+- 2026-11-25: v171 — Kullanıcı: Tüm fişler ızgarası İş emirleri bölümünde de olsun. izgaraMi panel uretim|is, ayar her bölüm için ayrı (localStorage isIzgara_<panel>). Izgaradaki fiş, kartlardaki gibi fiyat yetkisine göre (islemYap fiyat) fiyatlı/fiyatsız.
 
 ## 8.5 DERSLER (aynı hatayı tekrarlama — kısa liste)
 - (v143) Google yer linklerinden koordinat: sayfayı değil `google.com/search?tbm=map&q=<yer yazısı>` cevabını oku. 1s0x kimliği hassas konum DEĞİL (S2 seviye ~10).

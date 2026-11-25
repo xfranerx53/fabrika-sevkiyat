@@ -2003,12 +2003,12 @@ function tikPanel(e){
 const isKisaAcik=new Set();
 const kisaMi=()=>{let v=null;try{v=localStorage.getItem("isKisa")}catch(er){}return v===null?!isAdmin():v==="1"};
 /* v169: Üretim › «🗂 Tüm fişler» ızgarası (deneme): bütün açık fişler küçük, yan yana (geniş ekranda 8'li), seçenekler gizli; fişe dokununca büyür ve seçenekler görünür */
-const izgaraMi=()=>{try{return panel==="uretim"&&localStorage.getItem("isIzgara")==="1"}catch(er){return false}};
-const kisaBar=n=>{const iz=izgaraMi(),k=!iz&&kisaMi(),u=panel==="uretim",B=(on,at,t)=>`<button type="button" class="btn ${on?"b3":"b6"} sm" ${at} style="width:auto;margin:0">${t}</button>`;
+const izgaraMi=()=>{try{return(panel==="uretim"||panel==="is")&&localStorage.getItem("isIzgara_"+panel)==="1"}catch(er){return false}}; /* v171: İş emirleri bölümünde de (ayrı ayar) */
+const kisaBar=n=>{const iz=izgaraMi(),k=!iz&&kisaMi(),u=panel==="uretim"||panel==="is",B=(on,at,t)=>`<button type="button" class="btn ${on?"b3":"b6"} sm" ${at} style="width:auto;margin:0">${t}</button>`;
   return `<div style="display:flex;gap:6px;align-items:center;justify-content:space-between;margin:0 0 8px;flex-wrap:wrap"><b style="font-size:15px">${iz?"🗂 Tüm fişler — büyütmek için fişe dokunun":k?`📋 Benim işlerim${n?` — sizi bekleyen <span style="color:#b42318">${n}</span> iş`:""}`:""}</b><div style="display:flex;gap:6px;flex-wrap:wrap">${B(k,'data-gor="kisa"',"📋 Kısa liste")}${B(!iz&&!k,'data-gor="form"',"🧾 Form")}${u?B(iz,'data-gor="izgara"',"🗂 Tüm fişler"):""}</div></div>`};
 function izgaraHtml(L){if(!L.length)return'<div class="empty">Açık fiş yok.</div>';
   const SR=["etiket","ekstruder","baski","kesim","depo"];L=L.slice().sort((x,y)=>SR.indexOf(x.asama)-SR.indexOf(y.asama)||String(x.no).localeCompare(String(y.no)));
-  return '<div class="izg">'+L.map(e=>`<div class="izgK" data-iz="${esc(e.id)}" title="${esc(e.no+" · "+(e.musteri||""))}"><div class="izgA">${esc(ASL[e.asama]||e.asama)}</div><div class="isf">${isForm(e,false)}</div></div>`).join("")+'</div>'}
+  return '<div class="izg">'+L.map(e=>`<div class="izgK" data-iz="${esc(e.id)}" title="${esc(e.no+" · "+(e.musteri||""))}"><div class="izgA">${esc(ASL[e.asama]||e.asama)}</div><div class="isf">${isForm(e,islemYap("fiyat"))}</div></div>`).join("")+'</div>'}
 function izgaraAc(id){const e=isE.find(x=>x.id===id);if(!e)return;let d=$("izDlg");if(!d){d=document.createElement("dialog");d.id="izDlg";d.style.cssText="width:96vw;max-width:760px;max-height:94vh;overflow:auto;margin:auto;inset:0;border:0;border-radius:14px;padding:8px";document.body.appendChild(d);
     d.addEventListener("click",ev=>{if(ev.target===d){d.close();return}if(ev.target.closest("[data-izk]")){d.close();return}const a=ev.target.closest("[data-a]");if(a){isAksiyon(ev);setTimeout(()=>{try{d.close()}catch(er){}},50)}})}
   d.innerHTML='<div style="display:flex;justify-content:flex-end"><button type="button" data-izk="1" style="font-size:22px;background:none;border:0;width:auto">✕</button></div><div class="list">'+isKart(e)+'</div>';if(!d.open)d.showModal();isfSigdir()}
@@ -2106,7 +2106,7 @@ $("etNew").onclick=()=>{if(!(asamaYap("etiket")||isAdmin())){toast("Etiket hazı
 /* v165: kısa liste düğmeleri (görünüm değiştir, formu aç/kapat) önce; diğerleri isAksiyon */
 const isListTik=ev=>{const k=ev.target.closest("[data-kisa]"),ac=ev.target.closest("[data-ac]"),kp=ev.target.closest("[data-kapa]");
   const gr=ev.target.closest("[data-gor]"),iz=ev.target.closest("[data-iz]");
-  if(gr){const g=gr.dataset.gor;try{localStorage.setItem("isIzgara",g==="izgara"?"1":"0");if(g!=="izgara")localStorage.setItem("isKisa",g==="kisa"?"1":"0")}catch(er){}isListele();return}
+  if(gr){const g=gr.dataset.gor;try{localStorage.setItem("isIzgara_"+panel,g==="izgara"?"1":"0");if(g!=="izgara")localStorage.setItem("isKisa",g==="kisa"?"1":"0")}catch(er){}isListele();return}
   if(iz){izgaraAc(iz.dataset.iz);return}
   if(k){try{localStorage.setItem("isKisa",kisaMi()?"0":"1")}catch(er){}isListele();return}
   if(ac){isKisaAcik.add(ac.dataset.ac);isListele();return}if(kp){isKisaAcik.delete(kp.dataset.kapa);isListele();return}isAksiyon(ev)};
