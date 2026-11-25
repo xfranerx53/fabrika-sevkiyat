@@ -1922,7 +1922,7 @@ const bugun=()=>trIso(Date.now());
 const icols=e=>Object.values(e.siparis||{}).filter(c=>c&&!c._bos); /* v164: _bos = kg/en'i olmayan, yalnız not vb. yazılmış sütun (yalnız formda görünür) */
 const icolsTum=e=>Object.values(e.siparis||{}).filter(Boolean);
 /* ---- Hareket geçmişi: isHareket/<isEmriId>/<pushId> (sadece eklenir, değiştirilemez) ---- */
-const HT={olustur:"🆕 Oluşturdu",ileri:"✅ İlerletti",geri:"↩️ Geri aldı",etiketsiz:"⚠️ Etiketsiz ilerletti",etiket:"🏷️ Etiket bastı",duzenle:"✏️ Düzenledi",aktar:"📦 Hazır ürünlere aktardı"};
+const HT={olustur:"🆕 Oluşturdu",ileri:"✅ İlerletti",geri:"↩️ Geri aldı",etiketsiz:"⚠️ Etiketsiz ilerletti",etiket:"🏷️ Etiket bastı",duzenle:"✏️ Düzenledi",aktar:"📦 Hazır ürünlere aktardı",tasi:"⤴ Aşamaya taşıdı (toplu)"};
 function hrkObj(o){return Object.assign({kim:ad(),uid:user.uid,zaman:firebase.database.ServerValue.TIMESTAMP},o)}
 function hrkEk(up,id,o){up["isHareket/"+id+"/"+db.ref("isHareket/"+id).push().key]=hrkObj(o);if(window.bilHrk)window.bilHrk(up,id,o);return up} /* v122: bildirim, kayıt başarıyla yazılınca gider (bildirim.js) */
 function hrkYaz(id,o){return db.ref("isHareket/"+id).push().set(hrkObj(o))}
@@ -2005,10 +2005,36 @@ const kisaMi=()=>{let v=null;try{v=localStorage.getItem("isKisa")}catch(er){}ret
 /* v169: Üretim › «🗂 Tüm fişler» ızgarası (deneme): bütün açık fişler küçük, yan yana (geniş ekranda 8'li), seçenekler gizli; fişe dokununca büyür ve seçenekler görünür */
 const izgaraMi=()=>{try{return(panel==="uretim"||panel==="is")&&localStorage.getItem("isIzgara_"+panel)==="1"}catch(er){return false}}; /* v171: İş emirleri bölümünde de (ayrı ayar) */
 const kisaBar=n=>{const iz=izgaraMi(),k=!iz&&kisaMi(),u=panel==="uretim"||panel==="is",B=(on,at,t)=>`<button type="button" class="btn ${on?"b3":"b6"} sm" ${at} style="width:auto;margin:0">${t}</button>`;
-  return `<div style="display:flex;gap:6px;align-items:center;justify-content:space-between;margin:0 0 8px;flex-wrap:wrap"><b style="font-size:15px">${iz?"🗂 Tüm fişler — büyütmek için fişe dokunun":k?`📋 Benim işlerim${n?` — sizi bekleyen <span style="color:#b42318">${n}</span> iş`:""}`:""}</b><div style="display:flex;gap:6px;flex-wrap:wrap">${B(k,'data-gor="kisa"',"📋 Kısa liste")}${B(!iz&&!k,'data-gor="form"',"🧾 Form")}${u?B(iz,'data-gor="izgara"',"🗂 Tüm fişler"):""}</div></div>`};
+  return `<div style="display:flex;gap:6px;align-items:center;justify-content:space-between;margin:0 0 8px;flex-wrap:wrap"><b style="font-size:15px">${iz?"🗂 Tüm fişler — büyütmek için fişe dokunun":k?`📋 Benim işlerim${n?` — sizi bekleyen <span style="color:#b42318">${n}</span> iş`:""}`:""}</b><div style="display:flex;gap:6px;flex-wrap:wrap">${B(k,'data-gor="kisa"',"📋 Kısa liste")}${B(!iz&&!k,'data-gor="form"',"🧾 Form")}${u?B(iz,'data-gor="izgara"',"🗂 Tüm fişler"):""}${iz&&isAdmin()?B(izSecMod,'data-izsec="1"',izSecMod?"✖ Seçimi kapat":"☑ Toplu seçim"):""}</div></div>`};
+/* v172: toplu seçim (yalnız yönetici) */
+let izSecMod=false;const izSec=new Set();
+function izBar(){const n=izSec.size,B=(a,t,c)=>`<button type="button" class="btn ${c||"b6"} sm" data-izt="${a}" style="width:auto;margin:0"${n||a==="hep"?"":" disabled"}>${t}</button>`;
+  return `<div class="izBar"><b>${n} fiş seçili</b>${B("hep","☑ Tümünü seç")}${B("bos","☐ Seçimi temizle")}${B("ileri","✓ Sonraki aşamaya geçir","b3")}${B("tasi","⤴ Aşamaya taşı…")}${B("yaz","🖨 Yazdır","b7")}${B("sil","🗑 Sil","b2")}</div>`}
+function izSecYenile(){const g=document.querySelector(".izg");if(!g)return;g.querySelectorAll(".izgK").forEach(k=>k.classList.toggle("sec",izSec.has(k.dataset.iz)));const b=document.querySelector(".izBar");if(b)b.outerHTML=izBar()}
+async function izToplu(t){
+  if(!isAdmin()){toast("Toplu işlem yalnız yöneticide.");return}
+  const V=[...document.querySelectorAll(".izg .izgK")].map(k=>k.dataset.iz);
+  if(t==="hep"){V.forEach(id=>izSec.add(id));izSecYenile();return}if(t==="bos"){izSec.clear();izSecYenile();return}
+  const L=[...izSec].map(id=>isBulId(id)).filter(Boolean);if(!L.length)return;const TS=firebase.database.ServerValue.TIMESTAMP,ls=L.map(e=>e.no+" · "+(e.musteri||"-")).join("\n");
+  if(t==="yaz"){isYazdirToplu(L);return}
+  if(t==="sil"){if(!confirm(L.length+" iş emri silinsin mi? (Çöp kutusuna gider, geri alınabilir)\n\n"+ls))return;let n=0;for(const e of L){try{await isSilYap(e,true);n++}catch(er){}}izSec.clear();toast("🗑 "+n+" iş emri silindi");return}
+  if(t==="ileri"){const ok=[],atla=[];L.forEach(e=>{const o=asOrd(e),i=o.indexOf(e.asama);if(["etiket","depo","bitti"].includes(e.asama)||i<0||i>=o.length-1)atla.push(e);else ok.push(e)});
+    if(!ok.length){alert("Seçilenlerin hiçbiri toplu ilerletilemez.\nEtiket (etiket hazırlanmalı) ve Depo (kg/paket girilmeli) fişleri tek tek ilerletilir.");return}
+    if(!confirm(ok.length+" iş emri bir sonraki aşamaya geçirilsin mi?\n\n"+ok.map(e=>{const o=asOrd(e);return e.no+" · "+(ASL[e.asama]||e.asama)+" → "+(ASL[o[o.indexOf(e.asama)+1]]||"")}).join("\n")+(atla.length?"\n\nAtlanacak ("+atla.length+"; etiket/depo tek tek yapılır): "+atla.map(e=>e.no).join(", "):"")))return;
+    const up={};ok.forEach(e=>{const o=asOrd(e),nx=o[o.indexOf(e.asama)+1];up["isEmirleri/"+e.id+"/asama"]=nx;up["isEmirleri/"+e.id+"/log/"+e.asama]={kg:null,kim:ad()+" (toplu)",zaman:TS};hrkEk(up,e.id,{tur:"ileri",kimden:e.asama,kime:nx,kg:null})});
+    try{await db.ref().update(up);izSec.clear();toast("✓ "+ok.length+" iş emri ilerletildi")}catch(er){toast(errText(er))}return}
+  if(t==="tasi"){const S=["etiket","ekstruder","baski","kesim","depo"],c=prompt("Seçilen "+L.length+" iş emri hangi aşamaya taşınsın?\n"+S.map((k,i)=>(i+1)+") "+String(ASL[k]||k).replace(/^\S+\s/,"")).join("\n")+"\n\nNumarasını yazın:");if(c==null)return;const k=S[(+c||0)-1];if(!k){toast("Geçersiz seçim");return}
+    if(!confirm(L.length+" iş emri → "+(ASL[k]||k)+" aşamasına taşınsın mı?\n\n"+ls))return;
+    const up={};L.forEach(e=>{if(e.asama===k)return;up["isEmirleri/"+e.id+"/asama"]=k;hrkEk(up,e.id,{tur:"tasi",kimden:e.asama,kime:k})});
+    try{await db.ref().update(up);izSec.clear();toast("⤴ "+Object.keys(up).filter(x=>x.endsWith("/asama")).length+" iş emri taşındı")}catch(er){toast(errText(er))}return}}
+function isYazdirToplu(L){const P=$("prn"),fy=islemYap("fiyat");
+  P.innerHTML=L.map(e=>`<div class="psay"><div class="prow">${isForm(e)}<div class="pcut"></div>${isForm(e,fy)}</div></div>`).join("");P.classList.add("cok");
+  P.classList.add("meas");P.querySelectorAll(".pf").forEach(f=>isfFit(f));P.classList.remove("meas");
+  const t=document.title;document.title=L.length+" iş takip formu";window.onafterprint=()=>{document.title=t;P.innerHTML="";P.classList.remove("cok")};setTimeout(()=>window.print(),200)}
 function izgaraHtml(L){if(!L.length)return'<div class="empty">Açık fiş yok.</div>';
   const SR=["etiket","ekstruder","baski","kesim","depo"];L=L.slice().sort((x,y)=>SR.indexOf(x.asama)-SR.indexOf(y.asama)||String(x.no).localeCompare(String(y.no)));
-  return '<div class="izg">'+L.map(e=>`<div class="izgK" data-iz="${esc(e.id)}" title="${esc(e.no+" · "+(e.musteri||""))}"><div class="izgA">${esc(ASL[e.asama]||e.asama)}</div><div class="isf">${isForm(e,islemYap("fiyat"))}</div></div>`).join("")+'</div>'}
+  if(!izSecMod||!isAdmin())izSec.clear();else{const V=new Set(L.map(e=>e.id));[...izSec].forEach(id=>{if(!V.has(id))izSec.delete(id)})}
+  return (izSecMod&&isAdmin()?izBar():"")+'<div class="izg'+(izSecMod&&isAdmin()?' secm':'')+'">'+L.map(e=>`<div class="izgK${izSec.has(e.id)?" sec":""}" data-iz="${esc(e.id)}" title="${esc(e.no+" · "+(e.musteri||""))}"><div class="izgA">${esc(ASL[e.asama]||e.asama)}</div><div class="isf">${isForm(e,islemYap("fiyat"))}</div></div>`).join("")+'</div>'}
 function izgaraAc(id){const e=isE.find(x=>x.id===id);if(!e)return;let d=$("izDlg");if(!d){d=document.createElement("dialog");d.id="izDlg";d.style.cssText="width:96vw;max-width:760px;max-height:94vh;overflow:auto;margin:auto;inset:0;border:0;border-radius:14px;padding:8px";document.body.appendChild(d);
     d.addEventListener("click",ev=>{if(ev.target===d){d.close();return}if(ev.target.closest("[data-izk]")){d.close();return}const a=ev.target.closest("[data-a]");if(a){isAksiyon(ev);setTimeout(()=>{try{d.close()}catch(er){}},50)}})}
   d.innerHTML='<div style="display:flex;justify-content:flex-end"><button type="button" data-izk="1" style="font-size:22px;background:none;border:0;width:auto">✕</button></div><div class="list">'+isKart(e)+'</div>';if(!d.open)d.showModal();isfSigdir()}
@@ -2040,6 +2066,17 @@ function isKart(e){
   <div class="acts">${e.asama==="etiket"&&asamaYap("etiket")?`<button class="btn b7 big" style="grid-column:span 2" data-a="etik" data-id="${id}">🏷️ Etiket hazırla</button>`:""}${nx&&asamaYap(e.asama)?`<button class="btn b3" style="grid-column:span 2;padding:14px;font-size:18px" data-a="ileri" data-id="${id}">${e.asama==="depo"?"📦 Depoya girişi kaydet → BİTEN":"✓ Bitti → "+esc(ASL[nx])}</button>`:""}
   ${i>0&&islemYap("geriAl")?`<button class="btn bgeri" data-a="geri" data-id="${id}">↩️ Geri al</button>`:""}${opRol()?"":`<button class="btn b6" data-a="yaz" data-id="${id}">🖨️ Yazdır</button>`}${e.asama!=="etiket"&&asamaYap("etiket")?`<button class="btn b7" data-a="etik" data-id="${id}">🏷️ Etiket</button>`:""}${islemYap("isDuzenle")?`<button class="btn b6" data-a="edit" data-id="${id}">✏️ Düzenle</button>`:""}${opRol()?"":`<button class="btn b6" data-a="gecmis" data-id="${id}">🕘 Geçmiş</button><button class="btn b6" data-a="qr" data-id="${id}">📱 QR</button>`}${canDel?`<button class="btn b5" data-a="del" data-id="${id}">🗑️ Sil</button>`:""}</div>
   ${e.asama==="bitti"&&e.bekleAktar&&!e.aktarildi&&modGor("sevk")?`<button class="btn b4" style="width:100%;margin-top:8px;padding:14px;font-size:18px" data-a="aktar" data-id="${id}">📦 Hazır ürünlere aktar</button>`:""}${e.aktarildi?`<div class="note" style="margin-top:8px">✅ Hazır ürünlere aktarıldı</div>`:""}</div>`;
+}
+/* v172: tek ve toplu silmede ortak (sessiz=true → toast yok, sonuç döner) */
+async function isSilYap(e,sessiz){
+      await silCop("isEmirleri",e.id,e.no||"İş emri",isAdmin()?["isHareket/"+e.id,"etiketGecmis/"+e.id]:[]);
+      if(window.bil)bil(["as_"+e.asama,"u_"+(e.ekleyenUid||""),"yon"],{t:"is",ik:"🗑️",b:"🗑️ İş emri silindi: "+(e.no||""),m:[e.musteri,e.isAdi,"aşama: "+String(ASL[e.asama]||e.asama||"").replace(/^\S+\s/,"")].filter(Boolean).join(" · ")});
+      if(e.aktarildi){let sk=0,kal=0;
+        for(const k of Object.keys(e.aktarKeys||{})){try{const x=await db.ref("urunler/"+k).once("value");
+          if(x.exists()&&x.val().durum==="hazir"){await silCop("urunler",k,(x.val().musteri||"")+" / "+(x.val().urun||""),isAdmin()?["fiyatlar/sevk/"+k]:[]);sk++}
+          else if(x.exists())kal++}catch(er){kal++}}
+        const m=("Silindi"+(sk?" · hazır ürün kaydı da silindi":"")+(kal?" · ⚠️ sevk sürecindeki ürün kaydı silinmedi":""));if(!sessiz)toast(m);return m}
+  else if(!sessiz)toast("Silindi");return"Silindi"
 }
 const isAksiyon=async ev=>{
   const b=ev.target.closest("button[data-a]");if(!b)return;const e=isBulId(b.dataset.id);if(!e)return;
@@ -2082,14 +2119,7 @@ const isAksiyon=async ev=>{
     else if(a==="edit"){if(!islemYap("isDuzenle")){toast("İş emrini düzenleme yetkiniz yok.");return}iAc(e)}
     else if(a==="gecmis")hrkAc(e);
     else if(a==="geri"&&i>0){if(!islemYap("geriAl")){toast("Geri alma yetkiniz yok.");return}if(!confirm(e.no+" ("+(e.musteri||"-")+")\n"+(ASL[e.asama]||e.asama)+" → "+(ASL[o[i-1]]||o[i-1])+"\nGERİ alınsın mı?"))return;const up={};up["isEmirleri/"+e.id+"/asama"]=o[i-1];hrkEk(up,e.id,{tur:"geri",kimden:e.asama,kime:o[i-1]});await db.ref().update(up)}
-    else if(a==="del"){if(!(isAdmin()||(islemYap("isSil")&&e.ekleyenUid===user.uid))){toast("Silme yetkiniz yok.");return}if(confirm(e.no+" silinsin mi?"+(e.aktarildi?"\nHazır ürünlerdeki kaydı da silinir (sevk sürecine girmişse o kayıt kalır).":""))){
-      await silCop("isEmirleri",e.id,e.no||"İş emri",isAdmin()?["isHareket/"+e.id,"etiketGecmis/"+e.id]:[]);
-      if(window.bil)bil(["as_"+e.asama,"u_"+(e.ekleyenUid||""),"yon"],{t:"is",ik:"🗑️",b:"🗑️ İş emri silindi: "+(e.no||""),m:[e.musteri,e.isAdi,"aşama: "+String(ASL[e.asama]||e.asama||"").replace(/^\S+\s/,"")].filter(Boolean).join(" · ")});
-      if(e.aktarildi){let sk=0,kal=0;
-        for(const k of Object.keys(e.aktarKeys||{})){try{const x=await db.ref("urunler/"+k).once("value");
-          if(x.exists()&&x.val().durum==="hazir"){await silCop("urunler",k,(x.val().musteri||"")+" / "+(x.val().urun||""),isAdmin()?["fiyatlar/sevk/"+k]:[]);sk++}
-          else if(x.exists())kal++}catch(er){kal++}}
-        toast("Silindi"+(sk?" · hazır ürün kaydı da silindi":"")+(kal?" · ⚠️ sevk sürecindeki ürün kaydı silinmedi":""))}}}
+    else if(a==="del"){if(!(isAdmin()||(islemYap("isSil")&&e.ekleyenUid===user.uid))){toast("Silme yetkiniz yok.");return}if(confirm(e.no+" silinsin mi?"+(e.aktarildi?"\nHazır ürünlerdeki kaydı da silinir (sevk sürecine girmişse o kayıt kalır).":"")))await isSilYap(e)}
     else if(a==="ileri"&&i>=0&&i<o.length-1){
       if(!asamaYap(e.asama)){toast("Bu aşamayı ilerletme yetkiniz yok.");return}
       if(e.asama==="etiket"){etiketIleri(e);return}else if(e.asama==="depo"){depoAc(e);return}else{
@@ -2107,6 +2137,10 @@ $("etNew").onclick=()=>{if(!(asamaYap("etiket")||isAdmin())){toast("Etiket hazı
 const isListTik=ev=>{const k=ev.target.closest("[data-kisa]"),ac=ev.target.closest("[data-ac]"),kp=ev.target.closest("[data-kapa]");
   const gr=ev.target.closest("[data-gor]"),iz=ev.target.closest("[data-iz]");
   if(gr){const g=gr.dataset.gor;try{localStorage.setItem("isIzgara_"+panel,g==="izgara"?"1":"0");if(g!=="izgara")localStorage.setItem("isKisa",g==="kisa"?"1":"0")}catch(er){}isListele();return}
+  const ist=ev.target.closest("[data-izsec]"),izt=ev.target.closest("[data-izt]");
+  if(ist){izSecMod=!izSecMod;izSec.clear();isListele();return}
+  if(izt){izToplu(izt.dataset.izt);return}
+  if(iz&&izSecMod&&isAdmin()){const id=iz.dataset.iz;izSec.has(id)?izSec.delete(id):izSec.add(id);izSecYenile();return}
   if(iz){izgaraAc(iz.dataset.iz);return}
   if(k){try{localStorage.setItem("isKisa",kisaMi()?"0":"1")}catch(er){}isListele();return}
   if(ac){isKisaAcik.add(ac.dataset.ac);isListele();return}if(kp){isKisaAcik.delete(kp.dataset.kapa);isListele();return}isAksiyon(ev)};

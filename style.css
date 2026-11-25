@@ -550,3 +550,12 @@ html.byz2 .full{grid-column:auto}
 .izgK:hover{border-color:#2563eb;box-shadow:0 0 0 2px #93c5fd}
 .izgK .isf{margin:0;padding:0;border:0;background:#fff;pointer-events:none}
 .izgA{font-size:12px;font-weight:800;color:#475569;padding:0 2px 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* v172: toplu seçim + çok sayfalı yazdırma */
+.izBar{position:sticky;top:0;z-index:5;display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:6px 8px;margin:0 0 6px}
+.izBar b{margin-right:6px}.izBar button[disabled]{opacity:.45}
+.izg.secm .izgK{cursor:pointer;position:relative}
+.izg.secm .izgK::after{content:"";position:absolute;top:4px;right:4px;width:22px;height:22px;border:2px solid #64748b;border-radius:5px;background:#fff}
+.izg.secm .izgK.sec{border-color:#2563eb;box-shadow:0 0 0 3px #2563eb;background:#eff6ff}
+.izg.secm .izgK.sec::after{content:"✓";color:#fff;background:#2563eb;border-color:#2563eb;font-weight:900;text-align:center;line-height:20px}
+@media print{#prn.cok{height:auto!important;overflow:visible!important;padding:0!important}#prn.cok .psay{height:204mm;padding:4mm 4mm 0 4mm;box-sizing:border-box;overflow:hidden;break-after:page;page-break-after:always}#prn.cok .psay:last-child{break-after:auto;page-break-after:auto}}
